@@ -1,0 +1,9 @@
+ros-jade-moveit (0.8.3-0trusty) trusty; urgency=high
+
+  * [Jade] Unify package version numbers (see https://github.com/davetcoleman/moveit_merge/issues/9). (#79 <https://github.com/ros-planning/moveit/issues/79>)
+  * Add meta package moveit.
+  * Contributors: Isaac I.Y. Saito
+
+ -- Dave Coleman <dave@dav.ee>  Fri, 19 Aug 2016 07:00:00 -0000
+
+
