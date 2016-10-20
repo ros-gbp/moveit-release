@@ -1,0 +1,12 @@
+Source: ros-kinetic-chomp-interface
+Section: misc
+Priority: extra
+Maintainer: Chittaranjan S Srinivas <chitt@live.in>
+Build-Depends: debhelper (>= 9.0.0), ros-kinetic-catkin, ros-kinetic-chomp-motion-planner, ros-kinetic-cmake-modules, ros-kinetic-moveit-core, ros-kinetic-moveit-experimental, ros-kinetic-pluginlib, ros-kinetic-roscpp
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-kinetic-chomp-interface
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-kinetic-moveit-core, ros-kinetic-pluginlib, ros-kinetic-roscpp
+Description: The chomp_interface package
