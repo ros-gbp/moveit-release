@@ -1,5 +1,7 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 2.8.12)
 project(moveit_core)
+
+add_compile_options(-std=c++11)
 
 if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
   message("${PROJECT_NAME}: You did not request a specific build type: Choosing 'Release' for maximum performance")
@@ -10,8 +12,14 @@ find_package(Boost REQUIRED system filesystem date_time thread iostreams)
 
 find_package(console_bridge REQUIRED)
 
+find_package(Eigen3 REQUIRED)
+
+# Eigen 3.2 (Wily) only provides EIGEN3_INCLUDE_DIR, not EIGEN3_INCLUDE_DIRS
+if(NOT EIGEN3_INCLUDE_DIRS)
+  set(EIGEN3_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
+endif()
+
 find_package(PkgConfig REQUIRED)
-pkg_search_module(EIGEN3 REQUIRED eigen3)
 
 pkg_check_modules(LIBFCL REQUIRED fcl)
 find_library(LIBFCL_LIBRARIES_FULL ${LIBFCL_LIBRARIES} ${LIBFCL_LIBRARY_DIRS})
@@ -20,7 +28,7 @@ set(LIBFCL_LIBRARIES "${LIBFCL_LIBRARIES_FULL}")
 find_package(octomap REQUIRED)
 
 find_package(urdfdom REQUIRED)
-find_package(urdfdom_headers REQUIRED)
+find_package(urdfdom_headers 0.4 REQUIRED)
 
 find_package(catkin REQUIRED
 COMPONENTS
@@ -43,10 +51,15 @@ COMPONENTS
 )
 
 set(VERSION_FILE_PATH "${CATKIN_DEVEL_PREFIX}/include")
-file(MAKE_DIRECTORY "${VERSION_FILE_PATH}")
+# Add the folder for the generated version header to the package's
+# exported include dirs to avoid a catkin_lint error.
+# This is how gencpp adds the folder of generated message code to
+# the include dirs, see:
+#   https://github.com/ros/gencpp/blob/e5acaf6/cmake/gencpp-extras.cmake.em#L51-L54
+list(APPEND ${PROJECT_NAME}_INCLUDE_DIRS ${VERSION_FILE_PATH})
+file(MAKE_DIRECTORY "${VERSION_FILE_PATH}/moveit")
 
 set(THIS_PACKAGE_INCLUDE_DIRS
-    ${VERSION_FILE_PATH}
     background_processing/include
     exceptions/include
     backtrace/include
@@ -74,7 +87,6 @@ set(THIS_PACKAGE_INCLUDE_DIRS
 
 catkin_package(
   INCLUDE_DIRS
-    ${EIGEN3_INCLUDE_DIRS}
     ${THIS_PACKAGE_INCLUDE_DIRS}
   LIBRARIES
     moveit_exceptions
@@ -120,12 +132,13 @@ catkin_package(
     urdfdom_headers
     )
 
-include_directories(SYSTEM ${EIGEN3_INCLUDE_DIRS}
+include_directories(SYSTEM ${EIGEN3_INCLUDE_DIR}
                            ${Boost_INCLUDE_DIR}
                            ${LIBFCL_INCLUDE_DIRS}
                            )
 
 include_directories(${THIS_PACKAGE_INCLUDE_DIRS}
+                    ${VERSION_FILE_PATH}
                     ${catkin_INCLUDE_DIRS}
                     ${console_bridge_INCLUDE_DIRS}
                     ${urdfdom_INCLUDE_DIRS}

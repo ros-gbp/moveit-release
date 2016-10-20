@@ -41,10 +41,12 @@
 #include <visualization_msgs/InteractiveMarker.h>
 #include <geometry_msgs/PoseArray.h>
 #include <interactive_markers/menu_handler.h>
+#include <moveit/macros/class_forward.h>
 #include <moveit/robot_state/robot_state.h>
 #include <moveit/robot_interaction/interaction.h>
 #include <boost/function.hpp>
 #include <boost/thread.hpp>
+#include <memory>
 
 // This is needed for legacy code that includes robot_interaction.h but not
 // interaction_handler.h
@@ -58,12 +60,9 @@ class InteractiveMarkerServer;
 namespace robot_interaction
 {
 
-class InteractionHandler;
-typedef boost::shared_ptr<InteractionHandler> InteractionHandlerPtr;
-
-class KinematicOptionsMap;
-typedef boost::shared_ptr<KinematicOptionsMap> KinematicOptionsMapPtr;
-
+MOVEIT_CLASS_FORWARD(InteractionHandler);
+MOVEIT_CLASS_FORWARD(KinematicOptionsMap);
+MOVEIT_CLASS_FORWARD(RobotInteraction);
 
 // Manage interactive markers for controlling a robot state.
 //
@@ -215,7 +214,7 @@ private:
   void processingThread();
   void clearInteractiveMarkersUnsafe();
 
-  boost::scoped_ptr<boost::thread> processing_thread_;
+  std::unique_ptr<boost::thread> processing_thread_;
   bool run_processing_thread_;
 
   boost::condition_variable new_feedback_condition_;
@@ -307,10 +306,6 @@ public:
             const kinematics::KinematicsQueryOptions &kinematics_query_options =
                                 kinematics::KinematicsQueryOptions());
 };
-
-typedef boost::shared_ptr<RobotInteraction> RobotInteractionPtr;
-typedef boost::shared_ptr<const RobotInteraction> RobotInteractionConstPtr;
-
 
 }
 

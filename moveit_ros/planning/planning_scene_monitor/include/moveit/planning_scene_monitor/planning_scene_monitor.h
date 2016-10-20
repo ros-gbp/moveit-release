@@ -41,6 +41,7 @@
 #include <tf/tf.h>
 #include <tf/message_filter.h>
 #include <message_filters/subscriber.h>
+#include <moveit/macros/class_forward.h>
 #include <moveit/planning_scene/planning_scene.h>
 #include <moveit/robot_model_loader/robot_model_loader.h>
 #include <moveit/occupancy_map_monitor/occupancy_map_monitor.h>
@@ -49,9 +50,12 @@
 #include <boost/noncopyable.hpp>
 #include <boost/thread/shared_mutex.hpp>
 #include <boost/thread/recursive_mutex.hpp>
+#include <memory>
 
 namespace planning_scene_monitor
 {
+
+MOVEIT_CLASS_FORWARD(PlanningSceneMonitor);
 
 /**
  * @brief PlanningSceneMonitor
@@ -434,7 +438,7 @@ protected:
 
   // variables for planning scene publishing
   ros::Publisher                        planning_scene_publisher_;
-  boost::scoped_ptr<boost::thread>      publish_planning_scene_;
+  std::unique_ptr<boost::thread>        publish_planning_scene_;
   double                                publish_planning_scene_frequency_;
   SceneUpdateType                       publish_update_types_;
   SceneUpdateType                       new_scene_update_;
@@ -446,11 +450,11 @@ protected:
 
   ros::Subscriber                       attached_collision_object_subscriber_;
 
-  boost::scoped_ptr<message_filters::Subscriber<moveit_msgs::CollisionObject> > collision_object_subscriber_;
-  boost::scoped_ptr<tf::MessageFilter<moveit_msgs::CollisionObject> > collision_object_filter_;
+  std::unique_ptr<message_filters::Subscriber<moveit_msgs::CollisionObject> > collision_object_subscriber_;
+  std::unique_ptr<tf::MessageFilter<moveit_msgs::CollisionObject> > collision_object_filter_;
 
   // include a octomap monitor
-  boost::scoped_ptr<occupancy_map_monitor::OccupancyMapMonitor> octomap_monitor_;
+  std::unique_ptr<occupancy_map_monitor::OccupancyMapMonitor> octomap_monitor_;
 
   // include a current state monitor
   CurrentStateMonitorPtr current_state_monitor_;
@@ -486,7 +490,6 @@ private:
   // Callback for a new planning scene msg
   void newPlanningSceneCallback(const moveit_msgs::PlanningSceneConstPtr &scene);
 
-
   // Lock for state_update_pending_ and dt_state_update_
   boost::mutex state_pending_mutex_;
 
@@ -520,9 +523,6 @@ private:
   class DynamicReconfigureImpl;
   DynamicReconfigureImpl *reconfigure_impl_;
 };
-
-typedef boost::shared_ptr<PlanningSceneMonitor> PlanningSceneMonitorPtr;
-typedef boost::shared_ptr<const PlanningSceneMonitor> PlanningSceneMonitorConstPtr;
 
 /** \brief This is a convenience class for obtaining access to an
  *         instance of a locked PlanningScene.
@@ -589,6 +589,8 @@ protected:
       lock_.reset(new SingleUnlock(planning_scene_monitor_.get(), read_only));
   }
 
+  MOVEIT_CLASS_FORWARD(SingleUnlock);
+
   // we use this struct so that lock/unlock are called only once
   // even if the LockedPlanningScene instance is copied around
   struct SingleUnlock
@@ -613,7 +615,7 @@ protected:
   };
 
   PlanningSceneMonitorPtr planning_scene_monitor_;
-  boost::shared_ptr<SingleUnlock> lock_;
+  SingleUnlockPtr lock_;
 };
 
 /** \brief This is a convenience class for obtaining access to an

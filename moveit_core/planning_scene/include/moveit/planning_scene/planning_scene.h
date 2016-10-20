@@ -51,11 +51,10 @@
 #include <moveit_msgs/RobotTrajectory.h>
 #include <moveit_msgs/Constraints.h>
 #include <moveit_msgs/PlanningSceneComponents.h>
-#include <boost/enable_shared_from_this.hpp>
 #include <boost/noncopyable.hpp>
-#include <boost/shared_ptr.hpp>
 #include <boost/function.hpp>
 #include <boost/concept_check.hpp>
+#include <memory>
 
 /** \brief This namespace includes the central class for representing planning contexts */
 namespace planning_scene
@@ -82,7 +81,7 @@ typedef std::map<std::string, object_recognition_msgs::ObjectType> ObjectTypeMap
     environment as seen by a planning instance. The environment
     geometry, the robot geometry and state are maintained. */
 class PlanningScene : private boost::noncopyable,
-                      public boost::enable_shared_from_this<PlanningScene>
+                      public std::enable_shared_from_this<PlanningScene>
 {
 public:
 
@@ -92,8 +91,8 @@ public:
 
   /** \brief construct using a urdf and srdf.
    * A RobotModel for the PlanningScene will be created using the urdf and srdf. */
-  PlanningScene(const boost::shared_ptr<const urdf::ModelInterface> &urdf_model,
-                const boost::shared_ptr<const srdf::Model> &srdf_model,
+  PlanningScene(const urdf::ModelInterfaceSharedPtr &urdf_model,
+                const srdf::ModelConstSharedPtr &srdf_model,
                 collision_detection::WorldPtr world = collision_detection::WorldPtr(new collision_detection::World()));
 
   static const std::string OCTOMAP_NS;
@@ -598,53 +597,53 @@ public:
    */
   /**@{*/
 
-  /** \brief The distance between the robot model at state \e kstate to the nearest collision */
+  /** \brief The distance between the robot model at state \e kstate to the nearest collision (ignoring self-collisions) */
   double distanceToCollision(robot_state::RobotState &kstate) const
   {
     kstate.updateCollisionBodyTransforms();
     return distanceToCollision(const_cast<const robot_state::RobotState&>(kstate));
   }
 
-  /** \brief The distance between the robot model at state \e kstate to the nearest collision */
+  /** \brief The distance between the robot model at state \e kstate to the nearest collision (ignoring self-collisions) */
   double distanceToCollision(const robot_state::RobotState &kstate) const
   {
     return getCollisionWorld()->distanceRobot(*getCollisionRobot(), kstate, getAllowedCollisionMatrix());
   }
 
-  /** \brief The distance between the robot model at state \e kstate to the nearest collision, if the robot has no padding */
+  /** \brief The distance between the robot model at state \e kstate to the nearest collision (ignoring self-collisions), if the robot has no padding */
   double distanceToCollisionUnpadded(robot_state::RobotState &kstate) const
   {
     kstate.updateCollisionBodyTransforms();
     return distanceToCollisionUnpadded(const_cast<const robot_state::RobotState&>(kstate));
   }
 
-  /** \brief The distance between the robot model at state \e kstate to the nearest collision, if the robot has no padding */
+  /** \brief The distance between the robot model at state \e kstate to the nearest collision (ignoring self-collisions), if the robot has no padding */
   double distanceToCollisionUnpadded(const robot_state::RobotState &kstate) const
   {
     return getCollisionWorld()->distanceRobot(*getCollisionRobotUnpadded(), kstate, getAllowedCollisionMatrix());
   }
 
-  /** \brief The distance between the robot model at state \e kstate to the nearest collision, ignoring distances between elements that always allowed to collide. */
+  /** \brief The distance between the robot model at state \e kstate to the nearest collision, ignoring self-collisions and elements that are allowed to collide. */
   double distanceToCollision(robot_state::RobotState &kstate, const collision_detection::AllowedCollisionMatrix& acm) const
   {
     kstate.updateCollisionBodyTransforms();
     return distanceToCollision(const_cast<const robot_state::RobotState&>(kstate), acm);
   }
 
-  /** \brief The distance between the robot model at state \e kstate to the nearest collision, ignoring distances between elements that always allowed to collide. */
+  /** \brief The distance between the robot model at state \e kstate to the nearest collision, ignoring self-collisions and elements that are allowed to collide. */
   double distanceToCollision(const robot_state::RobotState &kstate, const collision_detection::AllowedCollisionMatrix& acm) const
   {
     return getCollisionWorld()->distanceRobot(*getCollisionRobot(), kstate, acm);
   }
 
-  /** \brief The distance between the robot model at state \e kstate to the nearest collision, ignoring distances between elements that always allowed to collide, if the robot has no padding. */
+  /** \brief The distance between the robot model at state \e kstate to the nearest collision, ignoring self-collisions and elements that are allowed to collide, if the robot has no padding. */
   double distanceToCollisionUnpadded(robot_state::RobotState &kstate, const collision_detection::AllowedCollisionMatrix& acm) const
   {
     kstate.updateCollisionBodyTransforms();
     return distanceToCollisionUnpadded(const_cast<const robot_state::RobotState&>(kstate), acm);
   }
 
-  /** \brief The distance between the robot model at state \e kstate to the nearest collision, ignoring distances between elements that always allowed to collide, if the robot has no padding. */
+  /** \brief The distance between the robot model at state \e kstate to the nearest collision, ignoring self-collisions and elements that always allowed to collide, if the robot has no padding. */
   double distanceToCollisionUnpadded(const robot_state::RobotState &kstate, const collision_detection::AllowedCollisionMatrix& acm) const
   {
     return getCollisionWorld()->distanceRobot(*getCollisionRobotUnpadded(), kstate, acm);
@@ -691,7 +690,7 @@ public:
 
   void processOctomapMsg(const octomap_msgs::OctomapWithPose &map);
   void processOctomapMsg(const octomap_msgs::Octomap &map);
-  void processOctomapPtr(const boost::shared_ptr<const octomap::OcTree> &octree, const Eigen::Affine3d &t);
+  void processOctomapPtr(const std::shared_ptr<const octomap::OcTree> &octree, const Eigen::Affine3d &t);
 
   /**
    * \brief Clear all collision objects in planning scene
@@ -883,8 +882,8 @@ private:
   void initialize();
 
   /* helper function to create a RobotModel from a urdf/srdf. */
-  static robot_model::RobotModelPtr createRobotModel(const boost::shared_ptr<const urdf::ModelInterface> &urdf_model,
-                                                     const boost::shared_ptr<const srdf::Model> &srdf_model);
+  static robot_model::RobotModelPtr createRobotModel(const urdf::ModelInterfaceSharedPtr &urdf_model,
+                                                     const srdf::ModelConstSharedPtr &srdf_model);
 
   void getPlanningSceneMsgCollisionObject(moveit_msgs::PlanningScene &scene, const std::string &ns) const;
   void getPlanningSceneMsgCollisionObjects(moveit_msgs::PlanningScene &scene) const;
@@ -953,10 +952,10 @@ private:
   StateFeasibilityFn                             state_feasibility_;
   MotionFeasibilityFn                            motion_feasibility_;
 
-  boost::scoped_ptr<ObjectColorMap>              object_colors_;
+  std::unique_ptr<ObjectColorMap>                object_colors_;
 
   // a map of object types
-  boost::scoped_ptr<ObjectTypeMap>               object_types_;
+  std::unique_ptr<ObjectTypeMap>                 object_types_;
 
 
 };

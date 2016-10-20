@@ -37,12 +37,15 @@
 #ifndef MOVEIT_PLANNING_MODELS_LOADER_ROBOT_MODEL_LOADER_
 #define MOVEIT_PLANNING_MODELS_LOADER_ROBOT_MODEL_LOADER_
 
+#include <moveit/macros/class_forward.h>
 #include <moveit/robot_model/robot_model.h>
 #include <moveit/rdf_loader/rdf_loader.h>
 #include <moveit/kinematics_plugin_loader/kinematics_plugin_loader.h>
 
 namespace robot_model_loader
 {
+
+MOVEIT_CLASS_FORWARD(RobotModelLoader);
 
 /** @class RobotModelLoader */
 class RobotModelLoader
@@ -97,6 +100,8 @@ public:
 
   RobotModelLoader(const std::string &robot_description, bool load_kinematics_solvers = true);
 
+  ~RobotModelLoader();
+
   /** @brief Get the constructed planning_models::RobotModel */
   const robot_model::RobotModelPtr& getModel() const
   {
@@ -110,13 +115,13 @@ public:
   }
 
   /** @brief Get the parsed URDF model*/
-  const boost::shared_ptr<urdf::ModelInterface>& getURDF() const
+  const urdf::ModelInterfaceSharedPtr& getURDF() const
   {
     return rdf_loader_->getURDF();
   }
 
   /** @brief Get the parsed SRDF model*/
-  const boost::shared_ptr<srdf::Model>& getSRDF() const
+  const srdf::ModelSharedPtr& getSRDF() const
   {
     return rdf_loader_->getSRDF();
   }
@@ -146,9 +151,6 @@ private:
   kinematics_plugin_loader::KinematicsPluginLoaderPtr kinematics_loader_;
 
 };
-
-typedef boost::shared_ptr<RobotModelLoader> RobotModelLoaderPtr;
-typedef boost::shared_ptr<const RobotModelLoader> RobotModelLoaderConstPtr;
 
 }
 #endif

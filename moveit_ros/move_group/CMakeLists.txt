@@ -1,5 +1,7 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 2.8.12)
 project(moveit_ros_move_group)
+
+add_compile_options(-std=c++11)
 
 if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
@@ -39,6 +41,7 @@ add_library(moveit_move_group_capabilities_base
   src/move_group_context.cpp
   src/move_group_capability.cpp
   )
+set_target_properties(moveit_move_group_capabilities_base PROPERTIES VERSION ${${PROJECT_NAME}_VERSION})
 add_dependencies(moveit_move_group_capabilities_base ${catkin_EXPORTED_TARGETS}) # wait until all *_msgs packages are finished being built
 
 add_executable(move_group src/move_group.cpp)
@@ -48,7 +51,8 @@ add_executable(list_move_group_capabilities src/list_capabilities.cpp)
 add_library(moveit_move_group_default_capabilities
   src/default_capabilities/move_action_capability.cpp
   src/default_capabilities/plan_service_capability.cpp
-  src/default_capabilities/execute_service_capability.cpp
+  src/default_capabilities/execute_trajectory_service_capability.cpp
+  src/default_capabilities/execute_trajectory_action_capability.cpp
   src/default_capabilities/query_planners_service_capability.cpp
   src/default_capabilities/kinematics_service_capability.cpp
   src/default_capabilities/state_validation_service_capability.cpp
@@ -57,6 +61,7 @@ add_library(moveit_move_group_default_capabilities
   src/default_capabilities/apply_planning_scene_service_capability.cpp
   src/default_capabilities/clear_octomap_service_capability.cpp
   )
+set_target_properties(moveit_move_group_default_capabilities PROPERTIES VERSION ${${PROJECT_NAME}_VERSION})
 add_dependencies(moveit_move_group_default_capabilities ${catkin_EXPORTED_TARGETS})
 
 target_link_libraries(moveit_move_group_capabilities_base ${catkin_LIBRARIES} ${Boost_LIBRARIES})

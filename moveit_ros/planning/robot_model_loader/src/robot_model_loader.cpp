@@ -51,6 +51,18 @@ robot_model_loader::RobotModelLoader::RobotModelLoader(const Options &opt)
   configure(opt);
 }
 
+robot_model_loader::RobotModelLoader::~RobotModelLoader()
+{
+  // Make sure we destroy the robot model first. It contains the loaded
+  // kinematics plugins, and those must be destroyed before the pluginlib class
+  // that implements them is destroyed (that happens when kinematics_loader_ is
+  // destroyed below). This is a workaround - ideally pluginlib would handle
+  // this better.
+  model_.reset();
+  rdf_loader_.reset();
+  kinematics_loader_.reset();
+}
+
 namespace
 {
 
@@ -87,7 +99,7 @@ void robot_model_loader::RobotModelLoader::configure(const Options &opt)
       rdf_loader_.reset(new rdf_loader::RDFLoader(opt.robot_description_));
   if (rdf_loader_->getURDF())
   {
-    const boost::shared_ptr<srdf::Model> &srdf = rdf_loader_->getSRDF() ? rdf_loader_->getSRDF() : boost::shared_ptr<srdf::Model>(new srdf::Model());
+    const srdf::ModelSharedPtr &srdf = rdf_loader_->getSRDF() ? rdf_loader_->getSRDF() : srdf::ModelSharedPtr(new srdf::Model());
     model_.reset(new robot_model::RobotModel(rdf_loader_->getURDF(), srdf));
   }
 

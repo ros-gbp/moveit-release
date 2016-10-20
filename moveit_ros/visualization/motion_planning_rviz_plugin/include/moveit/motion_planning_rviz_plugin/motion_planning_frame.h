@@ -42,7 +42,8 @@
 #include <QListWidgetItem>
 
 #ifndef Q_MOC_RUN
-#include <moveit/move_group_interface/move_group.h>
+#include <moveit/macros/class_forward.h>
+#include <moveit/move_group_interface/move_group_interface.h>
 #include <moveit/planning_scene_interface/planning_scene_interface.h>
 #include <moveit/planning_scene_monitor/planning_scene_monitor.h>
 #include <moveit/robot_interaction/robot_interaction.h>
@@ -60,6 +61,7 @@
 #include <std_msgs/Empty.h>
 #include <map>
 #include <string>
+#include <memory>
 
 namespace rviz
 {
@@ -73,9 +75,11 @@ class MotionPlanningUI;
 
 namespace moveit_warehouse
 {
-class PlanningSceneStorage;
-class ConstraintsStorage;
-class RobotStateStorage;
+
+MOVEIT_CLASS_FORWARD(PlanningSceneStorage);
+MOVEIT_CLASS_FORWARD(ConstraintsStorage);
+MOVEIT_CLASS_FORWARD(RobotStateStorage);
+
 }
 
 namespace moveit_rviz_plugin
@@ -112,16 +116,16 @@ protected:
   rviz::DisplayContext* context_;
   Ui::MotionPlanningUI *ui_;
 
-  boost::shared_ptr<moveit::planning_interface::MoveGroup> move_group_;
-  boost::shared_ptr<moveit::planning_interface::PlanningSceneInterface> planning_scene_interface_;
-  boost::shared_ptr<moveit::semantic_world::SemanticWorld> semantic_world_;
+  moveit::planning_interface::MoveGroupInterfacePtr move_group_;
+  moveit::planning_interface::PlanningSceneInterfacePtr planning_scene_interface_;
+  moveit::semantic_world::SemanticWorldPtr semantic_world_;
 
-  boost::shared_ptr<moveit::planning_interface::MoveGroup::Plan> current_plan_;
-  boost::shared_ptr<moveit_warehouse::PlanningSceneStorage> planning_scene_storage_;
-  boost::shared_ptr<moveit_warehouse::ConstraintsStorage> constraints_storage_;
-  boost::shared_ptr<moveit_warehouse::RobotStateStorage> robot_state_storage_;
+  moveit::planning_interface::MoveGroupInterface::PlanPtr current_plan_;
+  moveit_warehouse::PlanningSceneStoragePtr planning_scene_storage_;
+  moveit_warehouse::ConstraintsStoragePtr constraints_storage_;
+  moveit_warehouse::RobotStateStoragePtr robot_state_storage_;
 
-  boost::shared_ptr<rviz::InteractiveMarker> scene_marker_;
+  std::shared_ptr<rviz::InteractiveMarker> scene_marker_;
 
   typedef std::map<std::string, moveit_msgs::RobotState> RobotStateMap;
   typedef std::pair<std::string, moveit_msgs::RobotState> RobotStatePair;
@@ -266,7 +270,7 @@ private:
   std::string selected_object_name_;
   std::string selected_support_surface_name_;
 
-  boost::scoped_ptr<actionlib::SimpleActionClient<object_recognition_msgs::ObjectRecognitionAction> > object_recognition_client_;
+  std::unique_ptr<actionlib::SimpleActionClient<object_recognition_msgs::ObjectRecognitionAction> > object_recognition_client_;
   template<typename T>
   void waitForAction(const T &action, const ros::NodeHandle &node_handle, const ros::Duration &wait_for_server, const std::string &name);
   void listenDetectedObjects(const object_recognition_msgs::RecognizedObjectArrayPtr &msg);

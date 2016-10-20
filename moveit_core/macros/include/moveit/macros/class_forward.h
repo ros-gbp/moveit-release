@@ -37,14 +37,22 @@
 #ifndef MOVEIT_MACROS_CLASS_FORWARD_
 #define MOVEIT_MACROS_CLASS_FORWARD_
 
-#include <boost/shared_ptr.hpp>
+#include <moveit/macros/declare_ptr.h>
 
-/** \def MOVEIT_CLASS_FORWARD
-    Macro that forward declares a class XXX, and also defines two shared ptrs with named XXXPtr and XXXConstPtr  */
+/**
+ * \def MOVEIT_CLASS_FORWARD
+ * Macro that forward declares a class and defines two shared ptrs types:
+ *  - ${Class}Ptr      = shared_ptr<${Class}>
+ *  - ${Class}ConstPtr = shared_ptr<const ${Class}>
+ */
 
-#define MOVEIT_CLASS_FORWARD(C)                \
-    class C;                        \
-    typedef boost::shared_ptr<C> C##Ptr;        \
-    typedef boost::shared_ptr<const C> C##ConstPtr;    \
+#define MOVEIT_CLASS_FORWARD(C) class C; MOVEIT_DECLARE_PTR(C, C);
+
+/**
+ * \def MOVEIT_STRUCT_FORWARD
+ * Like MOVEIT_CLASS_FORWARD, but forward declares the type as a struct
+ * instead of a class.
+ */
+#define MOVEIT_STRUCT_FORWARD(C) struct C; MOVEIT_DECLARE_PTR(C, C);
 
 #endif

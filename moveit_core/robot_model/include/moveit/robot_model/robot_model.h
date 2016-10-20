@@ -42,6 +42,7 @@
 #include <moveit/exceptions/exceptions.h>
 #include <console_bridge/console.h>
 #include <urdf_model/model.h>
+#include <urdf_world/types.h>
 #include <srdfdom/model.h>
 
 // joint types
@@ -71,8 +72,8 @@ class RobotModel
 public:
 
   /** \brief Construct a kinematic model from a parsed description and a list of planning groups */
-  RobotModel(const boost::shared_ptr<const urdf::ModelInterface> &urdf_model,
-             const boost::shared_ptr<const srdf::Model> &srdf_model);
+  RobotModel(const urdf::ModelInterfaceSharedPtr &urdf_model,
+             const srdf::ModelConstSharedPtr &srdf_model);
 
   /** \brief Destructor. Clear all memory. */
   ~RobotModel();
@@ -99,13 +100,13 @@ public:
   }
 
   /** \brief Get the parsed URDF model */
-  const boost::shared_ptr<const urdf::ModelInterface>& getURDF() const
+  const urdf::ModelInterfaceSharedPtr& getURDF() const
   {
     return urdf_;
   }
 
   /** \brief Get the parsed SRDF model */
-  const boost::shared_ptr<const srdf::Model>& getSRDF() const
+  const srdf::ModelConstSharedPtr& getSRDF() const
   {
     return srdf_;
   }
@@ -439,9 +440,9 @@ protected:
   /** \brief The reference frame for this model */
   std::string                                   model_frame_;
 
-  boost::shared_ptr<const srdf::Model>          srdf_;
+  srdf::ModelConstSharedPtr                     srdf_;
 
-  boost::shared_ptr<const urdf::ModelInterface> urdf_;
+  urdf::ModelInterfaceSharedPtr                 urdf_;
 
 
   // LINKS

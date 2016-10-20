@@ -1,6 +1,6 @@
 <package>
   <name>moveit_controller_manager_example</name>
-  <version>0.8.3</version>
+  <version>0.9.1</version>
   <description>An example controller manager plugin for MoveIt. This is not functional code.</description>
   <author email="isucan@gmail.com">Ioan Sucan</author>
   <maintainer email="isucan@gmail.com">Ioan Sucan</maintainer>
@@ -8,8 +8,8 @@
   <license>BSD</license>
 
   <url type="website">http://moveit.ros.org</url>
-  <url type="bugtracker">https://github.com/ros-planning/moveit_plugins/issues</url>
-  <url type="repository">https://github.com/ros-planning/moveit_plugins</url>
+  <url type="bugtracker">https://github.com/ros-planning/moveit/issues</url>
+  <url type="repository">https://github.com/ros-planning/moveit</url>
 
   <buildtool_depend>catkin</buildtool_depend>
 

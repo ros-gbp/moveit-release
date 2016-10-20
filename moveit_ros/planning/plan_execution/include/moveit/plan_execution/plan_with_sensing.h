@@ -37,16 +37,20 @@
 #ifndef MOVEIT_PLAN_EXECUTION_PLAN_WITH_SENSING_
 #define MOVEIT_PLAN_EXECUTION_PLAN_WITH_SENSING_
 
+#include <moveit/macros/class_forward.h>
 #include <moveit/plan_execution/plan_representation.h>
 #include <moveit/trajectory_execution_manager/trajectory_execution_manager.h>
 
 #include <moveit/planning_scene_monitor/trajectory_monitor.h>
 #include <moveit/sensor_manager/sensor_manager.h>
 #include <pluginlib/class_loader.h>
-#include <boost/scoped_ptr.hpp>
+
+#include <memory>
 
 namespace plan_execution
 {
+
+MOVEIT_CLASS_FORWARD(PlanWithSensing);
 
 class PlanWithSensing
 {
@@ -116,7 +120,7 @@ private:
   ros::NodeHandle node_handle_;
   trajectory_execution_manager::TrajectoryExecutionManagerPtr trajectory_execution_manager_;
 
-  boost::scoped_ptr<pluginlib::ClassLoader<moveit_sensor_manager::MoveItSensorManager> > sensor_manager_loader_;
+  std::unique_ptr<pluginlib::ClassLoader<moveit_sensor_manager::MoveItSensorManager> > sensor_manager_loader_;
   moveit_sensor_manager::MoveItSensorManagerPtr sensor_manager_;
   unsigned int default_max_look_attempts_;
   double default_max_safe_path_cost_;
@@ -132,9 +136,6 @@ private:
   class DynamicReconfigureImpl;
   DynamicReconfigureImpl *reconfigure_impl_;
 };
-
-typedef boost::shared_ptr<PlanWithSensing> PlanWithSensingPtr;
-typedef boost::shared_ptr<const PlanWithSensing> PlanWithSensingConstPtr;
 
 }
 #endif

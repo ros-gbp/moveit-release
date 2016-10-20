@@ -41,9 +41,9 @@
 #include <moveit/macros/class_forward.h>
 #include <geometric_shapes/shapes.h>
 #include <rviz/helpers/color.h>
-#include <boost/shared_ptr.hpp>
 #include <Eigen/Geometry>
 #include <string>
+#include <memory>
 
 namespace Ogre
 {
@@ -59,8 +59,8 @@ class Shape;
 namespace moveit_rviz_plugin
 {
 
-// forward delcaration
-class OcTreeRender;
+MOVEIT_CLASS_FORWARD(OcTreeRender);
+MOVEIT_CLASS_FORWARD(RenderShapes);
 
 class RenderShapes
 {
@@ -82,11 +82,10 @@ private:
 
   rviz::DisplayContext *context_;
 
-  std::vector< boost::shared_ptr<rviz::Shape> > scene_shapes_;
-  std::vector< boost::shared_ptr<OcTreeRender> > octree_voxel_grids_;
+  std::vector<std::unique_ptr<rviz::Shape> > scene_shapes_;
+  std::vector<OcTreeRenderPtr> octree_voxel_grids_;
 };
 
-MOVEIT_CLASS_FORWARD(RenderShapes);
 
 }
 

@@ -41,6 +41,7 @@
 #include <sstream>
 #include <vector>
 #include <map>
+#include <memory>
 #include <ros/ros.h>
 #include <moveit/profiler/profiler.h>
 
@@ -119,9 +120,9 @@ public:
     return tips;
   }
 
-  boost::shared_ptr<kinematics::KinematicsBase> allocKinematicsSolver(const robot_model::JointModelGroup *jmg)
+  kinematics::KinematicsBasePtr allocKinematicsSolver(const robot_model::JointModelGroup *jmg)
   {
-    boost::shared_ptr<kinematics::KinematicsBase> result;
+    kinematics::KinematicsBasePtr result;
     if (!jmg)
     {
       ROS_ERROR("Specified group is NULL. Cannot allocate kinematics solver.");
@@ -142,7 +143,7 @@ public:
         {
           try
           {
-            result = kinematics_loader_->createInstance(it->second[i]);
+            result = kinematics_loader_->createUniqueInstance(it->second[i]);
             if (result)
             {
               const std::vector<const robot_model::LinkModel*> &links = jmg->getLinkModels();
@@ -192,11 +193,11 @@ public:
     return result;
   }
 
-  boost::shared_ptr<kinematics::KinematicsBase> allocKinematicsSolverWithCache(const robot_model::JointModelGroup *jmg)
+  kinematics::KinematicsBasePtr allocKinematicsSolverWithCache(const robot_model::JointModelGroup *jmg)
   {
     {
       boost::mutex::scoped_lock slock(lock_);
-      const std::vector<boost::shared_ptr<kinematics::KinematicsBase> > &vi = instances_[jmg];
+      const std::vector<kinematics::KinematicsBasePtr> &vi = instances_[jmg];
       for (std::size_t i = 0 ;  i < vi.size() ; ++i)
         if (vi[i].unique())
         {
@@ -205,7 +206,7 @@ public:
         }
     }
 
-    boost::shared_ptr<kinematics::KinematicsBase> res = allocKinematicsSolver(jmg);
+    kinematics::KinematicsBasePtr res = allocKinematicsSolver(jmg);
 
     {
       boost::mutex::scoped_lock slock(lock_);
@@ -227,9 +228,9 @@ private:
   std::map<std::string, std::vector<std::string> >                       possible_kinematics_solvers_;
   std::map<std::string, std::vector<double> >                            search_res_;
   std::map<std::string, std::vector<std::string> >                       iksolver_to_tip_links_;  // a map between each ik solver and a vector of custom-specified tip link(s)
-  boost::shared_ptr<pluginlib::ClassLoader<kinematics::KinematicsBase> > kinematics_loader_;
+  std::shared_ptr<pluginlib::ClassLoader<kinematics::KinematicsBase> >   kinematics_loader_;
   std::map<const robot_model::JointModelGroup*,
-           std::vector<boost::shared_ptr<kinematics::KinematicsBase> > > instances_;
+           std::vector<kinematics::KinematicsBasePtr> >                  instances_;
   boost::mutex                                                           lock_;
 };
 
@@ -256,7 +257,7 @@ robot_model::SolverAllocatorFn kinematics_plugin_loader::KinematicsPluginLoader:
   return getLoaderFunction(rml.getSRDF());
 }
 
-robot_model::SolverAllocatorFn kinematics_plugin_loader::KinematicsPluginLoader::getLoaderFunction(const boost::shared_ptr<srdf::Model> &srdf_model)
+robot_model::SolverAllocatorFn kinematics_plugin_loader::KinematicsPluginLoader::getLoaderFunction(const srdf::ModelSharedPtr &srdf_model)
 {
   moveit::tools::Profiler::ScopedStart prof_start;
   moveit::tools::Profiler::ScopedBlock prof_block("KinematicsPluginLoader::getLoaderFunction(SRDF)");

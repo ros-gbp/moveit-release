@@ -35,10 +35,10 @@
 
 /* Author: Ioan Sucan, Robert Haschke */
 
+#include <moveit/macros/class_forward.h>
 #include <moveit/controller_manager/controller_manager.h>
 #include <ros/publisher.h>
 #include <ros/rate.h>
-#include <boost/shared_ptr.hpp>
 #include <boost/thread/thread.hpp>
 
 #ifndef MOVEIT_FAKE_CONTROLLERS
@@ -46,6 +46,8 @@
 
 namespace moveit_fake_controller_manager
 {
+
+MOVEIT_CLASS_FORWARD(BaseFakeController);
 
 // common base class to all fake controllers in this package
 class BaseFakeController : public moveit_controller_manager::MoveItControllerHandle
@@ -60,8 +62,6 @@ protected:
   std::vector<std::string> joints_;
   const ros::Publisher &pub_;
 };
-typedef boost::shared_ptr<BaseFakeController> BaseFakeControllerPtr;
-
 
 class LastPointController : public BaseFakeController
 {

@@ -37,6 +37,7 @@
 #ifndef MOVEIT_PICK_PLACE_PICK_PLACE_
 #define MOVEIT_PICK_PLACE_PICK_PLACE_
 
+#include <moveit/macros/class_forward.h>
 #include <moveit/pick_place/manipulation_pipeline.h>
 #include <moveit/pick_place/pick_place_params.h>
 #include <moveit/constraint_sampler_manager_loader/constraint_sampler_manager_loader.h>
@@ -44,14 +45,12 @@
 #include <moveit_msgs/PickupAction.h>
 #include <moveit_msgs/PlaceAction.h>
 #include <boost/noncopyable.hpp>
-#include <boost/enable_shared_from_this.hpp>
+#include <memory>
 
 namespace pick_place
 {
 
-class PickPlace;
-typedef boost::shared_ptr<PickPlace> PickPlacePtr;
-typedef boost::shared_ptr<const PickPlace> PickPlaceConstPtr;
+MOVEIT_CLASS_FORWARD(PickPlace);
 
 class PickPlacePlanBase
 {
@@ -92,6 +91,8 @@ protected:
   moveit_msgs::MoveItErrorCodes error_code_;
 };
 
+MOVEIT_CLASS_FORWARD(PickPlan);
+
 class PickPlan : public PickPlacePlanBase
 {
 public:
@@ -100,8 +101,7 @@ public:
   bool plan(const planning_scene::PlanningSceneConstPtr &planning_scene, const moveit_msgs::PickupGoal &goal);
 };
 
-typedef boost::shared_ptr<PickPlan> PickPlanPtr;
-typedef boost::shared_ptr<const PickPlan> PickPlanConstPtr;
+MOVEIT_CLASS_FORWARD(PlacePlan);
 
 class PlacePlan : public PickPlacePlanBase
 {
@@ -111,11 +111,8 @@ public:
   bool plan(const planning_scene::PlanningSceneConstPtr &planning_scene, const moveit_msgs::PlaceGoal &goal);
 };
 
-typedef boost::shared_ptr<PlacePlan> PlacePlanPtr;
-typedef boost::shared_ptr<const PlacePlan> PlacePlanConstPtr;
-
 class PickPlace : private boost::noncopyable,
-                  public boost::enable_shared_from_this<PickPlace>
+                  public std::enable_shared_from_this<PickPlace>
 {
 public:
 

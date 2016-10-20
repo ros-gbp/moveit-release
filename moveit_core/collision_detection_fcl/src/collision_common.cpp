@@ -35,10 +35,12 @@
 /* Author: Ioan Sucan, Jia Pan */
 
 #include <moveit/collision_detection_fcl/collision_common.h>
+#include <geometric_shapes/shapes.h>
 #include <fcl/BVH/BVH_model.h>
 #include <fcl/shape/geometric_shapes.h>
 #include <fcl/octree.h>
 #include <boost/thread/mutex.hpp>
+#include <memory>
 
 namespace collision_detection
 {
@@ -328,6 +330,9 @@ bool collisionCallback(fcl::CollisionObject* o1, fcl::CollisionObject* o2, void 
 
 struct FCLShapeCache
 {
+  using ShapeKey = std::weak_ptr<const shapes::Shape>;
+  using ShapeMap = std::map<ShapeKey, FCLGeometryConstPtr, std::owner_less<ShapeKey>>;
+
   FCLShapeCache() : clean_count_(0) {}
 
   void bumpUseCount(bool force = false)
@@ -339,9 +344,9 @@ struct FCLShapeCache
     {
       clean_count_ = 0;
       unsigned int from = map_.size();
-      for (std::map<boost::weak_ptr<const shapes::Shape>, FCLGeometryConstPtr>::iterator it = map_.begin() ; it != map_.end() ; )
+      for (ShapeMap::iterator it = map_.begin(); it != map_.end(); )
       {
-        std::map<boost::weak_ptr<const shapes::Shape>, FCLGeometryConstPtr>::iterator nit = it; ++nit;
+        ShapeMap::iterator nit = it; ++nit;
         if (it->first.expired())
           map_.erase(it);
         it = nit;
@@ -351,7 +356,7 @@ struct FCLShapeCache
   }
 
   static const unsigned int MAX_CLEAN_COUNT = 100; // every this many uses of the cache, a cleaning operation is executed (this is only removal of expired entries)
-  std::map<boost::weak_ptr<const shapes::Shape>, FCLGeometryConstPtr> map_;
+  ShapeMap map_;
   unsigned int clean_count_;
   boost::mutex lock_;
 };
@@ -397,7 +402,7 @@ bool distanceCallback(fcl::CollisionObject* o1, fcl::CollisionObject* o2, void* 
       {
         always_allow_collision = true;
         if (cdata->req_->verbose)
-          logDebug("Collision between '%s' and '%s' is always allowed. No contacts are computed.",
+          logDebug("Collision between '%s' and '%s' is always allowed. No distances are computed.",
                    cd1->getID().c_str(), cd2->getID().c_str());
       }
     }
@@ -411,7 +416,7 @@ bool distanceCallback(fcl::CollisionObject* o1, fcl::CollisionObject* o2, void* 
     {
       always_allow_collision = true;
       if (cdata->req_->verbose)
-        logDebug("Robot link '%s' is allowed to touch attached object '%s'. No contacts are computed.",
+        logDebug("Robot link '%s' is allowed to touch attached object '%s'. No distances are computed.",
                  cd1->getID().c_str(), cd2->getID().c_str());
     }
   }
@@ -424,7 +429,7 @@ bool distanceCallback(fcl::CollisionObject* o1, fcl::CollisionObject* o2, void* 
       {
         always_allow_collision = true;
         if (cdata->req_->verbose)
-          logDebug("Robot link '%s' is allowed to touch attached object '%s'. No contacts are computed.",
+          logDebug("Robot link '%s' is allowed to touch attached object '%s'. No distances are computed.",
                    cd2->getID().c_str(), cd1->getID().c_str());
       }
     }
@@ -436,14 +441,14 @@ bool distanceCallback(fcl::CollisionObject* o1, fcl::CollisionObject* o2, void* 
     return cdata->done_;
   }
 
-  if (cdata->req_->verbose)
-    logDebug("Actually checking collisions between %s and %s", cd1->getID().c_str(), cd2->getID().c_str());
-
   fcl::DistanceResult dist_result;
   dist_result.update(cdata->res_->distance, NULL, NULL, fcl::DistanceResult::NONE, fcl::DistanceResult::NONE); // can be faster
-  double d = fcl::distance(o1, o2, fcl::DistanceRequest(), dist_result);
+  const double d = fcl::distance(o1, o2, fcl::DistanceRequest(), dist_result);
 
-  if(d < 0)
+  if (cdata->req_->verbose)
+    logDebug("Distance between %s and %s: %f", cd1->getID().c_str(), cd2->getID().c_str(), d);
+
+  if(d < 0) // a penetration was found, no further distance calculations are necessary
   {
     cdata->done_ = true;
     cdata->res_->distance = -1;
@@ -451,7 +456,11 @@ bool distanceCallback(fcl::CollisionObject* o1, fcl::CollisionObject* o2, void* 
   else
   {
     if(cdata->res_->distance > d)
+    {
+      if (cdata->req_->verbose)
+        logWarn("Distance between %s and %s: %f decreased", cd1->getID().c_str(), cd2->getID().c_str(), d);
       cdata->res_->distance = d;
+    }
   }
 
   min_dist = cdata->res_->distance;
@@ -482,12 +491,15 @@ struct IfSameType<T, T>
 template<typename BV, typename T>
 FCLGeometryConstPtr createCollisionGeometry(const shapes::ShapeConstPtr &shape, const T *data, int shape_index)
 {
+  using ShapeKey = std::weak_ptr<const shapes::Shape>;
+  using ShapeMap = std::map<ShapeKey, FCLGeometryConstPtr, std::owner_less<ShapeKey>>;
+
   FCLShapeCache &cache = GetShapeCache<BV, T>();
 
-  boost::weak_ptr<const shapes::Shape> wptr(shape);
+  std::weak_ptr<const shapes::Shape> wptr(shape);
   {
     boost::mutex::scoped_lock slock(cache.lock_);
-    std::map<boost::weak_ptr<const shapes::Shape>, FCLGeometryConstPtr>::const_iterator cache_it = cache.map_.find(wptr);
+    ShapeMap::const_iterator cache_it = cache.map_.find(wptr);
     if (cache_it != cache.map_.end())
     {
       if (cache_it->second->collision_geometry_data_->ptr.raw == (void*)data)
@@ -515,7 +527,7 @@ FCLGeometryConstPtr createCollisionGeometry(const shapes::ShapeConstPtr &shape, 
 
     // attached bodies could be just moved from the environment.
     othercache.lock_.lock(); // lock manually to avoid having 2 simultaneous locks active (avoids possible deadlock)
-    std::map<boost::weak_ptr<const shapes::Shape>, FCLGeometryConstPtr>::iterator cache_it = othercache.map_.find(wptr);
+    ShapeMap::iterator cache_it = othercache.map_.find(wptr);
     if (cache_it != othercache.map_.end())
     {
       if (cache_it->second.unique())
@@ -550,7 +562,7 @@ FCLGeometryConstPtr createCollisionGeometry(const shapes::ShapeConstPtr &shape, 
 
       // attached bodies could be just moved from the environment.
       othercache.lock_.lock(); // lock manually to avoid having 2 simultaneous locks active (avoids possible deadlock)
-      std::map<boost::weak_ptr<const shapes::Shape>, FCLGeometryConstPtr>::iterator cache_it = othercache.map_.find(wptr);
+      std::map<std::weak_ptr<const shapes::Shape>, FCLGeometryConstPtr>::iterator cache_it = othercache.map_.find(wptr);
       if (cache_it != othercache.map_.end())
       {
         if (cache_it->second.unique())
@@ -737,7 +749,7 @@ void cleanCollisionGeometryCache()
 void collision_detection::CollisionData::enableGroup(const robot_model::RobotModelConstPtr &kmodel)
 {
   if (kmodel->hasJointModelGroup(req_->group_name))
-    active_components_only_ = &kmodel->getJointModelGroup(req_->group_name)->getUpdatedLinkModelsWithGeometrySet();
+    active_components_only_ = &kmodel->getJointModelGroup(req_->group_name)->getUpdatedLinkModelsSet();
   else
     active_components_only_ = NULL;
 }

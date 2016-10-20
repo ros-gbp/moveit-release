@@ -37,17 +37,19 @@
 #ifndef MOVEIT_PLAN_EXECUTION_PLAN_EXECUTION_
 #define MOVEIT_PLAN_EXECUTION_PLAN_EXECUTION_
 
+#include <moveit/macros/class_forward.h>
 #include <moveit/plan_execution/plan_representation.h>
 #include <moveit/trajectory_execution_manager/trajectory_execution_manager.h>
 #include <moveit/planning_scene_monitor/planning_scene_monitor.h>
 #include <moveit/planning_scene_monitor/trajectory_monitor.h>
 #include <moveit/sensor_manager/sensor_manager.h>
 #include <pluginlib/class_loader.h>
-#include <boost/scoped_ptr.hpp>
 
 /** \brief This namespace includes functionality specific to the execution and monitoring of motion plans */
 namespace plan_execution
 {
+
+MOVEIT_CLASS_FORWARD(PlanExecution);
 
 class PlanExecution
 {
@@ -158,9 +160,6 @@ private:
   class DynamicReconfigureImpl;
   DynamicReconfigureImpl *reconfigure_impl_;
 };
-
-typedef boost::shared_ptr<PlanExecution> PlanExecutionPtr;
-typedef boost::shared_ptr<const PlanExecution> PlanExecutionConstPtr;
 
 }
 #endif

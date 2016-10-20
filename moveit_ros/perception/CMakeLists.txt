@@ -1,5 +1,7 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 2.8.12)
 project(moveit_ros_perception)
+
+add_compile_options(-std=c++11)
 
 if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
@@ -33,8 +35,13 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   moveit_msgs
 )
-find_package(PkgConfig REQUIRED)
-pkg_search_module(EIGEN3 REQUIRED eigen3) 
+
+find_package(Eigen3 REQUIRED)
+
+# Eigen 3.2 (Wily) only provides EIGEN3_INCLUDE_DIR, not EIGEN3_INCLUDE_DIRS
+if(NOT EIGEN3_INCLUDE_DIRS)
+  set(EIGEN3_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
+endif()
 
 find_package(OpenMP)
 find_package(octomap REQUIRED)
@@ -49,7 +56,6 @@ catkin_package(
     occupancy_map_monitor/include
     pointcloud_octomap_updater/include
     semantic_world/include
-    ${EIGEN3_INCLUDE_DIRS} 
     ${OCTOMAP_INCLUDE_DIRS}
   LIBRARIES
     moveit_lazy_free_space_updater
@@ -61,7 +67,10 @@ catkin_package(
   CATKIN_DEPENDS
     moveit_core
     image_transport
-    moveit_msgs)
+    moveit_msgs
+  DEPENDS
+    EIGEN3
+)
 
 include_directories(mesh_filter/include
                     lazy_free_space_updater/include

@@ -7,6 +7,7 @@ add_library(${MOVEIT_LIB_NAME}
   src/default_constraint_samplers.cpp
   src/union_constraint_sampler.cpp
 )
+set_target_properties(${MOVEIT_LIB_NAME} PROPERTIES VERSION ${${PROJECT_NAME}_VERSION})
 
 target_link_libraries(${MOVEIT_LIB_NAME}
   moveit_robot_state
@@ -26,8 +27,9 @@ if(CATKIN_ENABLE_TESTING)
   find_package(orocos_kdl REQUIRED)
   find_package(angles REQUIRED)
   find_package(tf_conversions REQUIRED)
+  find_package(moveit_resources REQUIRED)
 
-  include_directories(${orocos_kdl_INCLUDE_DIRS} ${angles_INCLUDE_DIRS} ${tf_conversions_INCLUDE_DIRS})
+  include_directories(${orocos_kdl_INCLUDE_DIRS} ${angles_INCLUDE_DIRS} ${tf_conversions_INCLUDE_DIRS} ${moveit_resources_INCLUDE_DIRS})
 
   catkin_add_gtest(test_constraint_samplers
     test/test_constraint_samplers.cpp

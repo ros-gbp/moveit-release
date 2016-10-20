@@ -1,7 +1,7 @@
-# moveit/moveit:jade-source
+# moveit/moveit:kinetic-source
 # Downloads the moveit source code, install remaining debian dependencies, and builds workspace
 
-FROM osrf/ros:jade-desktop
+FROM moveit/moveit:kinetic-ci-shadow-fixed
 MAINTAINER Dave Coleman dave@dav.ee
 
 ENV CATKIN_WS=/root/ws_moveit
@@ -14,17 +14,11 @@ RUN wstool init . && \
     wstool update
 
 # Update apt-get because osrf image clears this cache. download deps
-RUN echo "deb http://packages.ros.org/ros-shadow-fixed/ubuntu `lsb_release -cs` main" | tee --append /etc/apt/sources.list.d/ros-latest.list && \
-    rosdep update && \
-    apt-get -qq update && \
+# Note that because we're building on top of kinetic-ci, there should not be any deps installed
+# unless something has changed in the source code since the other container was made
+# (they are triggered together so should only be one-build out of sync)
+RUN apt-get -qq update && \
     apt-get -qq install -y \
-        python-catkin-tools  \
-        less \
-        ssh \
-        emacs \
-        git-core \
-        bash-completion \
-        tree \
         wget && \
     rosdep update && \
     rosdep install -y --from-paths . --ignore-src --rosdistro ${ROS_DISTRO} --as-root=apt:false && \
@@ -38,5 +32,7 @@ RUN mv /bin/sh /bin/sh-old && \
 WORKDIR $CATKIN_WS
 ENV TERM xterm
 ENV PYTHONIOENCODING UTF-8
-RUN source /ros_entrypoint.sh && \
-    catkin build --no-status
+RUN catkin config --extend /opt/ros/$ROS_DISTRO --install --cmake-args -DCMAKE_BUILD_TYPE=Release && \
+    # Status rate is limited so that just enough info is shown to keep Docker from timing out, but not too much
+    # such that the Docker log gets too long (another form of timeout)
+    catkin build --jobs 1 --limit-status-rate 0.001 --no-notify

@@ -1,5 +1,7 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 2.8.12)
 project(moveit_ros_planning)
+
+add_compile_options(-std=c++11)
 
 if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
@@ -20,8 +22,13 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   tf_conversions
 )
-find_package(PkgConfig REQUIRED)
-pkg_search_module(EIGEN3 REQUIRED eigen3)
+
+find_package(Eigen3 REQUIRED)
+
+# Eigen 3.2 (Wily) only provides EIGEN3_INCLUDE_DIR, not EIGEN3_INCLUDE_DIRS
+if(NOT EIGEN3_INCLUDE_DIRS)
+  set(EIGEN3_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
+endif()
 
 generate_dynamic_reconfigure_options(
   "planning_scene_monitor/cfg/PlanningSceneMonitorDynamicReconfigure.cfg"
@@ -38,9 +45,6 @@ set(THIS_PACKAGE_INCLUDE_DIRS
     planning_scene_monitor/include
     trajectory_execution_manager/include
     plan_execution/include
-    kdl_kinematics_plugin/include
-    lma_kinematics_plugin/include
-    srv_kinematics_plugin/include
     collision_plugin_loader/include
 )
 
@@ -56,12 +60,13 @@ catkin_package(
     moveit_planning_scene_monitor
     moveit_collision_plugin_loader
   INCLUDE_DIRS
-    ${EIGEN3_INCLUDE_DIRS} 
     ${THIS_PACKAGE_INCLUDE_DIRS}
   CATKIN_DEPENDS
     pluginlib
     moveit_core
     moveit_ros_perception
+  DEPENDS
+    EIGEN3
 )
 
 include_directories(${THIS_PACKAGE_INCLUDE_DIRS}
@@ -77,9 +82,6 @@ link_directories(${catkin_LIBRARY_DIRS})
 
 add_subdirectory(rdf_loader)
 add_subdirectory(collision_plugin_loader)
-add_subdirectory(kdl_kinematics_plugin)
-add_subdirectory(lma_kinematics_plugin)
-add_subdirectory(srv_kinematics_plugin)
 add_subdirectory(kinematics_plugin_loader)
 add_subdirectory(robot_model_loader)
 add_subdirectory(constraint_sampler_manager_loader)
@@ -93,8 +95,5 @@ add_subdirectory(plan_execution)
 install(
   FILES
     planning_request_adapters_plugin_description.xml
-    kdl_kinematics_plugin_description.xml
-    lma_kinematics_plugin_description.xml
-    srv_kinematics_plugin_description.xml
   DESTINATION
     ${CATKIN_PACKAGE_SHARE_DESTINATION})

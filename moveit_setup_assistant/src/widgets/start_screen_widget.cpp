@@ -58,6 +58,8 @@
 #include <boost/algorithm/string.hpp> // for trimming whitespace from user input
 #include <boost/filesystem.hpp>  // for reading folders/files
 #include <boost/algorithm/string.hpp> // for string find and replace in paths
+// MoveIt
+#include <moveit/rdf_loader/rdf_loader.h>
 
 namespace moveit_setup_assistant
 {
@@ -239,10 +241,9 @@ StartScreenWidget::~StartScreenWidget()
 void StartScreenWidget::showNewOptions()
 {
   // Do GUI stuff
-  select_mode_->btn_exist_->setFlat( false );
-  select_mode_->btn_new_->setFlat( true );
+  select_mode_->btn_exist_->setChecked(false);
+  select_mode_->btn_new_->setChecked(true);
   urdf_file_->show();
-  //  srdf_file_->show();
   stack_path_->hide();
   btn_load_->show();
 
@@ -256,10 +257,9 @@ void StartScreenWidget::showNewOptions()
 void StartScreenWidget::showExistingOptions()
 {
   // Do GUI stuff
-  select_mode_->btn_exist_->setFlat( true );
-  select_mode_->btn_new_->setFlat( false );
+  select_mode_->btn_exist_->setChecked(true);
+  select_mode_->btn_new_->setChecked(false);
   urdf_file_->hide();
-  //srdf_file_->hide();
   stack_path_->show();
   btn_load_->show();
 
@@ -493,52 +493,15 @@ bool StartScreenWidget::loadNewFiles()
 // ******************************************************************************************
 bool StartScreenWidget::loadURDFFile( const std::string& urdf_file_path )
 {
-  // check that URDF can be loaded
-  std::ifstream urdf_stream( urdf_file_path.c_str() );
-  if( !urdf_stream.good() ) // File not found
+  const std::vector<std::string> xacro_args; // TODO: somehow allow arguments to be passed in when parsing xacro URDFs
+
+  std::string urdf_string;
+  if (!rdf_loader::RDFLoader::loadXmlFileToString(urdf_string, urdf_file_path, xacro_args))
   {
     QMessageBox::warning( this, "Error Loading Files", QString( "URDF/COLLADA file not found: " ).append( urdf_file_path.c_str() ) );
     return false;
   }
-  std::string urdf_string;
-  bool xacro = false;
 
-  if (urdf_file_path.find(".xacro") != std::string::npos)
-  {
-    std::string cmd("rosrun xacro xacro.py ");
-    cmd += urdf_file_path;
-    ROS_INFO( "Running '%s'...", cmd.c_str() );
-
-    FILE* pipe = popen(cmd.c_str(), "r");
-    if (!pipe)
-    {
-      QMessageBox::warning( this, "Error Loading Files", QString( "XACRO file or parser not found: " ).append( urdf_file_path.c_str() ) );
-      return false;
-    }
-    char buffer[128] = {0};
-    while (!feof(pipe))
-    {
-      if (fgets(buffer, sizeof(buffer), pipe) != NULL)
-        urdf_string += buffer;
-    }
-    pclose(pipe);
-    
-    if (urdf_string.empty())
-    {
-      QMessageBox::warning( this, "Error Loading Files", QString( "Unable to parse XACRO file: " ).append( urdf_file_path.c_str() ) );
-      return false;
-    }
-    xacro = true;
-  }
-  else
-  {
-    // Load the file to a string using an efficient memory allocation technique
-    urdf_stream.seekg(0, std::ios::end);
-    urdf_string.reserve(urdf_stream.tellg());
-    urdf_stream.seekg(0, std::ios::beg);
-    urdf_string.assign( (std::istreambuf_iterator<char>(urdf_stream)), std::istreambuf_iterator<char>() );
-    urdf_stream.close();
-  }
   // Verify that file is in correct format / not an XACRO by loading into robot model
   if( !config_data_->urdf_model_->initString( urdf_string ) )
   {
@@ -546,7 +509,7 @@ bool StartScreenWidget::loadURDFFile( const std::string& urdf_file_path )
                           "URDF/COLLADA file is not a valid robot model." );
     return false;
   }
-  config_data_->urdf_from_xacro_ = xacro;
+  config_data_->urdf_from_xacro_ = rdf_loader::RDFLoader::isXacroFile(urdf_file_path);
 
   ROS_INFO_STREAM( "Loaded " << config_data_->urdf_model_->getName() << " robot model." );
 
@@ -573,21 +536,14 @@ bool StartScreenWidget::loadURDFFile( const std::string& urdf_file_path )
 // ******************************************************************************************
 bool StartScreenWidget::loadSRDFFile( const std::string& srdf_file_path )
 {
-  // check that SRDF can be loaded
-  std::ifstream srdf_stream( srdf_file_path.c_str() );
-  if( !srdf_stream.good() ) // File not found
+  const std::vector<std::string> xacro_args;
+
+  std::string srdf_string;
+  if (!rdf_loader::RDFLoader::loadXmlFileToString(srdf_string, srdf_file_path, xacro_args))
   {
-    QMessageBox::warning( this, "Error Loading Files", QString( "SRDF file not found: " ).append( config_data_->srdf_path_.c_str() ) );
+    QMessageBox::warning( this, "Error Loading Files", QString( "SRDF file not found: " ).append( srdf_file_path.c_str() ) );
     return false;
   }
-
-  // Load the file to a string using an efficient memory allocation technique
-  std::string srdf_string;
-  srdf_stream.seekg(0, std::ios::end);
-  srdf_string.reserve(srdf_stream.tellg());
-  srdf_stream.seekg(0, std::ios::beg);
-  srdf_string.assign( (std::istreambuf_iterator<char>(srdf_stream)), std::istreambuf_iterator<char>() );
-  srdf_stream.close();
 
   // Put on param server
   return setSRDFFile( srdf_string );
@@ -649,7 +605,7 @@ bool StartScreenWidget::extractPackageNameFromPath()
   // Copy path into vector of parts
   for (fs::path::iterator it = urdf_directory.begin(); it != urdf_directory.end(); ++it)
     path_parts.push_back( it->native() );
-  
+
   bool packageFound = false;
 
   // reduce the generated directoy path's folder count by 1 each loop
@@ -843,11 +799,13 @@ SelectModeWidget::SelectModeWidget( QWidget* parent )
   // Exist Button
   btn_exist_ = new QPushButton(this);
   btn_exist_->setText("&Edit Existing MoveIt\nConfiguration Package");
+  btn_exist_->setCheckable(true);
   hlayout->addWidget( btn_exist_ );
 
   // Add horizontal layer to verticle layer
   layout->addLayout(hlayout);
   setLayout(layout);
+  btn_new_->setCheckable(true);
 }
 
 

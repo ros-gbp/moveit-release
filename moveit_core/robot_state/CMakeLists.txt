@@ -5,6 +5,7 @@ add_library(${MOVEIT_LIB_NAME}
   src/conversions.cpp
   src/robot_state.cpp
 )
+set_target_properties(${MOVEIT_LIB_NAME} PROPERTIES VERSION ${${PROJECT_NAME}_VERSION})
 
 target_link_libraries(${MOVEIT_LIB_NAME} moveit_robot_model moveit_kinematics_base moveit_transforms ${catkin_LIBRARIES} ${console_bridge_LIBRARIES} ${urdfdom_LIBRARIES} ${urdfdom_headers_LIBRARIES} ${Boost_LIBRARIES})
 
@@ -17,6 +18,9 @@ install(DIRECTORY include/ DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION})
 
 # Unit tests
 if(CATKIN_ENABLE_TESTING)
+  find_package(moveit_resources REQUIRED)
+  include_directories(${moveit_resources_INCLUDE_DIRS})
+
   catkin_add_gtest(test_robot_state test/test_kinematic.cpp)
   target_link_libraries(test_robot_state ${catkin_LIBRARIES} ${console_bridge_LIBRARIES} ${urdfdom_LIBRARIES} ${urdfdom_headers_LIBRARIES} ${MOVEIT_LIB_NAME})
 

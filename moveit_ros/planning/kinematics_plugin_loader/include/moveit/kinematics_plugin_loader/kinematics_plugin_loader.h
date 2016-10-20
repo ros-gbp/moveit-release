@@ -38,12 +38,14 @@
 #define MOVEIT_KINEMATICS_PLUGIN_LOADER_
 
 #include <boost/function.hpp>
-#include <boost/shared_ptr.hpp>
+#include <moveit/macros/class_forward.h>
 #include <moveit/robot_model/robot_model.h>
 #include <moveit/kinematics_base/kinematics_base.h>
 
 namespace kinematics_plugin_loader
 {
+
+MOVEIT_CLASS_FORWARD(KinematicsPluginLoader);
 
 /** \brief Helper class for loading kinematics solvers */
 class KinematicsPluginLoader
@@ -84,7 +86,7 @@ public:
   robot_model::SolverAllocatorFn getLoaderFunction();
 
   /** \brief Get a function pointer that allocates and initializes a kinematics solver. If not previously called, this function reads ROS parameters for the groups defined in the SRDF. */
-  robot_model::SolverAllocatorFn getLoaderFunction(const boost::shared_ptr<srdf::Model> &srdf_model);
+  robot_model::SolverAllocatorFn getLoaderFunction(const srdf::ModelSharedPtr &srdf_model);
 
   /** \brief Get the groups for which the function pointer returned by getLoaderFunction() can allocate a solver */
   const std::vector<std::string>& getKnownGroups() const
@@ -111,8 +113,8 @@ private:
   std::string robot_description_;
   double default_search_resolution_;
 
-  class KinematicsLoaderImpl;
-  boost::shared_ptr<KinematicsLoaderImpl> loader_;
+  MOVEIT_CLASS_FORWARD(KinematicsLoaderImpl);
+  KinematicsLoaderImplPtr loader_;
 
   std::vector<std::string> groups_;
   std::map<std::string, double> ik_timeout_;
@@ -123,9 +125,6 @@ private:
   double default_solver_timeout_;
   unsigned int default_ik_attempts_;
 };
-
-typedef boost::shared_ptr<KinematicsPluginLoader> KinematicsPluginLoaderPtr;
-typedef boost::shared_ptr<const KinematicsPluginLoader> KinematicsPluginLoaderConstPtr;
 
 }
 

@@ -37,7 +37,9 @@
 #ifndef MOVEIT_TRAJECTORY_EXECUTION_MANAGER_TRAJECTORY_EXECUTION_MANAGER_
 #define MOVEIT_TRAJECTORY_EXECUTION_MANAGER_TRAJECTORY_EXECUTION_MANAGER_
 
+#include <moveit/macros/class_forward.h>
 #include <moveit/robot_model/robot_model.h>
+#include <moveit/planning_scene_monitor/current_state_monitor.h>
 #include <moveit_msgs/RobotTrajectory.h>
 #include <sensor_msgs/JointState.h>
 #include <std_msgs/String.h>
@@ -45,10 +47,13 @@
 #include <moveit/controller_manager/controller_manager.h>
 #include <boost/thread.hpp>
 #include <pluginlib/class_loader.h>
-#include <boost/scoped_ptr.hpp>
+
+#include <memory>
 
 namespace trajectory_execution_manager
 {
+
+MOVEIT_CLASS_FORWARD(TrajectoryExecutionManager);
 
 // Two modes:
 // Managed controllers
@@ -76,10 +81,10 @@ public:
   };
 
   /// Load the controller manager plugin, start listening for events on a topic.
-  TrajectoryExecutionManager(const robot_model::RobotModelConstPtr &kmodel);
+  TrajectoryExecutionManager(const robot_model::RobotModelConstPtr &kmodel, const planning_scene_monitor::CurrentStateMonitorPtr &csm);
 
   /// Load the controller manager plugin, start listening for events on a topic.
-  TrajectoryExecutionManager(const robot_model::RobotModelConstPtr &kmodel, bool manage_controllers);
+  TrajectoryExecutionManager(const robot_model::RobotModelConstPtr &kmodel, const planning_scene_monitor::CurrentStateMonitorPtr &csm, bool manage_controllers);
 
   /// Destructor. Cancels all running trajectories (if any)
   ~TrajectoryExecutionManager();
@@ -201,6 +206,9 @@ public:
   /// By default, this is 1.0
   void setExecutionVelocityScaling(double scaling);
 
+  /// Set joint-value tolerance for validating trajectory's start point against current robot state
+  void setAllowedStartTolerance(double tolerance);
+
 private:
 
   struct ControllerInformation
@@ -223,6 +231,8 @@ private:
 
   void reloadControllerInformation();
 
+  /// Validate first point of trajectory matches current robot state
+  bool validate(const TrajectoryExecutionContext &context) const;
   bool configure(TrajectoryExecutionContext &context, const moveit_msgs::RobotTrajectory &trajectory, const std::vector<std::string> &controllers);
 
   void updateControllersState(const ros::Duration &age);
@@ -248,6 +258,7 @@ private:
   void receiveEvent(const std_msgs::StringConstPtr &event);
 
   robot_model::RobotModelConstPtr robot_model_;
+  planning_scene_monitor::CurrentStateMonitorPtr csm_;
   ros::NodeHandle node_handle_;
   ros::NodeHandle root_node_handle_;
   ros::Subscriber event_topic_subscriber_;
@@ -256,10 +267,10 @@ private:
   bool manage_controllers_;
 
   // thread used to execute trajectories using the execute() command
-  boost::scoped_ptr<boost::thread> execution_thread_;
+  std::unique_ptr<boost::thread> execution_thread_;
 
   // thread used to execute trajectories using pushAndExecute()
-  boost::scoped_ptr<boost::thread> continuous_execution_thread_;
+  std::unique_ptr<boost::thread> continuous_execution_thread_;
 
   boost::mutex execution_state_mutex_;
   boost::mutex continuous_execution_mutex_;
@@ -281,7 +292,7 @@ private:
   std::vector<TrajectoryExecutionContext*> trajectories_;
   std::deque<TrajectoryExecutionContext*> continuous_execution_queue_;
 
-  boost::scoped_ptr<pluginlib::ClassLoader<moveit_controller_manager::MoveItControllerManager> > controller_manager_loader_;
+  std::unique_ptr<pluginlib::ClassLoader<moveit_controller_manager::MoveItControllerManager> > controller_manager_loader_;
   moveit_controller_manager::MoveItControllerManagerPtr controller_manager_;
 
   bool verbose_;
@@ -292,11 +303,9 @@ private:
   bool execution_duration_monitoring_;
   double allowed_execution_duration_scaling_;
   double allowed_goal_duration_margin_;
+  double allowed_start_tolerance_; // joint tolerance for validate(): radians for revolute joints
   double execution_velocity_scaling_;
 };
-
-typedef boost::shared_ptr<TrajectoryExecutionManager> TrajectoryExecutionManagerPtr;
-typedef boost::shared_ptr<const TrajectoryExecutionManager> TrajectoryExecutionManagerConstPtr;
 
 }
 

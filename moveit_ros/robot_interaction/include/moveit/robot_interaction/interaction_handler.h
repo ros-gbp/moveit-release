@@ -37,6 +37,7 @@
 #ifndef MOVEIT_ROBOT_INTERACTION_INTERACTION_HANDLER_
 #define MOVEIT_ROBOT_INTERACTION_INTERACTION_HANDLER_
 
+#include <moveit/macros/class_forward.h>
 #include <moveit/robot_interaction/locked_robot_state.h>
 //#include <moveit/robot_interaction/robot_interaction.h>
 #include <visualization_msgs/InteractiveMarkerFeedback.h>
@@ -46,15 +47,9 @@
 namespace robot_interaction
 {
 
-class InteractionHandler;
-typedef boost::shared_ptr<InteractionHandler> InteractionHandlerPtr;
-typedef boost::shared_ptr<const InteractionHandler> InteractionHandlerConstPtr;
-
-class RobotInteraction;
-typedef boost::shared_ptr<RobotInteraction> RobotInteractionPtr;
-
-class KinematicOptionsMap;
-typedef boost::shared_ptr<KinematicOptionsMap> KinematicOptionsMapPtr;
+MOVEIT_CLASS_FORWARD(InteractionHandler);
+MOVEIT_CLASS_FORWARD(RobotInteraction);
+MOVEIT_CLASS_FORWARD(KinematicOptionsMap);
 
 class EndEffectorInteraction;
 class JointInteraction;
@@ -165,13 +160,13 @@ public:
    *         interactive markers drawn by this interaction handler.
    * @param  A menu handler. */
   void setMenuHandler(
-        const boost::shared_ptr<interactive_markers::MenuHandler>& mh);
+        const std::shared_ptr<interactive_markers::MenuHandler>& mh);
 
 
   /** \brief Get the menu handler that defines menus and callbacks for all
    *         interactive markers drawn by this interaction handler.
    * @return  The menu handler. */
-  const boost::shared_ptr<interactive_markers::MenuHandler>& getMenuHandler();
+  const std::shared_ptr<interactive_markers::MenuHandler>& getMenuHandler();
 
   /** \brief Remove the menu handler for this interaction handler. */
   void clearMenuHandler();
@@ -333,7 +328,7 @@ private:
   //
   // PROTECTED BY state_lock_ - The POINTER is protected by state_lock_.  The
   // CONTENTS is not.
-  boost::shared_ptr<interactive_markers::MenuHandler> menu_handler_;
+  std::shared_ptr<interactive_markers::MenuHandler> menu_handler_;
 
   // Called when the RobotState maintained by the handler changes.
   // The caller may, for example, redraw the robot at the new state.
@@ -363,7 +358,7 @@ public:
         const robot_state::GroupStateValidityCallbackFn &callback);
   void setIKTimeout(double timeout);
   void setIKAttempts(unsigned int attempts);
-  const kinematics::KinematicsQueryOptions& getKinematicsQueryOptions() const;
+  kinematics::KinematicsQueryOptions getKinematicsQueryOptions() const;
   void setKinematicsQueryOptions(const kinematics::KinematicsQueryOptions &opt);
   void setKinematicsQueryOptionsForGroup(const std::string& group_name,
            const kinematics::KinematicsQueryOptions &options);

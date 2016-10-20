@@ -66,7 +66,7 @@ class FilterTraits<unsigned short>
 {
   public:
     static const GLushort FILTER_GL_TYPE = GL_UNSIGNED_SHORT;
-    static const double ToMetricScale = 0.001;
+    static constexpr double ToMetricScale = 0.001;
 };
 
 template<>
@@ -74,7 +74,7 @@ class FilterTraits<float>
 {
   public:
     static const GLushort FILTER_GL_TYPE = GL_FLOAT;
-    static const double ToMetricScale = 1.0f;
+    static constexpr double ToMetricScale = 1.0f;
 };
 
 template<typename Type>
@@ -223,13 +223,8 @@ void MeshFilterTest<Type>::test ()
     float sensor_depth = sensor_data_ [idx] * FilterTraits<Type>::ToMetricScale;
     if (fabs(sensor_depth - distance_ - shadow_) > epsilon_ && fabs(sensor_depth - distance_) > epsilon_)
     {
-//      if (filtered_labels [idx] != gt_labels [idx])
-//      {
-//        cout << idx << " :: " <<  filtered_labels [idx] << " vs. " << gt_labels [idx] << " :: " <<  sensor_data_ [idx] << " = " << filtered_depth [idx] << " vs. " << gt_depth [idx] << endl;
-//        exit (1);
-//      }
-      EXPECT_FLOAT_EQ (filtered_depth [idx], gt_depth [idx]);
-      EXPECT_EQ (filtered_labels [idx], gt_labels [idx]);
+      ASSERT_FLOAT_EQ (filtered_depth [idx], gt_depth [idx]);
+      ASSERT_EQ (filtered_labels [idx], gt_labels [idx]);
     }
   }
   filter_.removeMesh (handle);

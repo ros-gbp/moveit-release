@@ -36,6 +36,8 @@
 
 #include <ros/ros.h>
 
+#include <moveit/macros/class_forward.h>
+
 #include <moveit_ros_control_interface/ControllerHandle.h>
 
 #include <moveit/controller_manager/controller_manager.h>
@@ -44,11 +46,12 @@
 #include <controller_manager_msgs/SwitchController.h>
 
 #include <pluginlib/class_list_macros.h>
-#include <map>
-
 #include <pluginlib/class_loader.h>
 
 #include <boost/bimap.hpp>
+
+#include <map>
+#include <memory>
 
 namespace moveit_ros_control_interface
 {
@@ -70,6 +73,8 @@ bool checkTimeout(ros::Time &t, double timeout, bool force = false)
   return false;
 }
 
+MOVEIT_CLASS_FORWARD(MoveItControllerManager);
+
 /**
  * \brief moveit_controller_manager::MoveItControllerManager sub class that interfaces one ros_control
  * controller_manager
@@ -83,7 +88,7 @@ class MoveItControllerManager : public moveit_controller_manager::MoveItControll
   typedef std::map<std::string, controller_manager_msgs::ControllerState> ControllersMap;
   ControllersMap managed_controllers_;
   ControllersMap active_controllers_;
-  typedef std::map<std::string, boost::shared_ptr<ControllerHandleAllocator> > AllocatorsMap;
+  typedef std::map<std::string, ControllerHandleAllocatorPtr> AllocatorsMap;
   AllocatorsMap allocators_;
 
   typedef std::map<std::string, moveit_controller_manager::MoveItControllerHandlePtr> HandleMap;
@@ -147,7 +152,7 @@ class MoveItControllerManager : public moveit_controller_manager::MoveItControll
       AllocatorsMap::iterator alloc_it = allocators_.find(type);
       if (alloc_it == allocators_.end())
       {  // create allocator is needed
-        alloc_it = allocators_.insert(std::make_pair(type, loader_.createInstance(type))).first;
+        alloc_it = allocators_.insert(std::make_pair(type, loader_.createUniqueInstance(type))).first;
       }
 
       // Collect claimed resources across different hardware interfaces
@@ -354,7 +359,6 @@ public:
     }
     return true;
   }
-  typedef boost::shared_ptr<MoveItControllerManager> Ptr;
 };
 /**
  *  \brief MoveItMultiControllerManager discovers all running ros_control node and delegates member function to the
@@ -362,7 +366,7 @@ public:
  */
 class MoveItMultiControllerManager : public moveit_controller_manager::MoveItControllerManager
 {
-  typedef std::map<std::string, moveit_ros_control_interface::MoveItControllerManager::Ptr> ControllerManagersMap;
+  typedef std::map<std::string, moveit_ros_control_interface::MoveItControllerManagerPtr> ControllerManagersMap;
   ControllerManagersMap controller_managers_;
   ros::Time controller_managers_stamp_;
   boost::mutex controller_managers_mutex_;
@@ -398,7 +402,7 @@ class MoveItMultiControllerManager : public moveit_controller_manager::MoveItCon
         {  // create MoveItControllerManager if it does not exists
           ROS_INFO_STREAM("Adding controller_manager interface for node at namespace " << ns);
           controller_managers_.insert(
-              std::make_pair(ns, boost::make_shared<moveit_ros_control_interface::MoveItControllerManager>(ns)));
+              std::make_pair(ns, std::make_shared<moveit_ros_control_interface::MoveItControllerManager>(ns)));
         }
       }
     }

@@ -37,14 +37,18 @@
 #ifndef MOVEIT_PLANNING_SCENE_MONITOR_TRAJECTORY_MONITOR_
 #define MOVEIT_PLANNING_SCENE_MONITOR_TRAJECTORY_MONITOR_
 
+#include <moveit/macros/class_forward.h>
 #include <moveit/planning_scene_monitor/current_state_monitor.h>
 #include <moveit/robot_trajectory/robot_trajectory.h>
 #include <boost/thread.hpp>
+#include <memory>
 
 namespace planning_scene_monitor
 {
 
 typedef boost::function<void(const robot_state::RobotStateConstPtr &state, const ros::Time &stamp)> TrajectoryStateAddedCallback;
+
+MOVEIT_CLASS_FORWARD(TrajectoryMonitor);
 
 /** @class TrajectoryMonitor
     @brief Monitors the joint_states topic and tf to record the trajectory of the robot. */
@@ -100,12 +104,10 @@ private:
   ros::Time trajectory_start_time_;
   ros::Time last_recorded_state_time_;
 
-  boost::scoped_ptr<boost::thread> record_states_thread_;
+  std::unique_ptr<boost::thread> record_states_thread_;
   TrajectoryStateAddedCallback state_add_callback_;
 };
 
-typedef boost::shared_ptr<TrajectoryMonitor> TrajectoryMonitorPtr;
-typedef boost::shared_ptr<const TrajectoryMonitor> TrajectoryMonitorConstPtr;
 }
 
 #endif
