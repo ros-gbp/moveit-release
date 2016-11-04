@@ -2,6 +2,9 @@
 Changelog for package moveit_ros_move_group
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.9.2 (2016-11-05)
+------------------
+
 0.6.6 (2016-06-08)
 ------------------
 * added missing validity check
