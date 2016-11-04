@@ -2,11 +2,20 @@
 Changelog for package moveit_core
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.9.2 (2016-11-05)
+------------------
+* [Fix] CHANGELOG encoding for 0.9.1 (Fix `#318 <https://github.com/ros-planning/moveit/issues/318>`_). (`#327 <https://github.com/ros-planning/moveit/issues/327>`_)
+* [Capability] compatibility to urdfdom < 0.4 (`#317 <https://github.com/ros-planning/moveit/issues/317>`_)
+* [Capability] New isValidVelocityMove() for checking maximum velocity between two robot states given time delta
+* [Maintenance] Travis check code formatting (`#309 <https://github.com/ros-planning/moveit/issues/309>`_)
+* [Maintenance] Auto format codebase using clang-format (`#284 <https://github.com/ros-planning/moveit/issues/284>`_)
+* Contributors: Dave Coleman, Isaac I. Y. Saito, Robert Haschke
+
 0.8.2 (2016-06-17)
 ------------------
 * [feat] planning_scene updates: expose success state to caller. This is required to get the information back for the ApplyPlanningSceneService. `#296 <https://github.com/ros-planning/moveit_core/issues/297>`_
 * [sys] replaced cmake_modules dependency with eigen
-* Contributors: Michael Ferguson, Robert Haschke, Michael Gè´”rner, Isaac I. Y. Saito
+* Contributors: Michael Ferguson, Robert Haschke, Michael Goerner, Isaac I. Y. Saito
 
 0.8.1 (2016-05-19)
 ------------------
@@ -37,7 +46,7 @@ Changelog for package moveit_core
 * [sys] Install static libs `#251 <https://github.com/ros-planning/moveit_core/issues/251>`_
 * [enhance] Allow a RobotTrajectory to be initialized with a pointer joint model group `#245 <https://github.com/ros-planning/moveit_core/issues/245>`_
 * [doc] Better documentation and formatting `#244 <https://github.com/ros-planning/moveit_core/issues/244>`_
-* Contributors: Alexis Ballier, Bastian Gaspers, Christian Dornhege, Dave Coleman, Gary Servin, Ioan A Sucan, Isaac I.Y. Saito, Jim Mainprice, Levi Armstrong, Michael Ferguson, Mihai Pomarlan, Robert Haschke, Sachin Chitta, Sam Pfeiffer, Steven Peters, S√©verin Lemaignan, jrgnicho, ros-devel, simonschmeisser
+* Contributors: Alexis Ballier, Bastian Gaspers, Christian Dornhege, Dave Coleman, Gary Servin, Ioan A Sucan, Isaac I.Y. Saito, Jim Mainprice, Levi Armstrong, Michael Ferguson, Mihai Pomarlan, Robert Haschke, Sachin Chitta, Sam Pfeiffer, Steven Peters, Severin Lemaignan, jrgnicho, ros-devel, simonschmeisser
 
 0.6.15 (2015-01-20)
 -------------------
