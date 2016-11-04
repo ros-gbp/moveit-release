@@ -2,6 +2,11 @@
 Changelog for package moveit_ros_visualization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.9.2 (2016-11-05)
+------------------
+* [Maintenance] Auto format codebase using clang-format (`#284 <https://github.com/ros-planning/moveit/issues/284>`_)
+* Contributors: Dave Coleman
+
 0.6.6 (2016-06-08)
 ------------------
 * cleanup cmake tests, fix empty output
