@@ -1,0 +1,12 @@
+Source: ros-kinetic-moveit-planners-ompl
+Section: misc
+Priority: extra
+Maintainer: Ioan Sucan <isucan@google.com>
+Build-Depends: debhelper (>= 9.0.0), ros-kinetic-catkin, ros-kinetic-dynamic-reconfigure, ros-kinetic-eigen-conversions, ros-kinetic-moveit-core, ros-kinetic-moveit-resources, ros-kinetic-moveit-ros-planning, ros-kinetic-ompl, ros-kinetic-pluginlib, ros-kinetic-roscpp, ros-kinetic-tf
+Homepage: http://moveit.ros.org
+Standards-Version: 3.9.2
+
+Package: ros-kinetic-moveit-planners-ompl
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-kinetic-dynamic-reconfigure, ros-kinetic-eigen-conversions, ros-kinetic-moveit-core, ros-kinetic-moveit-ros-planning, ros-kinetic-ompl, ros-kinetic-pluginlib, ros-kinetic-roscpp, ros-kinetic-tf
+Description: MoveIt interface to OMPL
