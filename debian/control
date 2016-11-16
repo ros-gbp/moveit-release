@@ -1,0 +1,12 @@
+Source: ros-kinetic-moveit-ros-warehouse
+Section: misc
+Priority: extra
+Maintainer: Michael Ferguson <mferguson@fetchrobotics.com>
+Build-Depends: debhelper (>= 9.0.0), ros-kinetic-catkin, ros-kinetic-moveit-ros-planning, ros-kinetic-rosconsole, ros-kinetic-roscpp, ros-kinetic-tf, ros-kinetic-warehouse-ros
+Homepage: http://moveit.ros.org
+Standards-Version: 3.9.2
+
+Package: ros-kinetic-moveit-ros-warehouse
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-kinetic-moveit-ros-planning, ros-kinetic-rosconsole, ros-kinetic-roscpp, ros-kinetic-tf, ros-kinetic-warehouse-ros
+Description: Components of MoveIt connecting to MongoDB
