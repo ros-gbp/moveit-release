@@ -2,6 +2,9 @@
 Changelog for package moveit_ros_perception
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.9.3 (2016-11-16)
+------------------
+
 0.9.2 (2016-11-05)
 ------------------
 * [Maintenace] Auto format codebase using clang-format (`#284 <https://github.com/ros-planning/moveit/issues/284>`_)
