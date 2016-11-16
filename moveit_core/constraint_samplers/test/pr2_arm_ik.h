@@ -38,13 +38,13 @@
 #define PR2_ARM_IK_H
 
 #include <urdf_model/model.h>
-#include <moveit/urdfdom_compatibility.h>
+#include <urdf/model.h>
 #include <Eigen/Core>
 #include <Eigen/LU>  // provides LU decomposition
 #include <kdl/chainiksolver.hpp>
 #include <moveit_msgs/GetPositionFK.h>
 #include <moveit_msgs/GetPositionIK.h>
-#include <moveit_msgs/GetKinematicSolverInfo.h>
+#include <moveit_msgs/KinematicSolverInfo.h>
 
 namespace pr2_arm_kinematics
 {
