@@ -190,7 +190,7 @@ void RobotInteraction::decideActiveJoints(const std::string &group)
   if (group.empty())
     return;
 
-  const srdf::ModelConstSharedPtr &srdf = robot_model_->getSRDF();
+  const boost::shared_ptr<const srdf::Model> &srdf = robot_model_->getSRDF();
   const robot_model::JointModelGroup *jmg = robot_model_->getJointModelGroup(group);
 
   if (!jmg || !srdf)
@@ -266,7 +266,7 @@ void RobotInteraction::decideActiveEndEffectors(const std::string &group, Intera
   if (group.empty())
     return;
 
-  const srdf::ModelConstSharedPtr &srdf = robot_model_->getSRDF();
+  const boost::shared_ptr<const srdf::Model> &srdf = robot_model_->getSRDF();
   const robot_model::JointModelGroup *jmg = robot_model_->getJointModelGroup(group);
 
   if (!jmg || !srdf)
@@ -556,7 +556,7 @@ void RobotInteraction::addInteractiveMarkers(const ::robot_interaction::Interact
                                     boost::bind(&RobotInteraction::processInteractiveMarkerFeedback, this, _1));
 
     // Add menu handler to all markers that this interaction handler creates.
-    if (std::shared_ptr<interactive_markers::MenuHandler> mh = handler->getMenuHandler())
+    if (boost::shared_ptr<interactive_markers::MenuHandler> mh = handler->getMenuHandler())
       mh->apply(*int_marker_server_, ims[i].name);
   }
 }

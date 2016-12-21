@@ -2,23 +2,40 @@
 Changelog for package moveit_ros_move_group
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.9.3 (2016-11-16)
+0.7.2 (2016-06-20)
 ------------------
-* [maintenance] Updated package.xml maintainers and author emails `#330 <https://github.com/ros-planning/moveit/issues/330>`_
-* Contributors: Dave Coleman, Ian McMahon
+* apply planning scene: use newly exposed success value of newPlanningSceneMessage
+* add apply_planning_scene capability
+  This new capability allows to apply changes to a monitored planning
+  scene and *blocks* until the changes are applied. This is meant to
+  replace the quasi-standard pattern:
+  ```
+  planning_scene_interface.addCollisionObjects(...)
+  sleep(2.0)
+  group.pick("object")
+  ```
+  by
+  ```
+  ros::ServiceClient client = n.serviceClient<moveit_msgs::ApplyPlanningScene>("apply_planning_scene");
+  client.call(...)
+  group.pick("object")
+  ```
+  This makes it much more convenient to add&interact with objects
+  without useless and arbitrarily long sleeps to ensure planning scene
+  updates succeeded.
+* clear_octomap_service: fix runtime name (`#685 <https://github.com/ros-planning/moveit_ros/issues/685>`_)
+  Looks like the author copy&pasted from a different capability
+  and forgot to change the name.
+* Contributors: v4hn
 
-0.9.2 (2016-11-05)
+0.7.1 (2016-04-11)
 ------------------
 
-0.6.6 (2016-06-08)
+0.7.0 (2016-01-30)
 ------------------
-* added missing validity check
-  iterator found with `configs.find()` needs to be validated before use...
 * Removed trailing whitespace from entire repository
-* moved planner params services into existing capability QueryPlannerInterfaces
-* capability plugin MoveGroupPlannerParamsService to get/set planner params
 * Fixed bug(?) in move_group::MoveGroupKinematicsService::computeIK link name selection.
-* Contributors: Dave Coleman, Mihai Pomarlan, Robert Haschke
+* Contributors: Dave Coleman, Mihai Pomarlan
 
 0.6.5 (2015-01-24)
 ------------------

@@ -1067,7 +1067,7 @@ void MotionPlanningDisplay::setQueryStateHelper(bool use_start_state, const std:
   use_start_state ? setQueryStartState(state) : setQueryGoalState(state);
 }
 
-void MotionPlanningDisplay::populateMenuHandler(std::shared_ptr<interactive_markers::MenuHandler> &mh)
+void MotionPlanningDisplay::populateMenuHandler(boost::shared_ptr<interactive_markers::MenuHandler> &mh)
 {
   typedef interactive_markers::MenuHandler immh;
   std::vector<std::string> state_names;

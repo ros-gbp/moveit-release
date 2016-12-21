@@ -1,12 +1,9 @@
 <package>
   <name>moveit_planners_ompl</name>
-  <version>0.9.3</version>
+  <version>0.7.3</version>
   <description>MoveIt interface to OMPL</description>
-
-  <author email="isucan@google.com">Ioan Sucan</author>
-
-  <maintainer email="isucan@google.com">Ioan Sucan</maintainer>
-  <maintainer email="dave@dav.ee">Dave Coleman</maintainer>
+  <author email="isucan@willowgarage.com">Ioan Sucan</author>
+  <maintainer email="isucan@willowgarage.com">Ioan Sucan</maintainer>
 
   <license>BSD</license>
 

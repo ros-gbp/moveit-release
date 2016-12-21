@@ -32,7 +32,7 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-/* Author: Ioan Sucan, Mathias Lüdtke, Dave Coleman */
+/* Author: Ioan Sucan */
 
 #ifndef MOVEIT_PLANNING_RDF_LOADER_
 #define MOVEIT_PLANNING_RDF_LOADER_
@@ -40,6 +40,7 @@
 #include <moveit/macros/class_forward.h>
 #include <urdf/model.h>
 #include <srdfdom/model.h>
+#include <boost/shared_ptr.hpp>
 #include <tinyxml.h>
 
 namespace rdf_loader
@@ -55,55 +56,36 @@ public:
   /** @brief Default constructor
    *  @param robot_description The string name corresponding to the ROS param where the URDF is loaded; the SRDF is
    * assumed to be at the same param name + the "_semantic" suffix */
-  RDFLoader(const std::string& robot_description = "robot_description");
+  RDFLoader(const std::string &robot_description = "robot_description");
 
   /** \brief Initialize the robot model from a string representation of the URDF and SRDF documents */
-  RDFLoader(const std::string& urdf_string, const std::string& srdf_string);
+  RDFLoader(const std::string &urdf_string, const std::string &srdf_string);
 
   /** \brief Initialize the robot model from a parsed XML representation of the URDF and SRDF */
-  RDFLoader(TiXmlDocument* urdf_doc, TiXmlDocument* srdf_doc);
+  RDFLoader(TiXmlDocument *urdf_doc, TiXmlDocument *srdf_doc);
 
   /** @brief Get the resolved parameter name for the robot description */
-  const std::string& getRobotDescription() const
+  const std::string &getRobotDescription() const
   {
     return robot_description_;
   }
 
   /** @brief Get the parsed URDF model*/
-  const urdf::ModelInterfaceSharedPtr& getURDF() const
+  const boost::shared_ptr<urdf::ModelInterface> &getURDF() const
   {
     return urdf_;
   }
 
   /** @brief Get the parsed SRDF model*/
-  const srdf::ModelSharedPtr& getSRDF() const
+  const boost::shared_ptr<srdf::Model> &getSRDF() const
   {
     return srdf_;
   }
 
-  /** @brief determine if given path points to a xacro file */
-  static bool isXacroFile(const std::string& path);
-
-  /** @brief load file from given path into buffer */
-  static bool loadFileToString(std::string& buffer, const std::string& path);
-
-  /** @brief run xacro with the given args on the file, return result in buffer */
-  static bool loadXacroFileToString(std::string& buffer, const std::string& path,
-                                    const std::vector<std::string>& xacro_args);
-
-  /** @brief helper that branches between loadFileToString() and loadXacroFileToString() based on result of
-   * isXacroFile() */
-  static bool loadXmlFileToString(std::string& buffer, const std::string& path,
-                                  const std::vector<std::string>& xacro_args);
-
-  /** @brief helper that generates a file path based on package name and relative file path to package */
-  static bool loadPkgFileToString(std::string& buffer, const std::string& package_name,
-                                  const std::string& relative_path, const std::vector<std::string>& xacro_args);
-
 private:
   std::string robot_description_;
-  srdf::ModelSharedPtr srdf_;
-  urdf::ModelInterfaceSharedPtr urdf_;
+  boost::shared_ptr<srdf::Model> srdf_;
+  boost::shared_ptr<urdf::ModelInterface> urdf_;
 };
 }
 #endif

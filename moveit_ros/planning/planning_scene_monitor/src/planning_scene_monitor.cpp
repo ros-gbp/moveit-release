@@ -44,8 +44,6 @@
 #include <tf_conversions/tf_eigen.h>
 #include <moveit/profiler/profiler.h>
 
-#include <memory>
-
 namespace planning_scene_monitor
 {
 using namespace moveit_ros_planning;
@@ -300,7 +298,7 @@ void planning_scene_monitor::PlanningSceneMonitor::stopPublishingPlanningScene()
 {
   if (publish_planning_scene_)
   {
-    std::unique_ptr<boost::thread> copy;
+    boost::scoped_ptr<boost::thread> copy;
     copy.swap(publish_planning_scene_);
     new_scene_update_condition_.notify_all();
     copy->join();

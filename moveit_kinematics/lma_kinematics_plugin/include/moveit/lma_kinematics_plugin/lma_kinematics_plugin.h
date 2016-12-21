@@ -41,11 +41,14 @@
 #include <ros/ros.h>
 #include <random_numbers/random_numbers.h>
 
+// System
+#include <boost/shared_ptr.hpp>
+
 // ROS msgs
 #include <geometry_msgs/PoseStamped.h>
 #include <moveit_msgs/GetPositionFK.h>
 #include <moveit_msgs/GetPositionIK.h>
-#include <moveit_msgs/KinematicSolverInfo.h>
+#include <moveit_msgs/GetKinematicSolverInfo.h>
 #include <moveit_msgs/MoveItErrorCodes.h>
 
 // KDL

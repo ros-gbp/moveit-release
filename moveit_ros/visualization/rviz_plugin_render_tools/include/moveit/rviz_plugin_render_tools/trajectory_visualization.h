@@ -39,15 +39,12 @@
 
 #include <moveit/macros/class_forward.h>
 #include <rviz/display.h>
-
-#ifndef Q_MOC_RUN
 #include <moveit/rviz_plugin_render_tools/robot_state_visualization.h>
 #include <ros/ros.h>
 #include <moveit/robot_model/robot_model.h>
 #include <moveit/robot_state/robot_state.h>
 #include <moveit/robot_trajectory/robot_trajectory.h>
 #include <moveit_msgs/DisplayTrajectory.h>
-#endif
 
 namespace rviz
 {
@@ -105,6 +102,8 @@ private Q_SLOTS:
   void changedShowTrail();
   void changedTrajectoryTopic();
   void changedStateDisplayTime();
+  void changedRobotColor();
+  void enabledRobotColor();
 
 protected:
   /**
@@ -116,6 +115,10 @@ protected:
 
   // Handles actually drawing the robot along motion plans
   RobotStateVisualizationPtr display_path_robot_;
+
+  // Handle colouring of robot
+  void setRobotColor(rviz::Robot* robot, const QColor& color);
+  void unsetRobotColor(rviz::Robot* robot);
 
   robot_trajectory::RobotTrajectoryPtr displaying_trajectory_message_;
   robot_trajectory::RobotTrajectoryPtr trajectory_message_to_display_;
@@ -145,6 +148,8 @@ protected:
   rviz::BoolProperty* loop_display_property_;
   rviz::BoolProperty* trail_display_property_;
   rviz::BoolProperty* interrupt_display_property_;
+  rviz::ColorProperty* robot_color_property_;
+  rviz::BoolProperty* enable_robot_color_property_;
 };
 
 }  // namespace moveit_rviz_plugin

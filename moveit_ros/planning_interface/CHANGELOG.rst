@@ -2,34 +2,51 @@
 Changelog for package moveit_ros_planning_interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.9.3 (2016-11-16)
------------
-
-0.6.6 (2016-06-08)
+0.7.2 (2016-06-20)
 ------------------
-* replaced cmake_modules dependency with eigen
-* [jade] eigen3 adjustment
-* merge indigo-devel changes (PR `#633 <https://github.com/ros-planning/moveit_ros/issues/633>`_ trailing whitespace) into jade-devel
+* Issue `#630 <https://github.com/ros-planning/moveit_ros/issues/630>`_: remove color information from addCollisionObjects method
+* attachment to the commit: fab50d487d86aa4011fb05e41e694b837eca92df
+  For more information see the specified commit.
+* planning_interface: Set is_diff true for empty start state
+  Executing a motion without setting the start state of the robot like
+  this:
+  ```
+  group_arm.setNamedTarget("start_grab_pose");
+  success = group_arm.move();
+  ```
+  throws the error: Execution of motions should always start at the robot's
+  current state. Ignoring the state supplied as start state in the motion
+  planning request.
+  The problem is, when considered_start_state\_ is null, every data field of the start_state
+  in the submitted MotionPlanRequest is 0 or false. But we need is_diff to be
+  true, because otherwise move_group will not consider its current state as
+  actual start state without complaining.
+* Implement issue `#630 <https://github.com/ros-planning/moveit_ros/issues/630>`_
+* Contributors: Yannick Jonetzko, corot
+
+0.7.1 (2016-04-11)
+------------------
+* [feat] Adding acceleration scaling factor
+* [fix] conflict issues
+* [doc] [move_group.cpp] Print the name of the move group action server that failed to be connected (`#640 <https://github.com/ros-planning/moveit_ros/issues/640>`_)
+* Contributors: Dave Coleman, Isaac I.Y. Saito, hemes
+
+0.7.0 (2016-01-30)
+------------------
 * Removed trailing whitespace from entire repository
-* planning_interface::MoveGroup::get/setPlannerParams
 * new method MoveGroup::getDefaultPlannerId(const std::string &group)
   ... to retrieve default planner config from param server
   moved corresponding code from rviz plugin to MoveGroup interface
   to facilitate re-use
-* fixing conflicts, renaming variable
-* Merge pull request `#589 <https://github.com/ros-planning/moveit_ros/issues/589>`_ from MichaelStevens/set_num_planning_attempts
-  adding set_num_planning_attempts to python interface
-* comments addressed
+* adding set_num_planning_attempts to python interface
 * Added python wrapper for setMaxVelocityScalingFactor
 * saves robot name to db from moveit. also robot name accessible through robot interface python wrapper
 * adding set_num_planning_attempts to python interface
-* Merge pull request `#571 <https://github.com/ros-planning/moveit_ros/issues/571>`_ from ymollard/indigo-devel
-  Added python wrapper for MoveGroup.asyncExecute()
 * Added python wrapper for MoveGroup.asyncExecute()
 * Add retime_trajectory to moveit python wrapper
 * add getHandle to move_group_interface
 * Updated documentation on move() to inform the user that an asynchronus spinner is required. Commonly new users don't do this and move() blocks permanently
-* Contributors: Dave Coleman, Dave Hershberger, Isaac I.Y. Saito, Kei Okada, Michael Stevens, Robert Haschke, Sachin Chitta, Scott, Yoan Mollard, dg, ferherranz
+* Contributors: Dave Coleman, Dave Hershberger, Kei Okada, Michael Stevens, Robert Haschke, Sachin Chitta, Scott, Yoan Mollard, dg, ferherranz
 
 0.6.5 (2015-01-24)
 ------------------

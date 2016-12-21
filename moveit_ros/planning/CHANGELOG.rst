@@ -2,38 +2,32 @@
 Changelog for package moveit_ros_planning
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.9.3 (2016-11-16)
+0.7.2 (2016-06-20)
 ------------------
-* [fix] cleanup urdfdom compatibility (`#319 <https://github.com/ros-planning/moveit/issues/319>`_)
-* [maintenance] Updated package.xml maintainers and author emails `#330 <https://github.com/ros-planning/moveit/issues/330>`_
-* Contributors: Dave Coleman, Ian McMahon, Robert Haschke
+* apply planning scene: use newly exposed success value of newPlanningSceneMessage
+* simplify newPlanningSceneMessage
+* monitor: make newPlanningSceneMessage public
+  This is required for capabilities to update the planning scene.
+  ABI-compatible.
+* Add library moveit_collision_plugin_loader as an exported catkin library (`#677 <https://github.com/ros-planning/moveit_ros/issues/677>`_)
+* Contributors: Levi Armstrong, v4hn
 
-0.9.2 (2016-11-05)
+0.7.1 (2016-04-11)
 ------------------
-* [Capability] compatibility to urdfdom < 0.4 (`#317 <https://github.com/ros-planning/moveit/issues/317>`_)
-* [Maintenance] Auto format codebase using clang-format (`#284 <https://github.com/ros-planning/moveit/issues/284>`_)
-* Contributors: Dave Coleman, Robert Haschke
+* Adding acceleration scaling factor
+* Contributors: hemes
 
-0.6.6 (2016-06-08)
+0.7.0 (2016-01-30)
 ------------------
-* Add library moveit_collision_plugin_loader as an exported catkin library (`#678 <https://github.com/ros-planning/moveit_ros/issues/678>`_)
-* replaced cmake_modules dependency with eigen
-* [jade] eigen3 adjustment
-* Fix compilation with C++11.
-* Enable optional build against Qt5, use -DUseQt5=On to enable it
-* merge indigo-devel changes (PR `#633 <https://github.com/ros-planning/moveit_ros/issues/633>`_ trailing whitespace) into jade-devel
 * Removed trailing whitespace from entire repository
-* Optional ability to copy velocity and effort to RobotState
-* cherry-picked PR `#614 <https://github.com/ros-planning/moveit_ros/issues/614>`_
-  fixed segfault on shutdown
 * fixed segfault on shutdown
   use of pluginlib's createUnmanagedInstance() is strongly discouraged:
   http://wiki.ros.org/class_loader#Understanding_Loading_and_Unloading
   here, the kinematics plugin libs were unloaded before destruction of corresponding pointers
 * Deprecate shape_tools
 * CurrentStateMonitor no longer requires hearing mimic joint state values.
-* Fix crash due to robot state not getting updated (moveit_ros `#559 <https://github.com/ros-planning/moveit_ros/issues/559>`_)
-* Contributors: Dave Coleman, Dave Hershberger, Isaac I.Y. Saito, Levi Armstrong, Maarten de Vries, Robert Haschke, Simon Schmeisser (isys vision), kohlbrecher
+* Fix crash due to robot state not getting updated (moveit_ros #559)
+* Contributors: Dave Coleman, Dave Hershberger, Robert Haschke, kohlbrecher
 
 0.6.5 (2015-01-24)
 ------------------
