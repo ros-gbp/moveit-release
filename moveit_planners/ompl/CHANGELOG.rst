@@ -2,6 +2,12 @@
 Changelog for package moveit_planners_ompl
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.7.4 (2016-12-22)
+------------------
+
+0.7.3 (2016-12-20)
+------------------
+
 0.7.0 (2016-01-30)
 ------------------
 * Removed trailing whitespace from entire repository
