@@ -2,6 +2,12 @@
 Changelog for package moveit_simple_controller_manager
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.7.4 (2016-12-22)
+------------------
+
+0.7.3 (2016-12-20)
+------------------
+
 0.5.7 (2016-01-30)
 ------------------
 * expose headers of moveit_simple_controller_manager
