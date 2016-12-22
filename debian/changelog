@@ -1,0 +1,18 @@
+ros-indigo-moveit-kinematics (0.7.4-0trusty) trusty; urgency=high
+
+  * [indigo][changelog] Remove wrong version entries (see https://github.com/ros-planning/moveit/issues/386#issuecomment-268689110).
+  * Contributors: Isaac I.Y. Saito
+
+ -- Dave Coleman <dave@dav.ee>  Thu, 22 Dec 2016 08:00:00 -0000
+
+ros-indigo-moveit-kinematics (0.7.3-0trusty) trusty; urgency=high
+
+  * [ROS Indigo] Initial release from ros-planning/moveit <https://github.com/ros-planning/moveit> repository.
+  * [maintenance] Move moveit_ikfast into moveit_kinematics
+  * [maintenance] add full VERSIONs / SONAMEs to all libraries (#273 <https://github.com/ros-planning/moveit/issues/273>)
+  * [maintenance] Auto code formatted Indigo branch using clang-format (#313 <https://github.com/ros-planning/moveit/issues/313>)
+  * Contributors: Dave Coleman, Michael Goerner
+
+ -- Dave Coleman <dave@dav.ee>  Tue, 20 Dec 2016 08:00:00 -0000
+
+
