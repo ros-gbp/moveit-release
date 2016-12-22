@@ -2,6 +2,12 @@
 Changelog for package moveit_ros_planning_interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.7.4 (2016-12-22)
+------------------
+
+0.7.3 (2016-12-20)
+------------------
+
 0.7.2 (2016-06-20)
 ------------------
 * Issue `#630 <https://github.com/ros-planning/moveit_ros/issues/630>`_: remove color information from addCollisionObjects method
