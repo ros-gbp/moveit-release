@@ -1,0 +1,12 @@
+Source: ros-indigo-moveit-core
+Section: misc
+Priority: extra
+Maintainer: Sachin Chitta <robot.moveit@gmail.com>
+Build-Depends: debhelper (>= 9.0.0), libassimp-dev, libboost-all-dev, libconsole-bridge-dev, libeigen3-dev, liburdfdom-dev, liburdfdom-headers-dev, pkg-config, ros-indigo-angles, ros-indigo-catkin, ros-indigo-cmake-modules, ros-indigo-eigen-conversions, ros-indigo-eigen-stl-containers, ros-indigo-fcl, ros-indigo-geometric-shapes (>= 0.3.4), ros-indigo-geometry-msgs, ros-indigo-kdl-parser, ros-indigo-moveit-msgs, ros-indigo-moveit-resources, ros-indigo-octomap, ros-indigo-octomap-msgs, ros-indigo-orocos-kdl, ros-indigo-random-numbers, ros-indigo-roslib, ros-indigo-rostime, ros-indigo-rosunit, ros-indigo-sensor-msgs, ros-indigo-shape-msgs, ros-indigo-srdfdom, ros-indigo-std-msgs, ros-indigo-tf-conversions, ros-indigo-trajectory-msgs, ros-indigo-visualization-msgs
+Homepage: http://moveit.ros.org
+Standards-Version: 3.9.2
+
+Package: ros-indigo-moveit-core
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, libassimp-dev, libboost-all-dev, libconsole-bridge-dev, libeigen3-dev, liburdfdom-dev, liburdfdom-headers-dev, ros-indigo-eigen-conversions, ros-indigo-eigen-stl-containers, ros-indigo-fcl, ros-indigo-geometric-shapes (>= 0.3.4), ros-indigo-geometry-msgs, ros-indigo-kdl-parser, ros-indigo-moveit-msgs, ros-indigo-octomap, ros-indigo-octomap-msgs, ros-indigo-random-numbers, ros-indigo-rostime, ros-indigo-sensor-msgs, ros-indigo-srdfdom, ros-indigo-std-msgs, ros-indigo-trajectory-msgs, ros-indigo-visualization-msgs
+Description: Core libraries used by MoveIt!
