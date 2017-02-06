@@ -1,7 +1,7 @@
 /*********************************************************************
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2012, Willow Garage, Inc.
+ *  Copyright (c) 2016, Delft University of Technology
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -14,9 +14,9 @@
  *     copyright notice, this list of conditions and the following
  *     disclaimer in the documentation and/or other materials provided
  *     with the distribution.
- *   * Neither the name of Willow Garage nor the names of its
- *     contributors may be used to endorse or promote products derived
- *     from this software without specific prior written permission.
+ *   * Neither the name of Delft University of Technology nor the names
+ *     of its contributors may be used to endorse or promote products
+ *     derived from this software without specific prior written permission.
  *
  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -32,25 +32,28 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-/* Author: Ioan Sucan */
+/* Author: Ruben Burger (r.b.burger@tudelft.nl)
+ *
+ * Based on add_time_parameterization.h, by Ioan Sucan
+ */
 
 #include <moveit/planning_request_adapter/planning_request_adapter.h>
-#include <moveit/trajectory_processing/iterative_time_parameterization.h>
+#include <moveit/trajectory_processing/spline_parameterization.h>
 #include <class_loader/class_loader.h>
 #include <ros/console.h>
 
 namespace default_planner_request_adapters
 {
-class AddTimeParameterization : public planning_request_adapter::PlanningRequestAdapter
+class AddSplineParameterization : public planning_request_adapter::PlanningRequestAdapter
 {
 public:
-  AddTimeParameterization() : planning_request_adapter::PlanningRequestAdapter()
+  AddSplineParameterization() : planning_request_adapter::PlanningRequestAdapter()
   {
   }
 
   virtual std::string getDescription() const
   {
-    return "Add Time Parameterization";
+    return "Add Spline Time Parameterization";
   }
 
   virtual bool adaptAndPlan(const PlannerFn& planner, const planning_scene::PlanningSceneConstPtr& planning_scene,
@@ -64,16 +67,16 @@ public:
       ROS_DEBUG("Running '%s'", getDescription().c_str());
       if (!time_param_.computeTimeStamps(*res.trajectory_, req.max_velocity_scaling_factor,
                                          req.max_acceleration_scaling_factor))
-        ROS_WARN("Time parametrization for the solution path failed.");
+        ROS_WARN("Spline time parametrization for the solution path failed.");
     }
 
     return result;
   }
 
 private:
-  trajectory_processing::IterativeParabolicTimeParameterization time_param_;
+  trajectory_processing::SplineParameterization time_param_;
 };
 }
 
-CLASS_LOADER_REGISTER_CLASS(default_planner_request_adapters::AddTimeParameterization,
+CLASS_LOADER_REGISTER_CLASS(default_planner_request_adapters::AddSplineParameterization,
                             planning_request_adapter::PlanningRequestAdapter);
