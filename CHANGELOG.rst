@@ -2,6 +2,12 @@
 Changelog for package moveit_simple_controller_manager
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.7.7 (2017-02-06)
+------------------
+* clang-format upgraded to 3.8 (`#404 <https://github.com/ros-planning/moveit/issues/404>`_)
+* Fix spelling (`#398 <https://github.com/ros-planning/moveit/issues/398>`_)
+* Contributors: Dave Coleman
+
 0.7.6 (2016-12-30)
 ------------------
 
