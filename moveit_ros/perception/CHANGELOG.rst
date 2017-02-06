@@ -2,6 +2,12 @@
 Changelog for package moveit_ros_perception
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.9.4 (2017-02-06)
+------------------
+* [maintenance] Remove custom cmake modules (`#418 <https://github.com/ros-planning/moveit/issues/418>`_)
+* [maintenance] clang-format upgraded to 3.8 (`#367 <https://github.com/ros-planning/moveit/issues/367>`_)
+* Contributors: Dave Coleman, Jochen Sprickerhof
+
 0.9.3 (2016-11-16)
 ------------------
 
