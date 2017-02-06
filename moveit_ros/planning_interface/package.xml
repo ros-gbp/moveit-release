@@ -1,6 +1,6 @@
 <package>
   <name>moveit_ros_planning_interface</name>
-  <version>0.9.3</version>
+  <version>0.9.4</version>
   <description>Components of MoveIt that offer simpler interfaces to planning and execution</description>
 
   <author email="isucan@google.com">Ioan Sucan</author>
@@ -44,4 +44,6 @@
   <run_depend>tf_conversions</run_depend>
   <run_depend>python</run_depend>
 
+  <test_depend>moveit_resources</test_depend>
+  <test_depend>rostest</test_depend>
 </package>
