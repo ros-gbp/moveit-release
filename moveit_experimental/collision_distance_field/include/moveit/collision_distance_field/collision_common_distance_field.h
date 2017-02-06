@@ -38,13 +38,15 @@
 #define MOVEIT_COLLISION_DETECTION_DISTANCE_FIELD_COLLISION_COMMON_
 
 #include <moveit/robot_state/robot_state.h>
+#include <moveit/macros/class_forward.h>
 #include <moveit/collision_detection/collision_common.h>
 #include <moveit/collision_detection/collision_world.h>
 #include <moveit/collision_distance_field/collision_distance_field_types.h>
 
 namespace collision_detection
 {
-struct DistanceFieldCacheEntry;
+MOVEIT_CLASS_FORWARD(GroupStateRepresentation);
+MOVEIT_CLASS_FORWARD(DistanceFieldCacheEntry);
 
 /** collision volume representation for a particular pose and link group
  *
@@ -57,7 +59,7 @@ struct GroupStateRepresentation
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
   GroupStateRepresentation(){};
-  GroupStateRepresentation(const GroupStateRepresentation &gsr)
+  GroupStateRepresentation(const GroupStateRepresentation& gsr)
   {
     link_body_decompositions_.resize(gsr.link_body_decompositions_.size());
     for (unsigned int i = 0; i < gsr.link_body_decompositions_.size(); i++)
@@ -79,7 +81,7 @@ struct GroupStateRepresentation
   }
 
   /** dfce used to generate this GSR */
-  boost::shared_ptr<const DistanceFieldCacheEntry> dfce_;
+  DistanceFieldCacheEntryConstPtr dfce_;
 
   /** posed spheres representing collision volume for the links in the group
    * (dfce_.group_name_) and all links below the group (i.e. links that can
@@ -113,7 +115,7 @@ struct DistanceFieldCacheEntry
   /** for checking collisions between this group and other objects */
   std::string group_name_;
   /** RobotState that this cache entry represents */
-  boost::shared_ptr<robot_state::RobotState> state_;
+  robot_state::RobotStatePtr state_;
   /** list of indices into the state_values_ vector.  One index for each joint
    * variable which is NOT in the group or a child of the group.  In other
    * words, variables which should not change if only joints in the group move.
@@ -129,10 +131,10 @@ struct DistanceFieldCacheEntry
   collision_detection::AllowedCollisionMatrix acm_;
   /** the distance field describing all links of the robot that are not in the
    * group and their attached bodies */
-  boost::shared_ptr<distance_field::DistanceField> distance_field_;
+  distance_field::DistanceFieldPtr distance_field_;
   /** this can be used as a starting point for creating a
    * GroupStateRepresentation needed for collision checking */
-  boost::shared_ptr<GroupStateRepresentation> pregenerated_group_state_representation_;
+  GroupStateRepresentationPtr pregenerated_group_state_representation_;
   /** names of all links in the group and all links below the group (links that
    * will move if any of the joints in the group move)
    */
@@ -164,18 +166,18 @@ struct DistanceFieldCacheEntry
   std::vector<std::vector<bool>> intra_group_collision_enabled_;
 };
 
-BodyDecompositionConstPtr getBodyDecompositionCacheEntry(const shapes::ShapeConstPtr &shape, double resolution);
+BodyDecompositionConstPtr getBodyDecompositionCacheEntry(const shapes::ShapeConstPtr& shape, double resolution);
 
-PosedBodyPointDecompositionVectorPtr getCollisionObjectPointDecomposition(const collision_detection::World::Object &obj,
+PosedBodyPointDecompositionVectorPtr getCollisionObjectPointDecomposition(const collision_detection::World::Object& obj,
                                                                           double resolution);
 
-PosedBodySphereDecompositionVectorPtr getAttachedBodySphereDecomposition(const robot_state::AttachedBody *att,
+PosedBodySphereDecompositionVectorPtr getAttachedBodySphereDecomposition(const robot_state::AttachedBody* att,
                                                                          double resolution);
 
-PosedBodyPointDecompositionVectorPtr getAttachedBodyPointDecomposition(const robot_state::AttachedBody *att,
+PosedBodyPointDecompositionVectorPtr getAttachedBodyPointDecomposition(const robot_state::AttachedBody* att,
                                                                        double resolution);
 
-void getBodySphereVisualizationMarkers(boost::shared_ptr<const collision_detection::GroupStateRepresentation> &gsr,
-                                       std::string reference_frame, visualization_msgs::MarkerArray &body_marker_array);
+void getBodySphereVisualizationMarkers(GroupStateRepresentationPtr& gsr, std::string reference_frame,
+                                       visualization_msgs::MarkerArray& body_marker_array);
 }
 #endif

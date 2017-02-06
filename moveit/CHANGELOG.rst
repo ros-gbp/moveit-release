@@ -2,20 +2,17 @@
 Changelog for package moveit
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.7.6 (2016-12-30)
-------------------
-* [fix][Indigo] re-enable support for cmake 2.8.11 `#391 <https://github.com/ros-planning/moveit/pull/391>`_
-* Contributors: Michael Goerner
-
-0.7.5 (2016-12-25)
+0.9.4 (2017-02-06)
 ------------------
 
-0.7.4 (2016-12-22)
+0.9.3 (2016-11-16)
 ------------------
-* [indigo][changelog] Remove wrong version entries (see https://github.com/ros-planning/moveit/issues/386#issuecomment-268689110).
-* Contributors: Isaac I.Y. Saito
+* [maintenance] Updated package.xml maintainers and author emails `#330 <https://github.com/ros-planning/moveit/issues/330>`_
+* Contributors: Dave Coleman, Ian McMahon
 
-0.7.3 (2016-12-20)
+0.9.2 (2016-11-05)
 ------------------
-* [ROS Indigo] Initial release from `ros-planning/moveit <https://github.com/ros-planning/moveit>`_ repository.
-* Contributors: Isaac I.Y. Saito
+
+0.9.0 (2016-10-19)
+------------------
+* Initial release into ROS Kinetic

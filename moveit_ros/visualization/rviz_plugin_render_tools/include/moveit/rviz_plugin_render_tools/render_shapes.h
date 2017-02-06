@@ -41,9 +41,9 @@
 #include <moveit/macros/class_forward.h>
 #include <geometric_shapes/shapes.h>
 #include <rviz/helpers/color.h>
-#include <boost/shared_ptr.hpp>
 #include <Eigen/Geometry>
 #include <string>
+#include <memory>
 
 namespace Ogre
 {
@@ -64,18 +64,18 @@ MOVEIT_CLASS_FORWARD(RenderShapes);
 class RenderShapes
 {
 public:
-  RenderShapes(rviz::DisplayContext *context);
+  RenderShapes(rviz::DisplayContext* context);
   ~RenderShapes();
 
-  void renderShape(Ogre::SceneNode *node, const shapes::Shape *s, const Eigen::Affine3d &p,
+  void renderShape(Ogre::SceneNode* node, const shapes::Shape* s, const Eigen::Affine3d& p,
                    OctreeVoxelRenderMode octree_voxel_rendering, OctreeVoxelColorMode octree_color_mode,
-                   const rviz::Color &color, float alpha);
+                   const rviz::Color& color, float alpha);
   void clear();
 
 private:
-  rviz::DisplayContext *context_;
+  rviz::DisplayContext* context_;
 
-  std::vector<boost::shared_ptr<rviz::Shape> > scene_shapes_;
+  std::vector<std::unique_ptr<rviz::Shape> > scene_shapes_;
   std::vector<OcTreeRenderPtr> octree_voxel_grids_;
 };
 }

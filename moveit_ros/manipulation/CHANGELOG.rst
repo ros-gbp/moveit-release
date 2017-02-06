@@ -2,28 +2,28 @@
 Changelog for package moveit_ros_manipulation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.7.6 (2016-12-30)
+0.9.4 (2017-02-06)
+------------------
+* [maintenance] clang-format upgraded to 3.8 (`#367 <https://github.com/ros-planning/moveit/issues/367>`_)
+* [fix] race conditions when updating PlanningScene (`#350 <https://github.com/ros-planning/moveit/issues/350>`_)
+* Contributors: Dave Coleman, Robert Haschke
+
+0.9.3 (2016-11-16)
+------------------
+* [maintenance] Updated package.xml maintainers and author emails `#330 <https://github.com/ros-planning/moveit/issues/330>`_
+* [enhancement] remove grasp service support from pick_place's fillGrasp (`#328 <https://github.com/ros-planning/moveit/issues/328>`_)
+* [maintenance] Updated package.xml maintainers and author emails `#330 <https://github.com/ros-planning/moveit/issues/330>`_
+* Contributors: Dave Coleman, Ian McMahon, Michael Goerner
+
+0.9.2 (2016-11-05)
 ------------------
 
-0.7.5 (2016-12-25)
+0.6.6 (2016-06-08)
 ------------------
-
-0.7.4 (2016-12-22)
-------------------
-
-0.7.3 (2016-12-20)
-------------------
-
-0.7.2 (2016-06-20)
-------------------
-
-0.7.1 (2016-04-11)
-------------------
-
-0.7.0 (2016-01-30)
-------------------
+* replaced cmake_modules dependency with eigen
+* [jade] eigen3 adjustment
 * Removed trailing whitespace from entire repository
-* Contributors: Dave Coleman
+* Contributors: Dave Coleman, Isaac I.Y. Saito, Robert Haschke
 
 0.6.5 (2015-01-24)
 ------------------

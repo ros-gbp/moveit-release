@@ -31,17 +31,17 @@
 
 /* Author: Robert Haschke */
 
-#include <moveit/move_group_interface/move_group.h>
+#include <moveit/move_group_interface/move_group_interface.h>
 #include <ros/ros.h>
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
   ros::init(argc, argv, "moveit_test_cleanup_cpp", ros::init_options::AnonymousName);
 
   ros::AsyncSpinner spinner(1);
   spinner.start();
 
-  moveit::planning_interface::MoveGroup group("manipulator");
+  moveit::planning_interface::MoveGroupInterface group("manipulator");
 
   ros::WallDuration(0.1).sleep();
   return 0;

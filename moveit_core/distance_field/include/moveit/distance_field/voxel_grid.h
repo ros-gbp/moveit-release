@@ -348,8 +348,7 @@ VoxelGrid<T>::VoxelGrid(double size_x, double size_y, double size_z, double reso
 }
 
 template <typename T>
-VoxelGrid<T>::VoxelGrid()
-  : data_(NULL)
+VoxelGrid<T>::VoxelGrid() : data_(NULL)
 {
   for (int i = DIM_X; i <= DIM_Z; ++i)
   {
@@ -474,7 +473,7 @@ inline const T& VoxelGrid<T>::operator()(double x, double y, double z) const
 template <typename T>
 inline const T& VoxelGrid<T>::operator()(const Eigen::Vector3d& pos) const
 {
-  this->operator()(pos.x(), pos.y(), pos.z());
+  return this->operator()(pos.x(), pos.y(), pos.z());
 }
 
 template <typename T>

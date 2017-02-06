@@ -41,6 +41,7 @@
 #include <moveit/controller_manager/controller_manager.h>
 #include <actionlib/client/simple_action_client.h>
 #include <moveit/macros/class_forward.h>
+#include <memory>
 
 namespace moveit_simple_controller_manager
 {
@@ -50,12 +51,12 @@ namespace moveit_simple_controller_manager
 class ActionBasedControllerHandleBase : public moveit_controller_manager::MoveItControllerHandle
 {
 public:
-  ActionBasedControllerHandleBase(const std::string &name) : moveit_controller_manager::MoveItControllerHandle(name)
+  ActionBasedControllerHandleBase(const std::string& name) : moveit_controller_manager::MoveItControllerHandle(name)
   {
   }
 
-  virtual void addJoint(const std::string &name) = 0;
-  virtual void getJoints(std::vector<std::string> &joints) = 0;
+  virtual void addJoint(const std::string& name) = 0;
+  virtual void getJoints(std::vector<std::string>& joints) = 0;
 };
 
 MOVEIT_CLASS_FORWARD(ActionBasedControllerHandleBase);
@@ -67,17 +68,17 @@ template <typename T>
 class ActionBasedControllerHandle : public ActionBasedControllerHandleBase
 {
 public:
-  ActionBasedControllerHandle(const std::string &name, const std::string &ns)
+  ActionBasedControllerHandle(const std::string& name, const std::string& ns)
     : ActionBasedControllerHandleBase(name), namespace_(ns), done_(true)
   {
     controller_action_client_.reset(new actionlib::SimpleActionClient<T>(getActionName(), true));
     unsigned int attempts = 0;
     while (ros::ok() && !controller_action_client_->waitForServer(ros::Duration(5.0)) && ++attempts < 3)
-      ROS_INFO_STREAM("MoveitSimpleControllerManager: Waiting for " << getActionName() << " to come up");
+      ROS_INFO_STREAM_NAMED("moveit_simple_controller_manager", "Waiting for " << getActionName() << " to come up");
 
     if (!controller_action_client_->isServerConnected())
     {
-      ROS_ERROR_STREAM("MoveitSimpleControllerManager: Action client not connected: " << getActionName());
+      ROS_ERROR_STREAM_NAMED("moveit_simple_controller_manager", "Action client not connected: " << getActionName());
       controller_action_client_.reset();
     }
 
@@ -86,7 +87,7 @@ public:
 
   bool isConnected() const
   {
-    return controller_action_client_;
+    return static_cast<bool>(controller_action_client_);
   }
 
   virtual bool cancelExecution()
@@ -95,7 +96,7 @@ public:
       return false;
     if (!done_)
     {
-      ROS_INFO_STREAM("MoveitSimpleControllerManager: Cancelling execution for " << name_);
+      ROS_INFO_STREAM_NAMED("moveit_simple_controller_manager", "Cancelling execution for " << name_);
       controller_action_client_->cancelGoal();
       last_exec_ = moveit_controller_manager::ExecutionStatus::PREEMPTED;
       done_ = true;
@@ -103,7 +104,7 @@ public:
     return true;
   }
 
-  virtual bool waitForExecution(const ros::Duration &timeout = ros::Duration(0))
+  virtual bool waitForExecution(const ros::Duration& timeout = ros::Duration(0))
   {
     if (controller_action_client_ && !done_)
       return controller_action_client_->waitForResult(timeout);
@@ -115,12 +116,12 @@ public:
     return last_exec_;
   }
 
-  virtual void addJoint(const std::string &name)
+  virtual void addJoint(const std::string& name)
   {
     joints_.push_back(name);
   }
 
-  virtual void getJoints(std::vector<std::string> &joints)
+  virtual void getJoints(std::vector<std::string>& joints)
   {
     joints = joints_;
   }
@@ -134,10 +135,11 @@ protected:
       return name_ + "/" + namespace_;
   }
 
-  void finishControllerExecution(const actionlib::SimpleClientGoalState &state)
+  void finishControllerExecution(const actionlib::SimpleClientGoalState& state)
   {
-    ROS_DEBUG_STREAM("MoveitSimpleControllerManager: Controller " << name_ << " is done with state " << state.toString()
-                                                                  << ": " << state.getText());
+    ROS_DEBUG_STREAM_NAMED("moveit_simple_controller_manager", "Controller " << name_ << " is done with state "
+                                                                             << state.toString() << ": "
+                                                                             << state.getText());
     if (state == actionlib::SimpleClientGoalState::SUCCEEDED)
       last_exec_ = moveit_controller_manager::ExecutionStatus::SUCCEEDED;
     else if (state == actionlib::SimpleClientGoalState::ABORTED)
@@ -160,7 +162,7 @@ protected:
   std::vector<std::string> joints_;
 
   /* action client */
-  boost::shared_ptr<actionlib::SimpleActionClient<T> > controller_action_client_;
+  std::shared_ptr<actionlib::SimpleActionClient<T> > controller_action_client_;
 };
 
 }  // end namespace moveit_simple_controller_manager

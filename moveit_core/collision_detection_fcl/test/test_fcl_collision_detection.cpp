@@ -78,7 +78,7 @@ protected:
       }
       xml_file.close();
       urdf_model_ = urdf::parseURDF(xml_string);
-      urdf_ok_ = urdf_model_;
+      urdf_ok_ = static_cast<bool>(urdf_model_);
     }
     else
     {
@@ -103,8 +103,8 @@ protected:
   bool urdf_ok_;
   bool srdf_ok_;
 
-  boost::shared_ptr<urdf::ModelInterface> urdf_model_;
-  boost::shared_ptr<srdf::Model> srdf_model_;
+  urdf::ModelInterfaceSharedPtr urdf_model_;
+  srdf::ModelSharedPtr srdf_model_;
 
   robot_model::RobotModelPtr kmodel_;
 

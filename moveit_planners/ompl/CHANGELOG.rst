@@ -2,16 +2,19 @@
 Changelog for package moveit_planners_ompl
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.7.6 (2016-12-30)
+0.9.4 (2017-02-06)
 ------------------
+* [enhancement] ompl_interface: uniform & simplified handling of the default planner (`#371 <https://github.com/ros-planning/moveit/issues/371>`_)
+* [maintenance] clang-format upgraded to 3.8 (`#367 <https://github.com/ros-planning/moveit/issues/367>`_)
+* Contributors: Dave Coleman, Michael Goerner
 
-0.7.5 (2016-12-25)
+0.9.3 (2016-11-16)
 ------------------
+* [capability] Exposed planners from latest ompl release. (`#338 <https://github.com/ros-planning/moveit/issues/338>`_)
+* [maintenance] Updated package.xml maintainers and author emails `#330 <https://github.com/ros-planning/moveit/issues/330>`_
+* Contributors: Dave Coleman, Ian McMahon, Ruben Burger
 
-0.7.4 (2016-12-22)
-------------------
-
-0.7.3 (2016-12-20)
+0.9.2 (2016-11-05)
 ------------------
 
 0.7.0 (2016-01-30)

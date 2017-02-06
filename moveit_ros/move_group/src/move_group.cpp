@@ -42,6 +42,7 @@
 #include <boost/tokenizer.hpp>
 #include <moveit/macros/console_colors.h>
 #include <moveit/move_group/node_name.h>
+#include <memory>
 #include <set>
 
 static const std::string ROBOT_DESCRIPTION =
@@ -78,11 +79,10 @@ public:
       if (context_->status())
       {
         if (capabilities_.empty())
-          printf(MOVEIT_CONSOLE_COLOR_BLUE "\nAll is well but no capabilities are loaded. There will be no party "
-                                           ":(\n\n" MOVEIT_CONSOLE_COLOR_RESET);
+          printf(MOVEIT_CONSOLE_COLOR_BLUE "\nmove_group is running but no capabilities are "
+                                           "loaded.\n\n" MOVEIT_CONSOLE_COLOR_RESET);
         else
-          printf(MOVEIT_CONSOLE_COLOR_GREEN "\nAll is well! Everyone is happy! You can start planning "
-                                            "now!\n\n" MOVEIT_CONSOLE_COLOR_RESET);
+          printf(MOVEIT_CONSOLE_COLOR_GREEN "\nYou can start planning now!\n\n" MOVEIT_CONSOLE_COLOR_RESET);
         fflush(stdout);
       }
     }
@@ -129,7 +129,7 @@ private:
         capabilities.erase(*cap_name);
     }
 
-    for (std::set<std::string>::iterator plugin = capabilities.begin(); plugin != capabilities.end(); ++plugin)
+    for (std::set<std::string>::iterator plugin = capabilities.cbegin(); plugin != capabilities.cend(); ++plugin)
     {
       try
       {
@@ -161,7 +161,7 @@ private:
 
   ros::NodeHandle node_handle_;
   MoveGroupContextPtr context_;
-  boost::shared_ptr<pluginlib::ClassLoader<MoveGroupCapability> > capability_plugin_loader_;
+  std::shared_ptr<pluginlib::ClassLoader<MoveGroupCapability> > capability_plugin_loader_;
   std::vector<MoveGroupCapabilityPtr> capabilities_;
 };
 }

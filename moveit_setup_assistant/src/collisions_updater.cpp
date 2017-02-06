@@ -36,13 +36,13 @@
 
 #include <ros/ros.h>
 #include <moveit/setup_assistant/tools/moveit_config_data.h>
-#include <moveit/setup_assistant/tools/file_loader.h>
+#include <moveit/rdf_loader/rdf_loader.h>
 
 #include <boost/program_options.hpp>
 
 namespace po = boost::program_options;
 
-bool loadSetupAssistantConfig(moveit_setup_assistant::MoveItConfigData &config_data, const std::string &pkg_path)
+bool loadSetupAssistantConfig(moveit_setup_assistant::MoveItConfigData& config_data, const std::string& pkg_path)
 {
   if (!config_data.setPackagePath(pkg_path))
   {
@@ -70,11 +70,11 @@ bool loadSetupAssistantConfig(moveit_setup_assistant::MoveItConfigData &config_d
   return true;
 }
 
-bool setup(moveit_setup_assistant::MoveItConfigData &config_data, bool keep_old,
-           const std::vector<std::string> &xacro_args)
+bool setup(moveit_setup_assistant::MoveItConfigData& config_data, bool keep_old,
+           const std::vector<std::string>& xacro_args)
 {
   std::string urdf_string;
-  if (!moveit_setup_assistant::loadXmlFileToString(urdf_string, config_data.urdf_path_, xacro_args))
+  if (!rdf_loader::RDFLoader::loadXmlFileToString(urdf_string, config_data.urdf_path_, xacro_args))
   {
     ROS_ERROR_STREAM("Could not load URDF from '" << config_data.urdf_path_ << "'");
     return false;
@@ -86,7 +86,7 @@ bool setup(moveit_setup_assistant::MoveItConfigData &config_data, bool keep_old,
   }
 
   std::string srdf_string;
-  if (!moveit_setup_assistant::loadXmlFileToString(srdf_string, config_data.srdf_path_, xacro_args))
+  if (!rdf_loader::RDFLoader::loadXmlFileToString(srdf_string, config_data.srdf_path_, xacro_args))
   {
     ROS_ERROR_STREAM("Could not load SRDF from '" << config_data.srdf_path_ << "'");
     return false;
@@ -103,7 +103,7 @@ bool setup(moveit_setup_assistant::MoveItConfigData &config_data, bool keep_old,
   return true;
 }
 
-moveit_setup_assistant::LinkPairMap compute(moveit_setup_assistant::MoveItConfigData &config_data, uint32_t trials,
+moveit_setup_assistant::LinkPairMap compute(moveit_setup_assistant::MoveItConfigData& config_data, uint32_t trials,
                                             double min_collision_fraction, bool verbose)
 {
   // TODO: spin thread and print progess if verbose
@@ -112,7 +112,7 @@ moveit_setup_assistant::LinkPairMap compute(moveit_setup_assistant::MoveItConfig
                                                           trials > 0, trials, min_collision_fraction, verbose);
 }
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
   std::string config_pkg_path;
   std::string urdf_path;
@@ -172,7 +172,7 @@ int main(int argc, char *argv[])
     ROS_ERROR_STREAM("Please provide config package or URDF and SRDF path");
     return 1;
   }
-  else if (moveit_setup_assistant::isXacroFile(srdf_path) && output_path.empty())
+  else if (rdf_loader::RDFLoader::isXacroFile(srdf_path) && output_path.empty())
   {
     ROS_ERROR_STREAM("Please provide a different output file for SRDF xacro input file");
     return 1;

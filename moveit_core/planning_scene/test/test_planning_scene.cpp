@@ -43,7 +43,7 @@
 
 // This function needs to return void so the gtest FAIL() macro inside
 // it works right.
-void loadRobotModel(boost::shared_ptr<urdf::ModelInterface> &robot_model_out)
+void loadRobotModel(urdf::ModelInterfaceSharedPtr& robot_model_out)
 {
   boost::filesystem::path res_path(MOVEIT_TEST_RESOURCES_DIR);
 
@@ -62,9 +62,9 @@ void loadRobotModel(boost::shared_ptr<urdf::ModelInterface> &robot_model_out)
 
 TEST(PlanningScene, LoadRestore)
 {
-  boost::shared_ptr<urdf::ModelInterface> urdf_model;
+  urdf::ModelInterfaceSharedPtr urdf_model;
   loadRobotModel(urdf_model);
-  boost::shared_ptr<srdf::Model> srdf_model(new srdf::Model());
+  srdf::ModelSharedPtr srdf_model(new srdf::Model());
   planning_scene::PlanningScene ps(urdf_model, srdf_model);
   moveit_msgs::PlanningScene ps_msg;
   ps.getPlanningSceneMsg(ps_msg);
@@ -73,13 +73,13 @@ TEST(PlanningScene, LoadRestore)
 
 TEST(PlanningScene, LoadRestoreDiff)
 {
-  boost::shared_ptr<urdf::ModelInterface> urdf_model;
+  urdf::ModelInterfaceSharedPtr urdf_model;
   loadRobotModel(urdf_model);
-  boost::shared_ptr<srdf::Model> srdf_model(new srdf::Model());
+  srdf::ModelSharedPtr srdf_model(new srdf::Model());
 
   planning_scene::PlanningScenePtr ps(new planning_scene::PlanningScene(urdf_model, srdf_model));
 
-  collision_detection::World &world = *ps->getWorldNonConst();
+  collision_detection::World& world = *ps->getWorldNonConst();
   Eigen::Affine3d id = Eigen::Affine3d::Identity();
   world.addToObject("sphere", shapes::ShapeConstPtr(new shapes::Sphere(0.4)), id);
 
@@ -110,13 +110,13 @@ TEST(PlanningScene, LoadRestoreDiff)
 
 TEST(PlanningScene, MakeAttachedDiff)
 {
-  boost::shared_ptr<srdf::Model> srdf_model(new srdf::Model());
-  boost::shared_ptr<urdf::ModelInterface> urdf_model;
+  srdf::ModelSharedPtr srdf_model(new srdf::Model());
+  urdf::ModelInterfaceSharedPtr urdf_model;
   loadRobotModel(urdf_model);
 
   planning_scene::PlanningScenePtr ps(new planning_scene::PlanningScene(urdf_model, srdf_model));
 
-  collision_detection::World &world = *ps->getWorldNonConst();
+  collision_detection::World& world = *ps->getWorldNonConst();
   Eigen::Affine3d id = Eigen::Affine3d::Identity();
   world.addToObject("sphere", shapes::ShapeConstPtr(new shapes::Sphere(0.4)), id);
 
@@ -135,7 +135,7 @@ TEST(PlanningScene, MakeAttachedDiff)
   ps->checkCollision(req, res);
 }
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();

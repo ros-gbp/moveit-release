@@ -2,16 +2,18 @@
 Changelog for package moveit_commander
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.7.6 (2016-12-30)
+0.9.4 (2017-02-06)
 ------------------
+* [fix] issue `#373 <https://github.com/ros-planning/moveit/issues/373>`_ for Kinetic (`#377 <https://github.com/ros-planning/moveit/issues/377>`_) (`#385 <https://github.com/ros-planning/moveit/issues/385>`_)
+* [fix] typo in moveit_commander (`#376 <https://github.com/ros-planning/moveit/issues/376>`_)
+* Contributors: Dave Coleman, Shingo Kitagawa
 
-0.7.5 (2016-12-25)
+0.9.3 (2016-11-16)
 ------------------
+* [maintenance] Updated package.xml maintainers and author emails `#330 <https://github.com/ros-planning/moveit/issues/330>`_
+* Contributors: Dave Coleman, Ian McMahon
 
-0.7.4 (2016-12-22)
-------------------
-
-0.7.3 (2016-12-20)
+0.9.2 (2016-11-05)
 ------------------
 
 0.6.1 (2016-04-28)

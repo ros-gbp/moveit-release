@@ -50,12 +50,12 @@ static const std::string ROBOT_DESCRIPTION = "robot_description";
 typedef std::pair<geometry_msgs::Point, geometry_msgs::Quaternion> LinkConstraintPair;
 typedef std::map<std::string, LinkConstraintPair> LinkConstraintMap;
 
-void collectLinkConstraints(const moveit_msgs::Constraints &constraints, LinkConstraintMap &lcmap)
+void collectLinkConstraints(const moveit_msgs::Constraints& constraints, LinkConstraintMap& lcmap)
 {
   for (std::size_t i = 0; i < constraints.position_constraints.size(); ++i)
   {
     LinkConstraintPair lcp;
-    const moveit_msgs::PositionConstraint &pc = constraints.position_constraints[i];
+    const moveit_msgs::PositionConstraint& pc = constraints.position_constraints[i];
     lcp.first = pc.constraint_region.primitive_poses[0].position;
     lcmap[constraints.position_constraints[i].link_name] = lcp;
   }
@@ -75,14 +75,14 @@ void collectLinkConstraints(const moveit_msgs::Constraints &constraints, LinkCon
   }
 }
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
   ros::init(argc, argv, "save_warehouse_as_text", ros::init_options::AnonymousName);
 
   boost::program_options::options_description desc;
   desc.add_options()("help", "Show help message")("host", boost::program_options::value<std::string>(), "Host for the "
-                                                                                                        "MongoDB.")(
-      "port", boost::program_options::value<std::size_t>(), "Port for the MongoDB.");
+                                                                                                        "DB.")(
+      "port", boost::program_options::value<std::size_t>(), "Port for the DB.");
 
   boost::program_options::variables_map vm;
   boost::program_options::store(boost::program_options::parse_command_line(argc, argv, desc), vm);
@@ -93,20 +93,21 @@ int main(int argc, char **argv)
     std::cout << desc << std::endl;
     return 1;
   }
+  // Set up db
+  warehouse_ros::DatabaseConnection::Ptr conn = moveit_warehouse::loadDatabase();
+  if (vm.count("host") && vm.count("port"))
+    conn->setParams(vm["host"].as<std::string>(), vm["port"].as<std::size_t>());
+  if (!conn->connect())
+    return 1;
 
   ros::AsyncSpinner spinner(1);
   spinner.start();
 
   planning_scene_monitor::PlanningSceneMonitor psm(ROBOT_DESCRIPTION);
 
-  moveit_warehouse::PlanningSceneStorage pss(vm.count("host") ? vm["host"].as<std::string>() : "",
-                                             vm.count("port") ? vm["port"].as<std::size_t>() : 0);
-
-  moveit_warehouse::RobotStateStorage rss(vm.count("host") ? vm["host"].as<std::string>() : "",
-                                          vm.count("port") ? vm["port"].as<std::size_t>() : 0);
-
-  moveit_warehouse::ConstraintsStorage cs(vm.count("host") ? vm["host"].as<std::string>() : "",
-                                          vm.count("port") ? vm["port"].as<std::size_t>() : 0);
+  moveit_warehouse::PlanningSceneStorage pss(conn);
+  moveit_warehouse::RobotStateStorage rss(conn);
+  moveit_warehouse::ConstraintsStorage cs(conn);
 
   std::vector<std::string> scene_names;
   pss.getPlanningSceneNames(scene_names);
@@ -117,7 +118,7 @@ int main(int argc, char **argv)
     if (pss.getPlanningScene(pswm, scene_names[i]))
     {
       ROS_INFO("Saving scene '%s'", scene_names[i].c_str());
-      psm.getPlanningScene()->setPlanningSceneMsg(static_cast<const moveit_msgs::PlanningScene &>(*pswm));
+      psm.getPlanningScene()->setPlanningSceneMsg(static_cast<const moveit_msgs::PlanningScene&>(*pswm));
       std::ofstream fout((scene_names[i] + ".scene").c_str());
       psm.getPlanningScene()->saveGeometryToStream(fout);
       fout.close();

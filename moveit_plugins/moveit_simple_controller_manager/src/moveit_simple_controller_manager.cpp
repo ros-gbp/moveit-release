@@ -52,7 +52,7 @@ public:
   {
     if (!node_handle_.hasParam("controller_list"))
     {
-      ROS_ERROR_STREAM("No controller_list specified.");
+      ROS_ERROR_STREAM_NAMED("manager", "No controller_list specified.");
       return;
     }
 
@@ -69,7 +69,7 @@ public:
     {
       if (!controller_list[i].hasMember("name") || !controller_list[i].hasMember("joints"))
       {
-        ROS_ERROR("Name and joints must be specifed for each controller");
+        ROS_ERROR_STREAM_NAMED("manager", "Name and joints must be specifed for each controller");
         continue;
       }
 
@@ -82,22 +82,23 @@ public:
         {
           /* TODO: this used to be called "ns", renaming to "action_ns" and will remove in the future */
           action_ns = std::string(controller_list[i]["ns"]);
-          ROS_WARN("Use of 'ns' is deprecated, use 'action_ns' instead.");
+          ROS_WARN_NAMED("manager", "Use of 'ns' is deprecated, use 'action_ns' instead.");
         }
         else if (controller_list[i].hasMember("action_ns"))
           action_ns = std::string(controller_list[i]["action_ns"]);
         else
-          ROS_WARN("Please note that 'action_ns' no longer has a default value.");
+          ROS_WARN_NAMED("manager", "Please note that 'action_ns' no longer has a default value.");
 
         if (controller_list[i]["joints"].getType() != XmlRpc::XmlRpcValue::TypeArray)
         {
-          ROS_ERROR_STREAM("The list of joints for controller " << name << " is not specified as an array");
+          ROS_ERROR_STREAM_NAMED("manager", "The list of joints for controller " << name << " is not specified as an "
+                                                                                            "array");
           continue;
         }
 
         if (!controller_list[i].hasMember("type"))
         {
-          ROS_ERROR_STREAM("No type specified for controller " << name);
+          ROS_ERROR_STREAM_NAMED("manager", "No type specified for controller " << name);
           continue;
         }
 
@@ -107,47 +108,47 @@ public:
         if (type == "GripperCommand")
         {
           new_handle.reset(new GripperControllerHandle(name, action_ns));
-          if (static_cast<GripperControllerHandle *>(new_handle.get())->isConnected())
+          if (static_cast<GripperControllerHandle*>(new_handle.get())->isConnected())
           {
             if (controller_list[i].hasMember("parallel"))
             {
               if (controller_list[i]["joints"].size() != 2)
               {
-                ROS_ERROR_STREAM("MoveItSimpleControllerManager: Parallel Gripper requires exactly two joints");
+                ROS_ERROR_STREAM_NAMED("manager", "Parallel Gripper requires exactly two joints");
                 continue;
               }
-              static_cast<GripperControllerHandle *>(new_handle.get())
+              static_cast<GripperControllerHandle*>(new_handle.get())
                   ->setParallelJawGripper(controller_list[i]["joints"][0], controller_list[i]["joints"][1]);
             }
             else
             {
               if (controller_list[i].hasMember("command_joint"))
-                static_cast<GripperControllerHandle *>(new_handle.get())
+                static_cast<GripperControllerHandle*>(new_handle.get())
                     ->setCommandJoint(controller_list[i]["command_joint"]);
               else
-                static_cast<GripperControllerHandle *>(new_handle.get())
+                static_cast<GripperControllerHandle*>(new_handle.get())
                     ->setCommandJoint(controller_list[i]["joints"][0]);
             }
 
             if (controller_list[i].hasMember("allow_failure"))
-              static_cast<GripperControllerHandle *>(new_handle.get())->allowFailure(true);
+              static_cast<GripperControllerHandle*>(new_handle.get())->allowFailure(true);
 
-            ROS_INFO_STREAM("Added GripperCommand controller for " << name);
+            ROS_INFO_STREAM_NAMED("manager", "Added GripperCommand controller for " << name);
             controllers_[name] = new_handle;
           }
         }
         else if (type == "FollowJointTrajectory")
         {
           new_handle.reset(new FollowJointTrajectoryControllerHandle(name, action_ns));
-          if (static_cast<FollowJointTrajectoryControllerHandle *>(new_handle.get())->isConnected())
+          if (static_cast<FollowJointTrajectoryControllerHandle*>(new_handle.get())->isConnected())
           {
-            ROS_INFO_STREAM("Added FollowJointTrajectory controller for " << name);
+            ROS_INFO_STREAM_NAMED("manager", "Added FollowJointTrajectory controller for " << name);
             controllers_[name] = new_handle;
           }
         }
         else
         {
-          ROS_ERROR("Unknown controller type: '%s'", type.c_str());
+          ROS_ERROR_STREAM_NAMED("manager", "Unknown controller type: " << type.c_str());
           continue;
         }
         if (!controllers_[name])
@@ -162,7 +163,7 @@ public:
       }
       catch (...)
       {
-        ROS_ERROR("Unable to parse controller information");
+        ROS_ERROR_STREAM_NAMED("manager", "Unable to parse controller information");
       }
     }
   }
@@ -174,32 +175,32 @@ public:
   /*
    * Get a controller, by controller name (which was specified in the controllers.yaml
    */
-  virtual moveit_controller_manager::MoveItControllerHandlePtr getControllerHandle(const std::string &name)
+  virtual moveit_controller_manager::MoveItControllerHandlePtr getControllerHandle(const std::string& name)
   {
     std::map<std::string, ActionBasedControllerHandleBasePtr>::const_iterator it = controllers_.find(name);
     if (it != controllers_.end())
       return static_cast<moveit_controller_manager::MoveItControllerHandlePtr>(it->second);
     else
-      ROS_FATAL_STREAM("No such controller: " << name);
+      ROS_FATAL_STREAM_NAMED("manager", "No such controller: " << name);
     return moveit_controller_manager::MoveItControllerHandlePtr();
   }
 
   /*
    * Get the list of controller names.
    */
-  virtual void getControllersList(std::vector<std::string> &names)
+  virtual void getControllersList(std::vector<std::string>& names)
   {
     for (std::map<std::string, ActionBasedControllerHandleBasePtr>::const_iterator it = controllers_.begin();
          it != controllers_.end(); ++it)
       names.push_back(it->first);
-    ROS_INFO_STREAM("Returned " << names.size() << " controllers in list");
+    ROS_INFO_STREAM_NAMED("manager", "Returned " << names.size() << " controllers in list");
   }
 
   /*
    * This plugin assumes that all controllers are already active -- and if they are not, well, it has no way to deal
    * with it anyways!
    */
-  virtual void getActiveControllers(std::vector<std::string> &names)
+  virtual void getActiveControllers(std::vector<std::string>& names)
   {
     getControllersList(names);
   }
@@ -207,7 +208,7 @@ public:
   /*
    * Controller must be loaded to be active, see comment above about active controllers...
    */
-  virtual void getLoadedControllers(std::vector<std::string> &names)
+  virtual void getLoadedControllers(std::vector<std::string>& names)
   {
     getControllersList(names);
   }
@@ -215,7 +216,7 @@ public:
   /*
    * Get the list of joints that a controller can control.
    */
-  virtual void getControllerJoints(const std::string &name, std::vector<std::string> &joints)
+  virtual void getControllerJoints(const std::string& name, std::vector<std::string>& joints)
   {
     std::map<std::string, ActionBasedControllerHandleBasePtr>::const_iterator it = controllers_.find(name);
     if (it != controllers_.end())
@@ -224,9 +225,9 @@ public:
     }
     else
     {
-      ROS_WARN("The joints for controller '%s' are not known. Perhaps the controller configuration is not loaded on "
-               "the param server?",
-               name.c_str());
+      ROS_WARN_NAMED("manager", "The joints for controller '%s' are not known. Perhaps the controller configuration is "
+                                "not loaded on the param server?",
+                     name.c_str());
       joints.clear();
     }
   }
@@ -235,7 +236,7 @@ public:
    * Controllers are all active and default -- that's what makes this thing simple.
    */
   virtual moveit_controller_manager::MoveItControllerManager::ControllerState
-  getControllerState(const std::string &name)
+  getControllerState(const std::string& name)
   {
     moveit_controller_manager::MoveItControllerManager::ControllerState state;
     state.active_ = true;
@@ -244,7 +245,7 @@ public:
   }
 
   /* Cannot switch our controllers */
-  virtual bool switchControllers(const std::vector<std::string> &activate, const std::vector<std::string> &deactivate)
+  virtual bool switchControllers(const std::vector<std::string>& activate, const std::vector<std::string>& deactivate)
   {
     return false;
   }

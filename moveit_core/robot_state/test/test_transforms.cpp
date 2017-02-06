@@ -72,8 +72,8 @@ protected:
   }
 
 protected:
-  boost::shared_ptr<urdf::ModelInterface> urdf_model_;
-  boost::shared_ptr<srdf::Model> srdf_model_;
+  urdf::ModelInterfaceSharedPtr urdf_model_;
+  srdf::ModelSharedPtr srdf_model_;
   bool urdf_ok_;
   bool srdf_ok_;
 };
@@ -126,7 +126,7 @@ TEST_F(LoadPlanningModelsPr2, InitOK)
   EXPECT_NEAR(x.translation().z(), 1.24001, 1e-4);
 }
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
