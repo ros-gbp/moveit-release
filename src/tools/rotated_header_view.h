@@ -1,7 +1,7 @@
 /*********************************************************************
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2012, Willow Garage, Inc.
+ *  Copyright (c) 2016, CITEC, Bielefeld University
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -32,57 +32,23 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-/* Author: Dave Coleman */
+/* Author: Robert Haschke */
 
-#ifndef MOVEIT_ROS_MOVEIT_SETUP_ASSISTANT_WIDGETS_NAVIGATION_WIDGET_
-#define MOVEIT_ROS_MOVEIT_SETUP_ASSISTANT_WIDGETS_NAVIGATION_WIDGET_
+#ifndef MOVEIT_ROS_MOVEIT_SETUP_ASSISTANT_WIDGETS_ROTATED_HEADERVIEW_H
+#define MOVEIT_ROS_MOVEIT_SETUP_ASSISTANT_WIDGETS_ROTATED_HEADERVIEW_H
 
-#include <QListView>
-#include <QStandardItemModel>
-#include <QScrollBar>
-#include <QString>
-#include <QStyledItemDelegate>
-#include <QPainter>
+#include <QHeaderView>
 
 namespace moveit_setup_assistant
 {
-/**
- * Widget for showing a left hand side list of navigation items
- *
- * @param parent
- *
- * @return
- */
-class NavigationWidget : public QListView
+class RotatedHeaderView : public QHeaderView
 {
-  Q_OBJECT
 public:
-  explicit NavigationWidget(QWidget* parent = 0);
-
-  void setNavs(const QList<QString>& navs);
-  void setEnabled(const int& index, bool enabled);
-  void setSelected(const int& index);
-
-private:
-  QStandardItemModel* model_;
-};
-
-/**
- * Class for drawing the style of the navigation box
- *
- * @param parent
- *
- * @return
- */
-class NavDelegate : public QStyledItemDelegate
-{
-  Q_OBJECT
-public:
-  explicit NavDelegate(QObject* parent = 0);
-
-  QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const;
-  void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
+  RotatedHeaderView(Qt::Orientation orientation, QWidget* parent = NULL);
+  void paintSection(QPainter* painter, const QRect& rect, int logicalIndex) const;
+  QSize sectionSizeFromContents(int logicalIndex) const;
+  int sectionSizeHint(int logicalIndex) const;
 };
 }
 
-#endif
+#endif  // MOVEIT_ROS_MOVEIT_SETUP_ASSISTANT_WIDGETS_ROTATED_HEADERVIEW_H
