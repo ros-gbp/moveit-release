@@ -1,0 +1,12 @@
+Source: ros-indigo-moveit-ros-warehouse
+Section: misc
+Priority: extra
+Maintainer: Ioan Sucan <isucan@google.com>
+Build-Depends: debhelper (>= 9.0.0), ros-indigo-catkin, ros-indigo-moveit-ros-planning, ros-indigo-rosconsole, ros-indigo-roscpp, ros-indigo-tf, ros-indigo-warehouse-ros
+Homepage: http://moveit.ros.org
+Standards-Version: 3.9.2
+
+Package: ros-indigo-moveit-ros-warehouse
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-indigo-moveit-ros-planning, ros-indigo-rosconsole, ros-indigo-roscpp, ros-indigo-tf, ros-indigo-warehouse-ros
+Description: Components of MoveIt connecting to MongoDB
