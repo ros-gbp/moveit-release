@@ -2,6 +2,15 @@
 Changelog for package moveit_core
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.7.7 (2017-02-06)
+------------------
+* [enhancement] Handle multiple shapes in an attached collision object `#421 <https://github.com/ros-planning/moveit/issues/421>`_
+* [enhancement] Improved IPTP by fitting a cubic spline (`#382 <https://github.com/ros-planning/moveit/issues/382>`_)
+* [maintenance] Use static_cast to cast to const. (`#434 <https://github.com/ros-planning/moveit/issues/434>`_)
+* [capability] Handle multiple shapes in an attached collision object (`#421 <https://github.com/ros-planning/moveit/pull/421>`_)
+* [capability] Addition of Set Joint Model Group Velocities and Accelerations Functions (`#402 <https://github.com/ros-planning/moveit/issues/402>`_)
+* Contributors: Dave Coleman, G.A. vd. Hoorn, Isaac I.Y. Saito, Maarten de Vries, Mike Lautman, Ruben Burger, Michael Goerner
+
 0.7.6 (2016-12-30)
 ------------------
 
@@ -24,7 +33,7 @@ Changelog for package moveit_core
   - 2.*acos(theta/2) only covers half range
   - need to consider sign of quaternion axis w.r.t. rotation axis
 * [sys] re-use travis config from jade-devel
-* Contributors: Dave Coleman, Robert Haschke, hamalMarino, Michael Gè´”rner
+* Contributors: Dave Coleman, Robert Haschke, hamalMarino, Michael Goerner
 
 0.7.1 (2016-04-14)
 ------------------
