@@ -48,7 +48,7 @@ class MoveGroupCommander(object):
 
     def __init__(self, name, robot_description="robot_description"):
         """ Specify the group name for which to construct this commander instance. Throws an exception if there is an initialization error. """
-        self._g = _moveit_move_group_interface.MoveGroupInterface(name, robot_description)
+        self._g = _moveit_move_group_interface.MoveGroup(name, robot_description)
 
     def get_name(self):
         """ Get the name of the group this instance was initialized for """
@@ -406,13 +406,6 @@ class MoveGroupCommander(object):
         """ Set a scaling factor for optionally reducing the maximum joint velocity. Allowed values are in (0,1]. """        
         if value > 0 and value <= 1:
             self._g.set_max_velocity_scaling_factor(value)
-        else:
-            raise MoveItCommanderException("Expected value in the range from 0 to 1 for scaling factor" )
-
-    def set_max_acceleration_scaling_factor(self, value):
-        """ Set a scaling factor for optionally reducing the maximum joint acceleration. Allowed values are in (0,1]. """
-        if value > 0 and value <= 1:
-            self._g.set_max_acceleration_scaling_factor(value)
         else:
             raise MoveItCommanderException("Expected value in the range from 0 to 1 for scaling factor" )
 

@@ -45,8 +45,6 @@
 #include <moveit/occupancy_map_monitor/occupancy_map_updater.h>
 #include <moveit/point_containment_filter/shape_mask.h>
 
-#include <memory>
-
 namespace occupancy_map_monitor
 {
 class PointCloudOctomapUpdater : public OccupancyMapUpdater
@@ -92,7 +90,7 @@ private:
      we cache this here because it dynamically pre-allocates a lot of memory in its contsructor */
   octomap::KeyRay key_ray_;
 
-  std::unique_ptr<point_containment_filter::ShapeMask> shape_mask_;
+  boost::scoped_ptr<point_containment_filter::ShapeMask> shape_mask_;
   std::vector<int> mask_;
 };
 }

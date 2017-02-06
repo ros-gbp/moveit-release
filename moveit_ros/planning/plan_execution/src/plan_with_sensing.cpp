@@ -101,7 +101,7 @@ plan_execution::PlanWithSensing::PlanWithSensing(
       if (node_handle_.getParam("moveit_sensor_manager", manager))
         try
         {
-          sensor_manager_ = sensor_manager_loader_->createUniqueInstance(manager);
+          sensor_manager_ = sensor_manager_loader_->createInstance(manager);
         }
         catch (pluginlib::PluginlibException& ex)
         {

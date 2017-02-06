@@ -2,13 +2,22 @@
 Changelog for package moveit_ros_control_interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.9.4 (2017-02-06)
+0.7.7 (2017-02-06)
 ------------------
-* [maintenance] clang-format upgraded to 3.8 (`#367 <https://github.com/ros-planning/moveit/issues/367>`_)
-* Contributors: Dave Coleman, Michael Goerner
+* [maintenance] clang-format upgraded to 3.8 (`#404 <https://github.com/ros-planning/moveit/issues/404>`_)
+* Contributors: Dave Coleman
 
-0.9.3 (2016-11-16)
------------
+0.7.6 (2016-12-30)
+------------------
+
+0.7.5 (2016-12-25)
+------------------
+
+0.7.4 (2016-12-22)
+------------------
+
+0.7.3 (2016-12-20)
+------------------
 
 0.5.7 (2016-01-30)
 ------------------
@@ -24,4 +33,4 @@ Changelog for package moveit_ros_control_interface
 * set version to match the others
 * fixed a lot of typos
 * Intitial version of moveit_ros_control_interface package
-* Contributors: Mathias Luedtke
+* Contributors: Mathias Lüdtke

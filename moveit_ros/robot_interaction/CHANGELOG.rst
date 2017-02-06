@@ -2,29 +2,40 @@
 Changelog for package moveit_ros_robot_interaction
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.9.4 (2017-02-06)
+0.7.7 (2017-02-06)
 ------------------
-* [maintenance] clang-format upgraded to 3.8 (`#367 <https://github.com/ros-planning/moveit/issues/367>`_)
+* [maintenance] clang-format upgraded to 3.8 (`#404 <https://github.com/ros-planning/moveit/issues/404>`_)
 * Contributors: Dave Coleman
 
-0.9.3 (2016-11-16)
+0.7.6 (2016-12-30)
 ------------------
-* [maintenance] Updated package.xml maintainers and author emails `#330 <https://github.com/ros-planning/moveit/issues/330>`_
-* Contributors: Dave Coleman, Ian McMahon
 
-0.9.2 (2016-11-05)
+0.7.5 (2016-12-25)
 ------------------
-* [Maintenance] Auto format codebase using clang-format (`#284 <https://github.com/ros-planning/moveit/issues/284>`_)
-* Contributors: Dave Coleman
 
-0.6.6 (2016-06-08)
+0.7.4 (2016-12-22)
 ------------------
-* use getModelFrame() as reference frame for markers
+
+0.7.3 (2016-12-20)
+------------------
+
+0.7.2 (2016-06-20)
+------------------
+* cherry-pick 04e158aca from jade-devel
+  - use getModelFrame() as reference frame for markers
+  - always (re)create collision object marker
+  (other properties than pose (such as name of the marker) need to be adapted too)
 * publish markers relative to robot's root frame
   In addition to `#669 <https://github.com/ros-planning/moveit_ros/issues/669>`_, interactive markers need to be place relative to the
   robot's root frame. If nothing is specified (as before), rviz' fixed frame
   is used, leading to offsets when both frames are not identical.
-* merge indigo-devel changes (PR `#633 <https://github.com/ros-planning/moveit_ros/issues/633>`_ trailing whitespace) into jade-devel
+* Contributors: Robert Haschke
+
+0.7.1 (2016-04-11)
+------------------
+
+0.7.0 (2016-01-30)
+------------------
 * Removed trailing whitespace from entire repository
 * further adapted marker size computation
   - drop largest extension dimension (-> use cross-section size of elongated link)
@@ -45,9 +56,8 @@ Changelog for package moveit_ros_robot_interaction
 * fixing error caused by BOOST_STATIC_ASSERT
 * Fixed compile error caused by BOOST_STATIC_ASSERT in kinematic_options.cpp
   Added kinematics::DiscretizationMethods::DiscretizationMethod to QO_FIELDS in kinematic_options.cpp.
-  At pull request `#581 <https://github.com/ros-planning/moveit_ros/issues/581>`_, type of discretization_method was set to int. Changed it to proper type.
+  At pull request #581, type of discretization_method was set to int. Changed it to proper type.
 * reinstated changes related to the updates in the  moveit_core::KinematicsBase interface
-* Revert "  Kinematics Base changes in moveit_core"
 * adds the 'returns_approximate_solution' entry so that it is compatible with the changes in kinematics::KinematicsBase class in the moveit_core repo
 * Contributors: Daichi Yoshikawa, Dave Coleman, Robert Haschke, Sachin Chitta, jrgnicho
 

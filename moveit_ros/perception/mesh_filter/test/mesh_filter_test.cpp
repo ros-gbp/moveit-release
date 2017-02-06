@@ -65,7 +65,7 @@ class FilterTraits<unsigned short>
 {
 public:
   static const GLushort FILTER_GL_TYPE = GL_UNSIGNED_SHORT;
-  static constexpr double ToMetricScale = 0.001;
+  static const double ToMetricScale = 0.001;
 };
 
 template <>
@@ -73,7 +73,7 @@ class FilterTraits<float>
 {
 public:
   static const GLushort FILTER_GL_TYPE = GL_FLOAT;
-  static constexpr double ToMetricScale = 1.0f;
+  static const double ToMetricScale = 1.0f;
 };
 
 template <typename Type>
