@@ -42,25 +42,18 @@
 #include <gtest/gtest.h>
 #include <boost/filesystem/path.hpp>
 #include <moveit/profiler/profiler.h>
-#include <ros/package.h>
+#include <moveit_resources/config.h>
 
 class LoadPlanningModelsPr2 : public testing::Test
 {
 protected:
-
   virtual void SetUp()
   {
-    std::string resource_dir = ros::package::getPath("moveit_resources");
-    if(resource_dir == "")
-    {
-      FAIL() << "Failed to find package moveit_resources.";
-      return;
-    }
-    boost::filesystem::path res_path(resource_dir);
+    boost::filesystem::path res_path(MOVEIT_TEST_RESOURCES_DIR);
 
     srdf_model.reset(new srdf::Model());
     std::string xml_string;
-    std::fstream xml_file((res_path / "test/urdf/robot.xml").string().c_str(), std::fstream::in);
+    std::fstream xml_file((res_path / "pr2_description/urdf/robot.xml").string().c_str(), std::fstream::in);
     if (xml_file.is_open())
     {
       while (xml_file.good())
@@ -72,7 +65,7 @@ protected:
       xml_file.close();
       urdf_model = urdf::parseURDF(xml_string);
     }
-    srdf_model->initFile(*urdf_model, (res_path / "test/srdf/robot.xml").string());
+    srdf_model->initFile(*urdf_model, (res_path / "pr2_description/srdf/robot.xml").string());
     robot_model.reset(new moveit::core::RobotModel(urdf_model, srdf_model));
   };
 
@@ -81,7 +74,6 @@ protected:
   }
 
 protected:
-
   boost::shared_ptr<urdf::ModelInterface> urdf_model;
   boost::shared_ptr<srdf::Model> srdf_model;
   moveit::core::RobotModelConstPtr robot_model;
@@ -101,22 +93,22 @@ TEST_F(LoadPlanningModelsPr2, ModelInit)
   moveit::core::RobotModel robot_model0(urdf_model, srdfModel);
   EXPECT_TRUE(robot_model0.getRootJoint()->getVariableCount() == 0);
 
-  static const std::string SMODEL1 =
-    "<?xml version=\"1.0\" ?>"
-    "<robot name=\"pr2\">"
-    "<virtual_joint name=\"base_joint\" child_link=\"base_footprint\" parent_frame=\"base_footprint\" type=\"planar\"/>"
-    "</robot>";
+  static const std::string SMODEL1 = "<?xml version=\"1.0\" ?>"
+                                     "<robot name=\"pr2\">"
+                                     "<virtual_joint name=\"base_joint\" child_link=\"base_footprint\" "
+                                     "parent_frame=\"base_footprint\" type=\"planar\"/>"
+                                     "</robot>";
   srdfModel->initString(*urdf_model, SMODEL1);
 
   moveit::core::RobotModel robot_model1(urdf_model, srdfModel);
   ASSERT_TRUE(robot_model1.getRootJoint() != NULL);
   EXPECT_EQ(robot_model1.getModelFrame(), "/base_footprint");
 
-  static const std::string SMODEL2 =
-    "<?xml version=\"1.0\" ?>"
-    "<robot name=\"pr2\">"
-    "<virtual_joint name=\"world_joint\" child_link=\"base_footprint\" parent_frame=\"odom_combined\" type=\"floating\"/>"
-    "</robot>";
+  static const std::string SMODEL2 = "<?xml version=\"1.0\" ?>"
+                                     "<robot name=\"pr2\">"
+                                     "<virtual_joint name=\"world_joint\" child_link=\"base_footprint\" "
+                                     "parent_frame=\"odom_combined\" type=\"floating\"/>"
+                                     "</robot>";
   srdfModel->initString(*urdf_model, SMODEL2);
 
   moveit::core::RobotModel robot_model2(urdf_model, srdfModel);
@@ -126,18 +118,18 @@ TEST_F(LoadPlanningModelsPr2, ModelInit)
 
 TEST_F(LoadPlanningModelsPr2, GroupInit)
 {
-  static const std::string SMODEL1 =
-    "<?xml version=\"1.0\" ?>"
-    "<robot name=\"pr2\">"
-    "<virtual_joint name=\"base_joint\" child_link=\"base_footprint\" parent_frame=\"base_footprint\" type=\"planar\"/>"
-    "<group name=\"left_arm_base_tip\">"
-    "<chain base_link=\"monkey_base\" tip_link=\"monkey_tip\"/>"
-    "</group>"
-    "<group name=\"left_arm_joints\">"
-    "<joint name=\"l_monkey_pan_joint\"/>"
-    "<joint name=\"l_monkey_fles_joint\"/>"
-    "</group>"
-    "</robot>";
+  static const std::string SMODEL1 = "<?xml version=\"1.0\" ?>"
+                                     "<robot name=\"pr2\">"
+                                     "<virtual_joint name=\"base_joint\" child_link=\"base_footprint\" "
+                                     "parent_frame=\"base_footprint\" type=\"planar\"/>"
+                                     "<group name=\"left_arm_base_tip\">"
+                                     "<chain base_link=\"monkey_base\" tip_link=\"monkey_tip\"/>"
+                                     "</group>"
+                                     "<group name=\"left_arm_joints\">"
+                                     "<joint name=\"l_monkey_pan_joint\"/>"
+                                     "<joint name=\"l_monkey_fles_joint\"/>"
+                                     "</group>"
+                                     "</robot>";
 
   boost::shared_ptr<srdf::Model> srdfModel(new srdf::Model());
   srdfModel->initString(*urdf_model, SMODEL1);
@@ -149,23 +141,23 @@ TEST_F(LoadPlanningModelsPr2, GroupInit)
   const moveit::core::JointModelGroup* left_arm_joints_group = robot_model1.getJointModelGroup("left_arm_joints");
   ASSERT_TRUE(left_arm_joints_group == NULL);
 
-  static const std::string SMODEL2 =
-    "<?xml version=\"1.0\" ?>"
-    "<robot name=\"pr2\">"
-    "<virtual_joint name=\"base_joint\" child_link=\"base_footprint\" parent_frame=\"base_footprint\" type=\"planar\"/>"
-    "<group name=\"left_arm_base_tip\">"
-    "<chain base_link=\"torso_lift_link\" tip_link=\"l_wrist_roll_link\"/>"
-    "</group>"
-    "<group name=\"left_arm_joints\">"
-    "<joint name=\"l_shoulder_pan_joint\"/>"
-    "<joint name=\"l_shoulder_lift_joint\"/>"
-    "<joint name=\"l_upper_arm_roll_joint\"/>"
-    "<joint name=\"l_elbow_flex_joint\"/>"
-    "<joint name=\"l_forearm_roll_joint\"/>"
-    "<joint name=\"l_wrist_flex_joint\"/>"
-    "<joint name=\"l_wrist_roll_joint\"/>"
-    "</group>"
-    "</robot>";
+  static const std::string SMODEL2 = "<?xml version=\"1.0\" ?>"
+                                     "<robot name=\"pr2\">"
+                                     "<virtual_joint name=\"base_joint\" child_link=\"base_footprint\" "
+                                     "parent_frame=\"base_footprint\" type=\"planar\"/>"
+                                     "<group name=\"left_arm_base_tip\">"
+                                     "<chain base_link=\"torso_lift_link\" tip_link=\"l_wrist_roll_link\"/>"
+                                     "</group>"
+                                     "<group name=\"left_arm_joints\">"
+                                     "<joint name=\"l_shoulder_pan_joint\"/>"
+                                     "<joint name=\"l_shoulder_lift_joint\"/>"
+                                     "<joint name=\"l_upper_arm_roll_joint\"/>"
+                                     "<joint name=\"l_elbow_flex_joint\"/>"
+                                     "<joint name=\"l_forearm_roll_joint\"/>"
+                                     "<joint name=\"l_wrist_flex_joint\"/>"
+                                     "<joint name=\"l_wrist_roll_joint\"/>"
+                                     "</group>"
+                                     "</robot>";
   srdfModel->initString(*urdf_model, SMODEL2);
 
   moveit::core::RobotModelPtr robot_model2(new moveit::core::RobotModel(urdf_model, srdfModel));
@@ -186,7 +178,7 @@ TEST_F(LoadPlanningModelsPr2, GroupInit)
 
   bool found_shoulder_pan_link = false;
   bool found_wrist_roll_link = false;
-  for(unsigned int i = 0; i < left_arm_base_tip_group->getLinkModels().size(); i++)
+  for (unsigned int i = 0; i < left_arm_base_tip_group->getLinkModels().size(); i++)
   {
     if (left_arm_base_tip_group->getLinkModels()[i]->getName() == "l_shoulder_pan_link")
     {
@@ -215,8 +207,8 @@ TEST_F(LoadPlanningModelsPr2, GroupInit)
   moveit::core::RobotState ks2(robot_model2);
   moveit::core::robotStateMsgToRobotState(robot_state, ks2);
 
-  const double *v1 = ks.getVariablePositions();
-  const double *v2 = ks2.getVariablePositions();
+  const double* v1 = ks.getVariablePositions();
+  const double* v2 = ks2.getVariablePositions();
   for (std::size_t i = 0; i < ks.getVariableCount(); ++i)
     EXPECT_NEAR(v1[i], v2[i], 1e-5);
 }
@@ -253,14 +245,14 @@ TEST_F(LoadPlanningModelsPr2, FullTest)
 
   std::vector<shapes::ShapeConstPtr> shapes;
   EigenSTL::vector_Affine3d poses;
-  shapes::Shape* shape = new shapes::Box(.1,.1,.1);
+  shapes::Shape* shape = new shapes::Box(.1, .1, .1);
   shapes.push_back(shapes::ShapeConstPtr(shape));
   poses.push_back(Eigen::Affine3d::Identity());
   std::set<std::string> touch_links;
 
   trajectory_msgs::JointTrajectory empty_state;
-  moveit::core::AttachedBody *attached_body =
-    new moveit::core::AttachedBody(robot_model->getLinkModel("r_gripper_palm_link"), "box", shapes, poses, touch_links, empty_state);
+  moveit::core::AttachedBody* attached_body = new moveit::core::AttachedBody(
+      robot_model->getLinkModel("r_gripper_palm_link"), "box", shapes, poses, touch_links, empty_state);
   ks.attachBody(attached_body);
 
   std::vector<const moveit::core::AttachedBody*> attached_bodies_1;
@@ -283,7 +275,7 @@ TEST_F(LoadPlanningModelsPr2, FullTest)
   ASSERT_EQ(attached_bodies_2.size(), 0);
 }
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
