@@ -52,16 +52,14 @@
 
 namespace occupancy_map_monitor
 {
-
 class OccupancyMapMonitor
 {
 public:
-
-  OccupancyMapMonitor(const boost::shared_ptr<tf::Transformer> &tf,
-                      const std::string &map_frame = "", double map_resolution = 0.0);
+  OccupancyMapMonitor(const boost::shared_ptr<tf::Transformer>& tf, const std::string& map_frame = "",
+                      double map_resolution = 0.0);
   OccupancyMapMonitor(double map_resolution = 0.0);
-  OccupancyMapMonitor(const boost::shared_ptr<tf::Transformer> &tf, ros::NodeHandle &nh,
-                      const std::string &map_frame = "", double map_resolution = 0.0);
+  OccupancyMapMonitor(const boost::shared_ptr<tf::Transformer>& tf, ros::NodeHandle& nh,
+                      const std::string& map_frame = "", double map_resolution = 0.0);
 
   ~OccupancyMapMonitor();
 
@@ -89,7 +87,7 @@ public:
     return map_frame_;
   }
 
-  void setMapFrame(const std::string &frame);
+  void setMapFrame(const std::string& frame);
 
   double getMapResolution() const
   {
@@ -101,21 +99,21 @@ public:
     return tf_;
   }
 
-  void addUpdater(const OccupancyMapUpdaterPtr &updater);
+  void addUpdater(const OccupancyMapUpdaterPtr& updater);
 
   /** \brief Add this shape to the set of shapes to be filtered out from the octomap */
-  ShapeHandle excludeShape(const shapes::ShapeConstPtr &shape);
+  ShapeHandle excludeShape(const shapes::ShapeConstPtr& shape);
 
   /** \brief Forget about this shape handle and the shapes it corresponds to */
   void forgetShape(ShapeHandle handle);
 
   /** @brief Set the callback to trigger when updates to the maintained octomap are received */
-  void setUpdateCallback(const boost::function<void()> &update_callback)
+  void setUpdateCallback(const boost::function<void()>& update_callback)
   {
     tree_->setUpdateCallback(update_callback);
   }
 
-  void setTransformCacheCallback(const TransformCacheProvider &transform_cache_callback);
+  void setTransformCacheCallback(const TransformCacheProvider& transform_cache_callback);
 
   void publishDebugInformation(bool flag);
 
@@ -125,7 +123,6 @@ public:
   }
 
 private:
-
   void initialize();
 
   /** @brief Save the current octree to a binary file */
@@ -134,7 +131,8 @@ private:
   /** @brief Load octree from a binary file (gets rid of current octree data) */
   bool loadMapCallback(moveit_msgs::LoadMap::Request& request, moveit_msgs::LoadMap::Response& response);
 
-  bool getShapeTransformCache(std::size_t index, const std::string &target_frame, const ros::Time &target_time, ShapeTransformCache &cache) const;
+  bool getShapeTransformCache(std::size_t index, const std::string& target_frame, const ros::Time& target_time,
+                              ShapeTransformCache& cache) const;
 
   boost::shared_ptr<tf::Transformer> tf_;
   std::string map_frame_;
@@ -158,9 +156,7 @@ private:
   ros::ServiceServer load_map_srv_;
 
   bool active_;
-
 };
-
 }
 
 #endif
