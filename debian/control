@@ -1,0 +1,12 @@
+Source: ros-jade-moveit-ros-manipulation
+Section: misc
+Priority: extra
+Maintainer: Ioan Sucan <isucan@gmail.com>
+Build-Depends: debhelper (>= 9.0.0), libeigen3-dev, ros-jade-actionlib, ros-jade-catkin, ros-jade-dynamic-reconfigure, ros-jade-household-objects-database-msgs, ros-jade-manipulation-msgs, ros-jade-moveit-core, ros-jade-moveit-msgs, ros-jade-moveit-ros-move-group, ros-jade-moveit-ros-planning, ros-jade-pluginlib, ros-jade-rosconsole, ros-jade-roscpp, ros-jade-tf
+Homepage: http://moveit.ros.org
+Standards-Version: 3.9.2
+
+Package: ros-jade-moveit-ros-manipulation
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-jade-actionlib, ros-jade-dynamic-reconfigure, ros-jade-household-objects-database-msgs, ros-jade-manipulation-msgs, ros-jade-moveit-core, ros-jade-moveit-msgs, ros-jade-moveit-ros-move-group, ros-jade-moveit-ros-planning, ros-jade-pluginlib, ros-jade-rosconsole, ros-jade-roscpp, ros-jade-tf
+Description: Components of MoveIt used for manipulation
