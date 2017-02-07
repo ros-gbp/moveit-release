@@ -2,21 +2,13 @@
 Changelog for package moveit_planners_ompl
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.7.7 (2017-02-06)
+0.8.4 (2017-02-06)
 ------------------
-* [maintenance] clang-format upgraded to 3.8 (`#404 <https://github.com/ros-planning/moveit/issues/404>`_)
-* Contributors: Dave Coleman
+* [maintenance] Replace last easy explicit shared_ptrs with MOVEIT_CLASS_FORWARD.
+* [test] fetch moveit_resources path at compile time
+* Contributors: Dave Coleman, Isaac I.Y. Saito, Maarten de Vries, Robert Haschke
 
-0.7.6 (2016-12-30)
-------------------
-
-0.7.5 (2016-12-25)
-------------------
-
-0.7.4 (2016-12-22)
-------------------
-
-0.7.3 (2016-12-20)
+0.8.3 (2016-08-19)
 ------------------
 
 0.7.0 (2016-01-30)

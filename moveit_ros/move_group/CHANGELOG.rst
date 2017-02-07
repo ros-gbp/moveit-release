@@ -2,57 +2,24 @@
 Changelog for package moveit_ros_move_group
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.7.7 (2017-02-06)
+0.8.4 (2017-02-06)
 ------------------
-* clang-format upgraded to 3.8 (`#404 <https://github.com/ros-planning/moveit/issues/404>`_)
-* Contributors: Dave Coleman
+* [capability] validate trajectory before execution (`#63 <https://github.com/ros-planning/moveit/issues/63>`_)
+* Contributors: Dave Coleman, Isaac I.Y. Saito, Maarten de Vries, Robert Haschke
 
-0.7.6 (2016-12-30)
+0.8.3 (2016-08-19)
 ------------------
+* Dummy to temporarily workaround https://github.com/ros-infrastructure/catkin_pkg/issues/158#issuecomment-277852080
 
-0.7.5 (2016-12-25)
+0.6.6 (2016-06-08)
 ------------------
-
-0.7.4 (2016-12-22)
-------------------
-
-0.7.3 (2016-12-20)
-------------------
-
-0.7.2 (2016-06-20)
-------------------
-* apply planning scene: use newly exposed success value of newPlanningSceneMessage
-* add apply_planning_scene capability
-  This new capability allows to apply changes to a monitored planning
-  scene and *blocks* until the changes are applied. This is meant to
-  replace the quasi-standard pattern:
-  ```
-  planning_scene_interface.addCollisionObjects(...)
-  sleep(2.0)
-  group.pick("object")
-  ```
-  by
-  ```
-  ros::ServiceClient client = n.serviceClient<moveit_msgs::ApplyPlanningScene>("apply_planning_scene");
-  client.call(...)
-  group.pick("object")
-  ```
-  This makes it much more convenient to add&interact with objects
-  without useless and arbitrarily long sleeps to ensure planning scene
-  updates succeeded.
-* clear_octomap_service: fix runtime name (`#685 <https://github.com/ros-planning/moveit_ros/issues/685>`_)
-  Looks like the author copy&pasted from a different capability
-  and forgot to change the name.
-* Contributors: v4hn
-
-0.7.1 (2016-04-11)
-------------------
-
-0.7.0 (2016-01-30)
-------------------
+* added missing validity check
+  iterator found with `configs.find()` needs to be validated before use...
 * Removed trailing whitespace from entire repository
+* moved planner params services into existing capability QueryPlannerInterfaces
+* capability plugin MoveGroupPlannerParamsService to get/set planner params
 * Fixed bug(?) in move_group::MoveGroupKinematicsService::computeIK link name selection.
-* Contributors: Dave Coleman, Mihai Pomarlan
+* Contributors: Dave Coleman, Mihai Pomarlan, Robert Haschke
 
 0.6.5 (2015-01-24)
 ------------------

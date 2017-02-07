@@ -1,7 +1,7 @@
-# moveit/moveit:indigo-ci-shadow-fixed
+# moveit/moveit:jade-ci-shadow-fixed
 # Sets up a base image to use for running Continuous Integration on Travis
 
-FROM moveit/moveit:indigo-ci
+FROM moveit/moveit:jade-ci
 MAINTAINER Dave Coleman dave@dav.ee
 
 ENV TERM xterm

@@ -158,7 +158,7 @@ public:
 
   bool isVisible()
   {
-    return (imarker);
+    return static_cast<bool>(imarker);
   }
 
   void connect(const QObject* receiver, const char* method)

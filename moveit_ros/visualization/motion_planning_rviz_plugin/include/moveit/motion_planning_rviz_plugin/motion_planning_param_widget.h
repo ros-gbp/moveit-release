@@ -32,39 +32,49 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-/* Author: Ioan Sucan */
+/* Author: Robert Haschke */
 
-#ifndef MOVEIT_MOVEIT_WAREHOUSE_MOVEIT_MESSAGE_STORAGE_
-#define MOVEIT_MOVEIT_WAREHOUSE_MOVEIT_MESSAGE_STORAGE_
+#ifndef MOVEIT_MOTION_PLANNING_RVIZ_PLUGIN_MOTION_PLANNING_PARAM_WIDGET_
+#define MOVEIT_MOTION_PLANNING_RVIZ_PLUGIN_MOTION_PLANNING_PARAM_WIDGET_
 
-#include <warehouse_ros/database_connection.h>
-#include <vector>
-#include <string>
-
-namespace moveit_warehouse
+#include <rviz/properties/property_tree_widget.h>
+#include <moveit/macros/class_forward.h>
+namespace moveit
 {
-/** \brief This class provides the mechanism to connect to a database and reads needed ROS parameters when appropriate.
- */
-class MoveItMessageStorage
+namespace planning_interface
 {
+MOVEIT_CLASS_FORWARD(MoveGroup);
+}
+}
+
+namespace moveit_rviz_plugin
+{
+class MotionPlanningParamWidget : public rviz::PropertyTreeWidget
+{
+  Q_OBJECT
 public:
-  /// \brief Takes a warehouse_ros DatabaseConnection.  The DatabaseConnection is expected to have already been
-  /// initialized.
-  MoveItMessageStorage(warehouse_ros::DatabaseConnection::Ptr conn);
+  MotionPlanningParamWidget(QWidget* parent = 0);
+  ~MotionPlanningParamWidget();
 
-  virtual ~MoveItMessageStorage()
-  {
-  }
+  void setMoveGroup(const moveit::planning_interface::MoveGroupPtr& mg);
+  void setGroupName(const std::string& group_name);
 
-protected:
-  /// Keep only the \e names that match \e regex
-  void filterNames(const std::string& regex, std::vector<std::string>& names) const;
+public Q_SLOTS:
+  void setPlannerId(const std::string& planner_id);
 
-  warehouse_ros::DatabaseConnection::Ptr conn_;
+private Q_SLOTS:
+  void changedValue();
+
+private:
+  rviz::Property* createPropertyTree();
+
+private:
+  rviz::PropertyTreeModel* property_tree_model_;
+
+  moveit::planning_interface::MoveGroupPtr move_group_;
+  std::string group_name_;
+  std::string planner_id_;
 };
-
-/// \brief Load a database connection
-typename warehouse_ros::DatabaseConnection::Ptr loadDatabase();
 }
 
 #endif

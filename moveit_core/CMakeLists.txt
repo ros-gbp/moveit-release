@@ -10,11 +10,9 @@ find_package(Boost REQUIRED system filesystem date_time thread iostreams)
 
 find_package(console_bridge REQUIRED)
 
-# required to find 'Eigen' in indigo
-find_package(cmake_modules REQUIRED)
-find_package(Eigen REQUIRED)
-
 find_package(PkgConfig REQUIRED)
+pkg_search_module(EIGEN3 REQUIRED eigen3)
+
 pkg_check_modules(LIBFCL REQUIRED fcl)
 find_library(LIBFCL_LIBRARIES_FULL ${LIBFCL_LIBRARIES} ${LIBFCL_LIBRARY_DIRS})
 set(LIBFCL_LIBRARIES "${LIBFCL_LIBRARIES_FULL}")
@@ -81,6 +79,7 @@ set(THIS_PACKAGE_INCLUDE_DIRS
 
 catkin_package(
   INCLUDE_DIRS
+    ${EIGEN3_INCLUDE_DIRS}
     ${THIS_PACKAGE_INCLUDE_DIRS}
   LIBRARIES
     moveit_exceptions
@@ -119,15 +118,16 @@ catkin_package(
     visualization_msgs
   DEPENDS
     Boost
-    Eigen
+    EIGEN3
     OCTOMAP
     console_bridge
     urdfdom
     urdfdom_headers
     )
 
-include_directories(SYSTEM ${EIGEN_INCLUDE_DIRS}
+include_directories(SYSTEM ${EIGEN3_INCLUDE_DIRS}
                            ${Boost_INCLUDE_DIR}
+                           ${LIBFCL_INCLUDE_DIRS}
                            )
 
 include_directories(${THIS_PACKAGE_INCLUDE_DIRS}

@@ -2,22 +2,12 @@
 Changelog for package moveit_controller_manager_example
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.7.7 (2017-02-06)
-------------------
-* clang-format upgraded to 3.8 (`#404 <https://github.com/ros-planning/moveit/issues/404>`_)
-* Contributors: Dave Coleman
-
-0.7.6 (2016-12-30)
+0.8.4 (2017-02-06)
 ------------------
 
-0.7.5 (2016-12-25)
+0.8.3 (2016-08-19)
 ------------------
-
-0.7.4 (2016-12-22)
-------------------
-
-0.7.3 (2016-12-20)
-------------------
+* Dummy to temporarily workaround https://github.com/ros-infrastructure/catkin_pkg/issues/158#issuecomment-277852080
 
 0.5.7 (2016-01-30)
 ------------------
