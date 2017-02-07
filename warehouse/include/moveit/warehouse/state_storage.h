@@ -38,18 +38,19 @@
 #define MOVEIT_MOVEIT_WAREHOUSE_STATE_STORAGE_
 
 #include <moveit/warehouse/moveit_message_storage.h>
+#include <moveit/macros/class_forward.h>
 #include <moveit_msgs/RobotState.h>
 
 namespace moveit_warehouse
 {
-
 typedef warehouse_ros::MessageWithMetadata<moveit_msgs::RobotState>::ConstPtr RobotStateWithMetadata;
 typedef warehouse_ros::MessageCollection<moveit_msgs::RobotState>::Ptr RobotStateCollection;
+
+MOVEIT_CLASS_FORWARD(RobotStateStorage);
 
 class RobotStateStorage : public MoveItMessageStorage
 {
 public:
-
   static const std::string DATABASE_NAME;
 
   static const std::string STATE_NAME;
@@ -57,26 +58,25 @@ public:
 
   RobotStateStorage(warehouse_ros::DatabaseConnection::Ptr conn);
 
-  void addRobotState(const moveit_msgs::RobotState &msg, const std::string &name, const std::string &robot = "");
-  bool hasRobotState(const std::string &name, const std::string &robot = "") const;
-  void getKnownRobotStates(std::vector<std::string> &names, const std::string &robot = "") const;
-  void getKnownRobotStates(const std::string &regex, std::vector<std::string> &names, const std::string &robot = "") const;
+  void addRobotState(const moveit_msgs::RobotState& msg, const std::string& name, const std::string& robot = "");
+  bool hasRobotState(const std::string& name, const std::string& robot = "") const;
+  void getKnownRobotStates(std::vector<std::string>& names, const std::string& robot = "") const;
+  void getKnownRobotStates(const std::string& regex, std::vector<std::string>& names,
+                           const std::string& robot = "") const;
 
   /** \brief Get the constraints named \e name. Return false on failure. */
-  bool getRobotState(RobotStateWithMetadata &msg_m, const std::string &name, const std::string &robot = "") const;
+  bool getRobotState(RobotStateWithMetadata& msg_m, const std::string& name, const std::string& robot = "") const;
 
-  void renameRobotState(const std::string &old_name, const std::string &new_name, const std::string &robot = "");
+  void renameRobotState(const std::string& old_name, const std::string& new_name, const std::string& robot = "");
 
-  void removeRobotState(const std::string &name, const std::string &robot = "");
+  void removeRobotState(const std::string& name, const std::string& robot = "");
 
   void reset();
 
 private:
-
   void createCollections();
 
   RobotStateCollection state_collection_;
-
 };
 }
 
