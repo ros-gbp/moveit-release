@@ -36,11 +36,11 @@
 #define MOVEIT_COLLISION_PLUGIN_LOADER_COLLISION_PLUGIN_LOADER_H
 
 #include <ros/ros.h>
+#include <moveit/macros/class_forward.h>
 #include <moveit/collision_detection/collision_plugin.h>
 
 namespace collision_detection
 {
-
 /**
  * @brief This is used to load the collision plugin
  */
@@ -60,13 +60,11 @@ public:
    * @param exclusive If true, sets the new detection robot/world to be the only one.
    * @return True if collision robot/world were added to scene.
    */
-  bool activate(const std::string& name,
-    const planning_scene::PlanningScenePtr& scene,
-    bool exclusive);
+  bool activate(const std::string& name, const planning_scene::PlanningScenePtr& scene, bool exclusive);
 
 private:
-  class CollisionPluginLoaderImpl;
-  boost::shared_ptr<CollisionPluginLoaderImpl> loader_;
+  MOVEIT_CLASS_FORWARD(CollisionPluginLoaderImpl);
+  CollisionPluginLoaderImplPtr loader_;
 };
 
 }  // namespace collision_detection
