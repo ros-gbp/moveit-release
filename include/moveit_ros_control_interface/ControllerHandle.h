@@ -38,18 +38,23 @@
 #define MOVEIT_ROS_CONTROL_INTERFACE_CONTROLLER_HANDLE_H
 
 #include <moveit/controller_manager/controller_manager.h>
+#include <moveit/macros/class_forward.h>
 
 namespace moveit_ros_control_interface
 {
+MOVEIT_CLASS_FORWARD(ControllerHandleAllocator);
+
 /**
  * Base class for MoveItControllerHandle allocators
  */
 class ControllerHandleAllocator
 {
 public:
-  virtual moveit_controller_manager::MoveItControllerHandlePtr alloc(const std::string &name,
-                                                                     const std::vector<std::string> &resources) = 0;
-  virtual ~ControllerHandleAllocator() {}
+  virtual moveit_controller_manager::MoveItControllerHandlePtr alloc(const std::string& name,
+                                                                     const std::vector<std::string>& resources) = 0;
+  virtual ~ControllerHandleAllocator()
+  {
+  }
 };
 
 }  // namespace moveit_ros_control_interface
