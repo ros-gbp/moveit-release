@@ -46,7 +46,6 @@
 
 namespace moveit_setup_assistant
 {
-
 /**
  * Widget for showing a left hand side list of navigation items
  *
@@ -58,16 +57,15 @@ class NavigationWidget : public QListView
 {
   Q_OBJECT
 public:
-  explicit NavigationWidget(QWidget *parent = 0);
+  explicit NavigationWidget(QWidget* parent = 0);
 
-  void setNavs(const QList<QString> &navs);
-  void setEnabled( const int &index, bool enabled );
-  void setSelected( const int &index );
+  void setNavs(const QList<QString>& navs);
+  void setEnabled(const int& index, bool enabled);
+  void setSelected(const int& index);
 
 private:
-  QStandardItemModel *model_;
+  QStandardItemModel* model_;
 };
-
 
 /**
  * Class for drawing the style of the navigation box
@@ -79,14 +77,12 @@ private:
 class NavDelegate : public QStyledItemDelegate
 {
   Q_OBJECT
-  public:
-  explicit NavDelegate(QObject *parent = 0);
+public:
+  explicit NavDelegate(QObject* parent = 0);
 
-  QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const;
-  void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
-
+  QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const;
+  void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
 };
-
 }
 
 #endif
