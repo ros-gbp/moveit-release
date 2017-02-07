@@ -41,7 +41,7 @@
 
 static const std::string ROBOT_DESCRIPTION = "robot_description";
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
   ros::init(argc, argv, "inverse_kinematics_test");
 
@@ -56,13 +56,13 @@ int main(int argc, char **argv)
     std::string group = argv[1];
     ROS_INFO_STREAM("Evaluating IK for " << group);
 
-    const robot_model::JointModelGroup *jmg = rml.getModel()->getJointModelGroup(group);
+    const robot_model::JointModelGroup* jmg = rml.getModel()->getJointModelGroup(group);
     if (jmg)
     {
-      const kinematics::KinematicsBaseConstPtr &solver = jmg->getSolverInstance();
+      const kinematics::KinematicsBaseConstPtr& solver = jmg->getSolverInstance();
       if (solver)
       {
-        const std::string &tip = solver->getTipFrame();
+        const std::string& tip = solver->getTipFrame();
         robot_state::RobotState state(rml.getModel());
         state.setToDefaultValues();
 
@@ -77,14 +77,14 @@ int main(int argc, char **argv)
           {
             test_count = boost::lexical_cast<unsigned int>(argv[2]);
           }
-          catch(...)
+          catch (...)
           {
           }
 
         ROS_INFO("Running %u tests", test_count);
 
         moveit::tools::Profiler::Start();
-        for (unsigned int i = 0 ; i < test_count ; ++i)
+        for (unsigned int i = 0; i < test_count; ++i)
         {
           state.setToRandomPositions(jmg);
           Eigen::Affine3d pose = state.getGlobalLinkTransform(tip);
@@ -92,7 +92,7 @@ int main(int argc, char **argv)
           moveit::tools::Profiler::Begin("IK");
           state.setFromIK(jmg, pose);
           moveit::tools::Profiler::End("IK");
-          const Eigen::Affine3d &pose_upd = state.getGlobalLinkTransform(tip);
+          const Eigen::Affine3d& pose_upd = state.getGlobalLinkTransform(tip);
           Eigen::Affine3d diff = pose_upd * pose.inverse();
           double rot_err = (diff.rotation() - Eigen::Matrix3d::Identity()).norm();
           double trans_err = diff.translation().norm();
