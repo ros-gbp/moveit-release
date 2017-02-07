@@ -1,6 +1,6 @@
 <package>
   <name>moveit_ros_planning_interface</name>
-  <version>0.8.3</version>
+  <version>0.8.4</version>
   <description>Components of MoveIt that offer simpler interfaces to planning and execution</description>
 
   <author email="isucan@google.com">Ioan Sucan</author>
@@ -11,8 +11,8 @@
   <license>BSD</license>
 
   <url type="website">http://moveit.ros.org</url>
-  <url type="bugtracker">https://github.com/ros-planning/moveit_ros/issues</url>
-  <url type="repository">https://github.com/ros-planning/moveit_ros</url>
+  <url type="bugtracker">https://github.com/ros-planning/moveit/issues</url>
+  <url type="repository">https://github.com/ros-planning/moveit</url>
 
   <buildtool_depend>catkin</buildtool_depend>
   <buildtool_depend>python-catkin-pkg</buildtool_depend>
@@ -44,4 +44,6 @@
   <run_depend>tf_conversions</run_depend>
   <run_depend>python</run_depend>
 
+  <test_depend>moveit_resources</test_depend>
+  <test_depend>rostest</test_depend>
 </package>
