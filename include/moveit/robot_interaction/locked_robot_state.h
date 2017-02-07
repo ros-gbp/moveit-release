@@ -38,12 +38,14 @@
 #ifndef MOVEIT_ROBOT_INTERACTION_LOCKED_ROBOT_STATE_
 #define MOVEIT_ROBOT_INTERACTION_LOCKED_ROBOT_STATE_
 
+#include <moveit/macros/class_forward.h>
 #include <moveit/robot_state/robot_state.h>
 #include <boost/function.hpp>
 #include <boost/thread.hpp>
 
 namespace robot_interaction
 {
+MOVEIT_CLASS_FORWARD(LockedRobotState);
 
 /// Maintain a RobotState in a multithreaded environment.
 //
@@ -77,7 +79,7 @@ public:
   void setState(const robot_state::RobotState& state);
 
   // This is a function that can modify the maintained state.
-  typedef boost::function<void (robot_state::RobotState*)> ModifyStateFunction;
+  typedef boost::function<void(robot_state::RobotState*)> ModifyStateFunction;
 
   // Modify the state.
   //
@@ -106,10 +108,6 @@ private:
   // PROTECTED BY state_lock_
   robot_state::RobotStatePtr state_;
 };
-
-typedef boost::shared_ptr<LockedRobotState> LockedRobotStatePtr;
-typedef boost::shared_ptr<const LockedRobotState> LockedRobotStateConstPtr;
-
 }
 
 #endif
