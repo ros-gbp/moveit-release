@@ -35,12 +35,14 @@
 #ifndef MOVEIT_COLLISION_DETECTION_COLLISION_PLUGIN_H
 #define MOVEIT_COLLISION_DETECTION_COLLISION_PLUGIN_H
 
+#include <moveit/macros/class_forward.h>
 #include <moveit/collision_detection/collision_robot.h>
 #include <moveit/collision_detection/collision_world.h>
 #include <moveit/planning_scene/planning_scene.h>
 
 namespace collision_detection
 {
+MOVEIT_CLASS_FORWARD(CollisionPlugin);
 
 /**
  * @brief Plugin API for loading a custom collision detection robot/world.
@@ -51,7 +53,8 @@ namespace collision_detection
  *   {
  *
  *   class MyCollisionDetectorAllocator :
- *     public collision_detection::CollisionDetectorAllocatorTemplate<MyCollisionWorld, MyCollisionRobot, MyCollisionDetectorAllocator>
+ *     public collision_detection::CollisionDetectorAllocatorTemplate<MyCollisionWorld, MyCollisionRobot,
+ MyCollisionDetectorAllocator>
  *   {
  *     public:
  *       static const std::string NAME_;
@@ -77,15 +80,17 @@ namespace collision_detection
 class CollisionPlugin
 {
 public:
-  CollisionPlugin() {}
-  virtual ~CollisionPlugin() {}
+  CollisionPlugin()
+  {
+  }
+  virtual ~CollisionPlugin()
+  {
+  }
 
   /**
    * @brief This should be used to load your collision plugin.
    */
-  virtual bool initialize(
-    const planning_scene::PlanningScenePtr& scene,
-    bool exclusive) const = 0;
+  virtual bool initialize(const planning_scene::PlanningScenePtr& scene, bool exclusive) const = 0;
 };
 
 }  // namespace collision_detection
