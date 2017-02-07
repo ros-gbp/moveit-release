@@ -37,6 +37,7 @@
 #ifndef MOVEIT_VISUALIZATION_SCENE_DISPLAY_RVIZ_PLUGIN_PLANNING_SCENE_RENDER_
 #define MOVEIT_VISUALIZATION_SCENE_DISPLAY_RVIZ_PLUGIN_PLANNING_SCENE_RENDER_
 
+#include <moveit/macros/class_forward.h>
 #include <moveit/planning_scene/planning_scene.h>
 #include <moveit/rviz_plugin_render_tools/render_shapes.h>
 #include <rviz/helpers/color.h>
@@ -54,18 +55,15 @@ class DisplayContext;
 
 namespace moveit_rviz_plugin
 {
-
-class RobotStateVisualization;
-typedef boost::shared_ptr<RobotStateVisualization> RobotStateVisualizationPtr;
-
-class RenderShapes;
-typedef boost::shared_ptr<RenderShapes> RenderShapesPtr;
+MOVEIT_CLASS_FORWARD(RobotStateVisualization);
+MOVEIT_CLASS_FORWARD(RenderShapes);
+MOVEIT_CLASS_FORWARD(PlanningSceneRender);
 
 class PlanningSceneRender
 {
 public:
-  PlanningSceneRender(Ogre::SceneNode *root_node, rviz::DisplayContext *context,
-                      const RobotStateVisualizationPtr &robot);
+  PlanningSceneRender(Ogre::SceneNode* root_node, rviz::DisplayContext* context,
+                      const RobotStateVisualizationPtr& robot);
   ~PlanningSceneRender();
 
   Ogre::SceneNode* getGeometryNode()
@@ -78,26 +76,17 @@ public:
     return scene_robot_;
   }
 
-  void renderPlanningScene(const planning_scene::PlanningSceneConstPtr &scene,
-                           const rviz::Color &default_scene_color,
-                           const rviz::Color &default_attached_color,
-                           OctreeVoxelRenderMode voxel_render_mode,
-                           OctreeVoxelColorMode voxel_color_mode,
-                           float default_scene_alpha);
+  void renderPlanningScene(const planning_scene::PlanningSceneConstPtr& scene, const rviz::Color& default_scene_color,
+                           const rviz::Color& default_attached_color, OctreeVoxelRenderMode voxel_render_mode,
+                           OctreeVoxelColorMode voxel_color_mode, float default_scene_alpha);
   void clear();
 
 private:
-
-  Ogre::SceneNode *planning_scene_geometry_node_;
-  rviz::DisplayContext *context_;
+  Ogre::SceneNode* planning_scene_geometry_node_;
+  rviz::DisplayContext* context_;
   RenderShapesPtr render_shapes_;
   RobotStateVisualizationPtr scene_robot_;
-
 };
-
-typedef boost::shared_ptr<PlanningSceneRender> PlanningSceneRenderPtr;
-typedef boost::shared_ptr<const PlanningSceneRender> PlanningSceneRenderConstPtr;
-
 }
 
 #endif
