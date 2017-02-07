@@ -55,11 +55,10 @@
 #endif
 
 #include "header_widget.h"
-#include "setup_screen_widget.h" // a base class for screens in the setup assistant
+#include "setup_screen_widget.h"  // a base class for screens in the setup assistant
 
 namespace moveit_setup_assistant
 {
-
 /**
  * \brief User interface for editing the default collision matrix list in an SRDF
  */
@@ -76,7 +75,7 @@ public:
    * \brief User interface for editing the default collision matrix list in an SRDF
    * \param urdf_file String srdf file location. It will create a new file or will edit an existing one
    */
-  DefaultCollisionsWidget( QWidget *parent, moveit_setup_assistant::MoveItConfigDataPtr config_data );
+  DefaultCollisionsWidget(QWidget* parent, moveit_setup_assistant::MoveItConfigDataPtr config_data);
 
   /**
    * \brief Output Link Pairs to SRDF Format
@@ -87,7 +86,6 @@ public:
    * \brief Load Link Pairs from SRDF Format
    */
   void linkPairsFromSRDF();
-
 
 private Q_SLOTS:
 
@@ -119,14 +117,13 @@ private Q_SLOTS:
 
   /**
    * \brief Called when user changes data in table, really just the checkbox
-   * \param i,j Check coordinates, aka y,x (weird)
    */
-  void toggleCheckBox(int j, int i);
+  void toggleCheckBox(int row, int column);
 
   /**
-   * \breif Called when a row is clicked, to highlight links on robot
-   */
-  void previewClicked( int row, int column );
+  * \brief Called when current row has changed
+  */
+  void previewSelected(int row);
 
   /**
    * \brief Called when setup assistant navigation switches to this screen
@@ -134,24 +131,23 @@ private Q_SLOTS:
   void focusGiven();
 
 private:
-
   // ******************************************************************************************
   // Qt Components
   // ******************************************************************************************
-  QLabel *page_title_;
-  QTableWidget *collision_table_;
-  QVBoxLayout *layout_;
-  QLabel *density_value_label_;
-  QSlider *density_slider_;
-  QPushButton *btn_generate_;
-  QGroupBox *controls_box_;
-  QProgressBar *progress_bar_;
-  QLabel *progress_label_;
-  QCheckBox *collision_checkbox_;
-  QGroupBox *controls_box_bottom_;
-  QLabel *fraction_label_;
-  QSpinBox *fraction_spinbox_;
-  QTimer *update_timer_;
+  QLabel* page_title_;
+  QTableWidget* collision_table_;
+  QVBoxLayout* layout_;
+  QLabel* density_value_label_;
+  QSlider* density_slider_;
+  QPushButton* btn_generate_;
+  QGroupBox* controls_box_;
+  QProgressBar* progress_bar_;
+  QLabel* progress_label_;
+  QCheckBox* collision_checkbox_;
+  QGroupBox* controls_box_bottom_;
+  QLabel* fraction_label_;
+  QSpinBox* fraction_spinbox_;
+  QTimer* update_timer_;
 
   // ******************************************************************************************
   // Variables
@@ -172,16 +168,14 @@ private:
    * \param collision_progress A shared pointer between 3 threads to allow progress bar to update. See declaration
    * location for more details and warning.
    */
-  void generateCollisionTableThread( unsigned int *collision_progress );
+  void generateCollisionTableThread(unsigned int* collision_progress);
 
   /**
    * \brief Helper function to disable parts of GUI during computation
    * \param disable A command
    */
   void disableControls(bool disable);
-
 };
-
 }
 
 #endif
