@@ -32,108 +32,59 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-/* Author: Dave Coleman */
+/* Author: Dave Coleman, Michael 'v4hn' Goerner */
 
-#ifndef MOVEIT_MOVEIT_SETUP_ASSISTANT_WIDGETS_KINEMATIC_CHAIN_WIDGET_
-#define MOVEIT_MOVEIT_SETUP_ASSISTANT_WIDGETS_KINEMATIC_CHAIN_WIDGET_
+#ifndef MOVEIT_ROS_MOVEIT_SETUP_ASSISTANT_WIDGETS_AUTHOR_INFORMATION_WIDGET_
+#define MOVEIT_ROS_MOVEIT_SETUP_ASSISTANT_WIDGETS_AUTHOR_INFORMATION_WIDGET_
 
 #include <QWidget>
-#include <QLabel>
-#include <QTreeWidget>
+#include <QString>
+#include <QLineEdit>
 
 #ifndef Q_MOC_RUN
 #include <moveit/setup_assistant/tools/moveit_config_data.h>
-#include <ros/ros.h>
 #endif
+
+#include "header_widget.h"
+#include "setup_screen_widget.h"  // a base class for screens in the setup assistant
 
 namespace moveit_setup_assistant
 {
-class KinematicChainWidget : public QWidget
+class AuthorInformationWidget : public SetupScreenWidget
 {
   Q_OBJECT
 
-  // ******************************************************************************************
-  // Reusable double list widget for selecting and deselecting a subset from a set
-  // ******************************************************************************************
 public:
   // ******************************************************************************************
   // Public Functions
   // ******************************************************************************************
 
-  /// Constructor
-  KinematicChainWidget(QWidget* parent, moveit_setup_assistant::MoveItConfigDataPtr config_data);
+  AuthorInformationWidget(QWidget* parent, moveit_setup_assistant::MoveItConfigDataPtr config_data);
 
-  /// Loads the availble data list
-  void setAvailable();
-
-  /// Set the link field with previous value
-  void setSelected(const std::string& base_link, const std::string& tip_link);
-
-  void addLinktoTreeRecursive(const robot_model::LinkModel* link, const robot_model::LinkModel* parent);
-
-  bool addLinkChildRecursive(QTreeWidgetItem* parent, const robot_model::LinkModel* link,
-                             const std::string& parent_name);
+  /// Recieved when this widget is chosen from the navigation menu
+  virtual void focusGiven();
 
   // ******************************************************************************************
   // Qt Components
   // ******************************************************************************************
 
-  QLabel* title_;  // specify the title from the parent widget
-  QTreeWidget* link_tree_;
-  QLineEdit* base_link_field_;
-  QLineEdit* tip_link_field_;
+  QLineEdit* name_edit_;
+
+  QLineEdit* email_edit_;
 
 private Q_SLOTS:
 
   // ******************************************************************************************
   // Slot Event Functions
   // ******************************************************************************************
-
-  /// Choose the base link
-  void baseLinkTreeClick();
-
-  /// Choose the tip link
-  void tipLinkTreeClick();
-
-  /// Expand/Collapse Tree
-  void alterTree(const QString& link);
-
-  /// Highlight the selected link in the kinematic chain
-  void itemSelected();
-
-Q_SIGNALS:
-
-  // ******************************************************************************************
-  // Emitted Signals
-  // ******************************************************************************************
-
-  /// Event sent when this widget is done making data changes and parent widget can save
-  void doneEditing();
-
-  /// Event sent when user presses cancel button
-  void cancelEditing();
-
-  /// Event for telling rviz to highlight a link of the robot
-  void highlightLink(const std::string& name, const QColor&);
-
-  /// Event for telling rviz to unhighlight all links of the robot
-  void unhighlightAll();
+  void edited_name();
+  void edited_email();
 
 private:
-  // ******************************************************************************************
-  // Variables
-  // ******************************************************************************************
-
   /// Contains all the configuration data for the setup assistant
   moveit_setup_assistant::MoveItConfigDataPtr config_data_;
-
-  /// Remember if the chain tree has been loaded
-  bool kinematic_chain_loaded_;
-
-  // ******************************************************************************************
-  // Private Functions
-  // ******************************************************************************************
 };
-}
+
+}  // namespace moveit_setup_assistant
 
 #endif
