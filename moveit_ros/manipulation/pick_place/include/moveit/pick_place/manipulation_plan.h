@@ -37,7 +37,7 @@
 #ifndef MOVEIT_PICK_PLACE_MANIPULATION_PLAN_
 #define MOVEIT_PICK_PLACE_MANIPULATION_PLAN_
 
-#include <boost/shared_ptr.hpp>
+#include <moveit/macros/class_forward.h>
 #include <moveit/robot_state/robot_state.h>
 #include <moveit/constraint_samplers/constraint_sampler.h>
 #include <moveit/plan_execution/plan_representation.h>
@@ -51,6 +51,7 @@
 
 namespace pick_place
 {
+MOVEIT_CLASS_FORWARD(ManipulationPlanSharedData);
 
 struct ManipulationPlanSharedData
 {
@@ -63,9 +64,9 @@ struct ManipulationPlanSharedData
   {
   }
 
-  const robot_model::JointModelGroup *planning_group_;
-  const robot_model::JointModelGroup *end_effector_group_;
-  const robot_model::LinkModel *ik_link_;
+  const robot_model::JointModelGroup* planning_group_;
+  const robot_model::JointModelGroup* end_effector_group_;
+  const robot_model::LinkModel* ik_link_;
 
   unsigned int max_goal_sampling_attempts_;
 
@@ -80,14 +81,12 @@ struct ManipulationPlanSharedData
   ros::WallTime timeout_;
 };
 
-typedef boost::shared_ptr<ManipulationPlanSharedData> ManipulationPlanSharedDataPtr;
-typedef boost::shared_ptr<const ManipulationPlanSharedData> ManipulationPlanSharedDataConstPtr;
+MOVEIT_CLASS_FORWARD(ManipulationPlan);
 
 struct ManipulationPlan
 {
-  ManipulationPlan(const ManipulationPlanSharedDataConstPtr &shared_data) :
-    shared_data_(shared_data),
-    processing_stage_(0)
+  ManipulationPlan(const ManipulationPlanSharedDataConstPtr& shared_data)
+    : shared_data_(shared_data), processing_stage_(0)
   {
   }
 
@@ -140,12 +139,7 @@ struct ManipulationPlan
 
   // An id for this plan; this is usually the index of the Grasp / PlaceLocation in the input request
   std::size_t id_;
-
 };
-
-typedef boost::shared_ptr<ManipulationPlan> ManipulationPlanPtr;
-typedef boost::shared_ptr<const ManipulationPlan> ManipulationPlanConstPtr;
-
 }
 
 #endif

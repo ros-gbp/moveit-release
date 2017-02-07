@@ -15,6 +15,7 @@ find_package(Boost REQUIRED COMPONENTS
 )
 find_package(PythonLibs 2.7 REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
+  moveit_msgs
   moveit_ros_planning
   moveit_ros_warehouse
   moveit_ros_manipulation
@@ -70,4 +71,4 @@ add_subdirectory(common_planning_interface_objects)
 add_subdirectory(planning_scene_interface)
 add_subdirectory(move_group_interface)
 add_subdirectory(robot_interface)
-
+add_subdirectory(test)
