@@ -44,16 +44,14 @@
 
 namespace pick_place
 {
-
-PlacePlan::PlacePlan(const PickPlaceConstPtr &pick_place) : PickPlacePlanBase(pick_place, "place")
+PlacePlan::PlacePlan(const PickPlaceConstPtr& pick_place) : PickPlacePlanBase(pick_place, "place")
 {
 }
 
 namespace
 {
-bool transformToEndEffectorGoal(const geometry_msgs::PoseStamped &goal_pose,
-                                const robot_state::AttachedBody* attached_body,
-                                geometry_msgs::PoseStamped &place_pose)
+bool transformToEndEffectorGoal(const geometry_msgs::PoseStamped& goal_pose,
+                                const robot_state::AttachedBody* attached_body, geometry_msgs::PoseStamped& place_pose)
 {
   const EigenSTL::vector_Affine3d& fixed_transforms = attached_body->getFixedTransforms();
   if (fixed_transforms.empty())
@@ -68,24 +66,26 @@ bool transformToEndEffectorGoal(const geometry_msgs::PoseStamped &goal_pose,
 }
 }
 
-bool PlacePlan::plan(const planning_scene::PlanningSceneConstPtr &planning_scene, const moveit_msgs::PlaceGoal &goal)
+bool PlacePlan::plan(const planning_scene::PlanningSceneConstPtr& planning_scene, const moveit_msgs::PlaceGoal& goal)
 {
   double timeout = goal.allowed_planning_time;
   ros::WallTime endtime = ros::WallTime::now() + ros::WallDuration(timeout);
   std::string attached_object_name = goal.attached_object_name;
-  const robot_model::JointModelGroup *jmg = NULL;
-  const robot_model::JointModelGroup *eef = NULL;
+  const robot_model::JointModelGroup* jmg = NULL;
+  const robot_model::JointModelGroup* eef = NULL;
 
   // if the group specified is actually an end-effector, we use it as such
   if (planning_scene->getRobotModel()->hasEndEffector(goal.group_name))
   {
     eef = planning_scene->getRobotModel()->getEndEffector(goal.group_name);
     if (eef)
-    { // if we correctly found the eef, then we try to find out what the planning group is
-      const std::string &eef_parent = eef->getEndEffectorParentGroup().first;
+    {  // if we correctly found the eef, then we try to find out what the planning group is
+      const std::string& eef_parent = eef->getEndEffectorParentGroup().first;
       if (eef_parent.empty())
       {
-        ROS_ERROR_STREAM_NAMED("manipulation", "No parent group to plan in was identified based on end-effector '" << goal.group_name << "'. Please define a parent group in the SRDF.");
+        ROS_ERROR_STREAM_NAMED("manipulation", "No parent group to plan in was identified based on end-effector '"
+                                                   << goal.group_name
+                                                   << "'. Please define a parent group in the SRDF.");
         error_code_.val = moveit_msgs::MoveItErrorCodes::INVALID_GROUP_NAME;
         return false;
       }
@@ -100,19 +100,20 @@ bool PlacePlan::plan(const planning_scene::PlanningSceneConstPtr &planning_scene
     if (jmg)
     {
       // we also try to find the corresponding eef
-      const std::vector<std::string> &eef_names = jmg->getAttachedEndEffectorNames();
+      const std::vector<std::string>& eef_names = jmg->getAttachedEndEffectorNames();
       if (eef_names.empty())
       {
-        ROS_ERROR_STREAM_NAMED("manipulation", "There are no end-effectors specified for group '" << goal.group_name << "'");
+        ROS_ERROR_STREAM_NAMED("manipulation", "There are no end-effectors specified for group '" << goal.group_name
+                                                                                                  << "'");
         error_code_.val = moveit_msgs::MoveItErrorCodes::INVALID_GROUP_NAME;
         return false;
       }
       else
         // check to see if there is an end effector that has attached objects associaded, so we can complete the place
-        for (std::size_t i = 0 ; i < eef_names.size() ; ++i)
+        for (std::size_t i = 0; i < eef_names.size(); ++i)
         {
           std::vector<const robot_state::AttachedBody*> attached_bodies;
-          const robot_model::JointModelGroup *eg = planning_scene->getRobotModel()->getEndEffector(eef_names[i]);
+          const robot_model::JointModelGroup* eg = planning_scene->getRobotModel()->getEndEffector(eef_names[i]);
           if (eg)
           {
             // see if there are objects attached to links in the eef
@@ -120,7 +121,8 @@ bool PlacePlan::plan(const planning_scene::PlanningSceneConstPtr &planning_scene
 
             // is is often possible that the objects are attached to the same link that the eef itself is attached,
             // so we check for attached bodies there as well
-            const robot_model::LinkModel *attached_link_model = planning_scene->getRobotModel()->getLinkModel(eg->getEndEffectorParentGroup().second);
+            const robot_model::LinkModel* attached_link_model =
+                planning_scene->getRobotModel()->getLinkModel(eg->getEndEffectorParentGroup().second);
             if (attached_link_model)
             {
               std::vector<const robot_state::AttachedBody*> attached_bodies2;
@@ -137,7 +139,7 @@ bool PlacePlan::plan(const planning_scene::PlanningSceneConstPtr &planning_scene
             if (!attached_object_name.empty())
             {
               bool found = false;
-              for (std::size_t j = 0 ; j < attached_bodies.size() ; ++j)
+              for (std::size_t j = 0; j < attached_bodies.size(); ++j)
                 if (attached_bodies[j]->getName() == attached_object_name)
                 {
                   found = true;
@@ -152,8 +154,10 @@ bool PlacePlan::plan(const planning_scene::PlanningSceneConstPtr &planning_scene
             // if we previoulsy have set the eef it means we have more options we could use, so things are ambiguous
             if (eef)
             {
-              ROS_ERROR_STREAM_NAMED("manipulation", "There are multiple end-effectors for group '" << goal.group_name <<
-                                     "' that are currently holding objects. It is ambiguous which end-effector to use. Please specify it explicitly.");
+              ROS_ERROR_STREAM_NAMED("manipulation", "There are multiple end-effectors for group '"
+                                                         << goal.group_name
+                                                         << "' that are currently holding objects. It is ambiguous "
+                                                            "which end-effector to use. Please specify it explicitly.");
               error_code_.val = moveit_msgs::MoveItErrorCodes::INVALID_GROUP_NAME;
               return false;
             }
@@ -167,20 +171,23 @@ bool PlacePlan::plan(const planning_scene::PlanningSceneConstPtr &planning_scene
   // if we know the attached object, but not the eef, we can try to identify that
   if (!attached_object_name.empty() && !eef)
   {
-    const robot_state::AttachedBody *attached_body = planning_scene->getCurrentState().getAttachedBody(attached_object_name);
+    const robot_state::AttachedBody* attached_body =
+        planning_scene->getCurrentState().getAttachedBody(attached_object_name);
     if (attached_body)
     {
       // get the robot model link this attached body is associated to
-      const robot_model::LinkModel *link = attached_body->getAttachedLink();
+      const robot_model::LinkModel* link = attached_body->getAttachedLink();
       // check to see if there is a unique end effector containing the link
-      const std::vector<const robot_model::JointModelGroup*> &eefs = planning_scene->getRobotModel()->getEndEffectors();
-      for (std::size_t i = 0 ; i < eefs.size() ; ++i)
+      const std::vector<const robot_model::JointModelGroup*>& eefs = planning_scene->getRobotModel()->getEndEffectors();
+      for (std::size_t i = 0; i < eefs.size(); ++i)
         if (eefs[i]->hasLinkModel(link->getName()))
         {
           if (eef)
           {
-            ROS_ERROR_STREAM_NAMED("manipulation", "There are multiple end-effectors that include the link '" << link->getName() <<
-                                   "' which is where the body '" << attached_object_name << "' is attached. It is unclear which end-effector to use.");
+            ROS_ERROR_STREAM_NAMED("manipulation", "There are multiple end-effectors that include the link '"
+                                                       << link->getName() << "' which is where the body '"
+                                                       << attached_object_name
+                                                       << "' is attached. It is unclear which end-effector to use.");
             error_code_.val = moveit_msgs::MoveItErrorCodes::INVALID_GROUP_NAME;
             return false;
           }
@@ -190,10 +197,12 @@ bool PlacePlan::plan(const planning_scene::PlanningSceneConstPtr &planning_scene
     // if the group is also unknown, but we just found out the eef
     if (!jmg && eef)
     {
-      const std::string &eef_parent = eef->getEndEffectorParentGroup().first;
+      const std::string& eef_parent = eef->getEndEffectorParentGroup().first;
       if (eef_parent.empty())
       {
-        ROS_ERROR_STREAM_NAMED("manipulation", "No parent group to plan in was identified based on end-effector '" << goal.group_name << "'. Please define a parent group in the SRDF.");
+        ROS_ERROR_STREAM_NAMED("manipulation", "No parent group to plan in was identified based on end-effector '"
+                                                   << goal.group_name
+                                                   << "'. Please define a parent group in the SRDF.");
         error_code_.val = moveit_msgs::MoveItErrorCodes::INVALID_GROUP_NAME;
         return false;
       }
@@ -220,7 +229,9 @@ bool PlacePlan::plan(const planning_scene::PlanningSceneConstPtr &planning_scene
     loop_count++;
     if (attached_bodies.size() > 1)
     {
-      ROS_ERROR_NAMED("manipulation", "Multiple attached bodies for group '%s' but no explicit attached object to place was specified", goal.group_name.c_str());
+      ROS_ERROR_NAMED("manipulation",
+                      "Multiple attached bodies for group '%s' but no explicit attached object to place was specified",
+                      goal.group_name.c_str());
       error_code_.val = moveit_msgs::MoveItErrorCodes::INVALID_OBJECT_NAME;
       return false;
     }
@@ -228,7 +239,8 @@ bool PlacePlan::plan(const planning_scene::PlanningSceneConstPtr &planning_scene
       attached_object_name = attached_bodies[0]->getName();
   }
 
-  const robot_state::AttachedBody *attached_body = planning_scene->getCurrentState().getAttachedBody(attached_object_name);
+  const robot_state::AttachedBody* attached_body =
+      planning_scene->getCurrentState().getAttachedBody(attached_object_name);
   if (!attached_body)
   {
     ROS_ERROR_NAMED("manipulation", "There is no object to detach for place action");
@@ -250,14 +262,15 @@ bool PlacePlan::plan(const planning_scene::PlanningSceneConstPtr &planning_scene
   plan_data->planner_id_ = goal.planner_id;
   plan_data->minimize_object_distance_ = false;
   plan_data->max_goal_sampling_attempts_ = std::max(2u, jmg->getDefaultIKAttempts());
-  moveit_msgs::AttachedCollisionObject &detach_object_msg = plan_data->diff_attached_object_;
+  moveit_msgs::AttachedCollisionObject& detach_object_msg = plan_data->diff_attached_object_;
 
   // construct the attached object message that will change the world to what it would become after a placement
   detach_object_msg.link_name = attached_body->getAttachedLinkName();
   detach_object_msg.object.id = attached_object_name;
   detach_object_msg.object.operation = moveit_msgs::CollisionObject::REMOVE;
 
-  collision_detection::AllowedCollisionMatrixPtr approach_place_acm(new collision_detection::AllowedCollisionMatrix(planning_scene->getAllowedCollisionMatrix()));
+  collision_detection::AllowedCollisionMatrixPtr approach_place_acm(
+      new collision_detection::AllowedCollisionMatrix(planning_scene->getAllowedCollisionMatrix()));
 
   // we are allowed to touch certain other objects with the gripper
   approach_place_acm->setEntry(eef->getLinkModelNames(), goal.allowed_touch_objects, true);
@@ -276,11 +289,11 @@ bool PlacePlan::plan(const planning_scene::PlanningSceneConstPtr &planning_scene
       approach_place_acm->setEntry(goal.support_surface_name, eef->getLinkModelNames(), true);
   }
 
-
   // configure the manipulation pipeline
   pipeline_.reset();
 
-  ManipulationStagePtr stage1(new ReachableAndValidPoseFilter(planning_scene, approach_place_acm, pick_place_->getConstraintsSamplerManager()));
+  ManipulationStagePtr stage1(
+      new ReachableAndValidPoseFilter(planning_scene, approach_place_acm, pick_place_->getConstraintsSamplerManager()));
   ManipulationStagePtr stage2(new ApproachAndTranslateStage(planning_scene, approach_place_acm));
   ManipulationStagePtr stage3(new PlanStage(planning_scene, pick_place_->getPlanningPipeline()));
   pipeline_.addStage(stage1).addStage(stage2).addStage(stage3);
@@ -290,21 +303,22 @@ bool PlacePlan::plan(const planning_scene::PlanningSceneConstPtr &planning_scene
   pipeline_.start();
 
   // add possible place locations
-  for (std::size_t i = 0 ; i < goal.place_locations.size() ; ++i)
+  for (std::size_t i = 0; i < goal.place_locations.size(); ++i)
   {
     ManipulationPlanPtr p(new ManipulationPlan(const_plan_data));
-    const moveit_msgs::PlaceLocation &pl = goal.place_locations[i];
+    const moveit_msgs::PlaceLocation& pl = goal.place_locations[i];
 
     if (goal.place_eef)
       p->goal_pose_ = pl.place_pose;
     else
-      // The goals are specified for the attached body
-      // but we want to transform them into goals for the end-effector instead
-      if (!transformToEndEffectorGoal(pl.place_pose, attached_body, p->goal_pose_))
-      {
-        p->goal_pose_ = pl.place_pose;
-        ROS_ERROR_NAMED("manipulation", "Unable to transform the desired pose of the object to the pose of the end-effector");
-      }
+        // The goals are specified for the attached body
+        // but we want to transform them into goals for the end-effector instead
+        if (!transformToEndEffectorGoal(pl.place_pose, attached_body, p->goal_pose_))
+    {
+      p->goal_pose_ = pl.place_pose;
+      ROS_ERROR_NAMED("manipulation", "Unable to transform the desired pose of the object to the pose of the "
+                                      "end-effector");
+    }
 
     p->approach_ = pl.pre_place_approach;
     p->retreat_ = pl.post_place_retreat;
@@ -314,7 +328,7 @@ bool PlacePlan::plan(const planning_scene::PlanningSceneConstPtr &planning_scene
       p->retreat_posture_ = attached_body->getDetachPosture();
     pipeline_.push(p);
   }
-  ROS_INFO_NAMED("manipulation", "Added %d place locations", (int) goal.place_locations.size());
+  ROS_INFO_NAMED("manipulation", "Added %d place locations", (int)goal.place_locations.size());
 
   // wait till we're done
   waitForPipeline(endtime);
@@ -351,7 +365,8 @@ bool PlacePlan::plan(const planning_scene::PlanningSceneConstPtr &planning_scene
   return error_code_.val == moveit_msgs::MoveItErrorCodes::SUCCESS;
 }
 
-PlacePlanPtr PickPlace::planPlace(const planning_scene::PlanningSceneConstPtr &planning_scene, const moveit_msgs::PlaceGoal &goal) const
+PlacePlanPtr PickPlace::planPlace(const planning_scene::PlanningSceneConstPtr& planning_scene,
+                                  const moveit_msgs::PlaceGoal& goal) const
 {
   PlacePlanPtr p(new PlacePlan(shared_from_this()));
   if (planning_scene::PlanningScene::isEmpty(goal.planning_options.planning_scene_diff))
@@ -361,20 +376,19 @@ PlacePlanPtr PickPlace::planPlace(const planning_scene::PlanningSceneConstPtr &p
 
   if (display_computed_motion_plans_)
   {
-    const std::vector<pick_place::ManipulationPlanPtr> &success = p->getSuccessfulManipulationPlans();
+    const std::vector<pick_place::ManipulationPlanPtr>& success = p->getSuccessfulManipulationPlans();
     if (!success.empty())
       visualizePlan(success.back());
   }
 
   if (display_grasps_)
   {
-    const std::vector<pick_place::ManipulationPlanPtr> &success = p->getSuccessfulManipulationPlans();
+    const std::vector<pick_place::ManipulationPlanPtr>& success = p->getSuccessfulManipulationPlans();
     visualizeGrasps(success);
-    const std::vector<pick_place::ManipulationPlanPtr> &failed = p->getFailedManipulationPlans();
+    const std::vector<pick_place::ManipulationPlanPtr>& failed = p->getFailedManipulationPlans();
     visualizeGrasps(failed);
   }
 
   return p;
 }
-
 }
