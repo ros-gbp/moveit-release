@@ -36,6 +36,7 @@
 
 #include <moveit/ompl_interface/parameterization/joint_space/joint_model_state_space.h>
 #include <moveit/ompl_interface/parameterization/work_space/pose_model_state_space.h>
+#include <moveit_resources/config.h>
 
 #include <urdf_parser/urdf_parser.h>
 
@@ -44,25 +45,17 @@
 #include <gtest/gtest.h>
 #include <fstream>
 #include <boost/filesystem/path.hpp>
-#include <ros/package.h>
 
 class LoadPlanningModelsPr2 : public testing::Test
 {
 protected:
-
   virtual void SetUp()
   {
-    std::string resource_dir = ros::package::getPath("moveit_resources");
-    if(resource_dir == "")
-    {
-      FAIL() << "Failed to find package moveit_resources.";
-      return;
-    }
-    boost::filesystem::path res_path(resource_dir);
+    boost::filesystem::path res_path(MOVEIT_TEST_RESOURCES_DIR);
 
     srdf_model_.reset(new srdf::Model());
     std::string xml_string;
-    std::fstream xml_file((res_path / "test/urdf/robot.xml").string().c_str(), std::fstream::in);
+    std::fstream xml_file((res_path / "pr2_description/urdf/robot.xml").string().c_str(), std::fstream::in);
     if (xml_file.is_open())
     {
       while (xml_file.good())
@@ -74,7 +67,7 @@ protected:
       xml_file.close();
       urdf_model_ = urdf::parseURDF(xml_string);
     }
-    srdf_model_->initFile(*urdf_model_, (res_path / "test/srdf/robot.xml").string());
+    srdf_model_->initFile(*urdf_model_, (res_path / "pr2_description/srdf/robot.xml").string());
     robot_model_.reset(new moveit::core::RobotModel(urdf_model_, srdf_model_));
   };
 
@@ -85,10 +78,9 @@ protected:
 protected:
   robot_model::RobotModelPtr robot_model_;
   boost::shared_ptr<urdf::ModelInterface> urdf_model_;
-  boost::shared_ptr<srdf::Model>     srdf_model_;
-  bool                               urdf_ok_;
-  bool                               srdf_ok_;
-
+  boost::shared_ptr<srdf::Model> srdf_model_;
+  bool urdf_ok_;
+  bool srdf_ok_;
 };
 
 TEST_F(LoadPlanningModelsPr2, StateSpace)
@@ -105,7 +97,7 @@ TEST_F(LoadPlanningModelsPr2, StateSpace)
     ss.sanityChecks();
     passed = true;
   }
-  catch(ompl::Exception &ex)
+  catch (ompl::Exception& ex)
   {
     logError("Sanity checks did not pass: %s", ex.what());
   }
@@ -148,7 +140,7 @@ TEST_F(LoadPlanningModelsPr2, StateSpaceCopy)
     ss.sanityChecks();
     passed = true;
   }
-  catch(ompl::Exception &ex)
+  catch (ompl::Exception& ex)
   {
     logError("Sanity checks did not pass: %s", ex.what());
   }
@@ -157,27 +149,29 @@ TEST_F(LoadPlanningModelsPr2, StateSpaceCopy)
   robot_state::RobotState kstate(robot_model_);
   kstate.setToRandomPositions();
   EXPECT_TRUE(kstate.distance(kstate) < 1e-12);
-  ompl::base::State *state = ss.allocState();
-  for (int i = 0 ; i < 10 ; ++i)
+  ompl::base::State* state = ss.allocState();
+  for (int i = 0; i < 10; ++i)
   {
     robot_state::RobotState kstate2(kstate);
     EXPECT_TRUE(kstate.distance(kstate2) < 1e-12);
     ss.copyToOMPLState(state, kstate);
     kstate.setToRandomPositions(kstate.getRobotModel()->getJointModelGroup(ss.getJointModelGroupName()));
     std::cout << (kstate.getGlobalLinkTransform("r_wrist_roll_link").translation() -
-                  kstate2.getGlobalLinkTransform("r_wrist_roll_link").translation()) << std::endl;
+                  kstate2.getGlobalLinkTransform("r_wrist_roll_link").translation())
+              << std::endl;
     EXPECT_TRUE(kstate.distance(kstate2) > 1e-12);
     ss.copyToRobotState(kstate, state);
     std::cout << (kstate.getGlobalLinkTransform("r_wrist_roll_link").translation() -
-                  kstate2.getGlobalLinkTransform("r_wrist_roll_link").translation()) << std::endl;
+                  kstate2.getGlobalLinkTransform("r_wrist_roll_link").translation())
+              << std::endl;
     EXPECT_TRUE(kstate.distance(kstate2) < 1e-12);
   }
 
   ss.freeState(state);
 }
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
-    testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
 }
