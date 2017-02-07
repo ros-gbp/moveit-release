@@ -39,27 +39,21 @@
 #include <urdf_parser/urdf_parser.h>
 #include <fstream>
 #include <boost/filesystem/path.hpp>
-#include <ros/package.h>
+#include <moveit_resources/config.h>
 
 // This function needs to return void so the gtest FAIL() macro inside
 // it works right.
 void loadRobotModel(boost::shared_ptr<urdf::ModelInterface>& robot_model_out)
 {
-  std::string resource_dir = ros::package::getPath("moveit_resources");
-  if(resource_dir == "")
-  {
-    FAIL() << "Failed to find package moveit_resources.";
-    return;
-  }
-  boost::filesystem::path res_path(resource_dir);
+  boost::filesystem::path res_path(MOVEIT_TEST_RESOURCES_DIR);
 
   std::string xml_string;
-  std::fstream xml_file((res_path / "test/urdf/robot.xml").string().c_str(), std::fstream::in);
+  std::fstream xml_file((res_path / "pr2_description/urdf/robot.xml").string().c_str(), std::fstream::in);
   EXPECT_TRUE(xml_file.is_open());
-  while ( xml_file.good() )
+  while (xml_file.good())
   {
     std::string line;
-    std::getline( xml_file, line);
+    std::getline(xml_file, line);
     xml_string += (line + "\n");
   }
   xml_file.close();
@@ -85,7 +79,7 @@ TEST(PlanningScene, LoadRestoreDiff)
 
   planning_scene::PlanningScenePtr ps(new planning_scene::PlanningScene(urdf_model, srdf_model));
 
-  collision_detection::World &world = *ps->getWorldNonConst();
+  collision_detection::World& world = *ps->getWorldNonConst();
   Eigen::Affine3d id = Eigen::Affine3d::Identity();
   world.addToObject("sphere", shapes::ShapeConstPtr(new shapes::Sphere(0.4)), id);
 
@@ -122,7 +116,7 @@ TEST(PlanningScene, MakeAttachedDiff)
 
   planning_scene::PlanningScenePtr ps(new planning_scene::PlanningScene(urdf_model, srdf_model));
 
-  collision_detection::World &world = *ps->getWorldNonConst();
+  collision_detection::World& world = *ps->getWorldNonConst();
   Eigen::Affine3d id = Eigen::Affine3d::Identity();
   world.addToObject("sphere", shapes::ShapeConstPtr(new shapes::Sphere(0.4)), id);
 
@@ -137,11 +131,11 @@ TEST(PlanningScene, MakeAttachedDiff)
   collision_detection::CollisionResult res;
 
   attached_object_diff_scene->processAttachedCollisionObjectMsg(att_obj);
-  attached_object_diff_scene->checkCollision(req,res);
+  attached_object_diff_scene->checkCollision(req, res);
   ps->checkCollision(req, res);
 }
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
