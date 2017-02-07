@@ -38,23 +38,24 @@
 #include <moveit/planning_request_adapter/planning_request_adapter.h>
 #include <ros/ros.h>
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
   ros::init(argc, argv, "list_planning_adapter_plugins");
 
   boost::scoped_ptr<pluginlib::ClassLoader<planning_request_adapter::PlanningRequestAdapter> > loader;
   try
   {
-    loader.reset(new pluginlib::ClassLoader<planning_request_adapter::PlanningRequestAdapter>("moveit_core", "planning_request_adapter::PlanningRequestAdapter"));
+    loader.reset(new pluginlib::ClassLoader<planning_request_adapter::PlanningRequestAdapter>(
+        "moveit_core", "planning_request_adapter::PlanningRequestAdapter"));
   }
-  catch(pluginlib::PluginlibException& ex)
+  catch (pluginlib::PluginlibException& ex)
   {
     std::cout << "Exception while creating class loader " << ex.what() << std::endl;
   }
 
-  const std::vector<std::string> &classes = loader->getDeclaredClasses();
+  const std::vector<std::string>& classes = loader->getDeclaredClasses();
   std::cout << "Available planning request adapter plugins:" << std::endl;
-  for (std::size_t i = 0 ; i < classes.size() ; ++i)
+  for (std::size_t i = 0; i < classes.size(); ++i)
   {
     std::cout << " \t " << classes[i] << std::endl;
     planning_request_adapter::PlanningRequestAdapterConstPtr ad;
