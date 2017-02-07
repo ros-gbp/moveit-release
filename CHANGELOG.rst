@@ -2,6 +2,12 @@
 Changelog for package moveit_ros_warehouse
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.8.4 (2017-02-06)
+------------------
+
+0.8.3 (2016-08-19)
+------------------
+
 0.6.6 (2016-06-08)
 ------------------
 * Removed trailing whitespace from entire repository

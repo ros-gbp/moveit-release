@@ -42,8 +42,7 @@
 
 namespace moveit_warehouse
 {
-
-WarehouseConnector::WarehouseConnector(const std::string &dbexec) : dbexec_(dbexec), child_pid_(0)
+WarehouseConnector::WarehouseConnector(const std::string& dbexec) : dbexec_(dbexec), child_pid_(0)
 {
 }
 
@@ -55,7 +54,7 @@ WarehouseConnector::~WarehouseConnector()
 
 bool WarehouseConnector::connectToDatabase(const std::string& dirname)
 {
-  if(child_pid_ != 0)
+  if (child_pid_ != 0)
     kill(child_pid_, SIGTERM);
 
   child_pid_ = fork();
@@ -95,10 +94,9 @@ bool WarehouseConnector::connectToDatabase(const std::string& dirname)
   }
   else
   {
-    //sleep so mongod has time to come up
+    // sleep so mongod has time to come up
     ros::WallDuration(1.0).sleep();
   }
   return true;
 }
-
 }
