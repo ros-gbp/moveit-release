@@ -39,9 +39,10 @@
 #include <boost/program_options.hpp>
 #include <ros/ros.h>
 
-static const std::string ROBOT_DESCRIPTION="robot_description";      // name of the robot description (a param name, so it can be changed externally)
+static const std::string ROBOT_DESCRIPTION =
+    "robot_description";  // name of the robot description (a param name, so it can be changed externally)
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
   ros::init(argc, argv, "moveit_benchmarks", ros::init_options::AnonymousName);
 
@@ -49,19 +50,18 @@ int main(int argc, char **argv)
   spinner.start();
 
   boost::program_options::options_description desc;
-  desc.add_options()
-    ("help", "Show help message")
-    ("host", boost::program_options::value<std::string>(), "Host for the DB.")
-    ("port", boost::program_options::value<std::size_t>(), "Port for the DB.")
-    ("benchmark-goal-existance", "Benchmark the sampling of the goal region")
-    ("benchmark-planners", "Benchmark only the planners");
+  desc.add_options()("help", "Show help message")("host", boost::program_options::value<std::string>(), "Host for the "
+                                                                                                        "DB.")(
+      "port", boost::program_options::value<std::size_t>(), "Port for the DB.")(
+      "benchmark-goal-existance", "Benchmark the sampling of the goal region")("benchmark-planners", "Benchmark only "
+                                                                                                     "the planners");
 
   boost::program_options::variables_map vm;
   boost::program_options::parsed_options po = boost::program_options::parse_command_line(argc, argv, desc);
   boost::program_options::store(po, vm);
   boost::program_options::notify(vm);
 
-  if (vm.count("help") || argc == 1) // show help if no parameters passed
+  if (vm.count("help") || argc == 1)  // show help if no parameters passed
   {
     std::cout << desc << std::endl;
     return 1;
@@ -82,8 +82,9 @@ int main(int argc, char **argv)
     btype += moveit_benchmarks::BENCHMARK_GOAL_EXISTANCE;
 
   unsigned int proc = 0;
-  std::vector<std::string> files = boost::program_options::collect_unrecognized(po.options, boost::program_options::include_positional);
-  for (std::size_t i = 0 ; i < files.size() ; ++i)
+  std::vector<std::string> files =
+      boost::program_options::collect_unrecognized(po.options, boost::program_options::include_positional);
+  for (std::size_t i = 0; i < files.size(); ++i)
   {
     if (be.readOptions(files[i].c_str()))
     {
@@ -96,7 +97,7 @@ int main(int argc, char **argv)
   }
   ROS_INFO_STREAM("Processed " << proc << " benchmark configuration files");
 
-  ROS_INFO("Benchmarks complete! Shutting down ROS..."); // because sometimes there are segfaults after this
+  ROS_INFO("Benchmarks complete! Shutting down ROS...");  // because sometimes there are segfaults after this
   ros::shutdown();
 
   return 0;

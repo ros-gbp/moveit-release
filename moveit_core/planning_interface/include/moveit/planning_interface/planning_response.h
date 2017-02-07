@@ -44,15 +44,13 @@
 
 namespace planning_interface
 {
-
 struct MotionPlanResponse
 {
-  MotionPlanResponse() :
-    planning_time_(0.0)
+  MotionPlanResponse() : planning_time_(0.0)
   {
   }
 
-  void getMessage(moveit_msgs::MotionPlanResponse &msg) const;
+  void getMessage(moveit_msgs::MotionPlanResponse& msg) const;
 
   robot_trajectory::RobotTrajectoryPtr trajectory_;
   double planning_time_;
@@ -61,7 +59,7 @@ struct MotionPlanResponse
 
 struct MotionPlanDetailedResponse
 {
-  void getMessage(moveit_msgs::MotionPlanDetailedResponse &msg) const;
+  void getMessage(moveit_msgs::MotionPlanDetailedResponse& msg) const;
 
   std::vector<robot_trajectory::RobotTrajectoryPtr> trajectory_;
   std::vector<std::string> description_;
@@ -69,6 +67,6 @@ struct MotionPlanDetailedResponse
   moveit_msgs::MoveItErrorCodes error_code_;
 };
 
-} // planning_interface
+}  // planning_interface
 
 #endif
