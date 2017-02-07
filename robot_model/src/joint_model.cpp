@@ -63,17 +63,24 @@ std::string moveit::core::JointModel::getTypeName() const
 {
   switch (type_)
   {
-  case UNKNOWN: return "Unkown";
-  case REVOLUTE: return "Revolute";
-  case PRISMATIC: return "Prismatic";
-  case PLANAR: return "Planar";
-  case FLOATING: return "Floating";
-  case FIXED: return "Fixed";
-  default: return "[Unkown]";
+    case UNKNOWN:
+      return "Unkown";
+    case REVOLUTE:
+      return "Revolute";
+    case PRISMATIC:
+      return "Prismatic";
+    case PLANAR:
+      return "Planar";
+    case FLOATING:
+      return "Floating";
+    case FIXED:
+      return "Fixed";
+    default:
+      return "[Unkown]";
   }
 }
 
-int moveit::core::JointModel::getLocalVariableIndex(const std::string &variable) const
+int moveit::core::JointModel::getLocalVariableIndex(const std::string& variable) const
 {
   VariableIndexMap::const_iterator it = variable_index_map_.find(variable);
   if (it == variable_index_map_.end())
@@ -81,32 +88,31 @@ int moveit::core::JointModel::getLocalVariableIndex(const std::string &variable)
   return it->second;
 }
 
-bool moveit::core::JointModel::enforceVelocityBounds(double *values, const Bounds &other_bounds) const
+bool moveit::core::JointModel::enforceVelocityBounds(double* values, const Bounds& other_bounds) const
 {
   bool change = false;
-  for (std::size_t i = 0 ; i < other_bounds.size() ; ++i)
+  for (std::size_t i = 0; i < other_bounds.size(); ++i)
     if (other_bounds[i].max_velocity_ < values[i])
     {
       values[i] = other_bounds[i].max_velocity_;
       change = true;
     }
-    else
-      if (other_bounds[i].min_velocity_ > values[i])
-      {
-        values[i] = other_bounds[i].min_velocity_;
-        change = true;
-      }
+    else if (other_bounds[i].min_velocity_ > values[i])
+    {
+      values[i] = other_bounds[i].min_velocity_;
+      change = true;
+    }
   return change;
 }
 
-bool moveit::core::JointModel::satisfiesVelocityBounds(const double *values, const Bounds &other_bounds, double margin) const
+bool moveit::core::JointModel::satisfiesVelocityBounds(const double* values, const Bounds& other_bounds,
+                                                       double margin) const
 {
-  for (std::size_t i = 0 ; i < other_bounds.size() ; ++i)
+  for (std::size_t i = 0; i < other_bounds.size(); ++i)
     if (other_bounds[i].max_velocity_ + margin < values[i])
       return false;
-    else
-      if (other_bounds[i].min_velocity_ - margin > values[i])
-        return false;
+    else if (other_bounds[i].min_velocity_ - margin > values[i])
+      return false;
   return true;
 }
 
@@ -124,7 +130,7 @@ void moveit::core::JointModel::setVariableBounds(const std::string& variable, co
 void moveit::core::JointModel::setVariableBounds(const std::vector<moveit_msgs::JointLimits>& jlim)
 {
   for (std::size_t j = 0; j < variable_names_.size(); ++j)
-    for (std::size_t i = 0 ; i < jlim.size() ; ++i)
+    for (std::size_t i = 0; i < jlim.size(); ++i)
       if (jlim[i].joint_name == variable_names_[j])
       {
         variable_bounds_[j].position_bounded_ = jlim[i].has_position_limits;
@@ -163,60 +169,62 @@ void moveit::core::JointModel::computeVariableBoundsMsg()
     lim.has_velocity_limits = variable_bounds_[i].velocity_bounded_;
     lim.max_velocity = std::min(fabs(variable_bounds_[i].min_velocity_), fabs(variable_bounds_[i].max_velocity_));
     lim.has_acceleration_limits = variable_bounds_[i].acceleration_bounded_;
-    lim.max_acceleration = std::min(fabs(variable_bounds_[i].min_acceleration_), fabs(variable_bounds_[i].max_acceleration_));
+    lim.max_acceleration =
+        std::min(fabs(variable_bounds_[i].min_acceleration_), fabs(variable_bounds_[i].max_acceleration_));
     variable_bounds_msg_.push_back(lim);
   }
 }
 
-void moveit::core::JointModel::setMimic(const JointModel *mimic, double factor, double offset)
+void moveit::core::JointModel::setMimic(const JointModel* mimic, double factor, double offset)
 {
   mimic_ = mimic;
   mimic_factor_ = factor;
   mimic_offset_ = offset;
 }
 
-void moveit::core::JointModel::addMimicRequest(const JointModel *joint)
+void moveit::core::JointModel::addMimicRequest(const JointModel* joint)
 {
   mimic_requests_.push_back(joint);
 }
 
-void moveit::core::JointModel::addDescendantJointModel(const JointModel *joint)
+void moveit::core::JointModel::addDescendantJointModel(const JointModel* joint)
 {
   descendant_joint_models_.push_back(joint);
   if (joint->getType() != FIXED)
     non_fixed_descendant_joint_models_.push_back(joint);
 }
 
-void moveit::core::JointModel::addDescendantLinkModel(const LinkModel *link)
+void moveit::core::JointModel::addDescendantLinkModel(const LinkModel* link)
 {
   descendant_link_models_.push_back(link);
 }
 
 namespace
 {
-inline void printBoundHelper(std::ostream &out, double v)
+inline void printBoundHelper(std::ostream& out, double v)
 {
   if (v <= -std::numeric_limits<double>::infinity())
     out << "-inf";
+  else if (v >= std::numeric_limits<double>::infinity())
+    out << "inf";
   else
-    if (v >= std::numeric_limits<double>::infinity())
-      out << "inf";
-    else
-      out << v;
+    out << v;
 }
 }
 
-std::ostream& moveit::core::operator<<(std::ostream &out, const VariableBounds &b)
+std::ostream& moveit::core::operator<<(std::ostream& out, const VariableBounds& b)
 {
   out << "P." << (b.position_bounded_ ? "bounded" : "unbounded") << " [";
   printBoundHelper(out, b.min_position_);
   out << ", ";
   printBoundHelper(out, b.max_position_);
-  out << "]; " << "V." << (b.velocity_bounded_ ? "bounded" : "unbounded") << " [";
+  out << "]; "
+      << "V." << (b.velocity_bounded_ ? "bounded" : "unbounded") << " [";
   printBoundHelper(out, b.min_velocity_);
   out << ", ";
   printBoundHelper(out, b.max_velocity_);
-  out << "]; " << "A." << (b.acceleration_bounded_ ? "bounded" : "unbounded") << " [";
+  out << "]; "
+      << "A." << (b.acceleration_bounded_ ? "bounded" : "unbounded") << " [";
   printBoundHelper(out, b.min_acceleration_);
   out << ", ";
   printBoundHelper(out, b.max_acceleration_);
