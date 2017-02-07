@@ -1,7 +1,7 @@
 /*********************************************************************
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2013, Willow Garage, Inc.
+ *  Copyright (c) 2016, Delft Robotics B.V.
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -14,7 +14,7 @@
  *     copyright notice, this list of conditions and the following
  *     disclaimer in the documentation and/or other materials provided
  *     with the distribution.
- *   * Neither the name of Willow Garage nor the names of its
+ *   * Neither the name of the copyright holder nor the names of its
  *     contributors may be used to endorse or promote products derived
  *     from this software without specific prior written permission.
  *
@@ -32,13 +32,39 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-/* Author: Ioan Sucan */
+#ifndef MOVEIT_MACROS_DECLARE_PTR_
+#define MOVEIT_MACROS_DECLARE_PTR_
 
-#include <moveit/version.h>
-#include <cstdio>
+#include <boost/shared_ptr.hpp>
 
-int main(int argc, char** argv)
-{
-  printf("%s\n", MOVEIT_VERSION);
-  return 0;
-}
+/**
+ * \def MOVEIT_DELCARE_PTR
+ * Macro that given a Name and a Type declares the following types:
+ * - ${Name}Ptr      = shared_ptr<${Type}>
+ * - ${Name}ConstPtr = shared_ptr<const ${Type}>
+ *
+ * For best portability the exact type of shared_ptr declared by the macro
+ * should be considered to be an implementation detail, liable to change in
+ * future releases.
+ */
+
+#define MOVEIT_DECLARE_PTR(Name, Type)                                                                                 \
+  typedef boost::shared_ptr<Type> Name##Ptr;                                                                           \
+  typedef boost::shared_ptr<const Type> Name##ConstPtr;
+
+/**
+ * \def MOVEIT_DELCARE_PTR_MEMBER
+ * Macro that given a Type declares the following types:
+ * - Ptr      = shared_ptr<${Type}>
+ * - ConstPtr = shared_ptr<const ${Type}>
+ *
+ * This macro is intended for declaring the pointer typedefs as members of a
+ * class template. In other situations, MOVEIT_CLASS_FORWARD and
+ * MOVEIT_DECLARE_PTR should be preferred.
+ */
+
+#define MOVEIT_DECLARE_PTR_MEMBER(Type)                                                                                \
+  typedef boost::shared_ptr<Type> Ptr;                                                                                 \
+  typedef boost::shared_ptr<const Type> ConstPtr;
+
+#endif

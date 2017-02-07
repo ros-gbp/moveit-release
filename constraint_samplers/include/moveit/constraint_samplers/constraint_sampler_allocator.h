@@ -42,13 +42,11 @@
 
 namespace constraint_samplers
 {
-
 MOVEIT_CLASS_FORWARD(ConstraintSamplerAllocator);
 
 class ConstraintSamplerAllocator
 {
 public:
-
   ConstraintSamplerAllocator()
   {
   }
@@ -57,16 +55,12 @@ public:
   {
   }
 
-  virtual ConstraintSamplerPtr alloc(const planning_scene::PlanningSceneConstPtr &scene, const std::string &group_name,
-                                     const moveit_msgs::Constraints &constr) = 0;
+  virtual ConstraintSamplerPtr alloc(const planning_scene::PlanningSceneConstPtr& scene, const std::string& group_name,
+                                     const moveit_msgs::Constraints& constr) = 0;
 
-  virtual bool canService(const planning_scene::PlanningSceneConstPtr &scene, const std::string &group_name,
-                          const moveit_msgs::Constraints &constr) const = 0;
-
+  virtual bool canService(const planning_scene::PlanningSceneConstPtr& scene, const std::string& group_name,
+                          const moveit_msgs::Constraints& constr) const = 0;
 };
-
-
 }
-
 
 #endif

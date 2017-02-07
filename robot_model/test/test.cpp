@@ -40,23 +40,18 @@
 #include <gtest/gtest.h>
 #include <boost/filesystem/path.hpp>
 #include <moveit/profiler/profiler.h>
-#include <ros/package.h>
+#include <moveit_resources/config.h>
 
 class LoadPlanningModelsPr2 : public testing::Test
 {
 protected:
-
   virtual void SetUp()
   {
+    boost::filesystem::path res_path(MOVEIT_TEST_RESOURCES_DIR);
+
     srdf_model.reset(new srdf::Model());
     std::string xml_string;
-    std::string resource_dir = ros::package::getPath("moveit_resources");
-    if(resource_dir == "")
-    {
-      FAIL() << "Failed to find package moveit_resources.";
-      return;
-    }
-    std::fstream xml_file((boost::filesystem::path(resource_dir) / "test/urdf/robot.xml").string().c_str(), std::fstream::in);
+    std::fstream xml_file((res_path / "pr2_description/urdf/robot.xml").string().c_str(), std::fstream::in);
     if (xml_file.is_open())
     {
       while (xml_file.good())
@@ -68,7 +63,7 @@ protected:
       xml_file.close();
       urdf_model = urdf::parseURDF(xml_string);
     }
-    srdf_model->initFile(*urdf_model, (boost::filesystem::path(resource_dir) / "test/srdf/robot.xml").string());
+    srdf_model->initFile(*urdf_model, (res_path / "pr2_description/srdf/robot.xml").string());
     robot_model.reset(new moveit::core::RobotModel(urdf_model, srdf_model));
   };
 
@@ -77,7 +72,6 @@ protected:
   }
 
 protected:
-
   boost::shared_ptr<urdf::ModelInterface> urdf_model;
   boost::shared_ptr<srdf::Model> srdf_model;
   moveit::core::RobotModelConstPtr robot_model;
@@ -91,28 +85,25 @@ TEST_F(LoadPlanningModelsPr2, InitOK)
 
 TEST_F(LoadPlanningModelsPr2, Model)
 {
-  //robot_model->printModelInfo(std::cout);
+  // robot_model->printModelInfo(std::cout);
 
-  const std::vector<const moveit::core::JointModel*> &joints = robot_model->getJointModels();
-  for (std::size_t i = 0 ; i < joints.size() ; ++i)
+  const std::vector<const moveit::core::JointModel*>& joints = robot_model->getJointModels();
+  for (std::size_t i = 0; i < joints.size(); ++i)
   {
     ASSERT_EQ(joints[i]->getJointIndex(), i);
     ASSERT_EQ(robot_model->getJointModel(joints[i]->getName()), joints[i]);
   }
-  const std::vector<const moveit::core::LinkModel*> &links = robot_model->getLinkModels();
-  for (std::size_t i = 0 ; i < links.size() ; ++i)
+  const std::vector<const moveit::core::LinkModel*>& links = robot_model->getLinkModels();
+  for (std::size_t i = 0; i < links.size(); ++i)
   {
     ASSERT_EQ(links[i]->getLinkIndex(), i);
     //    std::cout << joints[i]->getName() << std::endl;
-
   }
   moveit::tools::Profiler::Status();
-
 }
 
-
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
-    testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
 }

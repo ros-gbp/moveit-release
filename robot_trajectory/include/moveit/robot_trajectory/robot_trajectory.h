@@ -45,7 +45,6 @@
 
 namespace robot_trajectory
 {
-
 MOVEIT_CLASS_FORWARD(RobotTrajectory);
 
 /** \brief Maintain a sequence of waypoints and the time durations
@@ -53,9 +52,9 @@ MOVEIT_CLASS_FORWARD(RobotTrajectory);
 class RobotTrajectory
 {
 public:
-  RobotTrajectory(const robot_model::RobotModelConstPtr &robot_model, const std::string &group);
+  RobotTrajectory(const robot_model::RobotModelConstPtr& robot_model, const std::string& group);
 
-  RobotTrajectory(const robot_model::RobotModelConstPtr &robot_model, const robot_model::JointModelGroup* group);
+  RobotTrajectory(const robot_model::RobotModelConstPtr& robot_model, const robot_model::JointModelGroup* group);
 
   const robot_model::RobotModelConstPtr& getRobotModel() const
   {
@@ -69,7 +68,7 @@ public:
 
   const std::string& getGroupName() const;
 
-  void setGroupName(const std::string &group_name);
+  void setGroupName(const std::string& group_name);
 
   std::size_t getWayPointCount() const
   {
@@ -142,7 +141,7 @@ public:
    * \param state - current robot state
    * \param dt - duration from previous
    */
-  void addSuffixWayPoint(const robot_state::RobotState &state, double dt)
+  void addSuffixWayPoint(const robot_state::RobotState& state, double dt)
   {
     addSuffixWayPoint(robot_state::RobotStatePtr(new robot_state::RobotState(state)), dt);
   }
@@ -152,70 +151,84 @@ public:
    * \param state - current robot state
    * \param dt - duration from previous
    */
-  void addSuffixWayPoint(const robot_state::RobotStatePtr &state, double dt)
+  void addSuffixWayPoint(const robot_state::RobotStatePtr& state, double dt)
   {
     state->update();
     waypoints_.push_back(state);
     duration_from_previous_.push_back(dt);
   }
 
-  void addPrefixWayPoint(const robot_state::RobotState &state, double dt)
+  void addPrefixWayPoint(const robot_state::RobotState& state, double dt)
   {
     addPrefixWayPoint(robot_state::RobotStatePtr(new robot_state::RobotState(state)), dt);
   }
 
-  void addPrefixWayPoint(const robot_state::RobotStatePtr &state, double dt)
+  void addPrefixWayPoint(const robot_state::RobotStatePtr& state, double dt)
   {
     state->update();
     waypoints_.push_front(state);
     duration_from_previous_.push_front(dt);
   }
 
-  void insertWayPoint(std::size_t index, const robot_state::RobotState &state, double dt)
+  void insertWayPoint(std::size_t index, const robot_state::RobotState& state, double dt)
   {
     insertWayPoint(index, robot_state::RobotStatePtr(new robot_state::RobotState(state)), dt);
   }
 
-  void insertWayPoint(std::size_t index, const robot_state::RobotStatePtr &state, double dt)
+  void insertWayPoint(std::size_t index, const robot_state::RobotStatePtr& state, double dt)
   {
     state->update();
     waypoints_.insert(waypoints_.begin() + index, state);
     duration_from_previous_.insert(duration_from_previous_.begin() + index, dt);
   }
 
-  void append(const RobotTrajectory &source, double dt);
+  /**
+   * \brief Add a trajectory to the end of the current trajectory
+   * \param source - the trajectory to append to the end of current trajectory
+   * \param dt - time step between last traj point in current traj, and first traj point of new traj
+   */
+  void append(const RobotTrajectory& source, double dt);
 
-  void swap(robot_trajectory::RobotTrajectory &other);
+  void swap(robot_trajectory::RobotTrajectory& other);
 
   void clear();
 
   double getAverageSegmentDuration() const;
 
-  void getRobotTrajectoryMsg(moveit_msgs::RobotTrajectory &trajectory) const;
+  void getRobotTrajectoryMsg(moveit_msgs::RobotTrajectory& trajectory) const;
 
-  /** \brief Copy the content of the trajectory message into this class. The trajectory message itself is not required to contain the values
-      for all joints. For this reason a full starting state must be specified as reference (\e reference_state). Each point in the trajectory
-      to be constructed internally is obtained by copying the reference state and overwriting the content from a trajectory point in \e trajectory. */
-  void setRobotTrajectoryMsg(const robot_state::RobotState &reference_state,
-                             const trajectory_msgs::JointTrajectory &trajectory);
+  /** \brief Copy the content of the trajectory message into this class. The trajectory message itself is not required
+     to contain the values
+      for all joints. For this reason a full starting state must be specified as reference (\e reference_state). Each
+     point in the trajectory
+      to be constructed internally is obtained by copying the reference state and overwriting the content from a
+     trajectory point in \e trajectory. */
+  void setRobotTrajectoryMsg(const robot_state::RobotState& reference_state,
+                             const trajectory_msgs::JointTrajectory& trajectory);
 
-  /** \brief Copy the content of the trajectory message into this class. The trajectory message itself is not required to contain the values
-      for all joints. For this reason a full starting state must be specified as reference (\e reference_state). Each point in the trajectory
-      to be constructed internally is obtained by copying the reference state and overwriting the content from a trajectory point in \e trajectory. */
-  void setRobotTrajectoryMsg(const robot_state::RobotState &reference_state,
-                             const moveit_msgs::RobotTrajectory &trajectory);
+  /** \brief Copy the content of the trajectory message into this class. The trajectory message itself is not required
+     to contain the values
+      for all joints. For this reason a full starting state must be specified as reference (\e reference_state). Each
+     point in the trajectory
+      to be constructed internally is obtained by copying the reference state and overwriting the content from a
+     trajectory point in \e trajectory. */
+  void setRobotTrajectoryMsg(const robot_state::RobotState& reference_state,
+                             const moveit_msgs::RobotTrajectory& trajectory);
 
-  /** \brief Copy the content of the trajectory message into this class. The trajectory message itself is not required to contain the values
-      for all joints. For this reason a full starting state must be specified as reference (\e reference_state). Before use, the reference state is updated
-      using \e state. Each point in the trajectory  to be constructed internally is obtained by copying the reference state and overwriting the content
+  /** \brief Copy the content of the trajectory message into this class. The trajectory message itself is not required
+     to contain the values
+      for all joints. For this reason a full starting state must be specified as reference (\e reference_state). Before
+     use, the reference state is updated
+      using \e state. Each point in the trajectory  to be constructed internally is obtained by copying the reference
+     state and overwriting the content
       from a trajectory point in \e trajectory. */
-  void setRobotTrajectoryMsg(const robot_state::RobotState &reference_state,
-                             const moveit_msgs::RobotState &state, const moveit_msgs::RobotTrajectory &trajectory);
+  void setRobotTrajectoryMsg(const robot_state::RobotState& reference_state, const moveit_msgs::RobotState& state,
+                             const moveit_msgs::RobotTrajectory& trajectory);
 
   void reverse();
 
   void unwind();
-  void unwind(const robot_state::RobotState &state);
+  void unwind(const robot_state::RobotState& state);
 
   /** @brief Finds the waypoint indicies before and after a duration from start.
    *  @param The duration from start.
@@ -223,25 +236,23 @@ public:
    *  @param The waypoint index after (or equal to) the supplied duration.
    *  @param The progress (0 to 1) between the two waypoints, based on time (not based on joint distances).
    */
-  void findWayPointIndicesForDurationAfterStart(const double& duration, int& before, int& after, double &blend) const;
+  void findWayPointIndicesForDurationAfterStart(const double& duration, int& before, int& after, double& blend) const;
 
   // TODO support visitor function for interpolation, or at least different types.
-  /** @brief Gets a robot state corresponding to a supplied duration from start for the trajectory, using linear time interpolation.
+  /** @brief Gets a robot state corresponding to a supplied duration from start for the trajectory, using linear time
+   * interpolation.
    *  @param The duration from start.
    *  @param The resulting robot state.
    *  @return True if state is valid, false otherwise (trajectory is empty).
    */
-  bool getStateAtDurationFromStart(const double request_duration,
-                                   robot_state::RobotStatePtr& output_state) const;
+  bool getStateAtDurationFromStart(const double request_duration, robot_state::RobotStatePtr& output_state) const;
 
 private:
-
   robot_model::RobotModelConstPtr robot_model_;
-  const robot_model::JointModelGroup *group_;
+  const robot_model::JointModelGroup* group_;
   std::deque<robot_state::RobotStatePtr> waypoints_;
   std::deque<double> duration_from_previous_;
 };
-
 }
 
 #endif

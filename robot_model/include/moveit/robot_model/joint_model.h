@@ -50,19 +50,18 @@ namespace moveit
 {
 namespace core
 {
-
 struct VariableBounds
 {
-  VariableBounds() :
-    min_position_(0.0),
-    max_position_(0.0),
-    position_bounded_(false),
-    min_velocity_(0.0),
-    max_velocity_(0.0),
-    velocity_bounded_(false),
-    min_acceleration_(0.0),
-    max_acceleration_(0.0),
-    acceleration_bounded_(false)
+  VariableBounds()
+    : min_position_(0.0)
+    , max_position_(0.0)
+    , position_bounded_(false)
+    , min_velocity_(0.0)
+    , max_velocity_(0.0)
+    , velocity_bounded_(false)
+    , min_acceleration_(0.0)
+    , max_acceleration_(0.0)
+    , acceleration_bounded_(false)
   {
   }
 
@@ -94,7 +93,6 @@ typedef std::map<std::string, JointModel*> JointModelMap;
 /** \brief Map of names to const instances for JointModel */
 typedef std::map<std::string, const JointModel*> JointModelMapConst;
 
-
 /** \brief A joint from the robot. Models the transform that
     this joint applies in the kinematic chain. A joint
     consists of multiple variables. In the simplest case, when
@@ -110,12 +108,16 @@ typedef std::map<std::string, const JointModel*> JointModelMapConst;
 class JointModel
 {
 public:
-
   /** \brief The different types of joints we support */
   enum JointType
-    {
-      UNKNOWN, REVOLUTE, PRISMATIC, PLANAR, FLOATING, FIXED
-    };
+  {
+    UNKNOWN,
+    REVOLUTE,
+    PRISMATIC,
+    PLANAR,
+    FLOATING,
+    FIXED
+  };
 
   /** \brief The datatype for the joint bounds */
   typedef std::vector<VariableBounds> Bounds;
@@ -154,12 +156,12 @@ public:
     return child_link_model_;
   }
 
-  void setParentLinkModel(const LinkModel *link)
+  void setParentLinkModel(const LinkModel* link)
   {
     parent_link_model_ = link;
   }
 
-  void setChildLinkModel(const LinkModel *link)
+  void setChildLinkModel(const LinkModel* link)
   {
     child_link_model_ = link;
   }
@@ -168,14 +170,16 @@ public:
       @{ */
 
   /** \brief Get the names of the variables that make up this joint, in the order they appear in corresponding states.
-      For single DOF joints, this will be just the joint name. For multi-DOF joints these will be the joint name followed by "/", followed by
+      For single DOF joints, this will be just the joint name. For multi-DOF joints these will be the joint name
+     followed by "/", followed by
       the local names of the variables */
   const std::vector<std::string>& getVariableNames() const
   {
     return variable_names_;
   }
 
-  /** \brief Get the local names of the variable that make up the joint (suffixes that are attached to joint names to construct the variable names).
+  /** \brief Get the local names of the variable that make up the joint (suffixes that are attached to joint names to
+     construct the variable names).
       For single DOF joints, this will be empty. */
   const std::vector<std::string>& getLocalVariableNames() const
   {
@@ -183,7 +187,7 @@ public:
   }
 
   /** \brief Check if a particular variable is known to this joint */
-  bool hasVariable(const std::string &variable) const
+  bool hasVariable(const std::string& variable) const
   {
     return variable_index_map_.find(variable) != variable_index_map_.end();
   }
@@ -219,7 +223,7 @@ public:
   }
 
   /** \brief Get the index of the variable within this joint */
-  int getLocalVariableIndex(const std::string &variable) const;
+  int getLocalVariableIndex(const std::string& variable) const;
 
   /** @} */
 
@@ -229,7 +233,7 @@ public:
   /** \brief Provide a default value for the joint given the default joint variable bounds (maintained internally).
       Most joints will use the default implementation provided in this base class, but the quaternion
       for example needs a different implementation. Enough memory is assumed to be allocated. */
-  void getVariableDefaultPositions(double *values) const
+  void getVariableDefaultPositions(double* values) const
   {
     getVariableDefaultPositions(values, variable_bounds_);
   }
@@ -237,27 +241,33 @@ public:
   /** \brief Provide a default value for the joint given the joint variable bounds.
       Most joints will use the default implementation provided in this base class, but the quaternion
       for example needs a different implementation. Enough memory is assumed to be allocated. */
-  virtual void getVariableDefaultPositions(double *values, const Bounds &other_bounds) const = 0;
+  virtual void getVariableDefaultPositions(double* values, const Bounds& other_bounds) const = 0;
 
-  /** \brief Provide random values for the joint variables (within default bounds). Enough memory is assumed to be allocated. */
-  void getVariableRandomPositions(random_numbers::RandomNumberGenerator &rng, double *values) const
+  /** \brief Provide random values for the joint variables (within default bounds). Enough memory is assumed to be
+   * allocated. */
+  void getVariableRandomPositions(random_numbers::RandomNumberGenerator& rng, double* values) const
   {
     getVariableRandomPositions(rng, values, variable_bounds_);
   }
 
-  /** \brief Provide random values for the joint variables (within specified bounds). Enough memory is assumed to be allocated. */
-  virtual void getVariableRandomPositions(random_numbers::RandomNumberGenerator &rng, double *values, const Bounds &other_bounds) const = 0;
+  /** \brief Provide random values for the joint variables (within specified bounds). Enough memory is assumed to be
+   * allocated. */
+  virtual void getVariableRandomPositions(random_numbers::RandomNumberGenerator& rng, double* values,
+                                          const Bounds& other_bounds) const = 0;
 
-  /** \brief Provide random values for the joint variables (within default bounds). Enough memory is assumed to be allocated. */
-  void getVariableRandomPositionsNearBy(random_numbers::RandomNumberGenerator &rng, double *values,
-                                        const double *near, const double distance) const
+  /** \brief Provide random values for the joint variables (within default bounds). Enough memory is assumed to be
+   * allocated. */
+  void getVariableRandomPositionsNearBy(random_numbers::RandomNumberGenerator& rng, double* values, const double* near,
+                                        const double distance) const
   {
     getVariableRandomPositionsNearBy(rng, values, variable_bounds_, near, distance);
   }
 
-  /** \brief Provide random values for the joint variables (within specified bounds). Enough memory is assumed to be allocated. */
-  virtual void getVariableRandomPositionsNearBy(random_numbers::RandomNumberGenerator &rng, double *values, const Bounds &other_bounds,
-                                                const double *near, const double distance) const = 0;
+  /** \brief Provide random values for the joint variables (within specified bounds). Enough memory is assumed to be
+   * allocated. */
+  virtual void getVariableRandomPositionsNearBy(random_numbers::RandomNumberGenerator& rng, double* values,
+                                                const Bounds& other_bounds, const double* near,
+                                                const double distance) const = 0;
 
   /** @} */
 
@@ -265,42 +275,45 @@ public:
       @{ */
 
   /** \brief Check if the set of values for the variables of this joint are within bounds. */
-  bool satisfiesPositionBounds(const double *values, double margin = 0.0) const
+  bool satisfiesPositionBounds(const double* values, double margin = 0.0) const
   {
     return satisfiesPositionBounds(values, variable_bounds_, margin);
   }
 
-  /** \brief Check if the set of position values for the variables of this joint are within bounds, up to some margin. */
-  virtual bool satisfiesPositionBounds(const double *values, const Bounds &other_bounds, double margin) const = 0;
+  /** \brief Check if the set of position values for the variables of this joint are within bounds, up to some margin.
+   */
+  virtual bool satisfiesPositionBounds(const double* values, const Bounds& other_bounds, double margin) const = 0;
 
-  /** \brief Force the specified values to be inside bounds and normalized. Quaternions are normalized, continuous joints are made between -Pi and Pi.
+  /** \brief Force the specified values to be inside bounds and normalized. Quaternions are normalized, continuous
+     joints are made between -Pi and Pi.
       Returns true if changes were made. */
-  bool enforcePositionBounds(double *values) const
+  bool enforcePositionBounds(double* values) const
   {
     return enforcePositionBounds(values, variable_bounds_);
   }
 
-  /** \brief Force the specified values to be inside bounds and normalized. Quaternions are normalized, continuous joints are made between -Pi and Pi.
+  /** \brief Force the specified values to be inside bounds and normalized. Quaternions are normalized, continuous
+     joints are made between -Pi and Pi.
       Return true if changes were made. */
-  virtual bool enforcePositionBounds(double *values, const Bounds &other_bounds) const = 0;
+  virtual bool enforcePositionBounds(double* values, const Bounds& other_bounds) const = 0;
 
   /** \brief Check if the set of velocities for the variables of this joint are within bounds. */
-  bool satisfiesVelocityBounds(const double *values, double margin = 0.0) const
+  bool satisfiesVelocityBounds(const double* values, double margin = 0.0) const
   {
     return satisfiesVelocityBounds(values, variable_bounds_, margin);
   }
 
   /** \brief Check if the set of velocities for the variables of this joint are within bounds, up to some margin. */
-  virtual bool satisfiesVelocityBounds(const double *values, const Bounds &other_bounds, double margin) const;
+  virtual bool satisfiesVelocityBounds(const double* values, const Bounds& other_bounds, double margin) const;
 
   /** \brief Force the specified velocities to be within bounds. Return true if changes were made. */
-  bool enforceVelocityBounds(double *values) const
+  bool enforceVelocityBounds(double* values) const
   {
     return enforceVelocityBounds(values, variable_bounds_);
   }
 
   /** \brief Force the specified velocities to be inside bounds. Return true if changes were made. */
-  virtual bool enforceVelocityBounds(double *values, const Bounds &other_bounds) const;
+  virtual bool enforceVelocityBounds(double* values, const Bounds& other_bounds) const;
 
   /** \brief Get the bounds for a variable. Throw an exception if the variable was not found */
   const VariableBounds& getVariableBounds(const std::string& variable) const;
@@ -326,15 +339,17 @@ public:
   /** @} */
 
   /** \brief Compute the distance between two joint states of the same model (represented by the variable values) */
-  virtual double distance(const double *value1, const double *value2) const = 0;
+  virtual double distance(const double* value1, const double* value2) const = 0;
 
-  /** \brief Get the factor that should be applied to the value returned by distance() when that value is used in compound distances */
+  /** \brief Get the factor that should be applied to the value returned by distance() when that value is used in
+   * compound distances */
   double getDistanceFactor() const
   {
     return distance_factor_;
   }
 
-  /** \brief Set the factor that should be applied to the value returned by distance() when that value is used in compound distances */
+  /** \brief Set the factor that should be applied to the value returned by distance() when that value is used in
+   * compound distances */
   void setDistanceFactor(double factor)
   {
     distance_factor_ = factor;
@@ -362,7 +377,7 @@ public:
   }
 
   /** \brief Mark this joint as mimicking \e mimic using \e factor and \e offset */
-  void setMimic(const JointModel *mimic, double factor, double offset);
+  void setMimic(const JointModel* mimic, double factor, double offset);
 
   /** \brief The joint models whose values would be modified if the value of this joint changed */
   const std::vector<const JointModel*>& getMimicRequests() const
@@ -371,9 +386,9 @@ public:
   }
 
   /** \brief Notify this joint that there is another joint that mimics it */
-  void addMimicRequest(const JointModel *joint);
-  void addDescendantJointModel(const JointModel *joint);
-  void addDescendantLinkModel(const LinkModel *link);
+  void addMimicRequest(const JointModel* joint);
+  void addDescendantJointModel(const JointModel* joint);
+  void addDescendantLinkModel(const LinkModel* link);
 
   /** \brief Get all the link models that descend from this joint, in the kinematic tree */
   const std::vector<const LinkModel*>& getDescendantLinkModels() const
@@ -404,13 +419,14 @@ public:
     passive_ = flag;
   }
 
-  /** \brief Computes the state that lies at time @e t in [0, 1] on the segment that connects @e from state to @e to state.
+  /** \brief Computes the state that lies at time @e t in [0, 1] on the segment that connects @e from state to @e to
+     state.
       The memory location of @e state is not required to be different from the memory of either
       @e from or @e to. */
-  virtual void interpolate(const double *from, const double *to, const double t, double *state) const = 0;
+  virtual void interpolate(const double* from, const double* to, const double t, double* state) const = 0;
 
   /** \brief Get the extent of the state space (the maximum value distance() can ever report) */
-  virtual double getMaximumExtent(const Bounds &other_bounds) const = 0;
+  virtual double getMaximumExtent(const Bounds& other_bounds) const = 0;
 
   double getMaximumExtent() const
   {
@@ -421,81 +437,80 @@ public:
       @{ */
 
   /** \brief Given the joint values for a joint, compute the corresponding transform */
-  virtual void computeTransform(const double *joint_values, Eigen::Affine3d &transf) const = 0;
+  virtual void computeTransform(const double* joint_values, Eigen::Affine3d& transf) const = 0;
 
   /** \brief Given the transform generated by joint, compute the corresponding joint values */
-  virtual void computeVariablePositions(const Eigen::Affine3d& transform, double *joint_values) const = 0;
+  virtual void computeVariablePositions(const Eigen::Affine3d& transform, double* joint_values) const = 0;
 
   /** @} */
 
 protected:
-
   void computeVariableBoundsMsg();
 
   /** \brief Name of the joint */
-  std::string                                          name_;
+  std::string name_;
 
   /** \brief The type of joint */
-  JointType                                            type_;
+  JointType type_;
 
   /** \brief The local names to use for the variables that make up this joint */
-  std::vector<std::string>                             local_variable_names_;
+  std::vector<std::string> local_variable_names_;
 
   /** \brief The full names to use for the variables that make up this joint */
-  std::vector<std::string>                             variable_names_;
+  std::vector<std::string> variable_names_;
 
   /** \brief The bounds for each variable (low, high) in the same order as variable_names_ */
-  Bounds                                               variable_bounds_;
+  Bounds variable_bounds_;
 
-  std::vector<moveit_msgs::JointLimits>                variable_bounds_msg_;
+  std::vector<moveit_msgs::JointLimits> variable_bounds_msg_;
 
-  /** \brief Map from variable names to the corresponding index in variable_names_ (indexing makes sense within the JointModel only) */
-  VariableIndexMap                                     variable_index_map_;
+  /** \brief Map from variable names to the corresponding index in variable_names_ (indexing makes sense within the
+   * JointModel only) */
+  VariableIndexMap variable_index_map_;
 
   /** \brief The link before this joint */
-  const LinkModel                                     *parent_link_model_;
+  const LinkModel* parent_link_model_;
 
   /** \brief The link after this joint */
-  const LinkModel                                     *child_link_model_;
+  const LinkModel* child_link_model_;
 
   /** \brief The joint this one mimics (NULL for joints that do not mimic) */
-  const JointModel                                    *mimic_;
+  const JointModel* mimic_;
 
   /** \brief The offset to the mimic joint */
-  double                                               mimic_factor_;
+  double mimic_factor_;
 
   /** \brief The multiplier to the mimic joint */
-  double                                               mimic_offset_;
+  double mimic_offset_;
 
   /** \brief The set of joints that should get a value copied to them when this joint changes */
-  std::vector<const JointModel*>                       mimic_requests_;
+  std::vector<const JointModel*> mimic_requests_;
 
   /** \brief Pointers to all the links that will be moved if this joint changes value */
-  std::vector<const LinkModel*>                        descendant_link_models_;
+  std::vector<const LinkModel*> descendant_link_models_;
 
   /** \brief Pointers to all the joints that follow this one in the kinematic tree (including mimic joints) */
-  std::vector<const JointModel*>                       descendant_joint_models_;
+  std::vector<const JointModel*> descendant_joint_models_;
 
-  /** \brief Pointers to all the joints that follow this one in the kinematic tree, including mimic joints, but excluding fixed joints */
-  std::vector<const JointModel*>                       non_fixed_descendant_joint_models_;
+  /** \brief Pointers to all the joints that follow this one in the kinematic tree, including mimic joints, but
+   * excluding fixed joints */
+  std::vector<const JointModel*> non_fixed_descendant_joint_models_;
 
   /** \brief Specify whether this joint is marked as passive in the SRDF */
-  bool                                                 passive_;
+  bool passive_;
 
   /** \brief The factor applied to the distance between two joint states */
-  double                                               distance_factor_;
+  double distance_factor_;
 
   /** \brief The index of this joint's first variable, in the complete robot state */
-  int                                                  first_variable_index_;
+  int first_variable_index_;
 
   /** \brief Index for this joint in the array of joints of the complete model */
-  int                                                  joint_index_;
-
+  int joint_index_;
 };
 
 /** \brief Operator overload for printing variable bounds to a stream */
-std::ostream& operator<<(std::ostream &out, const VariableBounds &b);
-
+std::ostream& operator<<(std::ostream& out, const VariableBounds& b);
 }
 }
 
