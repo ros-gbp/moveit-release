@@ -41,6 +41,7 @@
 #include <moveit/py_bindings_tools/serialize_msg.h>
 #include <moveit_msgs/RobotState.h>
 
+#include <stdexcept>
 #include <boost/python.hpp>
 #include <Python.h>
 
@@ -53,14 +54,15 @@ namespace moveit
 class RobotInterfacePython : protected py_bindings_tools::ROScppInitializer
 {
 public:
-  RobotInterfacePython(const std::string &robot_description) :
-    py_bindings_tools::ROScppInitializer()
+  RobotInterfacePython(const std::string& robot_description) : py_bindings_tools::ROScppInitializer()
   {
     robot_model_ = planning_interface::getSharedRobotModel(robot_description);
+    if (!robot_model_)
+      throw std::runtime_error("RobotInterfacePython: invalid robot model");
     current_state_monitor_ = planning_interface::getSharedStateMonitor(robot_model_, planning_interface::getSharedTF());
   }
 
-  const char *getRobotName() const
+  const char* getRobotName() const
   {
     return robot_model_->getName().c_str();
   }
@@ -70,18 +72,18 @@ public:
     return py_bindings_tools::listFromString(robot_model_->getJointModelNames());
   }
 
-  bp::list getGroupJointNames(const std::string &group) const
+  bp::list getGroupJointNames(const std::string& group) const
   {
-    const robot_model::JointModelGroup *jmg = robot_model_->getJointModelGroup(group);
+    const robot_model::JointModelGroup* jmg = robot_model_->getJointModelGroup(group);
     if (jmg)
       return py_bindings_tools::listFromString(jmg->getJointModelNames());
     else
       return bp::list();
   }
 
-  bp::list getGroupJointTips(const std::string &group) const
+  bp::list getGroupJointTips(const std::string& group) const
   {
-    const robot_model::JointModelGroup *jmg = robot_model_->getJointModelGroup(group);
+    const robot_model::JointModelGroup* jmg = robot_model_->getJointModelGroup(group);
     if (jmg)
     {
       std::vector<std::string> tips;
@@ -97,9 +99,9 @@ public:
     return py_bindings_tools::listFromString(robot_model_->getLinkModelNames());
   }
 
-  bp::list getGroupLinkNames(const std::string &group) const
+  bp::list getGroupLinkNames(const std::string& group) const
   {
-    const robot_model::JointModelGroup *jmg = robot_model_->getJointModelGroup(group);
+    const robot_model::JointModelGroup* jmg = robot_model_->getJointModelGroup(group);
     if (jmg)
       return py_bindings_tools::listFromString(jmg->getLinkModelNames());
     else
@@ -111,14 +113,14 @@ public:
     return py_bindings_tools::listFromString(robot_model_->getJointModelGroupNames());
   }
 
-  bp::list getJointLimits(const std::string &name) const
+  bp::list getJointLimits(const std::string& name) const
   {
     bp::list result;
-    const robot_model::JointModel *jm = robot_model_->getJointModel(name);
+    const robot_model::JointModel* jm = robot_model_->getJointModel(name);
     if (jm)
     {
-      const std::vector<moveit_msgs::JointLimits> &lim = jm->getVariableBoundsMsg();
-      for (std::size_t i = 0 ; i < lim.size() ; ++i)
+      const std::vector<moveit_msgs::JointLimits>& lim = jm->getVariableBoundsMsg();
+      for (std::size_t i = 0; i < lim.size(); ++i)
       {
         bp::list l;
         l.append(lim[i].min_position);
@@ -134,16 +136,16 @@ public:
     return robot_model_->getModelFrame().c_str();
   }
 
-  bp::list getLinkPose(const std::string &name)
+  bp::list getLinkPose(const std::string& name)
   {
     bp::list l;
     if (!ensureCurrentState())
       return l;
     robot_state::RobotStatePtr state = current_state_monitor_->getCurrentState();
-    const robot_model::LinkModel *lm = state->getLinkModel(name);
+    const robot_model::LinkModel* lm = state->getLinkModel(name);
     if (lm)
     {
-      const Eigen::Affine3d &t = state->getGlobalLinkTransform(lm);
+      const Eigen::Affine3d& t = state->getGlobalLinkTransform(lm);
       std::vector<double> v(7);
       v[0] = t.translation().x();
       v[1] = t.translation().y();
@@ -158,18 +160,18 @@ public:
     return l;
   }
 
-  bp::list getCurrentJointValues(const std::string &name)
+  bp::list getCurrentJointValues(const std::string& name)
   {
     bp::list l;
     if (!ensureCurrentState())
       return l;
     robot_state::RobotStatePtr state = current_state_monitor_->getCurrentState();
-    const robot_model::JointModel *jm = state->getJointModel(name);
+    const robot_model::JointModel* jm = state->getJointModel(name);
     if (jm)
     {
-      const double *pos = state->getJointPositions(jm);
+      const double* pos = state->getJointPositions(jm);
       const unsigned int sz = jm->getVariableCount();
-      for (unsigned int i = 0 ; i < sz ; ++i)
+      for (unsigned int i = 0; i < sz; ++i)
         l.append(pos[i]);
     }
 
@@ -211,8 +213,8 @@ public:
     if (!ensureCurrentState())
       return d;
 
-    const std::map<std::string, double> &vars = current_state_monitor_->getCurrentStateValues();
-    for (std::map<std::string, double>::const_iterator it = vars.begin() ; it != vars.end() ; ++it)
+    const std::map<std::string, double>& vars = current_state_monitor_->getCurrentStateValues();
+    for (std::map<std::string, double>::const_iterator it = vars.begin(); it != vars.end(); ++it)
       d[it->first] = it->second;
 
     return d;
@@ -223,7 +225,7 @@ public:
     return robot_model_->getRootLinkName().c_str();
   }
 
-  bool hasGroup(const std::string &group) const
+  bool hasGroup(const std::string& group) const
   {
     return robot_model_->hasJointModelGroup(group);
   }
@@ -249,9 +251,9 @@ static void wrap_robot_interface()
   RobotClass.def("get_joint_limits", &RobotInterfacePython::getJointLimits);
   RobotClass.def("get_link_pose", &RobotInterfacePython::getLinkPose);
   RobotClass.def("get_planning_frame", &RobotInterfacePython::getPlanningFrame);
-  RobotClass.def("get_current_state",  &RobotInterfacePython::getCurrentState);
+  RobotClass.def("get_current_state", &RobotInterfacePython::getCurrentState);
   RobotClass.def("get_current_variable_values", &RobotInterfacePython::getCurrentVariableValues);
-  RobotClass.def("get_current_joint_values",  &RobotInterfacePython::getCurrentJointValues);
+  RobotClass.def("get_current_joint_values", &RobotInterfacePython::getCurrentJointValues);
   RobotClass.def("get_robot_root_link", &RobotInterfacePython::getRobotRootLink);
   RobotClass.def("has_group", &RobotInterfacePython::hasGroup);
   RobotClass.def("get_robot_name", &RobotInterfacePython::getRobotName);

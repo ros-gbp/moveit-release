@@ -51,7 +51,6 @@
  */
 namespace constraint_samplers
 {
-
 MOVEIT_CLASS_FORWARD(ConstraintSampler);
 
 /**
@@ -61,7 +60,6 @@ MOVEIT_CLASS_FORWARD(ConstraintSampler);
 class ConstraintSampler
 {
 public:
-
   /** \brief The default value associated with a sampling request.  By default if a valid sample cannot be
       produced in this many attempts, it returns with no sample */
   static const unsigned int DEFAULT_MAX_SAMPLING_ATTEMPTS = 2;
@@ -75,7 +73,7 @@ public:
    * joint model group cannot be found in the kinematic model
    *
    */
-  ConstraintSampler(const planning_scene::PlanningSceneConstPtr &scene, const std::string &group_name);
+  ConstraintSampler(const planning_scene::PlanningSceneConstPtr& scene, const std::string& group_name);
 
   virtual ~ConstraintSampler()
   {
@@ -89,7 +87,7 @@ public:
    * @return True if the configuration is successful.  If true, \ref isValid should also true.
    *         If false, \ref isValid should return false
    */
-  virtual bool configure(const moveit_msgs::Constraints &constr) = 0;
+  virtual bool configure(const moveit_msgs::Constraints& constr) = 0;
 
   /**
    * \brief Gets the group name set in the constructor
@@ -154,11 +152,10 @@ public:
    *
    * @param callback The callback to set
    */
-  void setGroupStateValidityCallback(const robot_state::GroupStateValidityCallbackFn &callback)
+  void setGroupStateValidityCallback(const robot_state::GroupStateValidityCallbackFn& callback)
   {
     group_state_validity_callback_ = callback;
   }
-
 
   /**
    * \brief Samples given the constraints, populating \e state.
@@ -170,11 +167,10 @@ public:
    *
    * @return True if a sample was successfully taken, false otherwise
    */
-  bool sample(robot_state::RobotState &state)
+  bool sample(robot_state::RobotState& state)
   {
     return sample(state, state, DEFAULT_MAX_SAMPLING_ATTEMPTS);
   }
-
 
   /**
    * \brief Samples given the constraints, populating \e state.
@@ -187,7 +183,7 @@ public:
    *
    * @return True if a sample was successfully taken, false otherwise
    */
-  bool sample(robot_state::RobotState &state, unsigned int max_attempts)
+  bool sample(robot_state::RobotState& state, unsigned int max_attempts)
   {
     return sample(state, state, max_attempts);
   }
@@ -202,7 +198,7 @@ public:
    *
    * @return True if a sample was successfully taken, false otherwise
    */
-  bool sample(robot_state::RobotState &state, const robot_state::RobotState &reference_state)
+  bool sample(robot_state::RobotState& state, const robot_state::RobotState& reference_state)
   {
     return sample(state, reference_state, DEFAULT_MAX_SAMPLING_ATTEMPTS);
   }
@@ -217,7 +213,7 @@ public:
    *
    * @return True if a sample was successfully projected, false otherwise
    */
-  bool project(robot_state::RobotState &state)
+  bool project(robot_state::RobotState& state)
   {
     return project(state, DEFAULT_MAX_SAMPLING_ATTEMPTS);
   }
@@ -233,8 +229,7 @@ public:
    *
    * @return True if a sample was successfully taken, false otherwise
    */
-  virtual bool sample(robot_state::RobotState &state,
-                      const robot_state::RobotState &reference_state,
+  virtual bool sample(robot_state::RobotState& state, const robot_state::RobotState& reference_state,
                       unsigned int max_attempts) = 0;
 
   /**
@@ -242,13 +237,13 @@ public:
    * group. This function allows the parameter max_attempts to be set.
    *
    * @param [out] state The state into which the values will be placed. Only values for the group are written.
-   * @param [in] max_attempts The maximum number of times to attempt to draw a sample.  If no sample has been drawn in this
+   * @param [in] max_attempts The maximum number of times to attempt to draw a sample.  If no sample has been drawn in
+   *this
    *        number of attempts, false will be returned.
    *
    * @return True if a sample was successfully projected, false otherwise
    */
-  virtual bool project(robot_state::RobotState &state,
-                       unsigned int max_attempts) = 0;
+  virtual bool project(robot_state::RobotState& state, unsigned int max_attempts) = 0;
 
   /**
    * \brief Returns whether or not the constraint sampler is valid or not.
@@ -282,24 +277,22 @@ public:
   virtual const std::string& getName() const = 0;
 
 protected:
-
   /**
    * \brief Clears all data from the constraint.
    *
    */
   virtual void clear();
 
-  bool                                  is_valid_;  /**< \brief  Holds the value for validity */
+  bool is_valid_; /**< \brief  Holds the value for validity */
 
   planning_scene::PlanningSceneConstPtr scene_; /**< \brief Holds the planning scene */
-  const robot_model::JointModelGroup   *jmg_; /**< \brief Holds the joint model group associated with this constraint */
+  const robot_model::JointModelGroup* jmg_; /**< \brief Holds the joint model group associated with this constraint */
   /** \brief Holds the set of frames that must exist in the reference state to allow samples to be drawn */
-  std::vector<std::string>              frame_depends_;
-  robot_state::GroupStateValidityCallbackFn group_state_validity_callback_; /**< \brief Holds the callback for state validity */
-  bool                                  verbose_; /**< \brief True if verbosity is on */
+  std::vector<std::string> frame_depends_;
+  robot_state::GroupStateValidityCallbackFn group_state_validity_callback_; /**< \brief Holds the callback for state
+                                                                               validity */
+  bool verbose_;                                                            /**< \brief True if verbosity is on */
 };
-
 }
-
 
 #endif
