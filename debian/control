@@ -1,0 +1,12 @@
+Source: ros-jade-moveit-ros-warehouse
+Section: misc
+Priority: extra
+Maintainer: Ioan Sucan <isucan@google.com>
+Build-Depends: debhelper (>= 9.0.0), ros-jade-catkin, ros-jade-moveit-ros-planning, ros-jade-rosconsole, ros-jade-roscpp, ros-jade-tf, ros-jade-warehouse-ros
+Homepage: http://moveit.ros.org
+Standards-Version: 3.9.2
+
+Package: ros-jade-moveit-ros-warehouse
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-jade-moveit-ros-planning, ros-jade-rosconsole, ros-jade-roscpp, ros-jade-tf, ros-jade-warehouse-ros
+Description: Components of MoveIt connecting to MongoDB
