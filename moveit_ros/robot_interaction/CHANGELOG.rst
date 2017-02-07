@@ -2,6 +2,15 @@
 Changelog for package moveit_ros_robot_interaction
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.8.4 (2017-02-06)
+------------------
+* [maintenance] Use MOVEIT_CLASS_FORWARD for moveit classes in moveit_ros. (`#182 <https://github.com/ros-planning/moveit/issues/182>`_)
+* [maintenance] Remove const& from getKinematicsQueryOptions to fix warning (`#129 <https://github.com/ros-planning/moveit/issues/129>`_)
+* Contributors: Andreas Koepf, Dave Coleman, Isaac I.Y. Saito, Maarten de Vries
+
+0.8.3 (2016-08-19)
+------------------
+
 0.6.6 (2016-06-08)
 ------------------
 * use getModelFrame() as reference frame for markers
