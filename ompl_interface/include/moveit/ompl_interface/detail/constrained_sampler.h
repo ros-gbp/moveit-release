@@ -42,7 +42,6 @@
 
 namespace ompl_interface
 {
-
 class ModelBasedPlanningContext;
 
 /** @class ConstrainedSampler
@@ -54,32 +53,30 @@ public:
    *  @param pg The planning group
    *  @param cs A pointer to a kinematic constraint sampler
    */
-  ConstrainedSampler(const ModelBasedPlanningContext *pc, const constraint_samplers::ConstraintSamplerPtr &cs);
+  ConstrainedSampler(const ModelBasedPlanningContext* pc, const constraint_samplers::ConstraintSamplerPtr& cs);
 
   /** @brief Sample a state (uniformly)*/
-  virtual void sampleUniform(ompl::base::State *state);
+  virtual void sampleUniform(ompl::base::State* state);
 
   /** @brief Sample a state (uniformly) within a certain distance of another state*/
-  virtual void sampleUniformNear(ompl::base::State *state, const ompl::base::State *near, const double distance);
+  virtual void sampleUniformNear(ompl::base::State* state, const ompl::base::State* near, const double distance);
 
   /** @brief Sample a state using the specified Gaussian*/
-  virtual void sampleGaussian(ompl::base::State *state, const ompl::base::State *mean, const double stdDev);
+  virtual void sampleGaussian(ompl::base::State* state, const ompl::base::State* mean, const double stdDev);
 
   double getConstrainedSamplingRate() const;
 
 private:
+  bool sampleC(ompl::base::State* state);
 
-  bool sampleC(ompl::base::State *state);
-
-  const ModelBasedPlanningContext                  *planning_context_;
-  ompl::base::StateSamplerPtr                       default_;
-  constraint_samplers::ConstraintSamplerPtr         constraint_sampler_;
-  robot_state::RobotState                           work_state_;
-  unsigned int                                      constrained_success_;
-  unsigned int                                      constrained_failure_;
-  double                                            inv_dim_;
+  const ModelBasedPlanningContext* planning_context_;
+  ompl::base::StateSamplerPtr default_;
+  constraint_samplers::ConstraintSamplerPtr constraint_sampler_;
+  robot_state::RobotState work_state_;
+  unsigned int constrained_success_;
+  unsigned int constrained_failure_;
+  double inv_dim_;
 };
-
 }
 
 #endif

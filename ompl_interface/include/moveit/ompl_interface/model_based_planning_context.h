@@ -59,9 +59,10 @@ MOVEIT_CLASS_FORWARD(ModelBasedPlanningContext);
 MOVEIT_CLASS_FORWARD(ConstraintsLibrary);
 
 struct ModelBasedPlanningContextSpecification;
-typedef boost::function<ob::PlannerPtr(const ompl::base::SpaceInformationPtr &si, const std::string &name,
-                                       const ModelBasedPlanningContextSpecification &spec)> ConfiguredPlannerAllocator;
-typedef boost::function<ConfiguredPlannerAllocator(const std::string &planner_type)> ConfiguredPlannerSelector;
+typedef boost::function<ob::PlannerPtr(const ompl::base::SpaceInformationPtr& si, const std::string& name,
+                                       const ModelBasedPlanningContextSpecification& spec)>
+    ConfiguredPlannerAllocator;
+typedef boost::function<ConfiguredPlannerAllocator(const std::string& planner_type)> ConfiguredPlannerSelector;
 
 struct ModelBasedPlanningContextSpecification
 {
@@ -78,15 +79,14 @@ struct ModelBasedPlanningContextSpecification
 class ModelBasedPlanningContext : public planning_interface::PlanningContext
 {
 public:
-
-  ModelBasedPlanningContext(const std::string &name, const ModelBasedPlanningContextSpecification &spec);
+  ModelBasedPlanningContext(const std::string& name, const ModelBasedPlanningContextSpecification& spec);
 
   virtual ~ModelBasedPlanningContext()
   {
   }
 
-  virtual bool solve(planning_interface::MotionPlanResponse &res);
-  virtual bool solve(planning_interface::MotionPlanDetailedResponse &res);
+  virtual bool solve(planning_interface::MotionPlanResponse& res);
+  virtual bool solve(planning_interface::MotionPlanDetailedResponse& res);
 
   virtual void clear();
   virtual bool terminate();
@@ -227,26 +227,24 @@ public:
     return spec_.constraint_sampler_manager_;
   }
 
-  void setConstraintSamplerManager(const constraint_samplers::ConstraintSamplerManagerPtr &csm)
+  void setConstraintSamplerManager(const constraint_samplers::ConstraintSamplerManagerPtr& csm)
   {
     spec_.constraint_sampler_manager_ = csm;
   }
 
   void setVerboseStateValidityChecks(bool flag);
 
-  void setProjectionEvaluator(const std::string &peval);
+  void setProjectionEvaluator(const std::string& peval);
 
-  void setPlanningVolume(const moveit_msgs::WorkspaceParameters &wparams);
+  void setPlanningVolume(const moveit_msgs::WorkspaceParameters& wparams);
 
-  void setCompleteInitialState(const robot_state::RobotState &complete_initial_robot_state);
+  void setCompleteInitialState(const robot_state::RobotState& complete_initial_robot_state);
 
-  bool setGoalConstraints(const std::vector<moveit_msgs::Constraints> &goal_constraints,
-              const moveit_msgs::Constraints &path_constraints,
-              moveit_msgs::MoveItErrorCodes *error);
-  bool setPathConstraints(const moveit_msgs::Constraints &path_constraints,
-              moveit_msgs::MoveItErrorCodes *error);
+  bool setGoalConstraints(const std::vector<moveit_msgs::Constraints>& goal_constraints,
+                          const moveit_msgs::Constraints& path_constraints, moveit_msgs::MoveItErrorCodes* error);
+  bool setPathConstraints(const moveit_msgs::Constraints& path_constraints, moveit_msgs::MoveItErrorCodes* error);
 
-  void setConstraintsApproximations(const ConstraintsLibraryConstPtr &constraints_library)
+  void setConstraintsApproximations(const ConstraintsLibraryConstPtr& constraints_library)
   {
     spec_.constraints_library_ = constraints_library;
   }
@@ -280,9 +278,10 @@ public:
   /* @brief Benchmark the planning problem. Return true on succesful saving of benchmark results
      @param timeout The time to spend on solving
      @param count The number of runs to average in the computation of the benchmark
-     @param filename The name of the file to which the benchmark results are to be saved (automatic names can be provided if a name is not specified)
+     @param filename The name of the file to which the benchmark results are to be saved (automatic names can be
+     provided if a name is not specified)
   */
-  bool benchmark(double timeout, unsigned int count, const std::string &filename = "");
+  bool benchmark(double timeout, unsigned int count, const std::string& filename = "");
 
   /* @brief Get the amount of time spent computing the last plan */
   double getLastPlanTime() const
@@ -304,26 +303,25 @@ public:
   void interpolateSolution();
 
   /* @brief Get the solution as a RobotTrajectory object*/
-  bool getSolutionPath(robot_trajectory::RobotTrajectory &traj) const;
+  bool getSolutionPath(robot_trajectory::RobotTrajectory& traj) const;
 
-  void convertPath(const og::PathGeometric &pg, robot_trajectory::RobotTrajectory &traj) const;
+  void convertPath(const og::PathGeometric& pg, robot_trajectory::RobotTrajectory& traj) const;
 
   virtual void configure();
 
 protected:
-
   void preSolve();
   void postSolve();
 
   void startSampling();
   void stopSampling();
 
-  virtual ob::ProjectionEvaluatorPtr getProjectionEvaluator(const std::string &peval) const;
-  virtual ob::StateSamplerPtr allocPathConstrainedSampler(const ompl::base::StateSpace *ss) const;
+  virtual ob::ProjectionEvaluatorPtr getProjectionEvaluator(const std::string& peval) const;
+  virtual ob::StateSamplerPtr allocPathConstrainedSampler(const ompl::base::StateSpace* ss) const;
   virtual void useConfig();
   virtual ob::GoalPtr constructGoal();
 
-  void registerTerminationCondition(const ob::PlannerTerminationCondition &ptc);
+  void registerTerminationCondition(const ob::PlannerTerminationCondition& ptc);
   void unregisterTerminationCondition();
 
   ModelBasedPlanningContextSpecification spec_;
@@ -341,42 +339,45 @@ protected:
 
   std::vector<int> space_signature_;
 
-  kinematic_constraints::KinematicConstraintSetPtr              path_constraints_;
-  moveit_msgs::Constraints                                      path_constraints_msg_;
+  kinematic_constraints::KinematicConstraintSetPtr path_constraints_;
+  moveit_msgs::Constraints path_constraints_msg_;
   std::vector<kinematic_constraints::KinematicConstraintSetPtr> goal_constraints_;
 
-  const ob::PlannerTerminationCondition *ptc_;
+  const ob::PlannerTerminationCondition* ptc_;
   boost::mutex ptc_lock_;
 
   /// the time spent computing the last plan
-  double                                                  last_plan_time_;
+  double last_plan_time_;
 
   /// the time spent simplifying the last plan
-  double                                                  last_simplify_time_;
+  double last_simplify_time_;
 
-  /// maximum number of valid states to store in the goal region for any planning request (when such sampling is possible)
-  unsigned int                                            max_goal_samples_;
+  /// maximum number of valid states to store in the goal region for any planning request (when such sampling is
+  /// possible)
+  unsigned int max_goal_samples_;
 
-  /// maximum number of attempts to be made at sampling a state when attempting to find valid states that satisfy some set of constraints
-  unsigned int                                            max_state_sampling_attempts_;
+  /// maximum number of attempts to be made at sampling a state when attempting to find valid states that satisfy some
+  /// set of constraints
+  unsigned int max_state_sampling_attempts_;
 
   /// maximum number of attempts to be made at sampling a goal states
-  unsigned int                                            max_goal_sampling_attempts_;
+  unsigned int max_goal_sampling_attempts_;
 
   /// when planning in parallel, this is the maximum number of threads to use at one time
-  unsigned int                                            max_planning_threads_;
+  unsigned int max_planning_threads_;
 
-  /// the maximum length that is allowed for segments that make up the motion plan; by default this is 1% from the extent of the space
-  double                                                  max_solution_segment_length_;
+  /// the maximum length that is allowed for segments that make up the motion plan; by default this is 1% from the
+  /// extent of the space
+  double max_solution_segment_length_;
 
-  /// the minimum number of points to include on the solution path (interpolation is used to reach this number, if needed)
-  unsigned int                                            minimum_waypoint_count_;
+  /// the minimum number of points to include on the solution path (interpolation is used to reach this number, if
+  /// needed)
+  unsigned int minimum_waypoint_count_;
 
-  bool                                                    use_state_validity_cache_;
+  bool use_state_validity_cache_;
 
-  bool                                                    simplify_solutions_;
+  bool simplify_solutions_;
 };
-
 }
 
 #endif
