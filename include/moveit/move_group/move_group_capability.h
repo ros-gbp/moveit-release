@@ -37,6 +37,7 @@
 #ifndef MOVEIT_MOVE_GROUP_CAPABILITY_
 #define MOVEIT_MOVE_GROUP_CAPABILITY_
 
+#include <moveit/macros/class_forward.h>
 #include <moveit/planning_scene_monitor/planning_scene_monitor.h>
 #include <moveit/planning_interface/planning_interface.h>
 #include <moveit/plan_execution/plan_representation.h>
@@ -44,22 +45,20 @@
 
 namespace move_group
 {
-
 enum MoveGroupState
-  {
-    IDLE,
-    PLANNING,
-    MONITOR,
-    LOOK
-  };
+{
+  IDLE,
+  PLANNING,
+  MONITOR,
+  LOOK
+};
+
+MOVEIT_CLASS_FORWARD(MoveGroupCapability);
 
 class MoveGroupCapability
 {
 public:
-
-  MoveGroupCapability(const std::string &capability_name) :
-    node_handle_("~"),
-    capability_name_(capability_name)
+  MoveGroupCapability(const std::string& capability_name) : node_handle_("~"), capability_name_(capability_name)
   {
   }
 
@@ -67,7 +66,7 @@ public:
   {
   }
 
-  void setContext(const MoveGroupContextPtr &context);
+  void setContext(const MoveGroupContextPtr& context);
 
   virtual void initialize() = 0;
 
@@ -77,27 +76,28 @@ public:
   }
 
 protected:
-
-  std::string getActionResultString(const moveit_msgs::MoveItErrorCodes &error_code, bool planned_trajectory_empty, bool plan_only);
+  std::string getActionResultString(const moveit_msgs::MoveItErrorCodes& error_code, bool planned_trajectory_empty,
+                                    bool plan_only);
   std::string stateToStr(MoveGroupState state) const;
 
-  void convertToMsg(const std::vector<plan_execution::ExecutableTrajectory> &trajectory,
-                    moveit_msgs::RobotState &first_state_msg, std::vector<moveit_msgs::RobotTrajectory> &trajectory_msg) const;
-  void convertToMsg(const robot_trajectory::RobotTrajectoryPtr &trajectory,
-                    moveit_msgs::RobotState &first_state_msg, moveit_msgs::RobotTrajectory &trajectory_msg) const;
-  void convertToMsg(const std::vector<plan_execution::ExecutableTrajectory> &trajectory,
-                    moveit_msgs::RobotState &first_state_msg, moveit_msgs::RobotTrajectory &trajectory_msg) const;
+  void convertToMsg(const std::vector<plan_execution::ExecutableTrajectory>& trajectory,
+                    moveit_msgs::RobotState& first_state_msg,
+                    std::vector<moveit_msgs::RobotTrajectory>& trajectory_msg) const;
+  void convertToMsg(const robot_trajectory::RobotTrajectoryPtr& trajectory, moveit_msgs::RobotState& first_state_msg,
+                    moveit_msgs::RobotTrajectory& trajectory_msg) const;
+  void convertToMsg(const std::vector<plan_execution::ExecutableTrajectory>& trajectory,
+                    moveit_msgs::RobotState& first_state_msg, moveit_msgs::RobotTrajectory& trajectory_msg) const;
 
-  planning_interface::MotionPlanRequest clearRequestStartState(const planning_interface::MotionPlanRequest &request) const;
-  moveit_msgs::PlanningScene clearSceneRobotState(const moveit_msgs::PlanningScene &scene) const;
-  bool performTransform(geometry_msgs::PoseStamped &pose_msg, const std::string &target_frame) const;
+  planning_interface::MotionPlanRequest
+  clearRequestStartState(const planning_interface::MotionPlanRequest& request) const;
+  moveit_msgs::PlanningScene clearSceneRobotState(const moveit_msgs::PlanningScene& scene) const;
+  bool performTransform(geometry_msgs::PoseStamped& pose_msg, const std::string& target_frame) const;
 
   ros::NodeHandle root_node_handle_;
   ros::NodeHandle node_handle_;
   std::string capability_name_;
   MoveGroupContextPtr context_;
 };
-
 }
 
 #endif
