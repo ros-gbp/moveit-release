@@ -37,6 +37,7 @@
 #ifndef MOVEIT_PLANNING_RDF_LOADER_
 #define MOVEIT_PLANNING_RDF_LOADER_
 
+#include <moveit/macros/class_forward.h>
 #include <urdf/model.h>
 #include <srdfdom/model.h>
 #include <boost/shared_ptr.hpp>
@@ -44,6 +45,8 @@
 
 namespace rdf_loader
 {
+MOVEIT_CLASS_FORWARD(RDFLoader);
+
 /** @class RDFLoader
  *  @brief Default constructor
  *  @param robot_description The string name corresponding to the ROS param where the URDF is loaded*/
@@ -51,14 +54,15 @@ class RDFLoader
 {
 public:
   /** @brief Default constructor
-   *  @param robot_description The string name corresponding to the ROS param where the URDF is loaded; the SRDF is assumed to be at the same param name + the "_semantic" suffix */
-  RDFLoader(const std::string &robot_description = "robot_description");
+   *  @param robot_description The string name corresponding to the ROS param where the URDF is loaded; the SRDF is
+   * assumed to be at the same param name + the "_semantic" suffix */
+  RDFLoader(const std::string& robot_description = "robot_description");
 
-   /** \brief Initialize the robot model from a string representation of the URDF and SRDF documents */
-  RDFLoader(const std::string &urdf_string, const std::string &srdf_string);
+  /** \brief Initialize the robot model from a string representation of the URDF and SRDF documents */
+  RDFLoader(const std::string& urdf_string, const std::string& srdf_string);
 
   /** \brief Initialize the robot model from a parsed XML representation of the URDF and SRDF */
-  RDFLoader(TiXmlDocument *urdf_doc, TiXmlDocument *srdf_doc);
+  RDFLoader(TiXmlDocument* urdf_doc, TiXmlDocument* srdf_doc);
 
   /** @brief Get the resolved parameter name for the robot description */
   const std::string& getRobotDescription() const
@@ -79,15 +83,9 @@ public:
   }
 
 private:
-
-  std::string                             robot_description_;
-  boost::shared_ptr<srdf::Model>          srdf_;
+  std::string robot_description_;
+  boost::shared_ptr<srdf::Model> srdf_;
   boost::shared_ptr<urdf::ModelInterface> urdf_;
-
 };
-
-typedef boost::shared_ptr<RDFLoader> RDFLoaderPtr;
-typedef boost::shared_ptr<const RDFLoader> RDFLoaderConstPtr;
-
 }
 #endif
