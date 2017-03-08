@@ -126,6 +126,26 @@ class MoveGroupCommander(object):
         self._g.set_start_state_to_current_state()
 
     def set_start_state(self, msg):
+        """
+        Specify a start state for the group.
+
+        Parameters
+        ----------
+        msg : moveit_msgs/RobotState
+
+        Examples
+        --------
+        >>> from moveit_msgs.msg import RobotState
+        >>> from sensor_msgs.msg import JointState
+        >>> joint_state = JointState()
+        >>> joint_state.header = Header()
+        >>> joint_state.header.stamp = rospy.Time.now()
+        >>> joint_state.name = ['joint_a', 'joint_b']
+        >>> joint_state.position = [0.17, 0.34]
+        >>> moveit_robot_state = RobotState()
+        >>> moveit_robot_state.joint_state = joint_state
+        >>> group.set_start_state(moveit_robot_state)
+        """
         self._g.set_start_state(conversions.msg_to_string(msg))
 
     def get_joint_value_target(self):
@@ -406,6 +426,13 @@ class MoveGroupCommander(object):
         """ Set a scaling factor for optionally reducing the maximum joint velocity. Allowed values are in (0,1]. """        
         if value > 0 and value <= 1:
             self._g.set_max_velocity_scaling_factor(value)
+        else:
+            raise MoveItCommanderException("Expected value in the range from 0 to 1 for scaling factor" )
+
+    def set_max_acceleration_scaling_factor(self, value):
+        """ Set a scaling factor for optionally reducing the maximum joint acceleration. Allowed values are in (0,1]. """
+        if value > 0 and value <= 1:
+            self._g.set_max_acceleration_scaling_factor(value)
         else:
             raise MoveItCommanderException("Expected value in the range from 0 to 1 for scaling factor" )
 
