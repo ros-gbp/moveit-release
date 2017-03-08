@@ -40,12 +40,9 @@
 #define MOVEIT_TRAJECTORY_RVIZ_PLUGIN__TRAJECTORY_DISPLAY
 
 #include <rviz/display.h>
-
 #include <moveit/rviz_plugin_render_tools/trajectory_visualization.h>
-#ifndef Q_MOC_RUN
 #include <ros/ros.h>
 #include <moveit/rdf_loader/rdf_loader.h>
-#endif
 
 namespace rviz
 {

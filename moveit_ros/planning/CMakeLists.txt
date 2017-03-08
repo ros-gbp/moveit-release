@@ -9,6 +9,7 @@ find_package(Boost REQUIRED system filesystem date_time program_options signals 
 find_package(catkin REQUIRED COMPONENTS
   moveit_core
   moveit_ros_perception
+  cmake_modules
   pluginlib
   actionlib
   roscpp
@@ -20,8 +21,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   tf_conversions
 )
-find_package(PkgConfig REQUIRED)
-pkg_search_module(EIGEN3 REQUIRED eigen3)
+find_package(Eigen REQUIRED)
 
 generate_dynamic_reconfigure_options(
   "planning_scene_monitor/cfg/PlanningSceneMonitorDynamicReconfigure.cfg"
@@ -53,7 +53,6 @@ catkin_package(
     moveit_planning_scene_monitor
     moveit_collision_plugin_loader
   INCLUDE_DIRS
-    ${EIGEN3_INCLUDE_DIRS} 
     ${THIS_PACKAGE_INCLUDE_DIRS}
   CATKIN_DEPENDS
     pluginlib
@@ -65,7 +64,7 @@ include_directories(${THIS_PACKAGE_INCLUDE_DIRS}
                     ${catkin_INCLUDE_DIRS}
 		    )
 include_directories(SYSTEM
-                    ${EIGEN3_INCLUDE_DIRS}
+                    ${EIGEN_INCLUDE_DIRS}
                     ${Boost_INCLUDE_DIRS}
                     )
 

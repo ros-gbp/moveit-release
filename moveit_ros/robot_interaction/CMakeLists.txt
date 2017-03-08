@@ -28,9 +28,9 @@ catkin_package(
     )
 
 include_directories(include
+                    ${Boost_INCLUDE_DIRS}
                     ${catkin_INCLUDE_DIRS})
 
-include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 link_directories(${orocos_kdl_LIBRARY_DIRS})
 
 add_library(${MOVEIT_LIB_NAME}
@@ -40,6 +40,7 @@ add_library(${MOVEIT_LIB_NAME}
   src/locked_robot_state.cpp
   src/interaction_handler.cpp
   src/robot_interaction.cpp)
+set_target_properties(${MOVEIT_LIB_NAME} PROPERTIES VERSION 0.7.3)
 target_link_libraries(${MOVEIT_LIB_NAME} ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 
 catkin_add_gtest(locked_robot_state_test test/locked_robot_state_test.cpp)

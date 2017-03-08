@@ -331,7 +331,7 @@ public:
   void setGroupStateValidityCallback(const robot_state::GroupStateValidityCallbackFn& callback);
   void setIKTimeout(double timeout);
   void setIKAttempts(unsigned int attempts);
-  kinematics::KinematicsQueryOptions getKinematicsQueryOptions() const;
+  const kinematics::KinematicsQueryOptions& getKinematicsQueryOptions() const;
   void setKinematicsQueryOptions(const kinematics::KinematicsQueryOptions& opt);
   void setKinematicsQueryOptionsForGroup(const std::string& group_name,
                                          const kinematics::KinematicsQueryOptions& options);

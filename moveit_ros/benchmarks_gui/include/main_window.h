@@ -37,7 +37,7 @@
 #ifndef BT_MAIN_WINDOW_
 #define BT_MAIN_WINDOW_
 
-#include <QMainWindow>
+#include <QtGui/QMainWindow>
 #include <QTimer>
 #include <QSettings>
 
