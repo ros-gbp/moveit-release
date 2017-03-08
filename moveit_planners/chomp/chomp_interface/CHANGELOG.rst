@@ -2,6 +2,9 @@
 Changelog for package moveit_planners_chomp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.7.8 (2017-03-08)
+------------------
+
 0.7.7 (2017-02-06)
 ------------------
 * [maintenance] clang-format upgraded to 3.8 (`#404 <https://github.com/ros-planning/moveit/issues/404>`_)
