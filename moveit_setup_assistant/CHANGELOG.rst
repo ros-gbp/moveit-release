@@ -2,6 +2,9 @@
 Changelog for package moveit_setup_assistant
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.8.6 (2017-03-08)
+------------------
+
 0.8.4 (2017-02-06)
 ------------------
 * [capability] validate trajectory before execution (`#63 <https://github.com/ros-planning/moveit/issues/63>`_)
