@@ -1,0 +1,12 @@
+Source: ros-indigo-moveit-ros-control-interface
+Section: misc
+Priority: extra
+Maintainer: Mathias Lüdtke <mathias.luedtke@ipa.fraunhofer.de>
+Build-Depends: debhelper (>= 9.0.0), ros-indigo-actionlib, ros-indigo-catkin, ros-indigo-controller-manager-msgs, ros-indigo-moveit-core, ros-indigo-moveit-simple-controller-manager, ros-indigo-pluginlib, ros-indigo-trajectory-msgs
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-indigo-moveit-ros-control-interface
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-indigo-actionlib, ros-indigo-controller-manager-msgs, ros-indigo-moveit-core, ros-indigo-moveit-simple-controller-manager, ros-indigo-pluginlib, ros-indigo-trajectory-msgs
+Description: ros_control controller manager interface for MoveIt!
