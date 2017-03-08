@@ -2,6 +2,9 @@
 Changelog for package moveit_runtime
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.8.6 (2017-03-08)
+------------------
+
 0.8.4 (2017-02-06)
 ------------------
 * Initial release into Jade
