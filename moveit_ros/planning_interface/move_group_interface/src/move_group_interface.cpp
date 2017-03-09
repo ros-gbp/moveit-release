@@ -1263,7 +1263,7 @@ private:
         constraints_storage_.reset(new moveit_warehouse::ConstraintsStorage(conn));
       }
     }
-    catch (std::runtime_error& ex)
+    catch (std::exception& ex)
     {
       ROS_ERROR_NAMED("move_group_interface", "%s", ex.what());
     }
@@ -1576,6 +1576,11 @@ void moveit::planning_interface::MoveGroupInterface::setRandomTarget()
 const std::vector<std::string>& moveit::planning_interface::MoveGroupInterface::getJointNames()
 {
   return impl_->getJointModelGroup()->getVariableNames();
+}
+
+const std::vector<std::string>& moveit::planning_interface::MoveGroupInterface::getLinkNames()
+{
+  return impl_->getJointModelGroup()->getLinkModelNames();
 }
 
 std::map<std::string, double>
