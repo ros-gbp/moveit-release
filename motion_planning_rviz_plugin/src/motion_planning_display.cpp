@@ -186,7 +186,6 @@ MotionPlanningDisplay::~MotionPlanningDisplay()
 
   delete text_to_display_;
   delete int_marker_display_;
-  delete frame_dock_;
 }
 
 void MotionPlanningDisplay::onInitialize()
@@ -227,7 +226,11 @@ void MotionPlanningDisplay::onInitialize()
   connect(frame_, SIGNAL(planningFinished()), trajectory_visual_.get(), SLOT(interruptCurrentDisplay()));
 
   if (window_context)
+  {
     frame_dock_ = window_context->addPane("Motion Planning", frame_);
+    connect(frame_dock_, SIGNAL(visibilityChanged(bool)), this, SLOT(motionPanelVisibilityChange(bool)));
+    frame_dock_->setIcon(getIcon());
+  }
 
   int_marker_display_ = context_->getDisplayFactory()->make("rviz/InteractiveMarkers");
   int_marker_display_->initialize(context_);
@@ -247,6 +250,12 @@ void MotionPlanningDisplay::onInitialize()
         new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_R), context_->getWindowManager()->getParentWindow());
     connect(im_reset_shortcut, SIGNAL(activated()), this, SLOT(resetInteractiveMarkers()));
   }
+}
+
+void MotionPlanningDisplay::motionPanelVisibilityChange(bool enable)
+{
+  if (enable)
+    setEnabled(true);
 }
 
 void MotionPlanningDisplay::toggleSelectPlanningGroupSubscription(bool enable)
@@ -1214,7 +1223,6 @@ void MotionPlanningDisplay::onEnable()
 
   query_robot_start_->setVisible(query_start_state_property_->getBool());
   query_robot_goal_->setVisible(query_goal_state_property_->getBool());
-  frame_->enable();
 
   int_marker_display_->setEnabled(true);
   int_marker_display_->setFixedFrame(fixed_frame_);
@@ -1231,7 +1239,6 @@ void MotionPlanningDisplay::onDisable()
 
   query_robot_start_->setVisible(false);
   query_robot_goal_->setVisible(false);
-  frame_->disable();
   text_to_display_->setVisible(false);
 
   PlanningSceneDisplay::onDisable();
