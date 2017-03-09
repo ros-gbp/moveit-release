@@ -1,0 +1,45 @@
+ros-kinetic-moveit-kinematics (0.9.5-0jessie) jessie; urgency=high
+
+  * [fix][moveit_ros_warehouse] gcc6 build error #423 <https://github.com/ros-planning/moveit/pull/423>
+  * Contributors: Dave Coleman
+
+ -- Dave Coleman <dave@dav.ee>  Wed, 08 Mar 2017 08:00:00 -0000
+
+ros-kinetic-moveit-kinematics (0.9.4-0jessie) jessie; urgency=high
+
+  * [maintenance] clang-format upgraded to 3.8 (#367 <https://github.com/ros-planning/moveit/issues/367>)
+  * Contributors: Dave Coleman
+
+ -- Dave Coleman <dave@dav.ee>  Mon, 06 Feb 2017 08:00:00 -0000
+
+ros-kinetic-moveit-kinematics (0.9.3-0jessie) jessie; urgency=high
+
+  * [fix] Replace unused service dependency with msg dep (#361 <https://github.com/ros-planning/moveit/issues/361>)
+  * [maintenance] Updated package.xml maintainers and author emails #330 <https://github.com/ros-planning/moveit/issues/330>
+  * Contributors: Dave Coleman, Ian McMahon
+
+ -- Dave Coleman <dave@dav.ee>  Wed, 16 Nov 2016 08:00:00 -0000
+
+ros-kinetic-moveit-kinematics (0.9.2-0jessie) jessie; urgency=high
+
+  * [Maintenance] Auto format codebase using clang-format (#284 <https://github.com/ros-planning/moveit/issues/284>)
+  * Contributors: Dave Coleman
+
+ -- Dave Coleman <dave@dav.ee>  Sat, 05 Nov 2016 07:00:00 -0000
+
+ros-kinetic-moveit-kinematics (0.9.0-0jessie) jessie; urgency=high
+
+  * Add dependency on new moveit_kinematics package
+  * Move moveit_ikfast into moveit_kinematics
+  * Moved kinematics plugins to new pkg moveit_kinematics
+  * Contributors: Dave Coleman
+
+ -- Dave Coleman <dave@dav.ee>  Wed, 19 Oct 2016 07:00:00 -0000
+
+ros-kinetic-moveit-kinematics (0.8.3-0jessie) jessie; urgency=high
+
+
+
+ -- Dave Coleman <dave@dav.ee>  Sun, 21 Aug 2016 07:00:00 -0000
+
+
