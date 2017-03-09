@@ -1,0 +1,12 @@
+Source: ros-kinetic-moveit-core
+Section: misc
+Priority: extra
+Maintainer: Dave Coleman <dave@dav.ee>
+Build-Depends: debhelper (>= 9.0.0), libassimp-dev, libboost-all-dev, libconsole-bridge-dev, libeigen3-dev, libfcl-0.5-dev, liburdfdom-dev, liburdfdom-headers-dev, pkg-config, ros-kinetic-angles, ros-kinetic-catkin, ros-kinetic-eigen-conversions, ros-kinetic-eigen-stl-containers, ros-kinetic-geometric-shapes (>= 0.5.2), ros-kinetic-geometry-msgs, ros-kinetic-kdl-parser, ros-kinetic-moveit-msgs, ros-kinetic-moveit-resources, ros-kinetic-octomap, ros-kinetic-octomap-msgs, ros-kinetic-orocos-kdl, ros-kinetic-random-numbers, ros-kinetic-roslib, ros-kinetic-rostime, ros-kinetic-rosunit, ros-kinetic-sensor-msgs, ros-kinetic-shape-msgs, ros-kinetic-srdfdom, ros-kinetic-std-msgs, ros-kinetic-tf-conversions, ros-kinetic-trajectory-msgs, ros-kinetic-urdf, ros-kinetic-visualization-msgs
+Homepage: http://moveit.ros.org
+Standards-Version: 3.9.2
+
+Package: ros-kinetic-moveit-core
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, libassimp-dev, libboost-all-dev, libconsole-bridge-dev, libeigen3-dev, libfcl-0.5-dev, liburdfdom-dev, liburdfdom-headers-dev, ros-kinetic-eigen-conversions, ros-kinetic-eigen-stl-containers, ros-kinetic-geometric-shapes (>= 0.5.2), ros-kinetic-geometry-msgs, ros-kinetic-kdl-parser, ros-kinetic-moveit-msgs, ros-kinetic-octomap, ros-kinetic-octomap-msgs, ros-kinetic-random-numbers, ros-kinetic-rostime, ros-kinetic-sensor-msgs, ros-kinetic-srdfdom, ros-kinetic-std-msgs, ros-kinetic-trajectory-msgs, ros-kinetic-urdf, ros-kinetic-visualization-msgs
+Description: Core libraries used by MoveIt!
