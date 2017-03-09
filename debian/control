@@ -1,0 +1,12 @@
+Source: ros-kinetic-moveit-planners
+Section: misc
+Priority: extra
+Maintainer: Dave Coleman <dave@dav.ee>
+Build-Depends: debhelper (>= 9.0.0), ros-kinetic-catkin
+Homepage: http://moveit.ros.org
+Standards-Version: 3.9.2
+
+Package: ros-kinetic-moveit-planners
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-kinetic-moveit-planners-ompl
+Description: Metapacakge that installs all available planners for MoveIt
