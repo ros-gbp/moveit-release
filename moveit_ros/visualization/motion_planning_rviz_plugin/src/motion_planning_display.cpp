@@ -186,7 +186,6 @@ MotionPlanningDisplay::~MotionPlanningDisplay()
 
   delete text_to_display_;
   delete int_marker_display_;
-  delete frame_dock_;
 }
 
 void MotionPlanningDisplay::onInitialize()
@@ -1077,7 +1076,7 @@ void MotionPlanningDisplay::setQueryStateHelper(bool use_start_state, const std:
   use_start_state ? setQueryStartState(state) : setQueryGoalState(state);
 }
 
-void MotionPlanningDisplay::populateMenuHandler(boost::shared_ptr<interactive_markers::MenuHandler>& mh)
+void MotionPlanningDisplay::populateMenuHandler(std::shared_ptr<interactive_markers::MenuHandler>& mh)
 {
   typedef interactive_markers::MenuHandler immh;
   std::vector<std::string> state_names;
@@ -1224,7 +1223,6 @@ void MotionPlanningDisplay::onEnable()
 
   query_robot_start_->setVisible(query_start_state_property_->getBool());
   query_robot_goal_->setVisible(query_goal_state_property_->getBool());
-  frame_->enable();
 
   int_marker_display_->setEnabled(true);
   int_marker_display_->setFixedFrame(fixed_frame_);
@@ -1241,7 +1239,6 @@ void MotionPlanningDisplay::onDisable()
 
   query_robot_start_->setVisible(false);
   query_robot_goal_->setVisible(false);
-  frame_->disable();
   text_to_display_->setVisible(false);
 
   PlanningSceneDisplay::onDisable();

@@ -48,14 +48,16 @@
 #include <moveit/macros/class_forward.h>
 #include <moveit_msgs/GetPositionFK.h>
 #include <moveit_msgs/GetPositionIK.h>
-#include <moveit_msgs/GetKinematicSolverInfo.h>
+#include <moveit_msgs/KinematicSolverInfo.h>
 #include <moveit_msgs/MoveItErrorCodes.h>
 
 #include <kdl/chainfksolverpos_recursive.hpp>
 
-#include <boost/shared_ptr.hpp>
+#include <urdf/model.h>
 
 #include <moveit/kinematics_base/kinematics_base.h>
+
+#include <memory>
 
 #include "pr2_arm_ik.h"
 
@@ -128,7 +130,7 @@ public:
    */
   PR2ArmKinematicsPlugin();
 
-  void setRobotModel(boost::shared_ptr<urdf::ModelInterface>& robot_model);
+  void setRobotModel(urdf::ModelInterfaceSharedPtr& robot_model);
 
   /**
    *  @brief Specifies if the node is active or not
@@ -234,11 +236,11 @@ public:
 protected:
   bool active_;
   int free_angle_;
-  boost::shared_ptr<urdf::ModelInterface> robot_model_;
+  urdf::ModelInterfaceSharedPtr robot_model_;
   pr2_arm_kinematics::PR2ArmIKSolverPtr pr2_arm_ik_solver_;
   std::string root_name_;
   int dimension_;
-  boost::shared_ptr<KDL::ChainFkSolverPos_recursive> jnt_to_pose_solver_;
+  std::shared_ptr<KDL::ChainFkSolverPos_recursive> jnt_to_pose_solver_;
   KDL::Chain kdl_chain_;
   moveit_msgs::KinematicSolverInfo ik_solver_info_, fk_solver_info_;
 
