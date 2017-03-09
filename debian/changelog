@@ -1,8 +1,0 @@
-ros-kinetic-moveit-runtime (0.9.4-0wily) wily; urgency=high
-
-  * Added a new metapackage as a minimum set of moveit-related packages that can be installed on a robot (eliminating development packages).
-  * Contributors: Isaac I.Y. Saito
-
- -- Isaac I. Y. Saito <gm130s@gmail.com>  Mon, 06 Feb 2017 08:00:00 -0000
-
-
