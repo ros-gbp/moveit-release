@@ -1,0 +1,13 @@
+Source: ros-indigo-moveit
+Section: misc
+Priority: extra
+Maintainer: Dave Coleman <dave@dav.ee>
+Build-Depends: debhelper (>= 9.0.0), ros-indigo-catkin
+Homepage: http://moveit.ros.org
+Standards-Version: 3.9.2
+
+Package: ros-indigo-moveit
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-indigo-moveit-commander, ros-indigo-moveit-core, ros-indigo-moveit-planners, ros-indigo-moveit-plugins, ros-indigo-moveit-ros, ros-indigo-moveit-setup-assistant
+Description: Meta package that contains all essential package of MoveIt!.
+ Until Summer 2016 MoveIt! had been developed over multiple repositories, where developers' usability and maintenance effort was non-trivial. See the detailed discussion for the merge of several repositories.
