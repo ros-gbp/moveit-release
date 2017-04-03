@@ -1,0 +1,200 @@
+ros-jade-moveit-ros-warehouse (0.8.7-0utopic) utopic; urgency=high
+
+  * address gcc6 build error (#458 <https://github.com/ros-planning/moveit/issues/458>)
+  * Contributors: Dmitry Rozhkov, Dave Coleman
+
+ -- Ioan Sucan <isucan@google.com>  Mon, 03 Apr 2017 07:00:00 -0000
+
+ros-jade-moveit-ros-warehouse (0.8.6-0utopic) utopic; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@google.com>  Wed, 08 Mar 2017 08:00:00 -0000
+
+ros-jade-moveit-ros-warehouse (0.8.4-0utopic) utopic; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@google.com>  Mon, 06 Feb 2017 08:00:00 -0000
+
+ros-jade-moveit-ros-warehouse (0.8.3-0utopic) utopic; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@google.com>  Fri, 19 Aug 2016 07:00:00 -0000
+
+ros-jade-moveit-ros-warehouse (0.6.6-0utopic) utopic; urgency=high
+
+  * Removed trailing whitespace from entire repository
+  * comments addressed
+  * changed to global node handle so warehouse connection params work correctly
+  * camelCase
+  * removed extraneous includes
+  * added delete and rename
+  * now takes port + host from param server
+  * removed defunct code
+  * checks db connection is good
+  * services advertised
+  * Contributors: Dave Coleman, dg
+
+ -- Ioan Sucan <isucan@google.com>  Wed, 08 Jun 2016 07:00:00 -0000
+
+ros-jade-moveit-ros-warehouse (0.6.5-0utopic) utopic; urgency=high
+
+  * update maintainers
+  * Contributors: Michael Ferguson
+
+ -- Ioan Sucan <isucan@google.com>  Sat, 24 Jan 2015 08:00:00 -0000
+
+ros-jade-moveit-ros-warehouse (0.6.4-0utopic) utopic; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@google.com>  Sat, 20 Dec 2014 08:00:00 -0000
+
+ros-jade-moveit-ros-warehouse (0.6.3-0utopic) utopic; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@google.com>  Wed, 03 Dec 2014 08:00:00 -0000
+
+ros-jade-moveit-ros-warehouse (0.6.2-0utopic) utopic; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@google.com>  Fri, 31 Oct 2014 07:00:00 -0000
+
+ros-jade-moveit-ros-warehouse (0.6.1-0utopic) utopic; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@google.com>  Fri, 31 Oct 2014 07:00:00 -0000
+
+ros-jade-moveit-ros-warehouse (0.6.0-0utopic) utopic; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@google.com>  Mon, 27 Oct 2014 07:00:00 -0000
+
+ros-jade-moveit-ros-warehouse (0.5.19-0utopic) utopic; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@google.com>  Mon, 23 Jun 2014 07:00:00 -0000
+
+ros-jade-moveit-ros-warehouse (0.5.18-0utopic) utopic; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@google.com>  Sun, 23 Mar 2014 07:00:00 -0000
+
+ros-jade-moveit-ros-warehouse (0.5.17-0utopic) utopic; urgency=high
+
+  * update maintainer e-mail
+  * Contributors: Ioan Sucan
+
+ -- Ioan Sucan <isucan@google.com>  Sat, 22 Mar 2014 07:00:00 -0000
+
+ros-jade-moveit-ros-warehouse (0.5.16-0utopic) utopic; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@google.com>  Thu, 27 Feb 2014 08:00:00 -0000
+
+ros-jade-moveit-ros-warehouse (0.5.14-0utopic) utopic; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@google.com>  Thu, 06 Feb 2014 08:00:00 -0000
+
+ros-jade-moveit-ros-warehouse (0.5.13-0utopic) utopic; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@google.com>  Thu, 06 Feb 2014 08:00:00 -0000
+
+ros-jade-moveit-ros-warehouse (0.5.12-0utopic) utopic; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@google.com>  Fri, 03 Jan 2014 08:00:00 -0000
+
+ros-jade-moveit-ros-warehouse (0.5.11-0utopic) utopic; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@google.com>  Fri, 03 Jan 2014 08:00:00 -0000
+
+ros-jade-moveit-ros-warehouse (0.5.10-0utopic) utopic; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@google.com>  Sun, 08 Dec 2013 08:00:00 -0000
+
+ros-jade-moveit-ros-warehouse (0.5.9-0utopic) utopic; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@google.com>  Tue, 03 Dec 2013 08:00:00 -0000
+
+ros-jade-moveit-ros-warehouse (0.5.8-0utopic) utopic; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@google.com>  Fri, 11 Oct 2013 07:00:00 -0000
+
+ros-jade-moveit-ros-warehouse (0.5.7-0utopic) utopic; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@google.com>  Tue, 01 Oct 2013 07:00:00 -0000
+
+ros-jade-moveit-ros-warehouse (0.5.6-0utopic) utopic; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@google.com>  Thu, 26 Sep 2013 07:00:00 -0000
+
+ros-jade-moveit-ros-warehouse (0.5.5-0utopic) utopic; urgency=high
+
+  * porting to new RobotState API
+
+ -- Ioan Sucan <isucan@google.com>  Mon, 23 Sep 2013 07:00:00 -0000
+
+ros-jade-moveit-ros-warehouse (0.5.4-0utopic) utopic; urgency=high
+
+  * make headers and author definitions aligned the same way; white space fixes
+
+ -- Ioan Sucan <isucan@google.com>  Wed, 14 Aug 2013 07:00:00 -0000
+
+ros-jade-moveit-ros-warehouse (0.5.2-0utopic) utopic; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@google.com>  Mon, 15 Jul 2013 07:00:00 -0000
+
+ros-jade-moveit-ros-warehouse (0.5.1-0utopic) utopic; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@google.com>  Sun, 14 Jul 2013 07:00:00 -0000
+
+ros-jade-moveit-ros-warehouse (0.5.0-0utopic) utopic; urgency=high
+
+  * white space fixes (tabs are now spaces)
+
+ -- Ioan Sucan <isucan@google.com>  Fri, 12 Jul 2013 07:00:00 -0000
+
+ros-jade-moveit-ros-warehouse (0.4.5-0utopic) utopic; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@google.com>  Wed, 03 Jul 2013 07:00:00 -0000
+
+ros-jade-moveit-ros-warehouse (0.4.4-0utopic) utopic; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@google.com>  Wed, 26 Jun 2013 07:00:00 -0000
+
+
