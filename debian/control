@@ -1,0 +1,12 @@
+Source: ros-jade-moveit-ros-perception
+Section: misc
+Priority: extra
+Maintainer: Ioan Sucan <isucan@google.com>
+Build-Depends: debhelper (>= 9.0.0), freeglut3-dev, libeigen3-dev, libgl1-mesa-dev, libglew-dev, libglu1-mesa-dev, ros-jade-catkin, ros-jade-cv-bridge, ros-jade-image-transport, ros-jade-message-filters, ros-jade-moveit-core, ros-jade-moveit-msgs, ros-jade-octomap, ros-jade-pluginlib, ros-jade-rosconsole, ros-jade-roscpp, ros-jade-sensor-msgs, ros-jade-tf, ros-jade-tf-conversions, ros-jade-urdf
+Homepage: http://moveit.ros.org
+Standards-Version: 3.9.2
+
+Package: ros-jade-moveit-ros-perception
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, freeglut3-dev, libgl1-mesa-dev, libglew-dev, libglu1-mesa-dev, ros-jade-cv-bridge, ros-jade-image-transport, ros-jade-message-filters, ros-jade-moveit-core, ros-jade-moveit-msgs, ros-jade-octomap, ros-jade-pluginlib, ros-jade-rosconsole, ros-jade-roscpp, ros-jade-sensor-msgs, ros-jade-tf, ros-jade-tf-conversions, ros-jade-urdf
+Description: Components of MoveIt connecting to perception
