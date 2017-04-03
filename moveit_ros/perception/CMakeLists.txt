@@ -15,9 +15,6 @@ find_package(GLUT REQUIRED)
 if (OPENGL_FOUND)
   set(gl_LIBS ${gl_LIBS} ${OPENGL_LIBRARIES})
 endif(OPENGL_FOUND)
-if(APPLE)
-  find_package(X11 REQUIRED)
-endif(APPLE)
 
 find_package(catkin REQUIRED COMPONENTS
   moveit_core
@@ -30,11 +27,11 @@ find_package(catkin REQUIRED COMPONENTS
   pluginlib
   image_transport
   object_recognition_msgs
+  cmake_modules
   sensor_msgs
   moveit_msgs
 )
-find_package(PkgConfig REQUIRED)
-pkg_search_module(EIGEN3 REQUIRED eigen3)
+find_package(Eigen REQUIRED)
 
 find_package(OpenMP)
 find_package(octomap REQUIRED)
@@ -49,7 +46,6 @@ catkin_package(
     occupancy_map_monitor/include
     pointcloud_octomap_updater/include
     semantic_world/include
-    ${EIGEN3_INCLUDE_DIRS}
     ${OCTOMAP_INCLUDE_DIRS}
   LIBRARIES
     moveit_lazy_free_space_updater
@@ -75,15 +71,13 @@ include_directories(mesh_filter/include
                     ${catkin_INCLUDE_DIRS}
                     )
 include_directories(SYSTEM
-                    ${EIGEN3_INCLUDE_DIRS}
+                    ${EIGEN_INCLUDE_DIRS}
                     ${GLEW_INCLUDE_DIR}
                     ${GLUT_INCLUDE_DIR}
-                    ${X11_INCLUDE_DIR}
                     )
 
 link_directories(${Boost_LIBRARY_DIRS})
 link_directories(${catkin_LIBRARY_DIRS})
-link_directories(${X11_LIBRARY_DIR})
 
 add_subdirectory(lazy_free_space_updater)
 add_subdirectory(point_containment_filter)

@@ -1,6 +1,6 @@
 <package>
   <name>moveit_core</name>
-  <version>0.8.7</version>
+  <version>0.7.9</version>
   <description>Core libraries used by MoveIt!</description>
   <author email="isucan@gmail.com">Ioan Sucan</author>
   <author email="robot.moveit@gmail.com">Sachin Chitta</author>
@@ -21,6 +21,7 @@
 
   <build_depend>assimp</build_depend>
   <build_depend>boost</build_depend>
+  <build_depend>cmake_modules</build_depend>
   <build_depend>eigen</build_depend>
   <build_depend>eigen_conversions</build_depend>
   <build_depend>eigen_stl_containers</build_depend>

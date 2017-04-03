@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 2.8.3)
 project(moveit_ros_benchmarks_gui)
 
 if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
@@ -12,11 +12,16 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(OGRE OGRE)
 link_directories(${OGRE_LIBRARY_DIRS})
 
+find_package(Qt4 REQUIRED)
+include(${QT_USE_FILE})
+add_definitions(-DQT_NO_KEYWORDS)
+
 find_package(catkin REQUIRED COMPONENTS
   moveit_ros_planning
   moveit_ros_warehouse
   moveit_ros_benchmarks
   moveit_ros_visualization
+  cmake_modules
   eigen_conversions
   interactive_markers
   rviz
@@ -24,49 +29,20 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rosconsole
 )
+find_package(Eigen REQUIRED)
 
-pkg_search_module(EIGEN3 REQUIRED eigen3)
-
-if(rviz_QT_VERSION VERSION_LESS "5")
-  find_package(Qt4 ${rviz_QT_VERSION} REQUIRED QtCore QtGui)
-  include(${QT_USE_FILE})
-  macro(qt_wrap_ui)
-    qt4_wrap_ui(${ARGN})
-  endmacro()
-else()
-  find_package(Qt5 ${rviz_QT_VERSION} REQUIRED Core Widgets)
-  set(QT_LIBRARIES Qt5::Widgets)
-  macro(qt_wrap_ui)
-    qt5_wrap_ui(${ARGN})
-  endmacro()
-endif()
-
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
-set(CMAKE_AUTOMOC ON)
-add_definitions(-DQT_NO_KEYWORDS)
-
-catkin_package(
-    INCLUDE_DIRS
-        ${EIGEN3_INCLUDE_DIRS}
-)
+catkin_package()
 
 include_directories(include)
 
-include_directories(SYSTEM ${EIGEN3_INCLUDE_DIRS})
-include_directories(${Boost_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS})
+include_directories(${catkin_INCLUDE_DIRS})
+include_directories(${Boost_INCLUDE_DIRS})
 
 link_directories(${Boost_LIBRARY_DIRS})
 link_directories(${catkin_LIBRARY_DIRS})
 
-set(HEADERS
-  include/benchmark_processing_thread.h
-  include/frame_marker.h
-  include/job_processing.h
-  include/main_window.h
-  include/trajectory.h
-  include/ui_utils.h
-)
-qt_wrap_ui(UIC_FILES
+qt4_wrap_cpp(MOC_FILES include/main_window.h include/trajectory.h include/benchmark_processing_thread.h)
+qt4_wrap_ui(UIC_FILES
   src/ui/main_window.ui
   src/ui/run_benchmark_dialog.ui
   src/ui/robot_loader.ui
@@ -90,7 +66,7 @@ set(SOURCES
   src/tab_trajectories.cpp
 )
 
-add_executable(moveit_benchmark_gui ${SOURCES} ${HEADERS} ${UIC_FILES})
+add_executable(moveit_benchmark_gui ${SOURCES} ${MOC_FILES} ${UIC_FILES})
 
 target_link_libraries(moveit_benchmark_gui
   ${catkin_LIBRARIES}

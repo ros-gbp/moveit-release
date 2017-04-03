@@ -56,8 +56,6 @@
 #include <moveit_msgs/ExecuteKnownTrajectory.h>
 #include <moveit_msgs/QueryPlannerInterfaces.h>
 #include <moveit_msgs/GetCartesianPath.h>
-#include <moveit_msgs/GetPlannerParams.h>
-#include <moveit_msgs/SetPlannerParams.h>
 #include <moveit_msgs/GraspPlanning.h>
 
 #include <actionlib/client/simple_action_client.h>
@@ -159,17 +157,12 @@ public:
 
     execute_action_client_.reset(new actionlib::SimpleActionClient<moveit_msgs::ExecuteTrajectoryAction>(
         node_handle_, move_group::EXECUTE_ACTION_NAME, false));
-    // TODO: after deprecation period, i.e. for L-turtle, switch back to standard waitForAction function
-    // waitForAction(execute_action_client_, move_group::EXECUTE_ACTION_NAME, timeout_for_servers, allotted_time);
+    // In Indigo, we maintain backwards compatibility
+    // silently falling back to old service when new action is not available
     waitForExecuteActionOrService(timeout_for_servers);
 
     query_service_ =
         node_handle_.serviceClient<moveit_msgs::QueryPlannerInterfaces>(move_group::QUERY_PLANNERS_SERVICE_NAME);
-    get_params_service_ =
-        node_handle_.serviceClient<moveit_msgs::GetPlannerParams>(move_group::GET_PLANNER_PARAMS_SERVICE_NAME);
-    set_params_service_ =
-        node_handle_.serviceClient<moveit_msgs::SetPlannerParams>(move_group::SET_PLANNER_PARAMS_SERVICE_NAME);
-
     cartesian_path_service_ =
         node_handle_.serviceClient<moveit_msgs::GetCartesianPath>(move_group::CARTESIAN_PATH_SERVICE_NAME);
     plan_grasps_service_ = node_handle_.serviceClient<moveit_msgs::GraspPlanning>(GRASP_PLANNING_SERVICE_NAME);
@@ -236,7 +229,8 @@ public:
 
   void waitForExecuteActionOrService(ros::WallTime timeout)
   {
-    ROS_DEBUG("Waiting for move_group action server (%s)...", move_group::EXECUTE_ACTION_NAME.c_str());
+    ROS_DEBUG_NAMED("move_group_interface", "Waiting for move_group action server (%s)...",
+                    move_group::EXECUTE_ACTION_NAME.c_str());
 
     // Deprecated service
     execute_service_ =
@@ -281,19 +275,14 @@ public:
       }
     }
 
-    // issue warning
+    std::string version = "new action";
     if (!execute_action_client_->isServerConnected())
     {
       if (execute_service_.exists())
-      {
-        ROS_WARN_NAMED("planning_interface",
-                       "\nDeprecation warning: Trajectory execution service is deprecated (was replaced by an action)."
-                       "\nReplace 'MoveGroupExecuteService' with 'MoveGroupExecuteTrajectoryAction' in "
-                       "move_group.launch");
-      }
+        version = "old service";
       else
       {
-        ROS_ERROR_STREAM_NAMED("planning_interface",
+        ROS_ERROR_STREAM_NAMED("move_group_interface",
                                "Unable to find execution action on topic: "
                                    << node_handle_.getNamespace() + move_group::EXECUTE_ACTION_NAME << " or service: "
                                    << node_handle_.getNamespace() + move_group::EXECUTE_SERVICE_NAME);
@@ -301,6 +290,7 @@ public:
       }
       execute_action_client_.reset();
     }
+    ROS_INFO("TrajectoryExecution will use %s capability.", version.c_str());
   }
 
   ~MoveGroupImpl()
@@ -340,37 +330,6 @@ public:
         return true;
       }
     return false;
-  }
-
-  std::map<std::string, std::string> getPlannerParams(const std::string& planner_id, const std::string& group = "")
-  {
-    moveit_msgs::GetPlannerParams::Request req;
-    moveit_msgs::GetPlannerParams::Response res;
-    req.planner_config = planner_id;
-    req.group = group;
-    std::map<std::string, std::string> result;
-    if (get_params_service_.call(req, res))
-    {
-      for (unsigned int i = 0, end = res.params.keys.size(); i < end; ++i)
-        result[res.params.keys[i]] = res.params.values[i];
-    }
-    return result;
-  }
-
-  void setPlannerParams(const std::string& planner_id, const std::string& group,
-                        const std::map<std::string, std::string>& params, bool replace = false)
-  {
-    moveit_msgs::SetPlannerParams::Request req;
-    moveit_msgs::SetPlannerParams::Response res;
-    req.planner_config = planner_id;
-    req.group = group;
-    req.replace = replace;
-    for (std::map<std::string, std::string>::const_iterator it = params.begin(), end = params.end(); it != end; ++it)
-    {
-      req.params.keys.push_back(it->first);
-      req.params.values.push_back(it->second);
-    }
-    set_params_service_.call(req, res);
   }
 
   std::string getDefaultPlannerId(const std::string& group) const
@@ -1249,19 +1208,14 @@ public:
 private:
   void initializeConstraintsStorageThread(const std::string& host, unsigned int port)
   {
-    // Set up db
     try
     {
-      warehouse_ros::DatabaseConnection::Ptr conn = moveit_warehouse::loadDatabase();
-      conn->setParams(host, port);
-      if (conn->connect())
-      {
-        constraints_storage_.reset(new moveit_warehouse::ConstraintsStorage(conn));
-      }
+      constraints_storage_.reset(new moveit_warehouse::ConstraintsStorage(host, port));
+      ROS_DEBUG_NAMED("move_group_interface", "Connected to constraints database");
     }
     catch (std::runtime_error& ex)
     {
-      ROS_ERROR_NAMED("move_group_interface", "%s", ex.what());
+      ROS_DEBUG_NAMED("move_group_interface", "%s", ex.what());
     }
     initializing_constraints_ = false;
   }
@@ -1311,8 +1265,6 @@ private:
   ros::Publisher attached_object_publisher_;
   ros::ServiceClient execute_service_;
   ros::ServiceClient query_service_;
-  ros::ServiceClient get_params_service_;
-  ros::ServiceClient set_params_service_;
   ros::ServiceClient cartesian_path_service_;
   ros::ServiceClient plan_grasps_service_;
   boost::scoped_ptr<moveit_warehouse::ConstraintsStorage> constraints_storage_;
@@ -1388,19 +1340,6 @@ const ros::NodeHandle& moveit::planning_interface::MoveGroup::getNodeHandle() co
 bool moveit::planning_interface::MoveGroup::getInterfaceDescription(moveit_msgs::PlannerInterfaceDescription& desc)
 {
   return impl_->getInterfaceDescription(desc);
-}
-
-std::map<std::string, std::string>
-moveit::planning_interface::MoveGroup::getPlannerParams(const std::string& planner_id, const std::string& group)
-{
-  return impl_->getPlannerParams(planner_id, group);
-}
-
-void moveit::planning_interface::MoveGroup::setPlannerParams(const std::string& planner_id, const std::string& group,
-                                                             const std::map<std::string, std::string>& params,
-                                                             bool replace)
-{
-  impl_->setPlannerParams(planner_id, group, params, replace);
 }
 
 std::string moveit::planning_interface::MoveGroup::getDefaultPlannerId(const std::string& group) const

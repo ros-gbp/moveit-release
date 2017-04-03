@@ -2,22 +2,31 @@
 Changelog for package moveit_planners_ompl
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.8.7 (2017-04-03)
+0.7.9 (2017-04-03)
 ------------------
-* [fix] gcc6 build error (`#471 <https://github.com/ros-planning/moveit/issues/471>`_, `#458 <https://github.com/ros-planning/moveit/issues/458>`_)
-* [fix] Always update initial robot state to prevent dirty robot state error. `#448 <https://github.com/ros-planning/moveit/pull/448>`_
-* Contributors: Dave Coleman, Henning Kayser
+* [fix][moveit_planners_ompl] Always update initial robot state to prevent dirty robot state error. `#448 <https://github.com/ros-planning/moveit/pull/448>`_
+* Contributors: Henning Kayser
 
-0.8.6 (2017-03-08)
+0.7.8 (2017-03-08)
+------------------
+* [fix][moveit_ros_warehouse] gcc6 build error `#423 <https://github.com/ros-planning/moveit/pull/423>`_
+* Contributors: Dmitry Rozhkov
+
+0.7.7 (2017-02-06)
+------------------
+* [maintenance] clang-format upgraded to 3.8 (`#404 <https://github.com/ros-planning/moveit/issues/404>`_)
+* Contributors: Dave Coleman
+
+0.7.6 (2016-12-30)
 ------------------
 
-0.8.4 (2017-02-06)
+0.7.5 (2016-12-25)
 ------------------
-* [maintenance] Replace last easy explicit shared_ptrs with MOVEIT_CLASS_FORWARD.
-* [test] fetch moveit_resources path at compile time
-* Contributors: Dave Coleman, Isaac I.Y. Saito, Maarten de Vries, Robert Haschke
 
-0.8.3 (2016-08-19)
+0.7.4 (2016-12-22)
+------------------
+
+0.7.3 (2016-12-20)
 ------------------
 
 0.7.0 (2016-01-30)

@@ -547,7 +547,7 @@ void InteractionHandler::setGroupStateValidityCallback(const robot_state::GroupS
   kinematic_options_map_->setOptions(KinematicOptionsMap::ALL, delta, KinematicOptions::STATE_VALIDITY_CALLBACK);
 }
 
-kinematics::KinematicsQueryOptions InteractionHandler::getKinematicsQueryOptions() const
+const kinematics::KinematicsQueryOptions& InteractionHandler::getKinematicsQueryOptions() const
 {
   boost::mutex::scoped_lock lock(state_lock_);
   return kinematic_options_map_->getOptions(KinematicOptionsMap::DEFAULT).options_;

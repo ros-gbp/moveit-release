@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 2.8.11)
 project(moveit_setup_assistant)
 
 if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
@@ -25,11 +25,16 @@ link_directories(${catkin_LIBRARY_DIRS})
 
 # Qt Stuff
 if(rviz_QT_VERSION VERSION_LESS "5")
-  find_package(Qt4 ${rviz_QT_VERSION} REQUIRED QtCore QtGui)
+  find_package(Qt4 ${rviz_QT_VERSION} EXACT REQUIRED QtCore QtGui)
   include(${QT_USE_FILE})
 else()
-  find_package(Qt5 ${rviz_QT_VERSION} REQUIRED Core Widgets)
+  find_package(Qt5 ${rviz_QT_VERSION} EXACT REQUIRED Core Widgets)
   set(QT_LIBRARIES Qt5::Widgets)
+
+  # this can be removed once CMAKE 2.8.12 is available (jade)
+  # it is due to a change in Qts use of -fPIE and -fPIC
+  # http://code.qt.io/cgit/qt/qtbase.git/tree/dist/changes-5.4.2
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Core_EXECUTABLE_COMPILE_FLAGS}")
 endif()
 # Instruct CMake to run moc automatically when needed.
 set(CMAKE_AUTOMOC ON)
@@ -43,6 +48,16 @@ if(NEW_YAMLCPP_FOUND)
 endif(NEW_YAMLCPP_FOUND)
 
 find_library(YAML yaml-cpp REQUIRED)
+
+catkin_package(
+  INCLUDE_DIRS
+    include
+  LIBRARIES
+    ${PROJECT_NAME}_tools
+  CATKIN_DEPENDS
+    moveit_ros_planning
+    moveit_ros_visualization
+)
 
 # Header files that need Qt Moc pre-processing for use with Qt signals, etc:
 set(HEADERS
@@ -70,6 +85,7 @@ add_library(${PROJECT_NAME}_tools
   src/tools/file_loader.cpp
   src/tools/moveit_config_data.cpp
 )
+set_target_properties(${PROJECT_NAME}_tools PROPERTIES VERSION 0.7.3)
 target_link_libraries(${PROJECT_NAME}_tools
   ${YAML}
   ${catkin_LIBRARIES}
@@ -97,21 +113,12 @@ add_library(${PROJECT_NAME}_widgets
   src/widgets/author_information_widget.cpp
   ${HEADERS}
 )
+set_target_properties(${PROJECT_NAME}_widgets PROPERTIES VERSION 0.7.3)
 target_link_libraries(${PROJECT_NAME}_widgets
   ${PROJECT_NAME}_tools
   ${QT_LIBRARIES}
   ${catkin_LIBRARIES}
   ${Boost_LIBRARIES}
-)
-
-catkin_package(
-  INCLUDE_DIRS
-    include
-  LIBRARIES
-    ${PROJECT_NAME}_tools
-  CATKIN_DEPENDS
-    moveit_ros_planning
-    moveit_ros_visualization
 )
 
 # executables

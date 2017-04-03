@@ -83,6 +83,7 @@ MotionPlanningDisplay::MotionPlanningDisplay()
   , text_to_display_(NULL)
   , private_handle_("~")
   , frame_(NULL)
+  , frame_dock_(NULL)
   , menu_handler_start_(new interactive_markers::MenuHandler)
   , menu_handler_goal_(new interactive_markers::MenuHandler)
   , int_marker_display_(NULL)
@@ -185,6 +186,7 @@ MotionPlanningDisplay::~MotionPlanningDisplay()
 
   delete text_to_display_;
   delete int_marker_display_;
+  delete frame_dock_;
 }
 
 void MotionPlanningDisplay::onInitialize()
@@ -1222,6 +1224,7 @@ void MotionPlanningDisplay::onEnable()
 
   query_robot_start_->setVisible(query_start_state_property_->getBool());
   query_robot_goal_->setVisible(query_goal_state_property_->getBool());
+  frame_->enable();
 
   int_marker_display_->setEnabled(true);
   int_marker_display_->setFixedFrame(fixed_frame_);
@@ -1238,6 +1241,7 @@ void MotionPlanningDisplay::onDisable()
 
   query_robot_start_->setVisible(false);
   query_robot_goal_->setVisible(false);
+  frame_->disable();
   text_to_display_->setVisible(false);
 
   PlanningSceneDisplay::onDisable();

@@ -2,30 +2,35 @@
 Changelog for package moveit_ros_perception
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.8.7 (2017-04-03)
+0.7.9 (2017-04-03)
 ------------------
-* [fix] `catkin_make -DCMAKE_ENABLE_TESTING=0` failure (`#478 <https://github.com/ros-planning/moveit/issues/478>`_)
 * [fix] gcc6 build error (`#471 <https://github.com/ros-planning/moveit/issues/471>`_, `#458 <https://github.com/ros-planning/moveit/issues/458>`_)
-* Contributors: Dave Coleman, Michael Goerner
+* Contributors: Michael Goerner
 
-0.8.6 (2017-03-08)
+0.7.8 (2017-03-08)
+------------------
+* [fix][moveit_ros_warehouse] gcc6 build error `#423 <https://github.com/ros-planning/moveit/pull/423>`_
+* Contributors: Dmitry Rozhkov
+
+0.7.7 (2017-02-06)
+------------------
+* clang-format upgraded to 3.8 (`#404 <https://github.com/ros-planning/moveit/issues/404>`_)
+* Contributors: Dave Coleman
+
+0.7.6 (2016-12-30)
 ------------------
 
-0.8.4 (2017-02-06)
-------------------
-* [maintenance] Remove explicit shared_ptr for moveit class templates. Remove `using` declarations from mesh_filter_base and fix shared_ptrs. Use MOVEIT_CLASS_FORWARD for moveit classes in moveit_ros. (`#182 <https://github.com/ros-planning/moveit/issues/182>`_)
-* Contributors: Dave Coleman, Isaac I.Y. Saito, Maarten de Vries, Robert Haschke
-
-0.8.3 (2016-08-19)
+0.7.5 (2016-12-25)
 ------------------
 
-0.6.6 (2016-06-08)
+0.7.4 (2016-12-22)
 ------------------
-* replaced cmake_modules dependency with eigen
-* [jade] eigen3 adjustment
-* remove unknown dependency sensor_msgs_generate_cpp
-  dependencies are pulled in via ${catkin_LIBRARIES}
-* Find X11 for build on OS X 10.11
+
+0.7.3 (2016-12-20)
+------------------
+
+0.7.2 (2016-06-20)
+------------------
 * set empty display function for glut window
   With freeglut 3.0 moveit aborts over here, printing
   > ERROR: No display callback registered for window 1
@@ -33,11 +38,18 @@ Changelog for package moveit_ros_perception
   and https://www.opengl.org/resources/libraries/glut/spec3/node46.html
   a callback *must* be registered for each window.
   With this patch moveit starts up as expected.
-* Remove OpenMP parallelization, fixes `#563 <https://github.com/ros-planning/moveit_ros/issues/563>`_
+* Contributors: v4hn
+
+0.7.1 (2016-04-11)
+------------------
+* [fix] Remove OpenMP parallelization (fixes `#563 <https://github.com/ros-planning/moveit_ros/issues/563>`_)
+* Contributors: Stefan Kohlbrecher
+
+0.7.0 (2016-01-30)
+------------------
 * Removed trailing whitespace from entire repository
-* last comment
 * Added missing dependency on moveit_msgs package
-* Contributors: Andriy Petlovanyy, Dave Coleman, Isaac I.Y. Saito, Kentaro Wada, Robert Haschke, Stefan Kohlbrecher, dg, v4hn
+* Contributors: Andriy Petlovanyy, Dave Coleman, dg
 
 0.6.5 (2015-01-24)
 ------------------

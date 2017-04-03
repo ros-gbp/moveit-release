@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 2.8.3)
 project(moveit_ros_visualization)
 
 if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
@@ -13,11 +13,17 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(OGRE OGRE)
 link_directories( ${OGRE_LIBRARY_DIRS} )
 
+# Qt Stuff
+find_package(Qt4 REQUIRED)
+include(${QT_USE_FILE})
+add_definitions(-DQT_NO_KEYWORDS)
+
 find_package(catkin REQUIRED COMPONENTS
   moveit_ros_planning_interface
   moveit_ros_robot_interaction
   moveit_ros_warehouse
   moveit_ros_perception
+  cmake_modules
   eigen_conversions
   geometric_shapes
   interactive_markers
@@ -27,28 +33,8 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rosconsole
   object_recognition_msgs
-  rostest
 )
-pkg_search_module(EIGEN3 REQUIRED eigen3)
-
-# Qt Stuff
-if(rviz_QT_VERSION VERSION_LESS "5")
-	find_package(Qt4 ${rviz_QT_VERSION} REQUIRED QtCore QtGui)
-	include(${QT_USE_FILE})
-  macro(qt_wrap_ui)
-    qt4_wrap_ui(${ARGN})
-  endmacro()
-else()
-	find_package(Qt5 ${rviz_QT_VERSION} REQUIRED Core Widgets)
-	set(QT_LIBRARIES Qt5::Widgets)
-  macro(qt_wrap_ui)
-    qt5_wrap_ui(${ARGN})
-  endmacro()
-endif()
-
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
-set(CMAKE_AUTOMOC ON)
-add_definitions(-DQT_NO_KEYWORDS)
+find_package(Eigen REQUIRED)
 
 catkin_package(
   LIBRARIES
@@ -63,7 +49,6 @@ catkin_package(
     planning_scene_rviz_plugin/include
     motion_planning_rviz_plugin/include
     trajectory_rviz_plugin/include
-    ${EIGEN3_INCLUDE_DIRS}
   CATKIN_DEPENDS
     moveit_ros_planning_interface
     moveit_ros_robot_interaction
@@ -81,7 +66,6 @@ include_directories(rviz_plugin_render_tools/include
                     ${catkin_INCLUDE_DIRS})
 
 include_directories(SYSTEM
-                    ${EIGEN3_INCLUDE_DIRS}
                     ${QT_INCLUDE_DIR}
                     ${OGRE_INCLUDE_DIRS})
 

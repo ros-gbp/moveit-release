@@ -1,7 +1,7 @@
-# moveit/moveit:jade-ci
+# moveit/moveit:indigo-ci
 # Sets up a base image to use for running Continuous Integration on Travis
 
-FROM ros:jade-ros-base
+FROM ros:indigo-ros-base
 MAINTAINER Dave Coleman dave@dav.ee
 
 ENV TERM xterm

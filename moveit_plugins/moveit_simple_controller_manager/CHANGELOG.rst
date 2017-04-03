@@ -2,18 +2,30 @@
 Changelog for package moveit_simple_controller_manager
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.8.7 (2017-04-03)
+0.7.9 (2017-04-03)
 ------------------
-* [fix] gcc6 build error (`#471 <https://github.com/ros-planning/moveit/issues/471>`_, `#458 <https://github.com/ros-planning/moveit/issues/458>`_)
+
+0.7.8 (2017-03-08)
+------------------
+* [fix][moveit_ros_warehouse] gcc6 build error `#423 <https://github.com/ros-planning/moveit/pull/423>`_
+* Contributors: Dmitry Rozhkov
+
+0.7.7 (2017-02-06)
+------------------
+* clang-format upgraded to 3.8 (`#404 <https://github.com/ros-planning/moveit/issues/404>`_)
+* Fix spelling (`#398 <https://github.com/ros-planning/moveit/issues/398>`_)
 * Contributors: Dave Coleman
 
-0.8.6 (2017-03-08)
+0.7.6 (2016-12-30)
 ------------------
 
-0.8.4 (2017-02-06)
+0.7.5 (2016-12-25)
 ------------------
 
-0.8.3 (2016-08-19)
+0.7.4 (2016-12-22)
+------------------
+
+0.7.3 (2016-12-20)
 ------------------
 
 0.5.7 (2016-01-30)
@@ -21,7 +33,7 @@ Changelog for package moveit_simple_controller_manager
 * expose headers of moveit_simple_controller_manager
 * Removed redundant logging information
 * More informative warning message about multi-dof trajectories.
-* Contributors: Dave Coleman, Dave Hershberger, Mathias Luedtke
+* Contributors: Dave Coleman, Dave Hershberger, Mathias Lüdtke
 
 0.5.6 (2014-03-23)
 ------------------

@@ -2,32 +2,50 @@
 Changelog for package moveit_ros_robot_interaction
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.8.7 (2017-04-03)
+0.7.9 (2017-04-03)
 ------------------
-* [fix] `catkin_make -DCMAKE_ENABLE_TESTING=0` failure (`#478 <https://github.com/ros-planning/moveit/issues/478>`_)
-* address gcc6 build error (`#458 <https://github.com/ros-planning/moveit/issues/458>`_)
-* Contributors: Dave Coleman, Michael Goerner, Dmitry Rozhkov
+* [fix] gcc6 build error (`#471 <https://github.com/ros-planning/moveit/issues/471>`_, `#458 <https://github.com/ros-planning/moveit/issues/458>`_)
+* Contributors: Michael Goerner
 
-0.8.6 (2017-03-08)
+0.7.8 (2017-03-08)
+------------------
+* [fix][moveit_ros_warehouse] gcc6 build error `#423 <https://github.com/ros-planning/moveit/pull/423>`_
+* Contributors: Dmitry Rozhkov
+
+0.7.7 (2017-02-06)
+------------------
+* [maintenance] clang-format upgraded to 3.8 (`#404 <https://github.com/ros-planning/moveit/issues/404>`_)
+* Contributors: Dave Coleman
+
+0.7.6 (2016-12-30)
 ------------------
 
-0.8.4 (2017-02-06)
-------------------
-* [maintenance] Use MOVEIT_CLASS_FORWARD for moveit classes in moveit_ros. (`#182 <https://github.com/ros-planning/moveit/issues/182>`_)
-* [maintenance] Remove const& from getKinematicsQueryOptions to fix warning (`#129 <https://github.com/ros-planning/moveit/issues/129>`_)
-* Contributors: Andreas Koepf, Dave Coleman, Isaac I.Y. Saito, Maarten de Vries
-
-0.8.3 (2016-08-19)
+0.7.5 (2016-12-25)
 ------------------
 
-0.6.6 (2016-06-08)
+0.7.4 (2016-12-22)
 ------------------
-* use getModelFrame() as reference frame for markers
+
+0.7.3 (2016-12-20)
+------------------
+
+0.7.2 (2016-06-20)
+------------------
+* cherry-pick 04e158aca from jade-devel
+  - use getModelFrame() as reference frame for markers
+  - always (re)create collision object marker
+  (other properties than pose (such as name of the marker) need to be adapted too)
 * publish markers relative to robot's root frame
   In addition to `#669 <https://github.com/ros-planning/moveit_ros/issues/669>`_, interactive markers need to be place relative to the
   robot's root frame. If nothing is specified (as before), rviz' fixed frame
   is used, leading to offsets when both frames are not identical.
-* merge indigo-devel changes (PR `#633 <https://github.com/ros-planning/moveit_ros/issues/633>`_ trailing whitespace) into jade-devel
+* Contributors: Robert Haschke
+
+0.7.1 (2016-04-11)
+------------------
+
+0.7.0 (2016-01-30)
+------------------
 * Removed trailing whitespace from entire repository
 * further adapted marker size computation
   - drop largest extension dimension (-> use cross-section size of elongated link)
@@ -48,9 +66,8 @@ Changelog for package moveit_ros_robot_interaction
 * fixing error caused by BOOST_STATIC_ASSERT
 * Fixed compile error caused by BOOST_STATIC_ASSERT in kinematic_options.cpp
   Added kinematics::DiscretizationMethods::DiscretizationMethod to QO_FIELDS in kinematic_options.cpp.
-  At pull request `#581 <https://github.com/ros-planning/moveit_ros/issues/581>`_, type of discretization_method was set to int. Changed it to proper type.
+  At pull request #581, type of discretization_method was set to int. Changed it to proper type.
 * reinstated changes related to the updates in the  moveit_core::KinematicsBase interface
-* Revert "  Kinematics Base changes in moveit_core"
 * adds the 'returns_approximate_solution' entry so that it is compatible with the changes in kinematics::KinematicsBase class in the moveit_core repo
 * Contributors: Daichi Yoshikawa, Dave Coleman, Robert Haschke, Sachin Chitta, jrgnicho
 

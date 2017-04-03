@@ -2,39 +2,45 @@
 Changelog for package moveit_ros_benchmarks_gui
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.8.7 (2017-04-03)
+0.7.9 (2017-04-03)
 ------------------
-* [fix] gcc6 build error (`#471 <https://github.com/ros-planning/moveit/issues/471>`_, `#458 <https://github.com/ros-planning/moveit/issues/458>`_)
+
+0.7.8 (2017-03-08)
+------------------
+* [fix][moveit_ros_warehouse] gcc6 build error `#423 <https://github.com/ros-planning/moveit/pull/423>`_
+* Contributors: Dmitry Rozhkov
+
+0.7.7 (2017-02-06)
+------------------
+* clang-format upgraded to 3.8 (`#404 <https://github.com/ros-planning/moveit/issues/404>`_)
 * Contributors: Dave Coleman
 
-0.8.6 (2017-03-08)
+0.7.6 (2016-12-30)
 ------------------
 
-0.8.4 (2017-02-06)
+0.7.5 (2016-12-25)
 ------------------
 
-0.8.3 (2016-08-19)
+0.7.4 (2016-12-22)
 ------------------
 
-0.6.6 (2016-06-08)
+0.7.3 (2016-12-20)
 ------------------
-* relax Qt-version requirement
-  Minor Qt version updates are ABI-compatible with each other:
-  https://wiki.qt.io/Qt-Version-Compatibility
-* replaced cmake_modules dependency with eigen
-* [jade] eigen3 adjustment
-* benchmark_gui: Fix conversion of shared_ptr to bool for C++11
-* unify Qt4 / Qt5 usage across cmake files
-  - fetch Qt version from rviz
-  - define variables/macros commonly used for Qt4 and Qt5
-  - QT_LIBRARIES
-  - qt_wrap_ui()
-* Enable optional build against Qt5, use -DUseQt5=On to enable it
+
+0.7.2 (2016-06-20)
+------------------
+
+0.7.1 (2016-04-11)
+------------------
 * explicitly link rviz' default_plugin library
   The library is not exported anymore and now is provided separately from rviz_LIBRARIES.
   See https://github.com/ros-visualization/rviz/pull/979 for details.
+* Contributors: v4hn
+
+0.7.0 (2016-01-30)
+------------------
 * Removed trailing whitespace from entire repository
-* Contributors: Dave Coleman, Isaac I.Y. Saito, Maarten de Vries, Robert Haschke, Simon Schmeisser (isys vision), v4hn
+* Contributors: Dave Coleman
 
 0.6.5 (2015-01-24)
 ------------------

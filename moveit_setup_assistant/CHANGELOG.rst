@@ -2,34 +2,34 @@
 Changelog for package moveit_setup_assistant
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.8.7 (2017-04-03)
+0.7.9 (2017-04-03)
 ------------------
-* [fix] gcc6 build error (`#471 <https://github.com/ros-planning/moveit/issues/471>`_, `#458 <https://github.com/ros-planning/moveit/issues/458>`_)
+
+0.7.8 (2017-03-08)
+------------------
+* [fix][moveit_ros_warehouse] gcc6 build error `#423 <https://github.com/ros-planning/moveit/pull/423>`_
+* Contributors: Dmitry Rozhkov
+
+0.7.7 (2017-02-06)
+------------------
+* [maintenance] clang-format upgraded to 3.8 (`#404 <https://github.com/ros-planning/moveit/issues/404>`_)
 * Contributors: Dave Coleman
 
-0.8.6 (2017-03-08)
+0.7.6 (2016-12-30)
+------------------
+* [fix][Indigo] re-enable support for cmake 2.8.11 `#391 <https://github.com/ros-planning/moveit/pull/391>`_
+* Contributors: Michael Goerner
+
+0.7.5 (2016-12-25)
 ------------------
 
-0.8.4 (2017-02-06)
+0.7.4 (2016-12-22)
 ------------------
-* [capability] validate trajectory before execution (`#63 <https://github.com/ros-planning/moveit/issues/63>`_)
-* [capability] setup-assistant: require author information in gui (`#154 <https://github.com/ros-planning/moveit/issues/154>`_)
-* [capability] `#85 <https://github.com/ros-planning/moveit/issues/85>`_: Add capability to execute trajectory with a ROS action (`#94 <https://github.com/ros-planning/moveit/issues/94>`_)
-* [fix] many `#154 <https://github.com/ros-planning/moveit/issues/154>`_, `#233 <https://github.com/ros-planning/moveit/issues/233>`_
-* [enhancement] add list of default capabilities `#366 <https://github.com/ros-planning/moveit/issues/366>`_, `#396 <https://github.com/ros-planning/moveit/issues/396>`_, `#220 <https://github.com/ros-planning/moveit/issues/220>`_
-* [enhancement] Modified launch file templates to be able to connect to the warehouse (`#81 <https://github.com/ros-planning/moveit/issues/81>`_)
-* [maintenance] Add dependency on new moveit_kinematics package
-* [maintenance] Move SRDFWriter to srdfdom (`#142 <https://github.com/ros-planning/moveit/issues/142>`_)
-* Contributors: Dave Coleman, Isaac I.Y. Saito, Maarten de Vries, Robert Haschke, Sarah Elliott, Ugo Cupcic, jan0e, Michael Goerner
 
-0.8.3 (2016-08-19)
+0.7.3 (2016-12-20)
 ------------------
-* 1st release after repository consolidation
-* [fix] msa: push traj exec monitor params down int proper nsroper ns `ros-planning/moveit#68 <https://github.com/ros-planning/moveit/pull/68>`_
-* [fix] write float numbers always in POSIX format `ros-planning/moveit_setup_assistant#123 <https://github.com/ros-planning/moveit_setup_assistant/pull/123>`_
-* Contributors: G.A. vd. Hoorn
 
-0.7.1 (2016-06-24)
+0.7.2 (2016-06-24)
 ------------------
 * [sys] Qt adjustment. 
   * relax Qt-version requirement.  Minor Qt version updates are ABI-compatible with each other:  https://wiki.qt.io/Qt-Version-Compatibility

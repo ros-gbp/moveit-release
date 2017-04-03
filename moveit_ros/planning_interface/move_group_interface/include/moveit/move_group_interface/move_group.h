@@ -39,7 +39,6 @@
 #define MOVEIT_MOVE_GROUP_INTERFACE_MOVE_GROUP_
 
 #include <moveit/macros/class_forward.h>
-#include <moveit/macros/deprecation.h>
 #include <moveit/robot_state/robot_state.h>
 #include <moveit_msgs/RobotTrajectory.h>
 #include <moveit_msgs/RobotState.h>
@@ -130,24 +129,28 @@ public:
      to be of type ros::CallbackQueue
         (which is the default type of callback queues used in ROS)
       \param tf. Specify a TF instance to use. If not specified, one will be constructed internally.
-      \param wait_for_servers. Timeout for connecting to action servers. Zero time means unlimited waiting.
+      \param wait_for_servers. Optional timeout for connecting to action servers. If it is not specified, the wait
+      time is unlimited.
     */
   MoveGroup(const Options& opt, const boost::shared_ptr<tf::Transformer>& tf = boost::shared_ptr<tf::Transformer>(),
             const ros::WallDuration& wait_for_servers = ros::WallDuration());
-  MOVEIT_DEPRECATED MoveGroup(const Options& opt, const boost::shared_ptr<tf::Transformer>& tf,
-                              const ros::Duration& wait_for_servers);
+  MoveGroup(const Options& opt, const boost::shared_ptr<tf::Transformer>& tf, const ros::Duration& wait_for_servers);
 
   /**
       \brief Construct a client for the MoveGroup action for a particular \e group.
 
+      Optionally, specify a TF instance to use. If not specified, one will be constructed internally.
+      A timeout for connecting to the action server can also be specified. If it is not specified, the wait time is
+     unlimited.
       \param tf. Specify a TF instance to use. If not specified, one will be constructed internally.
-      \param wait_for_servers. Timeout for connecting to action servers. Zero time means unlimited waiting.
-    */
+      \param wait_for_servers. Optional timeout for connecting to action servers. If it is not specified, the wait
+      time is unlimited.
+   */
   MoveGroup(const std::string& group,
             const boost::shared_ptr<tf::Transformer>& tf = boost::shared_ptr<tf::Transformer>(),
             const ros::WallDuration& wait_for_servers = ros::WallDuration());
-  MOVEIT_DEPRECATED MoveGroup(const std::string& group, const boost::shared_ptr<tf::Transformer>& tf,
-                              const ros::Duration& wait_for_servers);
+  MoveGroup(const std::string& group, const boost::shared_ptr<tf::Transformer>& tf,
+            const ros::Duration& wait_for_servers);
 
   ~MoveGroup();
 
@@ -188,13 +191,6 @@ public:
 
   /** \brief Get the description of the planning plugin loaded by the action server */
   bool getInterfaceDescription(moveit_msgs::PlannerInterfaceDescription& desc);
-
-  /** \brief Get the planner parameters for given group and planner_id */
-  std::map<std::string, std::string> getPlannerParams(const std::string& planner_id, const std::string& group = "");
-
-  /** \brief Set the planner parameters for given group and planner_id */
-  void setPlannerParams(const std::string& planner_id, const std::string& group,
-                        const std::map<std::string, std::string>& params, bool bReplace = false);
 
   /** \brief Get the default planner for a given group (or global default) */
   std::string getDefaultPlannerId(const std::string& group = "") const;
@@ -854,10 +850,10 @@ public:
    */
   /**@{*/
 
-  /** \brief Specify where the database server that holds known constraints resides */
+  /** \brief Specify where the MongoDB server that holds known constraints resides */
   void setConstraintsDatabase(const std::string& host, unsigned int port);
 
-  /** \brief Get the names of the known constraints as read from the Mongo database, if a connection was achieved. */
+  /** \brief Get the names of the constraints known as read from the MongoDB server, if a connection was achieved. */
   std::vector<std::string> getKnownConstraints() const;
 
   /** \brief Get the actual set of constraints for this MoveGroup.
@@ -866,12 +862,12 @@ public:
   moveit_msgs::Constraints getPathConstraints() const;
 
   /** \brief Specify a set of path constraints to use.
-      The constraints are looked up by name from the Mongo database server.
+      The constraints are looked up by name from the MongoDB server.
       This replaces any path constraints set in previous calls to setPathConstraints(). */
   bool setPathConstraints(const std::string& constraint);
 
   /** \brief Specify a set of path constraints to use.
-      This version does not require a database server.
+      This version does not require a MongoDB server.
       This replaces any path constraints set in previous calls to setPathConstraints(). */
   void setPathConstraints(const moveit_msgs::Constraints& constraint);
 

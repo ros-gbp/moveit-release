@@ -2,25 +2,29 @@
 Changelog for package moveit_commander
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.8.7 (2017-04-03)
+0.7.9 (2017-04-03)
 ------------------
 
-0.8.6 (2017-03-08)
+0.7.8 (2017-03-08)
 ------------------
+* [enhancement] Add set_max_acceleration_scaling_factor to moveit_commander. `#377 <https://github.com/ros-planning/moveit/issues/377>`_, `#437 <https://github.com/ros-planning/moveit/issues/437>`_, `#451 <https://github.com/ros-planning/moveit/issues/451>`_
 * [doc][moveit_commander] added description for set_start_state (`#447 <https://github.com/ros-planning/moveit/issues/447>`_)
-* Contributors: Ravi Prakash Joshi
+* Contributors: Isaac I.Y. Saito, Ravi Prakash Joshi
 
-0.8.4 (2017-02-06)
+0.7.7 (2017-02-06)
 ------------------
-* [fix] Moveit Commander no option to set set_max_acceleration_scaling_factor (`#377 <https://github.com/ros-planning/moveit/issues/377>`_) to fix `#373 <https://github.com/ros-planning/moveit/issues/373>`_
-* Contributors: Dave Coleman, Isaac I.Y. Saito, Robert Haschke, Shingo Kitagawa, mmoerdijk
 
-0.8.3 (2016-08-19)
+0.7.6 (2016-12-30)
 ------------------
-* 1st release after repository consolidation
-* [feat] Add retime_trajectory() to MoveGroupCommander `#29 <https://github.com/ros-planning/moveit_commander/pull/29>`_
-* [feat] Added set_max_velocity_scaling_factor function to move_group.py
-* Contributors: Dave Coleman, Michael Goerner, Robert Haschke
+
+0.7.5 (2016-12-25)
+------------------
+
+0.7.4 (2016-12-22)
+------------------
+
+0.7.3 (2016-12-20)
+------------------
 
 0.6.1 (2016-04-28)
 ------------------

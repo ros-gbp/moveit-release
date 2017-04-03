@@ -90,7 +90,7 @@ struct BenchmarkRequest
 class BenchmarkExecution
 {
 public:
-  BenchmarkExecution(const planning_scene::PlanningScenePtr& scene, warehouse_ros::DatabaseConnection::Ptr conn);
+  BenchmarkExecution(const planning_scene::PlanningScenePtr& scene, const std::string& host, std::size_t port);
 
   bool readOptions(const std::string& filename);
   void printOptions(std::ostream& out);
