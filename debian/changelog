@@ -1,0 +1,256 @@
+ros-indigo-moveit-ros-move-group (0.7.9-0saucy) saucy; urgency=high
+
+
+
+ -- Sachin Chitta <robot.moveit@gmail.com>  Mon, 03 Apr 2017 07:00:00 -0000
+
+ros-indigo-moveit-ros-move-group (0.7.8-0saucy) saucy; urgency=high
+
+  * [fix][moveit_ros_warehouse] gcc6 build error #423 <https://github.com/ros-planning/moveit/pull/423>
+  * Contributors: Dmitry Rozhkov
+
+ -- Sachin Chitta <robot.moveit@gmail.com>  Wed, 08 Mar 2017 08:00:00 -0000
+
+ros-indigo-moveit-ros-move-group (0.7.7-0saucy) saucy; urgency=high
+
+  * clang-format upgraded to 3.8 (#404 <https://github.com/ros-planning/moveit/issues/404>)
+  * Contributors: Dave Coleman
+
+ -- Sachin Chitta <robot.moveit@gmail.com>  Mon, 06 Feb 2017 08:00:00 -0000
+
+ros-indigo-moveit-ros-move-group (0.7.6-0saucy) saucy; urgency=high
+
+
+
+ -- Sachin Chitta <robot.moveit@gmail.com>  Fri, 30 Dec 2016 08:00:00 -0000
+
+ros-indigo-moveit-ros-move-group (0.7.5-0saucy) saucy; urgency=high
+
+
+
+ -- Sachin Chitta <robot.moveit@gmail.com>  Sun, 25 Dec 2016 08:00:00 -0000
+
+ros-indigo-moveit-ros-move-group (0.7.4-0saucy) saucy; urgency=high
+
+
+
+ -- Sachin Chitta <robot.moveit@gmail.com>  Thu, 22 Dec 2016 08:00:00 -0000
+
+ros-indigo-moveit-ros-move-group (0.7.3-0saucy) saucy; urgency=high
+
+
+
+ -- Sachin Chitta <robot.moveit@gmail.com>  Tue, 20 Dec 2016 08:00:00 -0000
+
+ros-indigo-moveit-ros-move-group (0.7.2-0saucy) saucy; urgency=high
+
+  * apply planning scene: use newly exposed success value of newPlanningSceneMessage
+  * add apply_planning_scene capability
+    This new capability allows to apply changes to a monitored planning
+    scene and *blocks* until the changes are applied. This is meant to
+    replace the quasi-standard pattern:
+    ```
+    planning_scene_interface.addCollisionObjects(...)
+    sleep(2.0)
+    group.pick("object")
+    ```
+    by
+    ```
+    ros::ServiceClient client = n.serviceClient<moveit_msgs::ApplyPlanningScene>("apply_planning_scene");
+    client.call(...)
+    group.pick("object")
+    ```
+    This makes it much more convenient to add&interact with objects
+    without useless and arbitrarily long sleeps to ensure planning scene
+    updates succeeded.
+  * clear_octomap_service: fix runtime name (#685 <https://github.com/ros-planning/moveit_ros/issues/685>)
+    Looks like the author copy&pasted from a different capability
+    and forgot to change the name.
+  * Contributors: v4hn
+
+ -- Sachin Chitta <robot.moveit@gmail.com>  Mon, 20 Jun 2016 07:00:00 -0000
+
+ros-indigo-moveit-ros-move-group (0.7.1-0saucy) saucy; urgency=high
+
+
+
+ -- Sachin Chitta <robot.moveit@gmail.com>  Mon, 11 Apr 2016 07:00:00 -0000
+
+ros-indigo-moveit-ros-move-group (0.7.0-0saucy) saucy; urgency=high
+
+  * Removed trailing whitespace from entire repository
+  * Fixed bug(?) in move_group::MoveGroupKinematicsService::computeIK link name selection.
+  * Contributors: Dave Coleman, Mihai Pomarlan
+
+ -- Sachin Chitta <robot.moveit@gmail.com>  Sat, 30 Jan 2016 08:00:00 -0000
+
+ros-indigo-moveit-ros-move-group (0.6.5-0saucy) saucy; urgency=high
+
+  * update maintainers
+  * Contributors: Michael Ferguson
+
+ -- Sachin Chitta <robot.moveit@gmail.com>  Sat, 24 Jan 2015 08:00:00 -0000
+
+ros-indigo-moveit-ros-move-group (0.6.4-0saucy) saucy; urgency=high
+
+
+
+ -- Sachin Chitta <robot.moveit@gmail.com>  Sat, 20 Dec 2014 08:00:00 -0000
+
+ros-indigo-moveit-ros-move-group (0.6.3-0saucy) saucy; urgency=high
+
+
+
+ -- Sachin Chitta <robot.moveit@gmail.com>  Wed, 03 Dec 2014 08:00:00 -0000
+
+ros-indigo-moveit-ros-move-group (0.6.2-0saucy) saucy; urgency=high
+
+  * Merge pull request #522 <https://github.com/ros-planning/moveit_ros/issues/522> from mikeferguson/indigo-devel
+    add dependency on std_srvs (part of octomap clearing service)
+  * Contributors: Ioan A Sucan, Michael Ferguson
+
+ -- Sachin Chitta <robot.moveit@gmail.com>  Fri, 31 Oct 2014 07:00:00 -0000
+
+ros-indigo-moveit-ros-move-group (0.6.1-0saucy) saucy; urgency=high
+
+
+
+ -- Sachin Chitta <robot.moveit@gmail.com>  Fri, 31 Oct 2014 07:00:00 -0000
+
+ros-indigo-moveit-ros-move-group (0.6.0-0saucy) saucy; urgency=high
+
+  * Added move_group capability for clearing octomap.
+  * Contributors: Dave Hershberger, Sachin Chitta
+
+ -- Sachin Chitta <robot.moveit@gmail.com>  Mon, 27 Oct 2014 07:00:00 -0000
+
+ros-indigo-moveit-ros-move-group (0.5.19-0saucy) saucy; urgency=high
+
+  * Address [cppcheck: duplicateIf] error.
+    The same condition was being checked twice, and the same action was being taken.
+  * Contributors: Adolfo Rodriguez Tsouroukdissian
+
+ -- Sachin Chitta <robot.moveit@gmail.com>  Mon, 23 Jun 2014 07:00:00 -0000
+
+ros-indigo-moveit-ros-move-group (0.5.18-0saucy) saucy; urgency=high
+
+
+
+ -- Sachin Chitta <robot.moveit@gmail.com>  Sun, 23 Mar 2014 07:00:00 -0000
+
+ros-indigo-moveit-ros-move-group (0.5.17-0saucy) saucy; urgency=high
+
+  * update maintainer e-mail
+  * Contributors: Ioan Sucan
+
+ -- Sachin Chitta <robot.moveit@gmail.com>  Sat, 22 Mar 2014 07:00:00 -0000
+
+ros-indigo-moveit-ros-move-group (0.5.16-0saucy) saucy; urgency=high
+
+  * empty state should be a diff state, otherwise attached objects are deleted
+  * Contributors: sachinc
+
+ -- Sachin Chitta <robot.moveit@gmail.com>  Thu, 27 Feb 2014 08:00:00 -0000
+
+ros-indigo-moveit-ros-move-group (0.5.14-0saucy) saucy; urgency=high
+
+
+
+ -- Sachin Chitta <robot.moveit@gmail.com>  Thu, 06 Feb 2014 08:00:00 -0000
+
+ros-indigo-moveit-ros-move-group (0.5.13-0saucy) saucy; urgency=high
+
+
+
+ -- Sachin Chitta <robot.moveit@gmail.com>  Thu, 06 Feb 2014 08:00:00 -0000
+
+ros-indigo-moveit-ros-move-group (0.5.12-0saucy) saucy; urgency=high
+
+
+
+ -- Sachin Chitta <robot.moveit@gmail.com>  Fri, 03 Jan 2014 08:00:00 -0000
+
+ros-indigo-moveit-ros-move-group (0.5.11-0saucy) saucy; urgency=high
+
+
+
+ -- Sachin Chitta <robot.moveit@gmail.com>  Fri, 03 Jan 2014 08:00:00 -0000
+
+ros-indigo-moveit-ros-move-group (0.5.10-0saucy) saucy; urgency=high
+
+
+
+ -- Sachin Chitta <robot.moveit@gmail.com>  Sun, 08 Dec 2013 08:00:00 -0000
+
+ros-indigo-moveit-ros-move-group (0.5.9-0saucy) saucy; urgency=high
+
+  * Re-ordered movegroup's initialization, so capabilities start after monitors.
+  * correcting maintainer email
+  * Added planning feedback to gui, refactored states tab
+
+ -- Sachin Chitta <robot.moveit@gmail.com>  Tue, 03 Dec 2013 08:00:00 -0000
+
+ros-indigo-moveit-ros-move-group (0.5.8-0saucy) saucy; urgency=high
+
+
+
+ -- Sachin Chitta <robot.moveit@gmail.com>  Fri, 11 Oct 2013 07:00:00 -0000
+
+ros-indigo-moveit-ros-move-group (0.5.7-0saucy) saucy; urgency=high
+
+
+
+ -- Sachin Chitta <robot.moveit@gmail.com>  Tue, 01 Oct 2013 07:00:00 -0000
+
+ros-indigo-moveit-ros-move-group (0.5.6-0saucy) saucy; urgency=high
+
+
+
+ -- Sachin Chitta <robot.moveit@gmail.com>  Thu, 26 Sep 2013 07:00:00 -0000
+
+ros-indigo-moveit-ros-move-group (0.5.5-0saucy) saucy; urgency=high
+
+  * porting to new RobotState API
+  * more console output
+
+ -- Sachin Chitta <robot.moveit@gmail.com>  Mon, 23 Sep 2013 07:00:00 -0000
+
+ros-indigo-moveit-ros-move-group (0.5.4-0saucy) saucy; urgency=high
+
+  * make headers and author definitions aligned the same way; white space fixes
+  * Dependency for move_group_capabilities_base fixed.
+
+ -- Sachin Chitta <robot.moveit@gmail.com>  Wed, 14 Aug 2013 07:00:00 -0000
+
+ros-indigo-moveit-ros-move-group (0.5.2-0saucy) saucy; urgency=high
+
+
+
+ -- Sachin Chitta <robot.moveit@gmail.com>  Mon, 15 Jul 2013 07:00:00 -0000
+
+ros-indigo-moveit-ros-move-group (0.5.1-0saucy) saucy; urgency=high
+
+
+
+ -- Sachin Chitta <robot.moveit@gmail.com>  Sun, 14 Jul 2013 07:00:00 -0000
+
+ros-indigo-moveit-ros-move-group (0.5.0-0saucy) saucy; urgency=high
+
+  * white space fixes (tabs are now spaces)
+  * port to new base class for planning_interface (using planning contexts)
+
+ -- Sachin Chitta <robot.moveit@gmail.com>  Fri, 12 Jul 2013 07:00:00 -0000
+
+ros-indigo-moveit-ros-move-group (0.4.5-0saucy) saucy; urgency=high
+
+  * Fixed for moveit_msgs/JointLimits.h no such file or directory
+
+ -- Sachin Chitta <robot.moveit@gmail.com>  Wed, 03 Jul 2013 07:00:00 -0000
+
+ros-indigo-moveit-ros-move-group (0.4.4-0saucy) saucy; urgency=high
+
+  * fix #259 <https://github.com/ros-planning/moveit_ros/issues/259> and #260 <https://github.com/ros-planning/moveit_ros/issues/260>.
+
+ -- Sachin Chitta <robot.moveit@gmail.com>  Wed, 26 Jun 2013 07:00:00 -0000
+
+
