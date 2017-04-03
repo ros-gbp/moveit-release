@@ -34,8 +34,6 @@
 
 /* Author: Ioan Sucan */
 
-#include <boost/algorithm/string/trim.hpp>
-
 #include <moveit/ompl_interface/model_based_planning_context.h>
 #include <moveit/ompl_interface/detail/state_validity_checker.h>
 #include <moveit/ompl_interface/detail/constrained_sampler.h>
@@ -79,6 +77,7 @@ ompl_interface::ModelBasedPlanningContext::ModelBasedPlanningContext(const std::
   , use_state_validity_cache_(true)
   , simplify_solutions_(true)
 {
+  complete_initial_robot_state_.update();
   ompl_simple_setup_->getStateSpace()->computeSignature(space_signature_);
   ompl_simple_setup_->getStateSpace()->setStateSamplerAllocator(
       boost::bind(&ModelBasedPlanningContext::allocPathConstrainedSampler, this, _1));
@@ -242,7 +241,7 @@ void ompl_interface::ModelBasedPlanningContext::useConfig()
   if (it == cfg.end())
   {
     optimizer = "PathLengthOptimizationObjective";
-    logDebug("No optimization objective specified, defaulting to %s", optimizer.c_str());
+    logInform("No optimization objective specified, defaulting to %s", optimizer.c_str());
   }
   else
   {
@@ -389,6 +388,7 @@ void ompl_interface::ModelBasedPlanningContext::setCompleteInitialState(
     const robot_state::RobotState& complete_initial_robot_state)
 {
   complete_initial_robot_state_ = complete_initial_robot_state;
+  complete_initial_robot_state_.update();
 }
 
 void ompl_interface::ModelBasedPlanningContext::clear()

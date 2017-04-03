@@ -2,29 +2,33 @@
 Changelog for package moveit_ros_planning
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.9.5 (2017-03-08)
+0.8.7 (2017-04-03)
 ------------------
-* [enhancement] Remove "catch (...)" instances, catch std::exception instead of std::runtime_error (`#445 <https://github.com/ros-planning/moveit/issues/445>`_)
-* Contributors: Bence Magyar
+* [fix] gcc6 build error (`#471 <https://github.com/ros-planning/moveit/issues/471>`_, `#458 <https://github.com/ros-planning/moveit/issues/458>`_)
+* [fix] undefined symbol in planning_scene_monitor (`#463 <https://github.com/ros-planning/moveit/issues/463>`_)
+* Contributors: Dave Coleman, Dmitry Rozhkov, Ruben Burger
 
-0.9.4 (2017-02-06)
+0.8.6 (2017-03-08)
 ------------------
-* [fix] race conditions when updating PlanningScene (`#350 <https://github.com/ros-planning/moveit/issues/350>`_)
-* [maintenance] Use static_cast to cast to const. (`#433 <https://github.com/ros-planning/moveit/issues/433>`_)
-* [maintenance] clang-format upgraded to 3.8 (`#367 <https://github.com/ros-planning/moveit/issues/367>`_)
-* Contributors: Dave Coleman, Maarten de Vries, Robert Haschke
 
-0.9.3 (2016-11-16)
+0.8.4 (2017-02-06)
 ------------------
-* [fix] cleanup urdfdom compatibility (`#319 <https://github.com/ros-planning/moveit/issues/319>`_)
-* [maintenance] Updated package.xml maintainers and author emails `#330 <https://github.com/ros-planning/moveit/issues/330>`_
-* Contributors: Dave Coleman, Ian McMahon, Robert Haschke
+* [fix] enforce joint bounds for start state validation
+* [fix] order of unlocking `#350 <https://github.com/ros-planning/moveit/pull/350>`_
+* [enhancement] Namespaced console output for planning_scene_monitor (`#296 <https://github.com/ros-planning/moveit/issues/296>`_)
+* [enhancement] validate trajectory before execution (`#63 <https://github.com/ros-planning/moveit/issues/63>`_)
+* [enhancement] destroy kinematics plugins before their loader (`#281 <https://github.com/ros-planning/moveit/issues/281>`_)
+* [maintenance] Use static_cast to cast to const. (`#435 <https://github.com/ros-planning/moveit/issues/435>`_)
+* [maintenance] Change planning_scene service warning to an INFO message (`#405 <https://github.com/ros-planning/moveit/issues/405>`_)
+* [maintenance] Remove unused Reflexxes code (`#227 <https://github.com/ros-planning/moveit/issues/227>`_)
+* [maintenance] Use MOVEIT_CLASS_FORWARD for moveit classes in moveit_ros. (`#182 <https://github.com/ros-planning/moveit/issues/182>`_)
+* [maintenance] simplify RDFLoader & provide more/better error message (`#173 <https://github.com/ros-planning/moveit/issues/173>`_)
+* [maintenance] use correct install destination of headers (`#168 <https://github.com/ros-planning/moveit/issues/168>`_)
+* Contributors: Dave Coleman, Isaac I.Y. Saito, Jonathan Binney, Maarten de Vries, Michael Goerner, Robert Haschke
 
-0.9.2 (2016-11-05)
+0.8.3 (2016-08-19)
 ------------------
-* [Capability] compatibility to urdfdom < 0.4 (`#317 <https://github.com/ros-planning/moveit/issues/317>`_)
-* [Maintenance] Auto format codebase using clang-format (`#284 <https://github.com/ros-planning/moveit/issues/284>`_)
-* Contributors: Dave Coleman, Robert Haschke
+* Dummy to temporarily workaround https://github.com/ros-infrastructure/catkin_pkg/issues/158#issuecomment-277852080
 
 0.6.6 (2016-06-08)
 ------------------

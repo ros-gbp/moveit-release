@@ -2,31 +2,32 @@
 Changelog for package moveit_setup_assistant
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.9.5 (2017-03-08)
+0.8.7 (2017-04-03)
 ------------------
-* [fix][moveit_ros_warehouse] gcc6 build error `#423 <https://github.com/ros-planning/moveit/pull/423>`_ 
+* [fix] gcc6 build error (`#471 <https://github.com/ros-planning/moveit/issues/471>`_, `#458 <https://github.com/ros-planning/moveit/issues/458>`_)
 * Contributors: Dave Coleman
 
-0.9.4 (2017-02-06)
+0.8.6 (2017-03-08)
 ------------------
-* [fix] Qt4/Qt5 compatibility `#413 <https://github.com/ros-planning/moveit/pull/413>`_
-* [fix] show disabled collisions as matrix  (`#394 <https://github.com/ros-planning/moveit/issues/394>`_)
-* Contributors: Dave Coleman, Robert Haschke, Michael Goerner
 
-0.9.3 (2016-11-16)
+0.8.4 (2017-02-06)
 ------------------
-* [capability] Exposed planners from latest ompl release. (`#338 <https://github.com/ros-planning/moveit/issues/338>`_)
-* [enhancement] Increase collision checking interval (`#337 <https://github.com/ros-planning/moveit/issues/337>`_)
-* [maintenance] Updated package.xml maintainers and author emails `#330 <https://github.com/ros-planning/moveit/issues/330>`_
-* Contributors: Dave Coleman, Ian McMahon, Ruben Burger
+* [capability] validate trajectory before execution (`#63 <https://github.com/ros-planning/moveit/issues/63>`_)
+* [capability] setup-assistant: require author information in gui (`#154 <https://github.com/ros-planning/moveit/issues/154>`_)
+* [capability] `#85 <https://github.com/ros-planning/moveit/issues/85>`_: Add capability to execute trajectory with a ROS action (`#94 <https://github.com/ros-planning/moveit/issues/94>`_)
+* [fix] many `#154 <https://github.com/ros-planning/moveit/issues/154>`_, `#233 <https://github.com/ros-planning/moveit/issues/233>`_
+* [enhancement] add list of default capabilities `#366 <https://github.com/ros-planning/moveit/issues/366>`_, `#396 <https://github.com/ros-planning/moveit/issues/396>`_, `#220 <https://github.com/ros-planning/moveit/issues/220>`_
+* [enhancement] Modified launch file templates to be able to connect to the warehouse (`#81 <https://github.com/ros-planning/moveit/issues/81>`_)
+* [maintenance] Add dependency on new moveit_kinematics package
+* [maintenance] Move SRDFWriter to srdfdom (`#142 <https://github.com/ros-planning/moveit/issues/142>`_)
+* Contributors: Dave Coleman, Isaac I.Y. Saito, Maarten de Vries, Robert Haschke, Sarah Elliott, Ugo Cupcic, jan0e, Michael Goerner
 
-0.9.2 (2016-11-05)
+0.8.3 (2016-08-19)
 ------------------
-* [Fix] xacro warnings in Kinetic (`#334 <https://github.com/ros-planning/moveit/issues/334>`_)
-  [Capability] Allows for smaller collision objects at the cost of increased planning time
-* [Improve] Increase the default discretization of collision checking motions (`#321 <https://github.com/ros-planning/moveit/issues/321>`_)
-* [Maintenance] Auto format codebase using clang-format (`#284 <https://github.com/ros-planning/moveit/issues/284>`_)
-* Contributors: Dave Coleman
+* 1st release after repository consolidation
+* [fix] msa: push traj exec monitor params down int proper nsroper ns `ros-planning/moveit#68 <https://github.com/ros-planning/moveit/pull/68>`_
+* [fix] write float numbers always in POSIX format `ros-planning/moveit_setup_assistant#123 <https://github.com/ros-planning/moveit_setup_assistant/pull/123>`_
+* Contributors: G.A. vd. Hoorn
 
 0.7.1 (2016-06-24)
 ------------------

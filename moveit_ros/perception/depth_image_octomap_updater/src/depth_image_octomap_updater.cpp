@@ -41,8 +41,6 @@
 #include <XmlRpcException.h>
 #include <stdint.h>
 
-#include <memory>
-
 namespace occupancy_map_monitor
 {
 DepthImageOctomapUpdater::DepthImageOctomapUpdater()
@@ -159,7 +157,7 @@ mesh_filter::MeshHandle DepthImageOctomapUpdater::excludeShape(const shapes::Sha
       h = mesh_filter_->addMesh(static_cast<const shapes::Mesh&>(*shape));
     else
     {
-      std::unique_ptr<shapes::Mesh> m(shapes::createMeshFromShape(shape.get()));
+      boost::scoped_ptr<shapes::Mesh> m(shapes::createMeshFromShape(shape.get()));
       if (m)
         h = mesh_filter_->addMesh(*m);
     }
@@ -506,7 +504,6 @@ void DepthImageOctomapUpdater::depthImageCallback(const sensor_msgs::ImageConstP
   catch (...)
   {
     tree_->unlockRead();
-    ROS_ERROR("Internal error while parsing depth data");
     return;
   }
   tree_->unlockRead();

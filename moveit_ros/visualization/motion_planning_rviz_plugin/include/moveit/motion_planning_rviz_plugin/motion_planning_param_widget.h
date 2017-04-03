@@ -43,7 +43,7 @@ namespace moveit
 {
 namespace planning_interface
 {
-MOVEIT_CLASS_FORWARD(MoveGroupInterface);
+MOVEIT_CLASS_FORWARD(MoveGroup);
 }
 }
 
@@ -56,7 +56,7 @@ public:
   MotionPlanningParamWidget(QWidget* parent = 0);
   ~MotionPlanningParamWidget();
 
-  void setMoveGroup(const moveit::planning_interface::MoveGroupInterfacePtr& mg);
+  void setMoveGroup(const moveit::planning_interface::MoveGroupPtr& mg);
   void setGroupName(const std::string& group_name);
 
 public Q_SLOTS:
@@ -71,7 +71,7 @@ private:
 private:
   rviz::PropertyTreeModel* property_tree_model_;
 
-  moveit::planning_interface::MoveGroupInterfacePtr move_group_;
+  moveit::planning_interface::MoveGroupPtr move_group_;
   std::string group_name_;
   std::string planner_id_;
 };

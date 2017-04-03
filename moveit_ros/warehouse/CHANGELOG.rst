@@ -2,18 +2,19 @@
 Changelog for package moveit_ros_warehouse
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.9.5 (2017-03-08)
+0.8.7 (2017-04-03)
 ------------------
-* [fix][moveit_ros_warehouse] gcc6 build error `#423 <https://github.com/ros-planning/moveit/pull/423>`_ 
-* Contributors: Dave Coleman
+* address gcc6 build error (`#458 <https://github.com/ros-planning/moveit/issues/458>`_)
+* Contributors: Dmitry Rozhkov, Dave Coleman
 
-0.9.4 (2017-02-06)
+0.8.6 (2017-03-08)
 ------------------
-* [maintenance] clang-format upgraded to 3.8 (`#367 <https://github.com/ros-planning/moveit/issues/367>`_)
-* Contributors: Dave Coleman
 
-0.9.3 (2016-11-16)
------------
+0.8.4 (2017-02-06)
+------------------
+
+0.8.3 (2016-08-19)
+------------------
 
 0.6.6 (2016-06-08)
 ------------------

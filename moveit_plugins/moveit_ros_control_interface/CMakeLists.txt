@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(moveit_ros_control_interface)
 
-add_compile_options(-std=c++11)
-
 find_package(catkin REQUIRED COMPONENTS
   actionlib
   controller_manager_msgs
@@ -27,7 +25,6 @@ include_directories(include ${Boost_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS})
 add_library(${PROJECT_NAME}_plugin
   src/controller_manager_plugin.cpp
 )
-set_target_properties(${PROJECT_NAME}_plugin PROPERTIES VERSION ${${PROJECT_NAME}_VERSION})
 target_link_libraries(${PROJECT_NAME}_plugin
   ${catkin_LIBRARIES} ${Boost_LIBRARIES}
 )
@@ -35,7 +32,6 @@ target_link_libraries(${PROJECT_NAME}_plugin
 add_library(${PROJECT_NAME}_trajectory_plugin
   src/joint_trajectory_controller_plugin.cpp
 )
-set_target_properties(${PROJECT_NAME}_trajectory_plugin PROPERTIES VERSION ${${PROJECT_NAME}_VERSION})
 target_link_libraries(${PROJECT_NAME}_trajectory_plugin
   ${catkin_LIBRARIES} ${Boost_LIBRARIES}
 )

@@ -56,7 +56,6 @@
 #include <Eigen/Geometry>
 
 #include <fstream>
-#include <memory>
 
 namespace moveit_benchmarks
 {
@@ -113,7 +112,7 @@ moveit_benchmarks::BenchmarkExecution::BenchmarkExecution(const planning_scene::
     ROS_INFO("Attempting to load and configure %s", classes[i].c_str());
     try
     {
-      planning_interface::PlannerManagerPtr p = planner_plugin_loader_->createUniqueInstance(classes[i]);
+      planning_interface::PlannerManagerPtr p = planner_plugin_loader_->createInstance(classes[i]);
       p->initialize(planning_scene_->getRobotModel(), "");
       planner_interfaces_[classes[i]] = p;
     }
@@ -152,7 +151,7 @@ void moveit_benchmarks::BenchmarkExecution::runAllBenchmarks(BenchmarkType type)
       {
         ok = psws_.getPlanningSceneWorld(pswwm, options_.scene);
       }
-      catch (std::exception& ex)
+      catch (std::runtime_error& ex)
       {
         ROS_ERROR("%s", ex.what());
       }
@@ -178,7 +177,7 @@ void moveit_benchmarks::BenchmarkExecution::runAllBenchmarks(BenchmarkType type)
     {
       ok = pss_.getPlanningScene(pswm, options_.scene);
     }
-    catch (std::exception& ex)
+    catch (std::runtime_error& ex)
     {
       ROS_ERROR("%s", ex.what());
     }
@@ -210,7 +209,7 @@ void moveit_benchmarks::BenchmarkExecution::runAllBenchmarks(BenchmarkType type)
   {
     pss_.getPlanningQueriesNames(options_.query_regex, planning_queries_names, options_.scene);
   }
-  catch (std::exception& ex)
+  catch (std::runtime_error& ex)
   {
     ROS_ERROR("%s", ex.what());
   }
@@ -247,7 +246,7 @@ void moveit_benchmarks::BenchmarkExecution::runAllBenchmarks(BenchmarkType type)
 
   unsigned int n_call = 0;
   bool have_more_start_states = true;
-  std::unique_ptr<moveit_msgs::RobotState> start_state_to_use;
+  boost::scoped_ptr<moveit_msgs::RobotState> start_state_to_use;
   while (have_more_start_states)
   {
     start_state_to_use.reset();
@@ -267,7 +266,7 @@ void moveit_benchmarks::BenchmarkExecution::runAllBenchmarks(BenchmarkType type)
       {
         got_robot_state = rs_.getRobotState(robot_state, state_name);
       }
-      catch (std::exception& ex)
+      catch (std::runtime_error& ex)
       {
         ROS_ERROR("%s", ex.what());
       }
@@ -344,7 +343,7 @@ void moveit_benchmarks::BenchmarkExecution::runAllBenchmarks(BenchmarkType type)
         {
           got_constraints = cs_.getConstraints(constr, cnames[i]);
         }
-        catch (std::exception& ex)
+        catch (std::runtime_error& ex)
         {
           ROS_ERROR("%s", ex.what());
         }
@@ -423,7 +422,7 @@ void moveit_benchmarks::BenchmarkExecution::runAllBenchmarks(BenchmarkType type)
         {
           got_constraints = tcs_.getTrajectoryConstraints(constr, cnames[i]);
         }
-        catch (std::exception& ex)
+        catch (std::runtime_error& ex)
         {
           ROS_ERROR("%s", ex.what());
         }
@@ -661,7 +660,7 @@ bool moveit_benchmarks::BenchmarkExecution::readOptions(const std::string& filen
     std::vector<std::string> unr =
         boost::program_options::collect_unrecognized(po.options, boost::program_options::exclude_positional);
 
-    std::unique_ptr<PlanningPluginOptions> bpo;
+    boost::scoped_ptr<PlanningPluginOptions> bpo;
     for (std::size_t i = 0; i < unr.size() / 2; ++i)
     {
       std::string key = boost::to_lower_copy(unr[i * 2]);
@@ -700,8 +699,8 @@ bool moveit_benchmarks::BenchmarkExecution::readOptions(const std::string& filen
           if (bpo)
           {
             boost::char_separator<char> sep(" ");
-            boost::tokenizer<boost::char_separator<char>> tok(val, sep);
-            for (boost::tokenizer<boost::char_separator<char>>::iterator beg = tok.begin(); beg != tok.end(); ++beg)
+            boost::tokenizer<boost::char_separator<char> > tok(val, sep);
+            for (boost::tokenizer<boost::char_separator<char> >::iterator beg = tok.begin(); beg != tok.end(); ++beg)
               bpo->planners.push_back(*beg);
           }
           else
@@ -924,7 +923,7 @@ void moveit_benchmarks::BenchmarkExecution::runPlanningBenchmark(BenchmarkReques
   std::vector<planning_interface::PlannerManager*> planner_interfaces_to_benchmark;
 
   // each planning plugin has a vector of its sub algorithms (planners) that it can run
-  std::vector<std::vector<std::string>> planner_ids_to_benchmark_per_planner_interface;
+  std::vector<std::vector<std::string> > planner_ids_to_benchmark_per_planner_interface;
 
   // number of runs to execute every *algorithm* per *plugin*
   std::vector<std::size_t> runs_per_planner_interface;  // average_count_per_planner_interface

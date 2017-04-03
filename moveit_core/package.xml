@@ -1,13 +1,14 @@
 <package>
   <name>moveit_core</name>
-  <version>0.9.5</version>
+  <version>0.8.7</version>
   <description>Core libraries used by MoveIt!</description>
-  <author email="isucan@google.com">Ioan Sucan</author>
+  <author email="isucan@gmail.com">Ioan Sucan</author>
   <author email="robot.moveit@gmail.com">Sachin Chitta</author>
   <author email="acorn.pooley@sri.com">Acorn Pooley</author>
 
-  <maintainer email="dave@dav.ee">Dave Coleman</maintainer>
-  <maintainer email="me@v4hn.de">Michael Görner</maintainer>
+  <maintainer email="robot.moveit@gmail.com">Sachin Chitta</maintainer>
+  <maintainer email="isucan@gmail.com">Ioan Sucan</maintainer>
+  <maintainer email="acorn.pooley@sri.com">Acorn Pooley</maintainer>
   <maintainer email="mferguson@fetchrobotics.com">Michael Ferguson</maintainer>
 
   <license>BSD</license>
@@ -23,12 +24,11 @@
   <build_depend>eigen</build_depend>
   <build_depend>eigen_conversions</build_depend>
   <build_depend>eigen_stl_containers</build_depend>
-  <build_depend>libfcl-dev</build_depend>
-  <build_depend version_gte="0.5.2">geometric_shapes</build_depend>
+  <build_depend>fcl</build_depend>
+  <build_depend version_gte="0.3.4">geometric_shapes</build_depend>
   <build_depend>geometry_msgs</build_depend>
   <build_depend>kdl_parser</build_depend>
   <build_depend>libconsole-bridge-dev</build_depend>
-  <build_depend>urdf</build_depend>
   <build_depend>liburdfdom-dev</build_depend>
   <build_depend>liburdfdom-headers-dev</build_depend>
   <build_depend>moveit_msgs</build_depend>
@@ -49,12 +49,11 @@
   <run_depend>eigen</run_depend>
   <run_depend>eigen_conversions</run_depend>
   <run_depend>eigen_stl_containers</run_depend>
-  <run_depend>libfcl-dev</run_depend>
-  <run_depend version_gte="0.5.2">geometric_shapes</run_depend>
+  <run_depend>fcl</run_depend>
+  <run_depend version_gte="0.3.4">geometric_shapes</run_depend>
   <run_depend>geometry_msgs</run_depend>
   <run_depend>kdl_parser</run_depend>
   <run_depend>libconsole-bridge-dev</run_depend>
-  <run_depend>urdf</run_depend>
   <run_depend>liburdfdom-dev</run_depend>
   <run_depend>liburdfdom-headers-dev</run_depend>
   <run_depend>moveit_msgs</run_depend>

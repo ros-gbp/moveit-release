@@ -2,40 +2,32 @@
 Changelog for package moveit_core
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.9.5 (2017-03-08)
+0.8.7 (2017-04-03)
 ------------------
-* [fix][moveit_ros_warehouse] gcc6 build error `#423 <https://github.com/ros-planning/moveit/pull/423>`_ 
-* [enhancement] Remove "catch (...)" instances, catch std::exception instead of std::runtime_error (`#445 <https://github.com/ros-planning/moveit/issues/445>`_)
-* Contributors: Bence Magyar, Dave Coleman
+* Fix PlanarJointModel::getVariableRandomPositionsNearBy (`#464 <https://github.com/ros-planning/moveit/issues/464>`_)
+* Contributors: Dave Coleman, Tamaki Nishino
 
-0.9.4 (2017-02-06)
+0.8.6 (2017-03-08)
 ------------------
-* [fix] PlanningScene: Don't reset color information of existing objects when new entries are added (`#410 <https://github.com/ros-planning/moveit/issues/410>`_)
+
+0.8.4 (2017-02-06)
+------------------
 * [fix] update link transforms in UnionConstraintSampler::project (`#384 <https://github.com/ros-planning/moveit/issues/384>`_)
 * [capability Addition of Set Joint Model Group Velocities and Accelerations Functions (`#402 <https://github.com/ros-planning/moveit/issues/402>`_)
 * [capability] time parameterization: use constants (`#380 <https://github.com/ros-planning/moveit/issues/380>`_)
 * [enhancement] multiple shapes in an attached collision object `#421 <https://github.com/ros-planning/moveit/pull/421>`_
 * [maintenance] Use static_cast to cast to const. (`#433 <https://github.com/ros-planning/moveit/issues/433>`_)
-* [maintenance] ompl_interface: uniform & simplified handling of the default planner (`#371 <https://github.com/ros-planning/moveit/issues/371>`_)
-* Contributors: Dave Coleman, Maarten de Vries, Michael Goerner, Mike Lautman, Ruben
-
-0.9.3 (2016-11-16)
-------------------
 * [fix] Replace unused service dependency with msg dep (`#361 <https://github.com/ros-planning/moveit/issues/361>`_)
-* [fix] cleanup urdfdom compatibility (`#319 <https://github.com/ros-planning/moveit/issues/319>`_)
-* [fix] Fix missing compatibility header for Wily `#364 <https://github.com/ros-planning/moveit/issues/364>`_)
 * [enhancement] Improved RobotState feedback for setFromIK() (`#342 <https://github.com/ros-planning/moveit/issues/342>`_)
-* [maintenance] Updated package.xml maintainers and author emails `#330 <https://github.com/ros-planning/moveit/issues/330>`_
-* Contributors: Dave Coleman, Ian McMahon, Robert Haschke
+* Contributors: Dave Coleman, Maarten de Vries, Michael Goerner, Mike Lautman, Ruben, Ian McMahon, Robert Haschke
 
-0.9.2 (2016-11-05)
+0.8.3 (2016-08-19)
 ------------------
-* [Fix] CHANGELOG encoding for 0.9.1 (Fix `#318 <https://github.com/ros-planning/moveit/issues/318>`_). (`#327 <https://github.com/ros-planning/moveit/issues/327>`_)
-* [Capability] compatibility to urdfdom < 0.4 (`#317 <https://github.com/ros-planning/moveit/issues/317>`_)
-* [Capability] New isValidVelocityMove() for checking maximum velocity between two robot states given time delta
-* [Maintenance] Travis check code formatting (`#309 <https://github.com/ros-planning/moveit/issues/309>`_)
-* [Maintenance] Auto format codebase using clang-format (`#284 <https://github.com/ros-planning/moveit/issues/284>`_)
-* Contributors: Dave Coleman, Isaac I. Y. Saito, Robert Haschke
+* 1st release after repository consolidation
+* [fix] Add object types when requesting attached bodies in planning scene msg. pushDiff also pushes attached bodies' types and colors
+* [improve] Cache robot FCL objects to avoid fcl::CollisionObject's being created every time a request is made `ros-planning/moveit_core#295 <https://github.com/ros-planning/moveit_core/pull/295>`_
+* [feat] Added maximum acceleration scaling factor `ros-planning/moveit_core#273 <https://github.com/ros-planning/moveit_core/pull/273>`_
+* Contributors: Levi Armstrong, Dave Coleman, Christian Dornhege, hemes, Michael Goerner, Robert Haschke, Maarten de Vries
 
 0.8.2 (2016-06-17)
 ------------------
@@ -72,7 +64,7 @@ Changelog for package moveit_core
 * [sys] Install static libs `#251 <https://github.com/ros-planning/moveit_core/issues/251>`_
 * [enhance] Allow a RobotTrajectory to be initialized with a pointer joint model group `#245 <https://github.com/ros-planning/moveit_core/issues/245>`_
 * [doc] Better documentation and formatting `#244 <https://github.com/ros-planning/moveit_core/issues/244>`_
-* Contributors: Alexis Ballier, Bastian Gaspers, Christian Dornhege, Dave Coleman, Gary Servin, Ioan A Sucan, Isaac I.Y. Saito, Jim Mainprice, Levi Armstrong, Michael Ferguson, Mihai Pomarlan, Robert Haschke, Sachin Chitta, Sam Pfeiffer, Steven Peters, Severin Lemaignan, jrgnicho, ros-devel, simonschmeisser
+* Contributors: Alexis Ballier, Bastian Gaspers, Christian Dornhege, Dave Coleman, Gary Servin, Ioan A Sucan, Isaac I.Y. Saito, Jim Mainprice, Levi Armstrong, Michael Ferguson, Mihai Pomarlan, Robert Haschke, Sachin Chitta, Sam Pfeiffer, Steven Peters, Séverin Lemaignan, jrgnicho, ros-devel, simonschmeisser
 
 0.6.15 (2015-01-20)
 -------------------

@@ -1,12 +1,9 @@
 <package>
   <name>moveit_simple_controller_manager</name>
-  <version>0.9.5</version>
+  <version>0.8.7</version>
   <description>A generic, simple controller manager plugin for MoveIt.</description>
-
-  <author email="mferguson@fetchrobotics.com">Michael Ferguson</author>
-
-  <maintainer email="mferguson@fetchrobotics.com">Michael Ferguson</maintainer>
-  <maintainer email="me@v4hn.de">Michael Görner</maintainer>
+  <author email="fergs@unboundedrobotics.com">Michael Ferguson</author>
+  <maintainer email="fergs@unboundedrobotics.com">Michael Ferguson</maintainer>
 
   <license>BSD</license>
 

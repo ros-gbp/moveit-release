@@ -38,20 +38,16 @@
 #include <ros/console.h>
 #include <boost/thread/mutex.hpp>
 #include <eigen_conversions/eigen_msg.h>
-#include <memory>
 
 namespace collision_detection
 {
 struct BodyDecompositionCache
 {
-  using Comperator = std::owner_less<std::weak_ptr<const shapes::Shape>>;
-  using Map = std::map<std::weak_ptr<const shapes::Shape>, BodyDecompositionConstPtr, Comperator>;
-
   BodyDecompositionCache() : clean_count_(0)
   {
   }
   static const unsigned int MAX_CLEAN_COUNT = 100;
-  Map map_;
+  std::map<boost::weak_ptr<const shapes::Shape>, BodyDecompositionConstPtr> map_;
   unsigned int clean_count_;
   boost::mutex lock_;
 };
@@ -66,10 +62,11 @@ BodyDecompositionConstPtr getBodyDecompositionCacheEntry(const shapes::ShapeCons
 {
   // TODO - deal with changing resolution?
   BodyDecompositionCache& cache = getBodyDecompositionCache();
-  std::weak_ptr<const shapes::Shape> wptr(shape);
+  boost::weak_ptr<const shapes::Shape> wptr(shape);
   {
     boost::mutex::scoped_lock slock(cache.lock_);
-    BodyDecompositionCache::Map::const_iterator cache_it = cache.map_.find(wptr);
+    std::map<boost::weak_ptr<const shapes::Shape>, BodyDecompositionConstPtr>::const_iterator cache_it =
+        cache.map_.find(wptr);
     if (cache_it != cache.map_.end())
     {
       return cache_it->second;
@@ -128,8 +125,8 @@ PosedBodyPointDecompositionVectorPtr getAttachedBodyPointDecomposition(const rob
   return ret;
 }
 
-void getBodySphereVisualizationMarkers(GroupStateRepresentationConstPtr& gsr, std::string reference_frame,
-                                       visualization_msgs::MarkerArray& body_marker_array)
+void getBodySphereVisualizationMarkers(boost::shared_ptr<const collision_detection::GroupStateRepresentation>& gsr,
+                                       std::string reference_frame, visualization_msgs::MarkerArray& body_marker_array)
 {
   // creating namespaces
   std::string robot_ns = gsr->dfce_->group_name_ + "_sphere_decomposition";

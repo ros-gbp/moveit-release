@@ -1,7 +1,5 @@
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 2.8.3)
 project(moveit_ros_robot_interaction)
-
-add_compile_options(-std=c++11)
 
 if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
@@ -42,14 +40,15 @@ add_library(${MOVEIT_LIB_NAME}
   src/locked_robot_state.cpp
   src/interaction_handler.cpp
   src/robot_interaction.cpp)
-set_target_properties(${MOVEIT_LIB_NAME} PROPERTIES VERSION ${${PROJECT_NAME}_VERSION})
 target_link_libraries(${MOVEIT_LIB_NAME} ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 
-catkin_add_gtest(locked_robot_state_test test/locked_robot_state_test.cpp)
-target_link_libraries(locked_robot_state_test
-  ${MOVEIT_LIB_NAME}
-  ${catkin_LIBRARIES}
-  ${Boost_LIBRARIES})
+if (CATKIN_ENABLE_TESTING)
+  catkin_add_gtest(locked_robot_state_test test/locked_robot_state_test.cpp)
+  target_link_libraries(locked_robot_state_test
+    ${MOVEIT_LIB_NAME}
+    ${catkin_LIBRARIES}
+    ${Boost_LIBRARIES})
+endif()
 
 install(TARGETS ${MOVEIT_LIB_NAME} LIBRARY DESTINATION lib)
 install(DIRECTORY include/ DESTINATION include)

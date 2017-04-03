@@ -41,7 +41,6 @@
 #include <moveit/controller_manager/controller_manager.h>
 #include <actionlib/client/simple_action_client.h>
 #include <moveit/macros/class_forward.h>
-#include <memory>
 
 namespace moveit_simple_controller_manager
 {
@@ -162,7 +161,7 @@ protected:
   std::vector<std::string> joints_;
 
   /* action client */
-  std::shared_ptr<actionlib::SimpleActionClient<T> > controller_action_client_;
+  boost::shared_ptr<actionlib::SimpleActionClient<T> > controller_action_client_;
 };
 
 }  // end namespace moveit_simple_controller_manager

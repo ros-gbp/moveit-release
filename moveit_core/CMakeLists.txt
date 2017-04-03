@@ -1,7 +1,5 @@
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 2.8.3)
 project(moveit_core)
-
-add_compile_options(-std=c++11)
 
 if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
   message("${PROJECT_NAME}: You did not request a specific build type: Choosing 'Release' for maximum performance")
@@ -12,14 +10,8 @@ find_package(Boost REQUIRED system filesystem date_time thread iostreams)
 
 find_package(console_bridge REQUIRED)
 
-find_package(Eigen3 REQUIRED)
-
-# Eigen 3.2 (Wily) only provides EIGEN3_INCLUDE_DIR, not EIGEN3_INCLUDE_DIRS
-if(NOT EIGEN3_INCLUDE_DIRS)
-  set(EIGEN3_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
-endif()
-
 find_package(PkgConfig REQUIRED)
+pkg_search_module(EIGEN3 REQUIRED eigen3)
 
 pkg_check_modules(LIBFCL REQUIRED fcl)
 find_library(LIBFCL_LIBRARIES_FULL ${LIBFCL_LIBRARIES} ${LIBFCL_LIBRARY_DIRS})
@@ -87,6 +79,7 @@ set(THIS_PACKAGE_INCLUDE_DIRS
 
 catkin_package(
   INCLUDE_DIRS
+    ${EIGEN3_INCLUDE_DIRS}
     ${THIS_PACKAGE_INCLUDE_DIRS}
   LIBRARIES
     moveit_exceptions

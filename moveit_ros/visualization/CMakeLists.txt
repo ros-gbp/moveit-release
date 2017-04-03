@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 2.8.12)
 project(moveit_ros_visualization)
 
-add_compile_options(-std=c++11)
-
 if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
@@ -31,13 +29,7 @@ find_package(catkin REQUIRED COMPONENTS
   object_recognition_msgs
   rostest
 )
-
-find_package(Eigen3 REQUIRED)
-
-# Eigen 3.2 (Wily) only provides EIGEN3_INCLUDE_DIR, not EIGEN3_INCLUDE_DIRS
-if(NOT EIGEN3_INCLUDE_DIRS)
-  set(EIGEN3_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
-endif()
+pkg_search_module(EIGEN3 REQUIRED eigen3)
 
 # Qt Stuff
 if(rviz_QT_VERSION VERSION_LESS "5")
@@ -71,12 +63,11 @@ catkin_package(
     planning_scene_rviz_plugin/include
     motion_planning_rviz_plugin/include
     trajectory_rviz_plugin/include
+    ${EIGEN3_INCLUDE_DIRS}
   CATKIN_DEPENDS
     moveit_ros_planning_interface
     moveit_ros_robot_interaction
-  DEPENDS
-    EIGEN3
-)
+    )
 
 catkin_install_python(PROGRAMS scripts/moveit_joy.py DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 catkin_python_setup()

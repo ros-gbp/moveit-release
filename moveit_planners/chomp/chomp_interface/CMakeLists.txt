@@ -14,11 +14,6 @@ find_package(catkin REQUIRED COMPONENTS
 
 find_package(Eigen3 REQUIRED)
 
-# Eigen 3.2 (Wily) only provides EIGEN3_INCLUDE_DIR, not EIGEN3_INCLUDE_DIRS
-if(NOT EIGEN3_INCLUDE_DIRS)
-  set(EIGEN3_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
-endif()
-
 find_package(Boost REQUIRED)
 
 catkin_package(
@@ -34,11 +29,9 @@ include_directories(
 )
 
 add_library(${PROJECT_NAME} src/chomp_interface.cpp src/chomp_planning_context.cpp)
-set_target_properties(${PROJECT_NAME} PROPERTIES VERSION ${${PROJECT_NAME}_VERSION})
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
 
 add_library(chomp_planner_plugin src/chomp_plugin.cpp)
-set_target_properties(chomp_planner_plugin PROPERTIES VERSION ${${PROJECT_NAME}_VERSION})
 target_link_libraries(chomp_planner_plugin ${PROJECT_NAME} ${catkin_LIBRARIES})
 
 install(FILES chomp_interface_plugin_description.xml

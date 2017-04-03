@@ -57,8 +57,6 @@
 
 #include <moveit_msgs/DisplayTrajectory.h>
 
-#include <memory>
-
 namespace Ogre
 {
 class SceneNode;
@@ -131,7 +129,7 @@ public:
   // Pick Place
   void clearPlaceLocationsDisplay();
   void visualizePlaceLocations(const std::vector<geometry_msgs::PoseStamped>& place_poses);
-  std::vector<std::shared_ptr<rviz::Shape> > place_locations_display_;
+  std::vector<boost::shared_ptr<rviz::Shape> > place_locations_display_;
 
   std::string getCurrentPlanningGroup() const;
 
@@ -212,7 +210,7 @@ protected:
   void backgroundJobUpdate(moveit::tools::BackgroundProcessing::JobEvent event, const std::string& jobname);
 
   void setQueryStateHelper(bool use_start_state, const std::string& v);
-  void populateMenuHandler(std::shared_ptr<interactive_markers::MenuHandler>& mh);
+  void populateMenuHandler(boost::shared_ptr<interactive_markers::MenuHandler>& mh);
 
   void selectPlanningGroupCallback(const std_msgs::StringConstPtr& msg);
 
@@ -233,7 +231,7 @@ protected:
   ros::NodeHandle private_handle_, node_handle_;
 
   // render the workspace box
-  std::unique_ptr<rviz::Shape> workspace_box_;
+  boost::scoped_ptr<rviz::Shape> workspace_box_;
 
   // the planning frame
   MotionPlanningFrame* frame_;
@@ -243,8 +241,8 @@ protected:
   robot_interaction::RobotInteractionPtr robot_interaction_;
   robot_interaction::RobotInteraction::InteractionHandlerPtr query_start_state_;
   robot_interaction::RobotInteraction::InteractionHandlerPtr query_goal_state_;
-  std::shared_ptr<interactive_markers::MenuHandler> menu_handler_start_;
-  std::shared_ptr<interactive_markers::MenuHandler> menu_handler_goal_;
+  boost::shared_ptr<interactive_markers::MenuHandler> menu_handler_start_;
+  boost::shared_ptr<interactive_markers::MenuHandler> menu_handler_goal_;
   std::map<std::string, LinkDisplayStatus> status_links_start_;
   std::map<std::string, LinkDisplayStatus> status_links_goal_;
 

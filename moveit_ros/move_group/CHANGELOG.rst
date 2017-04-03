@@ -2,25 +2,22 @@
 Changelog for package moveit_ros_move_group
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.9.5 (2017-03-08)
+0.8.7 (2017-04-03)
 ------------------
-* [fix][moveit_ros_warehouse] gcc6 build error `#423 <https://github.com/ros-planning/moveit/pull/423>`_ 
-* [enhancement] Remove "catch (...)" instances, catch std::exception instead of std::runtime_error (`#445 <https://github.com/ros-planning/moveit/issues/445>`_)
-* Contributors: Bence Magyar, Dave Coleman
+* [fix] gcc6 build error (`#471 <https://github.com/ros-planning/moveit/issues/471>`_, `#458 <https://github.com/ros-planning/moveit/issues/458>`_)
+* Contributors: Dave Coleman
 
-0.9.4 (2017-02-06)
+0.8.6 (2017-03-08)
 ------------------
-* [fix] race conditions when updating PlanningScene (`#350 <https://github.com/ros-planning/moveit/issues/350>`_)
-* [maintenance] clang-format upgraded to 3.8 (`#367 <https://github.com/ros-planning/moveit/issues/367>`_)
-* Contributors: Dave Coleman, Robert Haschke
 
-0.9.3 (2016-11-16)
+0.8.4 (2017-02-06)
 ------------------
-* [maintenance] Updated package.xml maintainers and author emails `#330 <https://github.com/ros-planning/moveit/issues/330>`_
-* Contributors: Dave Coleman, Ian McMahon
+* [capability] validate trajectory before execution (`#63 <https://github.com/ros-planning/moveit/issues/63>`_)
+* Contributors: Dave Coleman, Isaac I.Y. Saito, Maarten de Vries, Robert Haschke
 
-0.9.2 (2016-11-05)
+0.8.3 (2016-08-19)
 ------------------
+* Dummy to temporarily workaround https://github.com/ros-infrastructure/catkin_pkg/issues/158#issuecomment-277852080
 
 0.6.6 (2016-06-08)
 ------------------

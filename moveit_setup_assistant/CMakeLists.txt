@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 2.8.12)
 project(moveit_setup_assistant)
 
-add_compile_options(-std=c++11)
-
 if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
@@ -46,16 +44,6 @@ endif(NEW_YAMLCPP_FOUND)
 
 find_library(YAML yaml-cpp REQUIRED)
 
-catkin_package(
-  INCLUDE_DIRS
-    include
-  LIBRARIES
-    ${PROJECT_NAME}_tools
-  CATKIN_DEPENDS
-    moveit_ros_planning
-    moveit_ros_visualization
-)
-
 # Header files that need Qt Moc pre-processing for use with Qt signals, etc:
 set(HEADERS
   src/widgets/navigation_widget.h
@@ -79,12 +67,9 @@ set(HEADERS
 # Tools Library
 add_library(${PROJECT_NAME}_tools
   src/tools/compute_default_collisions.cpp
+  src/tools/file_loader.cpp
   src/tools/moveit_config_data.cpp
-  src/tools/collision_linear_model.cpp
-  src/tools/collision_matrix_model.cpp
-  src/tools/rotated_header_view.cpp
 )
-set_target_properties(${PROJECT_NAME}_tools PROPERTIES VERSION ${${PROJECT_NAME}_VERSION})
 target_link_libraries(${PROJECT_NAME}_tools
   ${YAML}
   ${catkin_LIBRARIES}
@@ -112,12 +97,21 @@ add_library(${PROJECT_NAME}_widgets
   src/widgets/author_information_widget.cpp
   ${HEADERS}
 )
-set_target_properties(${PROJECT_NAME}_widgets PROPERTIES VERSION ${${PROJECT_NAME}_VERSION})
 target_link_libraries(${PROJECT_NAME}_widgets
   ${PROJECT_NAME}_tools
   ${QT_LIBRARIES}
   ${catkin_LIBRARIES}
   ${Boost_LIBRARIES}
+)
+
+catkin_package(
+  INCLUDE_DIRS
+    include
+  LIBRARIES
+    ${PROJECT_NAME}_tools
+  CATKIN_DEPENDS
+    moveit_ros_planning
+    moveit_ros_visualization
 )
 
 # executables

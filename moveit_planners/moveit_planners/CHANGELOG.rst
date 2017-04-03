@@ -2,19 +2,21 @@
 Changelog for package moveit_planners
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.9.5 (2017-03-08)
+0.8.7 (2017-04-03)
 ------------------
 
-0.9.4 (2017-02-06)
+0.8.6 (2017-03-08)
 ------------------
 
-0.9.3 (2016-11-16)
+0.8.4 (2017-02-06)
 ------------------
-* [maintenance] Updated package.xml maintainers and author emails `#330 <https://github.com/ros-planning/moveit/issues/330>`_
-* Contributors: Dave Coleman, Ian McMahon
 
-0.9.2 (2016-11-05)
+0.8.3 (2016-08-19)
 ------------------
+* 1st release after repository consolidation
+* [feat] Enables setting optimization objectives from ompl_planning.yaml `ros-planning/moveit_planners#75 <https://github.com/ros-planning/moveit_planners/pull/75>`_
+* [doc] Short tutorial for using ompl optimization config. `ros-planning/moveit_planners#75 <https://github.com/ros-planning/moveit_planners/pull/75>`_
+* Contributors: Ruben Burger, Dave Coleman, Robert Haschke, Maarten de Vries
 
 0.7.0 (2016-01-30)
 ------------------

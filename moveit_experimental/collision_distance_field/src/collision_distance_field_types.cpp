@@ -39,7 +39,6 @@
 #include <moveit/distance_field/distance_field.h>
 #include <moveit/distance_field/find_internal_points.h>
 #include <ros/console.h>
-#include <memory>
 
 const static double RESOLUTION_SCALE = 1.0;
 const static double EPSILON = 0.0001;
@@ -341,7 +340,7 @@ collision_detection::PosedBodyPointDecomposition::PosedBodyPointDecomposition(
 }
 
 collision_detection::PosedBodyPointDecomposition::PosedBodyPointDecomposition(
-    std::shared_ptr<const octomap::OcTree> octree)
+    boost::shared_ptr<const octomap::OcTree> octree)
   : body_decomposition_()
 {
   int num_nodes = octree->getNumLeafNodes();

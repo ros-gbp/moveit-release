@@ -2,20 +2,35 @@
 Changelog for package moveit_ros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.9.5 (2017-03-08)
+0.8.7 (2017-04-03)
 ------------------
 
-0.9.4 (2017-02-06)
+0.8.6 (2017-03-08)
 ------------------
 
-0.9.3 (2016-11-16)
+0.8.4 (2017-02-06)
 ------------------
-* [capability] add list of default capabilities `#359 <https://github.com/ros-planning/moveit/pull/359>`_
-* [maintenance] Updated package.xml maintainers and author emails `#330 <https://github.com/ros-planning/moveit/issues/330>`_
-* Contributors: Dave Coleman, Michael Goerner, Ian McMahon
 
-0.9.2 (2016-11-05)
+0.8.3 (2016-08-19)
 ------------------
+* 1st release after repository consolidation
+* [fix] Properly monitor trajectory execution `ros-planning/moveit#72 <https://github.com/ros-planning/moveit/pull/72>`_
+* [fix] trajectory service blocking callback queue `ros-planning/moveit_ros#717 <https://github.com/ros-planning/moveit_ros/pull/717>`_
+* [fix] Empty Robot Model `ros-planning/moveit#45 <https://github.com/ros-planning/moveit/pull/45>`_
+* [fix] Allow minimum value 0.0 for jump_factor `ros-planning/moveit_ros#727 <https://github.com/ros-planning/moveit_ros/pull/727>`_
+* [fix] joy: Clean installation `ros-planning/moveit_ros#704 <https://github.com/ros-planning/moveit_ros/pull/704>`_
+* [fix] Re-enable warehouse_ros `ros-planning/moveit_ros#699 <https://github.com/ros-planning/moveit_ros/pull/699>`_
+* [fix] MoveGroup class_loader::LibraryUnloadException on destruction `ros-planning/moveit_ros#706 <https://github.com/ros-planning/moveit_ros/pull/706>`_
+* [fix] planning_interface: Set is_diff true for empty start state `ros-planning/moveit_ros#688 <https://github.com/ros-planning/moveit_ros/pull/688>`_
+* [feat] rviz plugin: stop execution + update of start state to current `ros-planning/moveit_ros/713 <https://github.com/ros-planning/moveit_ros/pull/713>`_
+* [feat] add velocity & acceleration values to cartesian trajectory `ros-planning/moveit_ros#735 <https://github.com/ros-planning/moveit_ros/pull/735>`_
+* [feat] Added kinematics plugin that uses Levenberg-Marquardt method `ros-planning/moveit_ros#740 <https://github.com/ros-planning/moveit_ros/pull/740>`_
+* [feat] Add nodehandle for specific params `ros-planning/moveit_ros#707 <https://github.com/ros-planning/moveit_ros/pull/707>`_
+* [feat] Added support for nodes handles with specific callbacks queues `ros-planning/moveit_ros#701 <https://github.com/ros-planning/moveit_ros#701>`_
+* [feat] Extended planning_interface::PlanningSceneInterface `ros-planning/moveit_ros/issues/630 https://github.com/ros-planning/moveit_ros/issues/630>`_
+* [feat] add ApplyPlanningSceneService capability `ros-planning/moveit_ros#686 <https://github.com/ros-planning/moveit_ros/pull/686>`_
+* [improve] Improve fillGrasp method for pick("object_name") interface `ros-planning/moveit#31 <https://github.com/ros-planning/moveit/pull/31>`_
+* Contributors: anderwm, chengshy, Dave Coleman, Yannick Jonetzko, Robert Haschke, Michael Goener, Isaac I. Y. Saito, Alain Sanguinetti, Jorge Santos Simon, Maarten de Vries, Kentaro Wada
 
 0.6.6 (2016-06-08)
 ------------------

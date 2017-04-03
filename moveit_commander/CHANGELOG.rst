@@ -2,25 +2,25 @@
 Changelog for package moveit_commander
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.9.5 (2017-03-08)
+0.8.7 (2017-04-03)
 ------------------
-* [fix] Regression on Ubuntu Xenial; numpy.ndarray indices bug (from `#86 <https://github.com/ros-planning/moveit/issues/86>`_) (`#450 <https://github.com/ros-planning/moveit/issues/450>`_).
-* [doc][moveit_commander] added description for set_start_state (`#447 <https://github.com/ros-planning/moveit/issues/447>`_) 
-* Contributors: Adam Allevato, Ravi Prakash Joshi
 
-0.9.4 (2017-02-06)
+0.8.6 (2017-03-08)
 ------------------
-* [fix] issue `#373 <https://github.com/ros-planning/moveit/issues/373>`_ for Kinetic (`#377 <https://github.com/ros-planning/moveit/issues/377>`_) (`#385 <https://github.com/ros-planning/moveit/issues/385>`_)
-* [fix] typo in moveit_commander (`#376 <https://github.com/ros-planning/moveit/issues/376>`_)
-* Contributors: Dave Coleman, Shingo Kitagawa
+* [doc][moveit_commander] added description for set_start_state (`#447 <https://github.com/ros-planning/moveit/issues/447>`_)
+* Contributors: Ravi Prakash Joshi
 
-0.9.3 (2016-11-16)
+0.8.4 (2017-02-06)
 ------------------
-* [maintenance] Updated package.xml maintainers and author emails `#330 <https://github.com/ros-planning/moveit/issues/330>`_
-* Contributors: Dave Coleman, Ian McMahon
+* [fix] Moveit Commander no option to set set_max_acceleration_scaling_factor (`#377 <https://github.com/ros-planning/moveit/issues/377>`_) to fix `#373 <https://github.com/ros-planning/moveit/issues/373>`_
+* Contributors: Dave Coleman, Isaac I.Y. Saito, Robert Haschke, Shingo Kitagawa, mmoerdijk
 
-0.9.2 (2016-11-05)
+0.8.3 (2016-08-19)
 ------------------
+* 1st release after repository consolidation
+* [feat] Add retime_trajectory() to MoveGroupCommander `#29 <https://github.com/ros-planning/moveit_commander/pull/29>`_
+* [feat] Added set_max_velocity_scaling_factor function to move_group.py
+* Contributors: Dave Coleman, Michael Goerner, Robert Haschke
 
 0.6.1 (2016-04-28)
 ------------------

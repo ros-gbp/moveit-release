@@ -46,12 +46,11 @@
 #include <controller_manager_msgs/SwitchController.h>
 
 #include <pluginlib/class_list_macros.h>
+#include <map>
+
 #include <pluginlib/class_loader.h>
 
 #include <boost/bimap.hpp>
-
-#include <map>
-#include <memory>
 
 namespace moveit_ros_control_interface
 {
@@ -155,7 +154,7 @@ class MoveItControllerManager : public moveit_controller_manager::MoveItControll
       AllocatorsMap::iterator alloc_it = allocators_.find(type);
       if (alloc_it == allocators_.end())
       {  // create allocator is needed
-        alloc_it = allocators_.insert(std::make_pair(type, loader_.createUniqueInstance(type))).first;
+        alloc_it = allocators_.insert(std::make_pair(type, loader_.createInstance(type))).first;
       }
 
       // Collect claimed resources across different hardware interfaces
@@ -413,7 +412,7 @@ class MoveItMultiControllerManager : public moveit_controller_manager::MoveItCon
         {  // create MoveItControllerManager if it does not exists
           ROS_INFO_STREAM("Adding controller_manager interface for node at namespace " << ns);
           controller_managers_.insert(
-              std::make_pair(ns, std::make_shared<moveit_ros_control_interface::MoveItControllerManager>(ns)));
+              std::make_pair(ns, boost::make_shared<moveit_ros_control_interface::MoveItControllerManager>(ns)));
         }
       }
     }

@@ -138,7 +138,7 @@ void MotionPlanningFrame::computeDatabaseConnectButtonClicked()
         return;
       }
     }
-    catch (std::exception& ex)
+    catch (std::runtime_error& ex)
     {
       planning_display_->addMainLoopJob(
           boost::bind(&MotionPlanningFrame::computeDatabaseConnectButtonClickedHelper, this, 3));

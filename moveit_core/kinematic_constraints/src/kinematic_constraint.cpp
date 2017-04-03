@@ -40,11 +40,11 @@
 #include <moveit/robot_state/conversions.h>
 #include <moveit/collision_detection_fcl/collision_robot_fcl.h>
 #include <moveit/collision_detection_fcl/collision_world_fcl.h>
+#include <boost/scoped_ptr.hpp>
 #include <boost/math/constants/constants.hpp>
 #include <eigen_conversions/eigen_msg.h>
 #include <boost/bind.hpp>
 #include <limits>
-#include <memory>
 
 namespace kinematic_constraints
 {
@@ -305,7 +305,7 @@ bool kinematic_constraints::PositionConstraint::configure(const moveit_msgs::Pos
   // load primitive shapes, first clearing any we already have
   for (std::size_t i = 0; i < pc.constraint_region.primitives.size(); ++i)
   {
-    std::unique_ptr<shapes::Shape> shape(shapes::constructShapeFromMsg(pc.constraint_region.primitives[i]));
+    boost::scoped_ptr<shapes::Shape> shape(shapes::constructShapeFromMsg(pc.constraint_region.primitives[i]));
     if (shape)
     {
       if (pc.constraint_region.primitive_poses.size() <= i)
@@ -332,7 +332,7 @@ bool kinematic_constraints::PositionConstraint::configure(const moveit_msgs::Pos
   // load meshes
   for (std::size_t i = 0; i < pc.constraint_region.meshes.size(); ++i)
   {
-    std::unique_ptr<shapes::Shape> shape(shapes::constructShapeFromMsg(pc.constraint_region.meshes[i]));
+    boost::scoped_ptr<shapes::Shape> shape(shapes::constructShapeFromMsg(pc.constraint_region.meshes[i]));
     if (shape)
     {
       if (pc.constraint_region.mesh_poses.size() <= i)
@@ -801,7 +801,7 @@ shapes::Mesh* kinematic_constraints::VisibilityConstraint::getVisibilityCone(con
 
   // transform the points on the disc to the desired target frame
   const EigenSTL::vector_Vector3d* points = &points_;
-  std::unique_ptr<EigenSTL::vector_Vector3d> tempPoints;
+  boost::scoped_ptr<EigenSTL::vector_Vector3d> tempPoints;
   if (mobile_target_frame_)
   {
     tempPoints.reset(new EigenSTL::vector_Vector3d(points_.size()));

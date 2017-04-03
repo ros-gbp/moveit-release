@@ -2,29 +2,25 @@
 Changelog for package moveit_ros_visualization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.9.5 (2017-03-08)
+0.8.7 (2017-04-03)
 ------------------
-* [fix] correct "simplify widget handling" `#452 <https://github.com/ros-planning/moveit/pull/452>`_ This reverts "simplify widget handling (`#442 <https://github.com/ros-planning/moveit/issues/442>`_)" 
-* [fix][moveit_ros_warehouse] gcc6 build error `#423 <https://github.com/ros-planning/moveit/pull/423>`_ 
-* [enhancement] Remove "catch (...)" instances, catch std::exception instead of std::runtime_error (`#445 <https://github.com/ros-planning/moveit/issues/445>`_)
-* Contributors: Bence Magyar, Dave Coleman, Isaac I.Y. Saito, Yannick Jonetzko
+* [fix] rviz panel: Don't add object marker if the wrong tab is selected `#454 <https://github.com/ros-planning/moveit/pull/454>`_
+* [fix] robot state display: subscribe on enable / unsubscribe on disable (`#455 <https://github.com/ros-planning/moveit/issues/455>`_)
+* Contributors: Dave Coleman, Michael Goerner
 
-0.9.4 (2017-02-06)
+0.8.6 (2017-03-08)
 ------------------
-* [fix] race conditions when updating PlanningScene (`#350 <https://github.com/ros-planning/moveit/issues/350>`_)
+* [fix][moveit_ros_visualization] correct "simplify widget handling" `#452 <https://github.com/ros-planning/moveit/pull/452>`_
+* Contributors: Yannick Jonetzko
+
+0.8.4 (2017-02-06)
+------------------
 * [enhancement] Add colours to trajectory_visualisation display (`#362 <https://github.com/ros-planning/moveit/issues/362>`_)
-* [maintenance] clang-format upgraded to 3.8 (`#367 <https://github.com/ros-planning/moveit/issues/367>`_)
-* Contributors: Bence Magyar, Dave Coleman, Robert Haschke
+* Contributors: Bence Magyar, Dave Coleman, Ian McMahon, Robert Haschke
 
-0.9.3 (2016-11-16)
+0.8.3 (2016-08-19)
 ------------------
-* [maintenance] Updated package.xml maintainers and author emails `#330 <https://github.com/ros-planning/moveit/issues/330>`_
-* Contributors: Dave Coleman, Ian McMahon
-
-0.9.2 (2016-11-05)
-------------------
-* [Maintenance] Auto format codebase using clang-format (`#284 <https://github.com/ros-planning/moveit/issues/284>`_)
-* Contributors: Dave Coleman
+* Dummy to temporarily workaround https://github.com/ros-infrastructure/catkin_pkg/issues/158#issuecomment-277852080
 
 0.6.6 (2016-06-08)
 ------------------

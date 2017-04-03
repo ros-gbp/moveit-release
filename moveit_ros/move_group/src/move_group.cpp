@@ -42,7 +42,6 @@
 #include <boost/tokenizer.hpp>
 #include <moveit/macros/console_colors.h>
 #include <moveit/move_group/node_name.h>
-#include <memory>
 #include <set>
 
 static const std::string ROBOT_DESCRIPTION =
@@ -129,7 +128,7 @@ private:
         capabilities.erase(*cap_name);
     }
 
-    for (std::set<std::string>::iterator plugin = capabilities.cbegin(); plugin != capabilities.cend(); ++plugin)
+    for (std::set<std::string>::iterator plugin = capabilities.begin(); plugin != capabilities.end(); ++plugin)
     {
       try
       {
@@ -161,7 +160,7 @@ private:
 
   ros::NodeHandle node_handle_;
   MoveGroupContextPtr context_;
-  std::shared_ptr<pluginlib::ClassLoader<MoveGroupCapability> > capability_plugin_loader_;
+  boost::shared_ptr<pluginlib::ClassLoader<MoveGroupCapability> > capability_plugin_loader_;
   std::vector<MoveGroupCapabilityPtr> capabilities_;
 };
 }

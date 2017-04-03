@@ -2,16 +2,21 @@
 Changelog for package moveit_ros_control_interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.9.5 (2017-03-08)
+0.8.7 (2017-04-03)
 ------------------
 
-0.9.4 (2017-02-06)
+0.8.6 (2017-03-08)
 ------------------
-* [maintenance] clang-format upgraded to 3.8 (`#367 <https://github.com/ros-planning/moveit/issues/367>`_)
-* Contributors: Dave Coleman, Michael Goerner
 
-0.9.3 (2016-11-16)
------------
+0.8.4 (2017-02-06)
+------------------
+* [doc] Cleanup readme (`#267 <https://github.com/ros-planning/moveit/issues/267>`_)
+* [maintenance] Replace last easy explicit shared_ptrs with MOVEIT_CLASS_FORWARD.
+* Contributors: Dave Coleman, Isaac I.Y. Saito, Maarten de Vries
+
+0.8.3 (2016-08-19)
+------------------
+* Dummy to temporarily workaround https://github.com/ros-infrastructure/catkin_pkg/issues/158#issuecomment-277852080
 
 0.5.7 (2016-01-30)
 ------------------
