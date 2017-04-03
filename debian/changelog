@@ -1,0 +1,26 @@
+ros-jade-moveit-kinematics (0.8.7-0trusty) trusty; urgency=high
+
+  * [fix] gcc6 build error (#471 <https://github.com/ros-planning/moveit/issues/471>, #458 <https://github.com/ros-planning/moveit/issues/458>)
+  * Contributors: Dave Coleman
+
+ -- Dave Coleman <dave@dav.ee>  Mon, 03 Apr 2017 07:00:00 -0000
+
+ros-jade-moveit-kinematics (0.8.6-0trusty) trusty; urgency=high
+
+
+
+ -- Dave Coleman <dave@dav.ee>  Wed, 08 Mar 2017 08:00:00 -0000
+
+ros-jade-moveit-kinematics (0.8.4-0trusty) trusty; urgency=high
+
+
+
+ -- Dave Coleman <dave@dav.ee>  Mon, 06 Feb 2017 08:00:00 -0000
+
+ros-jade-moveit-kinematics (0.8.3-0trusty) trusty; urgency=high
+
+  * Dummy to temporarily workaround https://github.com/ros-infrastructure/catkin_pkg/issues/158#issuecomment-277852080
+
+ -- Dave Coleman <dave@dav.ee>  Fri, 19 Aug 2016 07:00:00 -0000
+
+
