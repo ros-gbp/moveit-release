@@ -1,0 +1,100 @@
+ros-indigo-moveit-full-pr2 (0.7.9-0saucy) saucy; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@willowgarage.com>  Mon, 03 Apr 2017 07:00:00 -0000
+
+ros-indigo-moveit-full-pr2 (0.7.8-0saucy) saucy; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@willowgarage.com>  Wed, 08 Mar 2017 08:00:00 -0000
+
+ros-indigo-moveit-full-pr2 (0.7.7-0saucy) saucy; urgency=high
+
+  * [Indigo] Move metapackages from moveit_metapackage repo.
+  * Contributors: Isaac I.Y. Saito
+
+ -- Ioan Sucan <isucan@willowgarage.com>  Mon, 06 Feb 2017 08:00:00 -0000
+
+ros-indigo-moveit-full-pr2 (0.7.6-0saucy) saucy; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@willowgarage.com>  Thu, 05 Jan 2017 08:00:00 -0000
+
+ros-indigo-moveit-full-pr2 (0.6.1-0saucy) saucy; urgency=high
+
+  * add maintainer so I catch build failures
+  * Contributors: Michael Ferguson
+
+ -- Ioan Sucan <isucan@willowgarage.com>  Fri, 16 Jan 2015 08:00:00 -0000
+
+ros-indigo-moveit-full-pr2 (0.6.0-0saucy) saucy; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@willowgarage.com>  Wed, 14 Jan 2015 08:00:00 -0000
+
+ros-indigo-moveit-full-pr2 (0.5.0-0saucy) saucy; urgency=high
+
+  * add changelogs
+
+ -- Ioan Sucan <isucan@willowgarage.com>  Tue, 30 Jul 2013 07:00:00 -0000
+
+ros-indigo-moveit-full-pr2 (0.4.2-0saucy) saucy; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@willowgarage.com>  Wed, 03 Jul 2013 07:00:00 -0000
+
+ros-indigo-moveit-full-pr2 (0.4.1-0saucy) saucy; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@willowgarage.com>  Fri, 07 Jun 2013 07:00:00 -0000
+
+ros-indigo-moveit-full-pr2 (0.4.0-0saucy) saucy; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@willowgarage.com>  Thu, 23 May 2013 07:00:00 -0000
+
+ros-indigo-moveit-full-pr2 (0.3.3-0saucy) saucy; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@willowgarage.com>  Thu, 02 May 2013 07:00:00 -0000
+
+ros-indigo-moveit-full-pr2 (0.3.2-0saucy) saucy; urgency=high
+
+  * ad buildtool depends
+  * add cmake lists files
+
+ -- Ioan Sucan <isucan@willowgarage.com>  Tue, 16 Apr 2013 07:00:00 -0000
+
+ros-indigo-moveit-full-pr2 (0.3.1-0saucy) saucy; urgency=high
+
+  * removing build deps
+
+ -- Ioan Sucan <isucan@willowgarage.com>  Mon, 04 Feb 2013 08:00:00 -0000
+
+ros-indigo-moveit-full-pr2 (0.3.0-0saucy) saucy; urgency=high
+
+  * fix buildtool tag
+
+ -- Ioan Sucan <isucan@willowgarage.com>  Fri, 28 Dec 2012 08:00:00 -0000
+
+ros-indigo-moveit-full-pr2 (0.1.1-0saucy) saucy; urgency=high
+
+  * added new package for deps
+
+ -- Ioan Sucan <isucan@willowgarage.com>  Mon, 26 Nov 2012 08:00:00 -0000
+
+ros-indigo-moveit-full-pr2 (0.1.0-0saucy) saucy; urgency=high
+
+  * add meta-packages
+
+ -- Ioan Sucan <isucan@willowgarage.com>  Mon, 19 Nov 2012 08:00:00 -0000
+
+
