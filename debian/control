@@ -1,0 +1,12 @@
+Source: ros-indigo-moveit-ros-move-group
+Section: misc
+Priority: extra
+Maintainer: Sachin Chitta <robot.moveit@gmail.com>
+Build-Depends: debhelper (>= 9.0.0), ros-indigo-actionlib, ros-indigo-catkin, ros-indigo-moveit-core, ros-indigo-moveit-ros-planning, ros-indigo-pluginlib, ros-indigo-std-srvs, ros-indigo-tf
+Homepage: http://moveit.ros.org
+Standards-Version: 3.9.2
+
+Package: ros-indigo-moveit-ros-move-group
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-indigo-actionlib, ros-indigo-moveit-core, ros-indigo-moveit-kinematics, ros-indigo-moveit-ros-planning, ros-indigo-pluginlib, ros-indigo-std-srvs, ros-indigo-tf
+Description: The move_group node for MoveIt
