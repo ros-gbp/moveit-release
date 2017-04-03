@@ -1,0 +1,38 @@
+ros-jade-moveit (0.8.7-0utopic) utopic; urgency=high
+
+  * [fix] gcc6 build error (#471 <https://github.com/ros-planning/moveit/issues/471>, #458 <https://github.com/ros-planning/moveit/issues/458>)
+  * [fix] catkin_make -DCMAKE_ENABLE_TESTING=0 failure (#478 <https://github.com/ros-planning/moveit/issues/478>)
+  * [fix][moveit_ros_visualization] rviz panel: Don't add object marker if the wrong tab is selected #454 <https://github.com/ros-planning/moveit/pull/454>
+  * [fix][moveit_ros_visualization] robot state display: subscribe on enable / unsubscribe on disable (#455 <https://github.com/ros-planning/moveit/issues/455>)
+  * [fix][moveit_ros_planning] undefined symbol in planning_scene_monitor (#463 <https://github.com/ros-planning/moveit/issues/463>)
+  * [fix][moveit_ros_manipulation] Set planning frame correctly in evaluation of reachable and valid pose filter (#476 <https://github.com/ros-planning/moveit/issues/476>)
+  * [fix][moveit_planners_ompl] Always update initial robot state to prevent dirty robot state error. #448 <https://github.com/ros-planning/moveit/pull/448>
+  * [fix][moveit_core] PlanarJointModel::getVariableRandomPositionsNearBy (#464 <https://github.com/ros-planning/moveit/issues/464>)
+  * Contributors: Ruben Burger, Dave Coleman, Michael Goerner, Henning Kayser, Tamaki Nishino, Dmitry Rozhkov, Yannick Jonetzko
+
+ -- Dave Coleman <dave@dav.ee>  Mon, 03 Apr 2017 07:00:00 -0000
+
+ros-jade-moveit (0.8.6-0utopic) utopic; urgency=high
+
+  * [fix][moveit_ros_visualization] correct "simplify widget handling" #452 <https://github.com/ros-planning/moveit/pull/452>
+  * [enhancement][MoveGroup] Add getLinkNames function (#440 <https://github.com/ros-planning/moveit/issues/440>)
+  * [doc][moveit_commander] added description for set_start_state (#447 <https://github.com/ros-planning/moveit/issues/447>)
+  * Contributors: Yannick Jonetzko, henhenhen, Ravi Prakash Joshi
+
+ -- Dave Coleman <dave@dav.ee>  Wed, 08 Mar 2017 08:00:00 -0000
+
+ros-jade-moveit (0.8.4-0utopic) utopic; urgency=high
+
+
+
+ -- Dave Coleman <dave@dav.ee>  Mon, 06 Feb 2017 08:00:00 -0000
+
+ros-jade-moveit (0.8.3-0utopic) utopic; urgency=high
+
+  * [Jade] Unify package version numbers (see https://github.com/davetcoleman/moveit_merge/issues/9). (#79 <https://github.com/ros-planning/moveit/issues/79>)
+  * Add meta package moveit.
+  * Contributors: Isaac I.Y. Saito
+
+ -- Dave Coleman <dave@dav.ee>  Fri, 19 Aug 2016 07:00:00 -0000
+
+
