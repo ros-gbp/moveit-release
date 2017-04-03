@@ -1,0 +1,207 @@
+ros-jade-moveit-ros (0.8.7-0vivid) vivid; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@gmail.com>  Mon, 03 Apr 2017 07:00:00 -0000
+
+ros-jade-moveit-ros (0.8.6-0vivid) vivid; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@gmail.com>  Wed, 08 Mar 2017 08:00:00 -0000
+
+ros-jade-moveit-ros (0.8.4-0vivid) vivid; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@gmail.com>  Mon, 06 Feb 2017 08:00:00 -0000
+
+ros-jade-moveit-ros (0.8.3-0vivid) vivid; urgency=high
+
+  * 1st release after repository consolidation
+  * [fix] Properly monitor trajectory execution ros-planning/moveit#72 <https://github.com/ros-planning/moveit/pull/72>
+  * [fix] trajectory service blocking callback queue ros-planning/moveit_ros#717 <https://github.com/ros-planning/moveit_ros/pull/717>
+  * [fix] Empty Robot Model ros-planning/moveit#45 <https://github.com/ros-planning/moveit/pull/45>
+  * [fix] Allow minimum value 0.0 for jump_factor ros-planning/moveit_ros#727 <https://github.com/ros-planning/moveit_ros/pull/727>
+  * [fix] joy: Clean installation ros-planning/moveit_ros#704 <https://github.com/ros-planning/moveit_ros/pull/704>
+  * [fix] Re-enable warehouse_ros ros-planning/moveit_ros#699 <https://github.com/ros-planning/moveit_ros/pull/699>
+  * [fix] MoveGroup class_loader::LibraryUnloadException on destruction ros-planning/moveit_ros#706 <https://github.com/ros-planning/moveit_ros/pull/706>
+  * [fix] planning_interface: Set is_diff true for empty start state ros-planning/moveit_ros#688 <https://github.com/ros-planning/moveit_ros/pull/688>
+  * [feat] rviz plugin: stop execution + update of start state to current ros-planning/moveit_ros/713 <https://github.com/ros-planning/moveit_ros/pull/713>
+  * [feat] add velocity & acceleration values to cartesian trajectory ros-planning/moveit_ros#735 <https://github.com/ros-planning/moveit_ros/pull/735>
+  * [feat] Added kinematics plugin that uses Levenberg-Marquardt method ros-planning/moveit_ros#740 <https://github.com/ros-planning/moveit_ros/pull/740>
+  * [feat] Add nodehandle for specific params ros-planning/moveit_ros#707 <https://github.com/ros-planning/moveit_ros/pull/707>
+  * [feat] Added support for nodes handles with specific callbacks queues ros-planning/moveit_ros#701 <https://github.com/ros-planning/moveit_ros#701>
+  * [feat] Extended planning_interface::PlanningSceneInterface `ros-planning/moveit_ros/issues/630 https://github.com/ros-planning/moveit_ros/issues/630>`_
+  * [feat] add ApplyPlanningSceneService capability ros-planning/moveit_ros#686 <https://github.com/ros-planning/moveit_ros/pull/686>
+  * [improve] Improve fillGrasp method for pick("object_name") interface ros-planning/moveit#31 <https://github.com/ros-planning/moveit/pull/31>
+  * Contributors: anderwm, chengshy, Dave Coleman, Yannick Jonetzko, Robert Haschke, Michael Goener, Isaac I. Y. Saito, Alain Sanguinetti, Jorge Santos Simon, Maarten de Vries, Kentaro Wada
+
+ -- Ioan Sucan <isucan@gmail.com>  Fri, 19 Aug 2016 07:00:00 -0000
+
+ros-jade-moveit-ros (0.6.6-0vivid) vivid; urgency=high
+
+  * Removed trailing whitespace from entire repository
+  * Contributors: Dave Coleman
+
+ -- Ioan Sucan <isucan@gmail.com>  Wed, 08 Jun 2016 07:00:00 -0000
+
+ros-jade-moveit-ros (0.6.5-0vivid) vivid; urgency=high
+
+  * update maintainers
+  * Contributors: Michael Ferguson
+
+ -- Ioan Sucan <isucan@gmail.com>  Sat, 24 Jan 2015 08:00:00 -0000
+
+ros-jade-moveit-ros (0.6.4-0vivid) vivid; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@gmail.com>  Sat, 20 Dec 2014 08:00:00 -0000
+
+ros-jade-moveit-ros (0.6.3-0vivid) vivid; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@gmail.com>  Wed, 03 Dec 2014 08:00:00 -0000
+
+ros-jade-moveit-ros (0.6.2-0vivid) vivid; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@gmail.com>  Fri, 31 Oct 2014 07:00:00 -0000
+
+ros-jade-moveit-ros (0.6.1-0vivid) vivid; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@gmail.com>  Fri, 31 Oct 2014 07:00:00 -0000
+
+ros-jade-moveit-ros (0.6.0-0vivid) vivid; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@gmail.com>  Mon, 27 Oct 2014 07:00:00 -0000
+
+ros-jade-moveit-ros (0.5.19-0vivid) vivid; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@gmail.com>  Mon, 23 Jun 2014 07:00:00 -0000
+
+ros-jade-moveit-ros (0.5.18-0vivid) vivid; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@gmail.com>  Sun, 23 Mar 2014 07:00:00 -0000
+
+ros-jade-moveit-ros (0.5.17-0vivid) vivid; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@gmail.com>  Sat, 22 Mar 2014 07:00:00 -0000
+
+ros-jade-moveit-ros (0.5.16-0vivid) vivid; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@gmail.com>  Thu, 27 Feb 2014 08:00:00 -0000
+
+ros-jade-moveit-ros (0.5.14-0vivid) vivid; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@gmail.com>  Thu, 06 Feb 2014 08:00:00 -0000
+
+ros-jade-moveit-ros (0.5.13-0vivid) vivid; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@gmail.com>  Thu, 06 Feb 2014 08:00:00 -0000
+
+ros-jade-moveit-ros (0.5.12-0vivid) vivid; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@gmail.com>  Fri, 03 Jan 2014 08:00:00 -0000
+
+ros-jade-moveit-ros (0.5.11-0vivid) vivid; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@gmail.com>  Fri, 03 Jan 2014 08:00:00 -0000
+
+ros-jade-moveit-ros (0.5.10-0vivid) vivid; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@gmail.com>  Sun, 08 Dec 2013 08:00:00 -0000
+
+ros-jade-moveit-ros (0.5.9-0vivid) vivid; urgency=high
+
+  * update email addresses
+  * correcting maintainer email
+
+ -- Ioan Sucan <isucan@gmail.com>  Tue, 03 Dec 2013 08:00:00 -0000
+
+ros-jade-moveit-ros (0.5.8-0vivid) vivid; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@gmail.com>  Fri, 11 Oct 2013 07:00:00 -0000
+
+ros-jade-moveit-ros (0.5.7-0vivid) vivid; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@gmail.com>  Tue, 01 Oct 2013 07:00:00 -0000
+
+ros-jade-moveit-ros (0.5.6-0vivid) vivid; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@gmail.com>  Thu, 26 Sep 2013 07:00:00 -0000
+
+ros-jade-moveit-ros (0.5.5-0vivid) vivid; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@gmail.com>  Mon, 23 Sep 2013 07:00:00 -0000
+
+ros-jade-moveit-ros (0.5.4-0vivid) vivid; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@gmail.com>  Wed, 14 Aug 2013 07:00:00 -0000
+
+ros-jade-moveit-ros (0.5.2-0vivid) vivid; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@gmail.com>  Mon, 15 Jul 2013 07:00:00 -0000
+
+ros-jade-moveit-ros (0.5.1-0vivid) vivid; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@gmail.com>  Sun, 14 Jul 2013 07:00:00 -0000
+
+ros-jade-moveit-ros (0.5.0-0vivid) vivid; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@gmail.com>  Fri, 12 Jul 2013 07:00:00 -0000
+
+ros-jade-moveit-ros (0.4.5-0vivid) vivid; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@gmail.com>  Wed, 03 Jul 2013 07:00:00 -0000
+
+ros-jade-moveit-ros (0.4.4-0vivid) vivid; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@gmail.com>  Wed, 26 Jun 2013 07:00:00 -0000
+
+
