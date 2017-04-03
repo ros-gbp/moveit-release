@@ -1,0 +1,12 @@
+Source: ros-indigo-moveit-plugins
+Section: misc
+Priority: extra
+Maintainer: Ioan Sucan <isucan@gmail.com>
+Build-Depends: debhelper (>= 9.0.0), ros-indigo-catkin
+Homepage: http://moveit.ros.org
+Standards-Version: 3.9.2
+
+Package: ros-indigo-moveit-plugins
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-indigo-moveit-fake-controller-manager, ros-indigo-moveit-ros-control-interface, ros-indigo-moveit-simple-controller-manager
+Description: Metapackage for moveit plugins.
