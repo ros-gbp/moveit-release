@@ -2,43 +2,34 @@
 Changelog for package moveit_ros_manipulation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.7.9 (2017-04-03)
+0.9.5 (2017-03-08)
 ------------------
-* [fix][moveit_ros_manipulation] Set planning frame correctly in evaluation of reachable and valid pose filter (`#476 <https://github.com/ros-planning/moveit/issues/476>`_)
-* Contributors: Yannick Jonetzko
+* [fix][moveit_ros_warehouse] gcc6 build error `#423 <https://github.com/ros-planning/moveit/pull/423>`_ 
+* [enhancement] Remove "catch (...)" instances, catch std::exception instead of std::runtime_error (`#445 <https://github.com/ros-planning/moveit/issues/445>`_)
+* Contributors: Bence Magyar, Dave Coleman
 
-0.7.8 (2017-03-08)
+0.9.4 (2017-02-06)
 ------------------
-* [fix][moveit_ros_warehouse] gcc6 build error `#423 <https://github.com/ros-planning/moveit/pull/423>`_
-* Contributors: Dmitry Rozhkov
+* [maintenance] clang-format upgraded to 3.8 (`#367 <https://github.com/ros-planning/moveit/issues/367>`_)
+* [fix] race conditions when updating PlanningScene (`#350 <https://github.com/ros-planning/moveit/issues/350>`_)
+* Contributors: Dave Coleman, Robert Haschke
 
-0.7.7 (2017-02-06)
+0.9.3 (2016-11-16)
 ------------------
-* [maintenance] clang-format upgraded to 3.8 (`#404 <https://github.com/ros-planning/moveit/issues/404>`_)
-* Contributors: Dave Coleman
+* [maintenance] Updated package.xml maintainers and author emails `#330 <https://github.com/ros-planning/moveit/issues/330>`_
+* [enhancement] remove grasp service support from pick_place's fillGrasp (`#328 <https://github.com/ros-planning/moveit/issues/328>`_)
+* [maintenance] Updated package.xml maintainers and author emails `#330 <https://github.com/ros-planning/moveit/issues/330>`_
+* Contributors: Dave Coleman, Ian McMahon, Michael Goerner
 
-0.7.6 (2016-12-30)
-------------------
-
-0.7.5 (2016-12-25)
-------------------
-
-0.7.4 (2016-12-22)
+0.9.2 (2016-11-05)
 ------------------
 
-0.7.3 (2016-12-20)
+0.6.6 (2016-06-08)
 ------------------
-
-0.7.2 (2016-06-20)
-------------------
-
-0.7.1 (2016-04-11)
-------------------
-
-0.7.0 (2016-01-30)
-------------------
+* replaced cmake_modules dependency with eigen
+* [jade] eigen3 adjustment
 * Removed trailing whitespace from entire repository
-* Contributors: Dave Coleman
+* Contributors: Dave Coleman, Isaac I.Y. Saito, Robert Haschke
 
 0.6.5 (2015-01-24)
 ------------------

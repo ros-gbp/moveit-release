@@ -247,13 +247,9 @@ void PlanningSceneDisplay::executeMainLoopJobs()
     {
       fn();
     }
-    catch (std::runtime_error& ex)
+    catch (std::exception& ex)
     {
       ROS_ERROR("Exception caught executing main loop job: %s", ex.what());
-    }
-    catch (...)
-    {
-      ROS_ERROR("Exception caught executing main loop job");
     }
     main_loop_jobs_lock_.lock();
   }
@@ -280,6 +276,13 @@ const robot_model::RobotModelConstPtr& PlanningSceneDisplay::getRobotModel() con
     static robot_model::RobotModelConstPtr empty;
     return empty;
   }
+}
+
+bool PlanningSceneDisplay::waitForCurrentRobotState(const ros::Time& t)
+{
+  if (planning_scene_monitor_)
+    return planning_scene_monitor_->waitForCurrentRobotState(t);
+  return false;
 }
 
 planning_scene_monitor::LockedPlanningSceneRO PlanningSceneDisplay::getPlanningSceneRO() const
@@ -339,9 +342,9 @@ void PlanningSceneDisplay::renderPlanningScene()
           static_cast<OctreeVoxelColorMode>(octree_coloring_property_->getOptionInt()),
           scene_alpha_property_->getFloat());
     }
-    catch (...)
+    catch (std::exception& ex)
     {
-      ROS_ERROR("Exception thrown while rendering planning scene");
+      ROS_ERROR("Caught %s while rendering planning scene", ex.what());
     }
     planning_scene_needs_render_ = false;
     planning_scene_render_->getGeometryNode()->setVisible(scene_enabled_property_->getBool());

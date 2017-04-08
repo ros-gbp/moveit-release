@@ -2,41 +2,22 @@
 Changelog for package moveit_ros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.7.9 (2017-04-03)
+0.9.5 (2017-03-08)
 ------------------
 
-0.7.8 (2017-03-08)
+0.9.4 (2017-02-06)
 ------------------
 
-0.7.7 (2017-02-06)
+0.9.3 (2016-11-16)
+------------------
+* [capability] add list of default capabilities `#359 <https://github.com/ros-planning/moveit/pull/359>`_
+* [maintenance] Updated package.xml maintainers and author emails `#330 <https://github.com/ros-planning/moveit/issues/330>`_
+* Contributors: Dave Coleman, Michael Goerner, Ian McMahon
+
+0.9.2 (2016-11-05)
 ------------------
 
-0.7.6 (2016-12-30)
-------------------
-
-0.7.5 (2016-12-25)
-------------------
-
-0.7.4 (2016-12-22)
-------------------
-
-0.7.3 (2016-12-20)
-------------------
-
-0.7.2 (2016-06-20)
-------------------
-
-0.7.1 (2016-04-11)
-------------------
-* [feat] Adding acceleration scaling factor
-* [fix] widget naming issues
-* [fix] conflict issues
-* [fix] Remove OpenMP parallelization (fixes `#563 <https://github.com/ros-planning/moveit_ros/issues/563>`_)
-* [sys] explicitly link rviz' default_plugin library. The library is not exported anymore and now is provided separately from rviz_LIBRARIES. See https://github.com/ros-visualization/rviz/pull/979 for details.
-* [doc] [move_group.cpp] Print the name of the move group action server that failed to be connected (`#640 <https://github.com/ros-planning/moveit_ros/issues/640>`_)
-* Contributors: Stefan Kohlbrecher, v4hn, Dave Coleman, Isaac I.Y. Saito, hemes
-
-0.7.0 (2016-01-30)
+0.6.6 (2016-06-08)
 ------------------
 * Removed trailing whitespace from entire repository
 * Contributors: Dave Coleman

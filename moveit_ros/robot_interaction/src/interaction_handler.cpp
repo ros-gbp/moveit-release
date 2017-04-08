@@ -213,13 +213,13 @@ void InteractionHandler::clearLastMarkerPoses()
   pose_map_.clear();
 }
 
-void InteractionHandler::setMenuHandler(const boost::shared_ptr<interactive_markers::MenuHandler>& mh)
+void InteractionHandler::setMenuHandler(const std::shared_ptr<interactive_markers::MenuHandler>& mh)
 {
   boost::mutex::scoped_lock lock(state_lock_);
   menu_handler_ = mh;
 }
 
-const boost::shared_ptr<interactive_markers::MenuHandler>& InteractionHandler::getMenuHandler()
+const std::shared_ptr<interactive_markers::MenuHandler>& InteractionHandler::getMenuHandler()
 {
   boost::mutex::scoped_lock lock(state_lock_);
   return menu_handler_;
@@ -547,7 +547,7 @@ void InteractionHandler::setGroupStateValidityCallback(const robot_state::GroupS
   kinematic_options_map_->setOptions(KinematicOptionsMap::ALL, delta, KinematicOptions::STATE_VALIDITY_CALLBACK);
 }
 
-const kinematics::KinematicsQueryOptions& InteractionHandler::getKinematicsQueryOptions() const
+kinematics::KinematicsQueryOptions InteractionHandler::getKinematicsQueryOptions() const
 {
   boost::mutex::scoped_lock lock(state_lock_);
   return kinematic_options_map_->getOptions(KinematicOptionsMap::DEFAULT).options_;

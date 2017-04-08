@@ -46,11 +46,12 @@
 #include <controller_manager_msgs/SwitchController.h>
 
 #include <pluginlib/class_list_macros.h>
-#include <map>
-
 #include <pluginlib/class_loader.h>
 
 #include <boost/bimap.hpp>
+
+#include <map>
+#include <memory>
 
 namespace moveit_ros_control_interface
 {
@@ -154,10 +155,23 @@ class MoveItControllerManager : public moveit_controller_manager::MoveItControll
       AllocatorsMap::iterator alloc_it = allocators_.find(type);
       if (alloc_it == allocators_.end())
       {  // create allocator is needed
-        alloc_it = allocators_.insert(std::make_pair(type, loader_.createInstance(type))).first;
+        alloc_it = allocators_.insert(std::make_pair(type, loader_.createUniqueInstance(type))).first;
       }
+
+      // Collect claimed resources across different hardware interfaces
+      std::vector<std::string> resources;
+      for (std::vector<controller_manager_msgs::HardwareInterfaceResources>::const_iterator hir =
+               controller.claimed_resources.begin();
+           hir != controller.claimed_resources.end(); ++hir)
+      {
+        for (std::vector<std::string>::const_iterator r = hir->resources.begin(); r != hir->resources.end(); ++r)
+        {
+          resources.push_back(*r);
+        }
+      }
+
       moveit_controller_manager::MoveItControllerHandlePtr handle =
-          alloc_it->second->alloc(name, controller.resources);  // allocate handle
+          alloc_it->second->alloc(name, resources);  // allocate handle
       if (handle)
         handles_.insert(std::make_pair(name, handle));
     }
@@ -251,7 +265,11 @@ public:
     ControllersMap::iterator it = managed_controllers_.find(name);
     if (it != managed_controllers_.end())
     {
-      joints = it->second.resources;
+      for (std::size_t i = 0; i < it->second.claimed_resources.size(); ++i)
+      {
+        std::vector<std::string>& resources = it->second.claimed_resources[i].resources;
+        joints.insert(joints.end(), resources.begin(), resources.end());
+      }
     }
   }
 
@@ -293,9 +311,14 @@ public:
     // fill bimap with active controllers and their resources
     for (ControllersMap::iterator c = active_controllers_.begin(); c != active_controllers_.end(); ++c)
     {
-      for (std::vector<std::string>::iterator r = c->second.resources.begin(); r != c->second.resources.end(); ++r)
+      for (std::vector<controller_manager_msgs::HardwareInterfaceResources>::iterator hir =
+               c->second.claimed_resources.begin();
+           hir != c->second.claimed_resources.end(); ++hir)
       {
-        claimed_resources.insert(resources_bimap::value_type(c->second.name, *r));
+        for (std::vector<std::string>::iterator r = hir->resources.begin(); r != hir->resources.end(); ++r)
+        {
+          claimed_resources.insert(resources_bimap::value_type(c->second.name, *r));
+        }
       }
     }
 
@@ -318,13 +341,18 @@ public:
       {  // controller belongs to this manager
         srv.request.start_controllers.push_back(c->second.name);
 
-        for (std::vector<std::string>::iterator r = c->second.resources.begin(); r != c->second.resources.end(); ++r)
-        {  // for all claimed resource
-          resources_bimap::right_const_iterator res = claimed_resources.right.find(*r);
-          if (res != claimed_resources.right.end())
-          {                                                       // resource is claimed
-            srv.request.stop_controllers.push_back(res->second);  // add claiming controller to stop list
-            claimed_resources.left.erase(res->second);            // remove claimed resources
+        for (std::vector<controller_manager_msgs::HardwareInterfaceResources>::iterator hir =
+                 c->second.claimed_resources.begin();
+             hir != c->second.claimed_resources.end(); ++hir)
+        {
+          for (std::vector<std::string>::iterator r = hir->resources.begin(); r != hir->resources.end(); ++r)
+          {  // for all claimed resource
+            resources_bimap::right_const_iterator res = claimed_resources.right.find(*r);
+            if (res != claimed_resources.right.end())
+            {                                                       // resource is claimed
+              srv.request.stop_controllers.push_back(res->second);  // add claiming controller to stop list
+              claimed_resources.left.erase(res->second);            // remove claimed resources
+            }
           }
         }
       }
@@ -385,7 +413,7 @@ class MoveItMultiControllerManager : public moveit_controller_manager::MoveItCon
         {  // create MoveItControllerManager if it does not exists
           ROS_INFO_STREAM("Adding controller_manager interface for node at namespace " << ns);
           controller_managers_.insert(
-              std::make_pair(ns, boost::make_shared<moveit_ros_control_interface::MoveItControllerManager>(ns)));
+              std::make_pair(ns, std::make_shared<moveit_ros_control_interface::MoveItControllerManager>(ns)));
         }
       }
     }

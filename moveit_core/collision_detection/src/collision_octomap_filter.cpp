@@ -40,6 +40,8 @@
 #include <octomap/math/Vector3.h>
 #include <octomap/math/Utils.h>
 #include <octomap/octomap.h>
+#include <geometric_shapes/shapes.h>
+#include <memory>
 
 // static const double ISO_VALUE  = 0.5; // TODO magic number! (though, probably a good one).
 // static const double R_MULTIPLE = 1.5; // TODO magic number! (though, probably a good one).
@@ -95,10 +97,10 @@ int collision_detection::refineContactNormals(const World::ObjectConstPtr& objec
     if (!object->shapes_.empty())
     {
       const shapes::ShapeConstPtr& shape = object->shapes_[0];
-      boost::shared_ptr<const shapes::OcTree> shape_octree = boost::dynamic_pointer_cast<const shapes::OcTree>(shape);
+      std::shared_ptr<const shapes::OcTree> shape_octree = std::dynamic_pointer_cast<const shapes::OcTree>(shape);
       if (shape_octree)
       {
-        boost::shared_ptr<const octomap::OcTree> octree = shape_octree->octree;
+        std::shared_ptr<const octomap::OcTree> octree = shape_octree->octree;
         cell_size = octree->getResolution();
         for (size_t contact_index = 0; contact_index < contact_vector.size(); contact_index++)
         {

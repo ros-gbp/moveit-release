@@ -50,6 +50,7 @@
 #include <boost/noncopyable.hpp>
 #include <boost/thread/shared_mutex.hpp>
 #include <boost/thread/recursive_mutex.hpp>
+#include <memory>
 
 namespace planning_scene_monitor
 {
@@ -269,6 +270,11 @@ public:
     return current_state_monitor_;
   }
 
+  CurrentStateMonitorPtr& getStateMonitorNonConst()
+  {
+    return current_state_monitor_;
+  }
+
   /** @brief Update the transforms for the frames that are not part of the kinematic model using tf.
    *  Examples of these frames are the "map" and "odom_combined" transforms. This function is automatically called when
    * data that uses transforms is received.
@@ -298,13 +304,7 @@ public:
   void setStateUpdateFrequency(double hz);
 
   /** @brief Get the maximum frequency (Hz) at which the current state of the planning scene is updated.*/
-  double getStateUpdateFrequency() const
-  {
-    if (!dt_state_update_.isZero())
-      return 1.0 / dt_state_update_.toSec();
-    else
-      return 0.0;
-  }
+  double getStateUpdateFrequency();
 
   /** @brief Start the scene monitor
    *  @param scene_topic The name of the planning scene topic
@@ -354,6 +354,13 @@ public:
 
   /** @brief This function is called every time there is a change to the planning scene */
   void triggerSceneUpdateEvent(SceneUpdateType update_type);
+
+  /** \brief Wait for robot state to become more recent than time t.
+   *
+   * If there is no state monitor active, there will be no scene updates.
+   * Hence, you can specify a timeout to wait for those updates. Default is 1s.
+   */
+  bool waitForCurrentRobotState(const ros::Time& t, double wait_time = 1.);
 
   /** \brief Lock the scene for reading (multiple threads can lock for reading at the same time) */
   void lockSceneRead();
@@ -432,6 +439,9 @@ protected:
   planning_scene::PlanningSceneConstPtr scene_const_;
   planning_scene::PlanningScenePtr parent_scene_;  /// if diffs are monitored, this is the pointer to the parent scene
   boost::shared_mutex scene_update_mutex_;         /// mutex for stored scene
+  ros::Time last_update_time_;                     /// Last time the state was updated
+  ros::Time last_robot_motion_time_;               /// Last time the robot has moved
+  bool enforce_next_state_update_;                 /// flag to enforce immediate state update in onStateUpdate()
 
   ros::NodeHandle nh_;
   ros::NodeHandle root_nh_;
@@ -453,7 +463,7 @@ protected:
 
   // variables for planning scene publishing
   ros::Publisher planning_scene_publisher_;
-  boost::scoped_ptr<boost::thread> publish_planning_scene_;
+  std::unique_ptr<boost::thread> publish_planning_scene_;
   double publish_planning_scene_frequency_;
   SceneUpdateType publish_update_types_;
   SceneUpdateType new_scene_update_;
@@ -465,11 +475,11 @@ protected:
 
   ros::Subscriber attached_collision_object_subscriber_;
 
-  boost::scoped_ptr<message_filters::Subscriber<moveit_msgs::CollisionObject> > collision_object_subscriber_;
-  boost::scoped_ptr<tf::MessageFilter<moveit_msgs::CollisionObject> > collision_object_filter_;
+  std::unique_ptr<message_filters::Subscriber<moveit_msgs::CollisionObject> > collision_object_subscriber_;
+  std::unique_ptr<tf::MessageFilter<moveit_msgs::CollisionObject> > collision_object_filter_;
 
   // include a octomap monitor
-  boost::scoped_ptr<occupancy_map_monitor::OccupancyMapMonitor> octomap_monitor_;
+  std::unique_ptr<occupancy_map_monitor::OccupancyMapMonitor> octomap_monitor_;
 
   // include a current state monitor
   CurrentStateMonitorPtr current_state_monitor_;
@@ -480,7 +490,7 @@ protected:
   typedef std::map<const robot_state::AttachedBody*,
                    std::vector<std::pair<occupancy_map_monitor::ShapeHandle, std::size_t> > >
       AttachedBodyShapeHandles;
-  typedef std::map<std::string, std::vector<std::pair<occupancy_map_monitor::ShapeHandle, Eigen::Affine3d*> > >
+  typedef std::map<std::string, std::vector<std::pair<occupancy_map_monitor::ShapeHandle, const Eigen::Affine3d*> > >
       CollisionBodyShapeHandles;
 
   LinkShapeHandles link_shape_handles_;
@@ -492,7 +502,6 @@ protected:
   boost::recursive_mutex update_lock_;
   std::vector<boost::function<void(SceneUpdateType)> > update_callbacks_;  /// List of callbacks to trigger when updates
                                                                            /// are received
-  ros::Time last_update_time_;                                             /// Last time the state was updated
 
 private:
   void getUpdatedFrameTransforms(std::vector<geometry_msgs::TransformStamped>& transforms);
@@ -532,7 +541,7 @@ private:
 
   /// Last time the state was updated from current_state_monitor_
   // Only access this from callback functions (and constructor)
-  ros::WallTime last_state_update_;
+  ros::WallTime last_robot_state_update_wall_time_;
 
   robot_model_loader::RobotModelLoaderPtr rm_loader_;
   robot_model::RobotModelConstPtr robot_model_;

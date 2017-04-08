@@ -268,7 +268,7 @@ void MotionPlanningFrame::selectedCollisionObjectChanged()
         else
           ui_->object_status->setText("ERROR: '" + sel[0]->text() + "' should be a collision object but it is not");
       }
-      if (update_scene_marker && ui_->tabWidget->tabText(ui_->tabWidget->currentIndex()).toStdString() == TAB_OBJECTS)
+      if (update_scene_marker)
       {
         createSceneInteractiveMarker();
       }
@@ -423,7 +423,7 @@ void MotionPlanningFrame::computeSaveSceneButtonClicked()
       planning_scene_storage_->removePlanningScene(msg.name);
       planning_scene_storage_->addPlanningScene(msg);
     }
-    catch (std::runtime_error& ex)
+    catch (std::exception& ex)
     {
       ROS_ERROR("%s", ex.what());
     }
@@ -444,7 +444,7 @@ void MotionPlanningFrame::computeSaveQueryButtonClicked(const std::string& scene
         planning_scene_storage_->removePlanningQuery(scene, query_name);
       planning_scene_storage_->addPlanningQuery(mreq, scene, query_name);
     }
-    catch (std::runtime_error& ex)
+    catch (std::exception& ex)
     {
       ROS_ERROR("%s", ex.what());
     }
@@ -468,7 +468,7 @@ void MotionPlanningFrame::computeDeleteSceneButtonClicked()
         {
           planning_scene_storage_->removePlanningScene(scene);
         }
-        catch (std::runtime_error& ex)
+        catch (std::exception& ex)
         {
           ROS_ERROR("%s", ex.what());
         }
@@ -481,7 +481,7 @@ void MotionPlanningFrame::computeDeleteSceneButtonClicked()
         {
           planning_scene_storage_->removePlanningScene(scene);
         }
-        catch (std::runtime_error& ex)
+        catch (std::exception& ex)
         {
           ROS_ERROR("%s", ex.what());
         }
@@ -507,7 +507,7 @@ void MotionPlanningFrame::computeDeleteQueryButtonClicked()
         {
           planning_scene_storage_->removePlanningQuery(scene, query_name);
         }
-        catch (std::runtime_error& ex)
+        catch (std::exception& ex)
         {
           ROS_ERROR("%s", ex.what());
         }
@@ -579,7 +579,7 @@ void MotionPlanningFrame::computeLoadSceneButtonClicked()
         {
           got_ps = planning_scene_storage_->getPlanningScene(scene_m, scene);
         }
-        catch (std::runtime_error& ex)
+        catch (std::exception& ex)
         {
           ROS_ERROR("%s", ex.what());
         }
@@ -633,7 +633,7 @@ void MotionPlanningFrame::computeLoadQueryButtonClicked()
         {
           got_q = planning_scene_storage_->getPlanningQuery(mp, scene, query_name);
         }
-        catch (std::runtime_error& ex)
+        catch (std::exception& ex)
         {
           ROS_ERROR("%s", ex.what());
         }

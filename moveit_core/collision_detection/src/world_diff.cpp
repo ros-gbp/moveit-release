@@ -60,7 +60,7 @@ collision_detection::WorldDiff::WorldDiff(WorldDiff& other)
   {
     changes_ = other.changes_;
 
-    boost::weak_ptr<World>(world).swap(world_);
+    std::weak_ptr<World>(world).swap(world_);
     observer_handle_ = world->addObserver(boost::bind(&WorldDiff::notify, this, _1, _2));
   }
 }
@@ -84,7 +84,7 @@ void collision_detection::WorldDiff::reset(const WorldPtr& world)
   if (old_world)
     old_world->removeObserver(observer_handle_);
 
-  boost::weak_ptr<World>(world).swap(world_);
+  std::weak_ptr<World>(world).swap(world_);
   observer_handle_ = world->addObserver(boost::bind(&WorldDiff::notify, this, _1, _2));
 }
 
@@ -97,7 +97,7 @@ void collision_detection::WorldDiff::setWorld(const WorldPtr& world)
     old_world->removeObserver(observer_handle_);
   }
 
-  boost::weak_ptr<World>(world).swap(world_);
+  std::weak_ptr<World>(world).swap(world_);
 
   observer_handle_ = world->addObserver(boost::bind(&WorldDiff::notify, this, _1, _2));
   world->notifyObserverAllObjects(observer_handle_, World::CREATE | World::ADD_SHAPE);

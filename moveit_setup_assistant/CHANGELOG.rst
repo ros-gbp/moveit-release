@@ -2,34 +2,33 @@
 Changelog for package moveit_setup_assistant
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.7.9 (2017-04-03)
+0.9.5 (2017-03-08)
 ------------------
-
-0.7.8 (2017-03-08)
-------------------
-* [fix][moveit_ros_warehouse] gcc6 build error `#423 <https://github.com/ros-planning/moveit/pull/423>`_
-* Contributors: Dmitry Rozhkov
-
-0.7.7 (2017-02-06)
-------------------
-* [maintenance] clang-format upgraded to 3.8 (`#404 <https://github.com/ros-planning/moveit/issues/404>`_)
+* [fix][moveit_ros_warehouse] gcc6 build error `#423 <https://github.com/ros-planning/moveit/pull/423>`_ 
 * Contributors: Dave Coleman
 
-0.7.6 (2016-12-30)
+0.9.4 (2017-02-06)
 ------------------
-* [fix][Indigo] re-enable support for cmake 2.8.11 `#391 <https://github.com/ros-planning/moveit/pull/391>`_
-* Contributors: Michael Goerner
+* [fix] Qt4/Qt5 compatibility `#413 <https://github.com/ros-planning/moveit/pull/413>`_
+* [fix] show disabled collisions as matrix  (`#394 <https://github.com/ros-planning/moveit/issues/394>`_)
+* Contributors: Dave Coleman, Robert Haschke, Michael Goerner
 
-0.7.5 (2016-12-25)
+0.9.3 (2016-11-16)
 ------------------
+* [capability] Exposed planners from latest ompl release. (`#338 <https://github.com/ros-planning/moveit/issues/338>`_)
+* [enhancement] Increase collision checking interval (`#337 <https://github.com/ros-planning/moveit/issues/337>`_)
+* [maintenance] Updated package.xml maintainers and author emails `#330 <https://github.com/ros-planning/moveit/issues/330>`_
+* Contributors: Dave Coleman, Ian McMahon, Ruben Burger
 
-0.7.4 (2016-12-22)
+0.9.2 (2016-11-05)
 ------------------
+* [Fix] xacro warnings in Kinetic (`#334 <https://github.com/ros-planning/moveit/issues/334>`_)
+  [Capability] Allows for smaller collision objects at the cost of increased planning time
+* [Improve] Increase the default discretization of collision checking motions (`#321 <https://github.com/ros-planning/moveit/issues/321>`_)
+* [Maintenance] Auto format codebase using clang-format (`#284 <https://github.com/ros-planning/moveit/issues/284>`_)
+* Contributors: Dave Coleman
 
-0.7.3 (2016-12-20)
-------------------
-
-0.7.2 (2016-06-24)
+0.7.1 (2016-06-24)
 ------------------
 * [sys] Qt adjustment. 
   * relax Qt-version requirement.  Minor Qt version updates are ABI-compatible with each other:  https://wiki.qt.io/Qt-Version-Compatibility
