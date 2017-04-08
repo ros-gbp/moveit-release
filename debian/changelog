@@ -1,0 +1,130 @@
+ros-kinetic-moveit-commander (0.9.5-1jessie) jessie; urgency=high
+
+  * [fix] Regression on Ubuntu Xenial; numpy.ndarray indices bug (from #86 <https://github.com/ros-planning/moveit/issues/86>) (#450 <https://github.com/ros-planning/moveit/issues/450>).
+  * [doc][moveit_commander] added description for set_start_state (#447 <https://github.com/ros-planning/moveit/issues/447>)
+  * Contributors: Adam Allevato, Ravi Prakash Joshi
+
+ -- Michael Görner <me@v4hn.de>  Wed, 08 Mar 2017 08:00:00 -0000
+
+ros-kinetic-moveit-commander (0.9.4-1jessie) jessie; urgency=high
+
+  * [fix] issue #373 <https://github.com/ros-planning/moveit/issues/373> for Kinetic (#377 <https://github.com/ros-planning/moveit/issues/377>) (#385 <https://github.com/ros-planning/moveit/issues/385>)
+  * [fix] typo in moveit_commander (#376 <https://github.com/ros-planning/moveit/issues/376>)
+  * Contributors: Dave Coleman, Shingo Kitagawa
+
+ -- Michael Görner <me@v4hn.de>  Mon, 06 Feb 2017 08:00:00 -0000
+
+ros-kinetic-moveit-commander (0.9.3-1jessie) jessie; urgency=high
+
+  * [maintenance] Updated package.xml maintainers and author emails #330 <https://github.com/ros-planning/moveit/issues/330>
+  * Contributors: Dave Coleman, Ian McMahon
+
+ -- Michael Görner <me@v4hn.de>  Wed, 16 Nov 2016 08:00:00 -0000
+
+ros-kinetic-moveit-commander (0.9.2-1jessie) jessie; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@willowgarage.com>  Sat, 05 Nov 2016 07:00:00 -0000
+
+ros-kinetic-moveit-commander (0.6.1-1jessie) jessie; urgency=high
+
+  * [feat] Add the possibility to choose description file #43 <https://github.com/ros-planning/moveit_commander/issues/43>
+  * [improve] support pyassimp 3.2. Looks like they changed their import path. robot_description should not be hardcoded to allow changing the name of the description file. This is usefull when working with several robots that do not share the same description file. #45 <https://github.com/ros-planning/moveit_commander/issues/45>
+  * [improve] add queue_size option in planning_scene_interface.py #41 <https://github.com/ros-planning/moveit_commander/issues/41>
+  * Contributors: Dave Coleman, Isaac I.Y. Saito, Kei Okada, Michael Görner, buschbapti
+
+ -- Ioan Sucan <isucan@willowgarage.com>  Thu, 28 Apr 2016 07:00:00 -0000
+
+ros-kinetic-moveit-commander (0.6.0-1jessie) jessie; urgency=high
+
+  * Merge pull request #38  from 130s/doc/python_if
+    [RobotCommander] Fill in in-code document where missing.
+  * [moveit_commander/robot.py] Code cleaning; semi-PEP8.
+  * Merge pull request #35  from MichaelStevens/set_num_planning_attempts
+    adding set_num_planning_attempts to commander interface
+  * Merge pull request #30 from ymollard/indigo-devel
+    Planning scene improvements +  added python wrapper for MoveGroup.asyncExecute()
+  * Added python wrapper for MoveGroup.asyncExecute()
+  * Allow to clean all objects in a row
+  * Allow to attash an existing object without recreating the whole CollisionObject
+  * Merge pull request #24  from ymollard/hydro-devel
+    Allowed user to change the scale of a mesh
+  * Merge pull request #23  from HumaRobotics/hydro-devel
+    Fixed arguments removal in python roscpp_initializer
+  * Merge pull request #26  from corot/hydro-devel
+    Add missing variants of place (PlaceLocation, place anywhere)
+  * Added a way to change the size of a mesh when grasping
+  * Allowed user to change the scale of a mesh
+  * Fixed arguments removal in python roscpp_initializer
+  * Contributors: Dave Coleman, Ioan A Sucan, Isaac I.Y. Saito, Michael Stevens, Philippe Capdepuy, Yoan Mollard, corot
+
+ -- Ioan Sucan <isucan@willowgarage.com>  Sat, 30 Jan 2016 08:00:00 -0000
+
+ros-kinetic-moveit-commander (0.5.7-1jessie) jessie; urgency=high
+
+  * Merge pull request #21 <https://github.com/ros-planning/moveit_commander/issues/21> from pirobot/hydro-devel
+    Added set_support_surface_name function to move_group.py
+  * Added set_support_surface_name function to move_group.py
+  * Contributors: Patrick Goebel, Sachin Chitta
+
+ -- Ioan Sucan <isucan@willowgarage.com>  Sat, 05 Jul 2014 07:00:00 -0000
+
+ros-kinetic-moveit-commander (0.5.6-1jessie) jessie; urgency=high
+
+  * Added the calls necessary to manage path constraints.
+  * fix joint and link acces on __getattr__  when trying to acces a joint and its paramaters throught
+  * Contributors: Acorn, Emili Boronat, Sachin Chitta
+
+ -- Ioan Sucan <isucan@willowgarage.com>  Mon, 24 Mar 2014 07:00:00 -0000
+
+ros-kinetic-moveit-commander (0.5.5-1jessie) jessie; urgency=high
+
+  * adding get for active joints
+  * Contributors: Acorn, Sachin Chitta
+
+ -- Ioan Sucan <isucan@willowgarage.com>  Thu, 27 Feb 2014 08:00:00 -0000
+
+ros-kinetic-moveit-commander (0.5.4-1jessie) jessie; urgency=high
+
+  * Install moveit_commander_cmdline.py into package specific directory, not to global bin.
+  * Fix typos in comments
+
+ -- Ioan Sucan <isucan@willowgarage.com>  Thu, 06 Feb 2014 08:00:00 -0000
+
+ros-kinetic-moveit-commander (0.5.3-1jessie) jessie; urgency=high
+
+  * work around name bug
+    move group interface python programs cannot be launched from launch files if
+    the __name:= argument is used.  This works around the problem and allows using
+    launch files to launch python moveit programs.
+  * Added Travis Continuous Integration
+
+ -- Ioan Sucan <isucan@willowgarage.com>  Fri, 03 Jan 2014 08:00:00 -0000
+
+ros-kinetic-moveit-commander (0.5.2-1jessie) jessie; urgency=high
+
+  * add support for setting joint targets from approximate IK
+  * no longer depend on manipulation_msgs
+  * expand functionality of MoveGroupInterface
+
+ -- Ioan Sucan <isucan@willowgarage.com>  Mon, 23 Sep 2013 07:00:00 -0000
+
+ros-kinetic-moveit-commander (0.5.1-1jessie) jessie; urgency=high
+
+  * make pick() more general
+  * use msg serialization
+  * use new attach / detach operations
+  * fix header for demo code
+  * Duration class bug fixed in commander conversion.
+
+ -- Ioan Sucan <isucan@willowgarage.com>  Tue, 13 Aug 2013 07:00:00 -0000
+
+ros-kinetic-moveit-commander (0.5.0-1jessie) jessie; urgency=high
+
+  * move msgs to common_msgs
+  * fixed ground command
+
+ -- Ioan Sucan <isucan@willowgarage.com>  Thu, 18 Jul 2013 07:00:00 -0000
+
+
