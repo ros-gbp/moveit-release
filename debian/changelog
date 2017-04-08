@@ -1,0 +1,80 @@
+ros-kinetic-moveit-plugins (0.9.5-1wily) wily; urgency=high
+
+
+
+ -- Michael Görner <me@v4hn.de>  Wed, 08 Mar 2017 08:00:00 -0000
+
+ros-kinetic-moveit-plugins (0.9.4-1wily) wily; urgency=high
+
+
+
+ -- Michael Görner <me@v4hn.de>  Mon, 06 Feb 2017 08:00:00 -0000
+
+ros-kinetic-moveit-plugins (0.9.3-1wily) wily; urgency=high
+
+
+
+ -- Michael Görner <me@v4hn.de>  Wed, 16 Nov 2016 08:00:00 -0000
+
+ros-kinetic-moveit-plugins (0.5.7-1wily) wily; urgency=high
+
+  * added moveit_ros_control_interface to meta-package
+  * Contributors: Mathias Lüdtke
+
+ -- Ioan Sucan <isucan@gmail.com>  Sat, 30 Jan 2016 08:00:00 -0000
+
+ros-kinetic-moveit-plugins (0.5.6-1wily) wily; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@gmail.com>  Sun, 23 Mar 2014 07:00:00 -0000
+
+ros-kinetic-moveit-plugins (0.5.5-1wily) wily; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@gmail.com>  Mon, 30 Sep 2013 07:00:00 -0000
+
+ros-kinetic-moveit-plugins (0.5.4-1wily) wily; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@gmail.com>  Tue, 24 Sep 2013 07:00:00 -0000
+
+ros-kinetic-moveit-plugins (0.5.3-1wily) wily; urgency=high
+
+  * add fake controller plugin
+
+ -- Ioan Sucan <isucan@gmail.com>  Mon, 23 Sep 2013 07:00:00 -0000
+
+ros-kinetic-moveit-plugins (0.5.1-1wily) wily; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@gmail.com>  Tue, 30 Jul 2013 07:00:00 -0000
+
+ros-kinetic-moveit-plugins (0.5.0-1wily) wily; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@gmail.com>  Tue, 16 Jul 2013 07:00:00 -0000
+
+ros-kinetic-moveit-plugins (0.4.1-1wily) wily; urgency=high
+
+  * minor updates to package.xml
+
+ -- Ioan Sucan <isucan@gmail.com>  Wed, 03 Jul 2013 07:00:00 -0000
+
+ros-kinetic-moveit-plugins (0.4.0-1wily) wily; urgency=high
+
+  * debs look good, bump to 0.4.0
+
+ -- Ioan Sucan <isucan@gmail.com>  Thu, 06 Jun 2013 07:00:00 -0000
+
+ros-kinetic-moveit-plugins (0.1.0-1wily) wily; urgency=high
+
+  * add metapackage, clean up build in controller manager
+
+ -- Ioan Sucan <isucan@gmail.com>  Wed, 05 Jun 2013 07:00:00 -0000
+
+
