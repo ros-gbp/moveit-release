@@ -1,3 +1,54 @@
+## moveit (kinetic) - 0.9.5-1
+
+The packages in the `moveit` repository were released into the `kinetic` distro by running `/usr/bin/bloom-release --rosdistro kinetic --track kinetic moveit` on `Sat, 08 Apr 2017 13:34:28 -0000`
+
+These packages were released:
+- `moveit`
+- `moveit_commander`
+- `moveit_controller_manager_example`
+- `moveit_core`
+- `moveit_fake_controller_manager`
+- `moveit_kinematics`
+- `moveit_planners`
+- `moveit_planners_ompl`
+- `moveit_plugins`
+- `moveit_ros`
+- `moveit_ros_benchmarks`
+- `moveit_ros_control_interface`
+- `moveit_ros_manipulation`
+- `moveit_ros_move_group`
+- `moveit_ros_perception`
+- `moveit_ros_planning`
+- `moveit_ros_planning_interface`
+- `moveit_ros_robot_interaction`
+- `moveit_ros_visualization`
+- `moveit_ros_warehouse`
+- `moveit_runtime`
+- `moveit_setup_assistant`
+- `moveit_simple_controller_manager`
+
+These packages were explicitly ignored:
+- `chomp_motion_planner`
+- `moveit_experimental`
+- `moveit_planners_chomp`
+
+Version of package(s) in repository `moveit`:
+
+- upstream repository: https://github.com/ros-planning/moveit.git
+- release repository: https://github.com/ros-gbp/moveit-release.git
+- rosdistro version: `0.9.5-0`
+- old version: `0.9.5-0`
+- new version: `0.9.5-1`
+
+Versions of tools used:
+
+- bloom version: `0.5.26`
+- catkin_pkg version: `0.3.1`
+- rosdep version: `0.11.5`
+- rosdistro version: `0.6.2`
+- vcstools version: `0.1.39`
+
+
 ## moveit (indigo) - 0.7.9-0
 
 The packages in the `moveit` repository were released into the `indigo` distro by running `/usr/bin/bloom-release --rosdistro indigo --track indigo moveit` on `Mon, 03 Apr 2017 23:04:56 -0000`
