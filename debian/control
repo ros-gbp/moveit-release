@@ -1,0 +1,12 @@
+Source: ros-kinetic-moveit-ros-robot-interaction
+Section: misc
+Priority: extra
+Maintainer: Michael Ferguson <mferguson@fetchrobotics.com>
+Build-Depends: debhelper (>= 9.0.0), ros-kinetic-catkin, ros-kinetic-eigen-conversions, ros-kinetic-interactive-markers, ros-kinetic-moveit-ros-planning, ros-kinetic-pluginlib (>= 1.10.4), ros-kinetic-roscpp, ros-kinetic-tf
+Homepage: http://moveit.ros.org
+Standards-Version: 3.9.2
+
+Package: ros-kinetic-moveit-ros-robot-interaction
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-kinetic-eigen-conversions, ros-kinetic-interactive-markers, ros-kinetic-moveit-ros-planning, ros-kinetic-pluginlib (>= 1.10.4), ros-kinetic-roscpp, ros-kinetic-tf
+Description: Components of MoveIt that offer interaction via interactive markers
