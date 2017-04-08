@@ -1,0 +1,313 @@
+ros-kinetic-moveit-planners-ompl (0.9.5-1xenial) xenial; urgency=high
+
+  * [fix][moveit_ros_warehouse] gcc6 build error #423 <https://github.com/ros-planning/moveit/pull/423>
+  * Contributors: Dave Coleman
+
+ -- Ioan Sucan <isucan@google.com>  Wed, 08 Mar 2017 08:00:00 -0000
+
+ros-kinetic-moveit-planners-ompl (0.9.4-1xenial) xenial; urgency=high
+
+  * [enhancement] ompl_interface: uniform & simplified handling of the default planner (#371 <https://github.com/ros-planning/moveit/issues/371>)
+  * [maintenance] clang-format upgraded to 3.8 (#367 <https://github.com/ros-planning/moveit/issues/367>)
+  * Contributors: Dave Coleman, Michael Goerner
+
+ -- Ioan Sucan <isucan@google.com>  Mon, 06 Feb 2017 08:00:00 -0000
+
+ros-kinetic-moveit-planners-ompl (0.9.3-1xenial) xenial; urgency=high
+
+  * [capability] Exposed planners from latest ompl release. (#338 <https://github.com/ros-planning/moveit/issues/338>)
+  * [maintenance] Updated package.xml maintainers and author emails #330 <https://github.com/ros-planning/moveit/issues/330>
+  * Contributors: Dave Coleman, Ian McMahon, Ruben Burger
+
+ -- Ioan Sucan <isucan@google.com>  Wed, 16 Nov 2016 08:00:00 -0000
+
+ros-kinetic-moveit-planners-ompl (0.9.2-1xenial) xenial; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@willowgarage.com>  Sat, 05 Nov 2016 07:00:00 -0000
+
+ros-kinetic-moveit-planners-ompl (0.7.0-1xenial) xenial; urgency=high
+
+  * Removed trailing whitespace from entire repository
+  * Fixed include directory order to make ros package shadowing work.
+  * fixing internal storing of config settings
+  * Make sure an overlayed OMPL is used instead of the ROS one.
+  * fix simplifySolutions(bool) setter
+    The method simplifySolutions(bool) always set the simplify_solutions member to true and the input variable "flag" was ignored.
+    The method is fixed by setting the simplify_solutions member to the value of the input variable "flag".
+  * changed location of getDefaultPlanner
+  * Contributors: Bastian Gaspers, Christian Dornhege, Dave Coleman, Dave Hershberger, Sachin Chitta
+
+ -- Ioan Sucan <isucan@willowgarage.com>  Sat, 30 Jan 2016 08:00:00 -0000
+
+ros-kinetic-moveit-planners-ompl (0.6.7-1xenial) xenial; urgency=high
+
+  * Changed OMPL SimpleSetup member variable to shared pointer, passed MotionPlanningRequest to child function
+  * Simplified number of solve() entry points in moveit_planners_ompl
+  * Fixed uninitialized ptc_ pointer causing a crash.
+  * renamed newGoal to new_goal for keeping with formatting
+  * setting GroupStateValidityCallbackFn member for constraint_sampler member and implementing callbacks for state validity checking
+  * added functions to check validit of state, and also to act as callback for constraint sampler
+  * Added copy function from MoveIt! robot_state joint values to ompl state
+  * fix for demo constraints database linking error
+  * Namespaced less useful debug output to allow to be easily silenced using ros console
+  * Contributors: Dave Coleman, Dave Hershberger, Sachin Chitta, arjungm
+
+ -- Ioan Sucan <isucan@willowgarage.com>  Tue, 28 Oct 2014 07:00:00 -0000
+
+ros-kinetic-moveit-planners-ompl (0.6.6-1xenial) xenial; urgency=high
+
+  * indigo version of moveit planners
+  * fix compile error on Indigo
+  * Fix for getMeasure() virtual function OMPL change
+  * Move OMPL paths before catkin to avoid compilation against ROS OMPL package when specifying a different OMPL installation
+  * Fixed bug which limited the number of plans considered to the number of threads.
+  * Contributors: Alexander Stumpf, Chris Lewis, Dave Coleman, Ryan Luna, Sachin Chitta
+
+ -- Ioan Sucan <isucan@willowgarage.com>  Sun, 06 Jul 2014 07:00:00 -0000
+
+ros-kinetic-moveit-planners-ompl (0.5.5-1xenial) xenial; urgency=high
+
+  * update build system for ROS indigo
+  * Removed duplicate call to setPlanningScene(), added various comments
+  * Contributors: Dave Coleman, Ioan Sucan
+
+ -- Ioan Sucan <isucan@willowgarage.com>  Sat, 22 Mar 2014 07:00:00 -0000
+
+ros-kinetic-moveit-planners-ompl (0.5.4-1xenial) xenial; urgency=high
+
+  * fix segfault when multiple goals are passed to move_group
+
+ -- Ioan Sucan <isucan@willowgarage.com>  Thu, 06 Feb 2014 08:00:00 -0000
+
+ros-kinetic-moveit-planners-ompl (0.5.3-1xenial) xenial; urgency=high
+
+  * update to new API
+
+ -- Ioan Sucan <isucan@willowgarage.com>  Fri, 11 Oct 2013 07:00:00 -0000
+
+ros-kinetic-moveit-planners-ompl (0.5.2-1xenial) xenial; urgency=high
+
+  * porting to new robot state
+
+ -- Ioan Sucan <isucan@willowgarage.com>  Mon, 23 Sep 2013 07:00:00 -0000
+
+ros-kinetic-moveit-planners-ompl (0.5.1-1xenial) xenial; urgency=high
+
+  * make headers and author definitions aligned the same way; white space fixes
+  * namespace change for profiler
+
+ -- Ioan Sucan <isucan@willowgarage.com>  Tue, 13 Aug 2013 07:00:00 -0000
+
+ros-kinetic-moveit-planners-ompl (0.5.0-1xenial) xenial; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@willowgarage.com>  Mon, 15 Jul 2013 07:00:00 -0000
+
+ros-kinetic-moveit-planners-ompl (0.4.2-1xenial) xenial; urgency=high
+
+  * white space fixes (tabs are now spaces)
+  * port ompl plugin to new base class for planning_interface (using planning contexts)
+
+ -- Ioan Sucan <isucan@willowgarage.com>  Fri, 12 Jul 2013 07:00:00 -0000
+
+ros-kinetic-moveit-planners-ompl (0.4.1-1xenial) xenial; urgency=high
+
+  * use new location of RRTstar, add PRMstar
+  * Added new cost function that takes into account robot joint movements
+  * Added ability for parameter sweeping by allowing parameters to be changed in planning contexts
+  * Added ability to alter configs in a cache
+
+ -- Ioan Sucan <isucan@willowgarage.com>  Thu, 04 Jul 2013 07:00:00 -0000
+
+ros-kinetic-moveit-planners-ompl (0.4.0-1xenial) xenial; urgency=high
+
+  * propagating changes from moveit_core
+
+ -- Ioan Sucan <isucan@willowgarage.com>  Mon, 27 May 2013 07:00:00 -0000
+
+ros-kinetic-moveit-planners-ompl (0.3.11-1xenial) xenial; urgency=high
+
+  * remove some debug output and add some fixes
+  * some fixes for planning with constraint approximations
+  * more refactoring; what used to work (including using constraint approximations) works fine. explicitly storing motions is not yet done
+  * refactor constraints storage stuff
+  * display random motions in a slightly more robust way
+  * remove follow constraints API
+  * combine ompl_interface and ompl_interface_ros
+  * don't print status
+  * remove option for ordering constraint approximations (and fix #12 <https://github.com/ros-planning/moveit_planners/issues/12>)
+  * add test for jumping configs
+  * use project() instead of sample() for producing goals
+  * minor fixes and add demo database construction code
+  * switch to using the profiler in moveit and add one more debug tool
+
+ -- Ioan Sucan <isucan@willowgarage.com>  Thu, 02 May 2013 07:00:00 -0000
+
+ros-kinetic-moveit-planners-ompl (0.3.10-1xenial) xenial; urgency=high
+
+  * Merge branch 'groovy-devel' of github.com:ros-planning/moveit_planners into groovy-devel
+  * remove incorrect dep
+  * add dynamic reconfigure options for #2 <https://github.com/ros-planning/moveit_planners/issues/2>
+
+ -- Ioan Sucan <isucan@willowgarage.com>  Wed, 17 Apr 2013 07:00:00 -0000
+
+ros-kinetic-moveit-planners-ompl (0.3.9-1xenial) xenial; urgency=high
+
+  * disable old style benchmarking
+
+ -- Ioan Sucan <isucan@willowgarage.com>  Tue, 16 Apr 2013 20:39:00 -0000
+
+ros-kinetic-moveit-planners-ompl (0.3.8-1xenial) xenial; urgency=high
+
+  * fix #8 <https://github.com/ros-planning/moveit_planners/issues/8>
+  * use namespace option in ompl plugin
+  * remove unused functions
+  * add buildtool depends
+  * Fixed state deserialization: now update var transform too
+  * collapse OMPL plugin to one package
+  * robustness fix
+  * Fixed github url name
+
+ -- Ioan Sucan <isucan@willowgarage.com>  Tue, 16 Apr 2013 18:23:00 -0000
+
+ros-kinetic-moveit-planners-ompl (0.3.7-1xenial) xenial; urgency=high
+
+  * Remove configure from PlanningScene
+  * add multi-collision to PlanningScene
+  * renaming kinematic_model to robot_model
+
+ -- Ioan Sucan <isucan@willowgarage.com>  Sat, 09 Mar 2013 08:00:00 -0000
+
+ros-kinetic-moveit-planners-ompl (0.3.6-1xenial) xenial; urgency=high
+
+  * complete renaming process
+  * rename KinematicState to RobotState, KinematicTrajectory to RobotTrajectory
+  * propagating fixes from moveit_core
+  * use new robot_trajectory lib
+
+ -- Ioan Sucan <isucan@willowgarage.com>  Sat, 02 Feb 2013 08:00:00 -0000
+
+ros-kinetic-moveit-planners-ompl (0.3.5-1xenial) xenial; urgency=high
+
+  * fix reporting of goal collisions
+  * add some verbose output for failing goals
+  * port to new DisplayTrajectory message
+  * propagate API changes from planning_interface
+  * minor fix
+  * use the project() method to improve constraint following algorithm
+  * change default build flags
+
+ -- Ioan Sucan <isucan@willowgarage.com>  Mon, 28 Jan 2013 08:00:00 -0000
+
+ros-kinetic-moveit-planners-ompl (0.3.4-1xenial) xenial; urgency=high
+
+  * dynamic_reconfigure workaroung
+
+ -- Ioan Sucan <isucan@willowgarage.com>  Fri, 21 Dec 2012 07:59:00 -0000
+
+ros-kinetic-moveit-planners-ompl (0.3.3-1xenial) xenial; urgency=high
+
+  * update dyn reconfig call
+
+ -- Ioan Sucan <isucan@willowgarage.com>  Fri, 21 Dec 2012 05:51:00 -0000
+
+ros-kinetic-moveit-planners-ompl (0.3.2-1xenial) xenial; urgency=high
+
+  * fix call to obsolete function
+
+ -- Ioan Sucan <isucan@willowgarage.com>  Thu, 20 Dec 2012 21:45:00 -0000
+
+ros-kinetic-moveit-planners-ompl (0.3.1-1xenial) xenial; urgency=high
+
+  * using the constraint sampler loading library
+  * make sure sampled goals are valid
+  * fix buildtool tag
+
+ -- Ioan Sucan <isucan@willowgarage.com>  Wed, 19 Dec 2012 08:00:00 -0000
+
+ros-kinetic-moveit-planners-ompl (0.3.0-1xenial) xenial; urgency=high
+
+  * add a debug msg
+  * re-enable heuristic
+  * first working version of follow planner
+  * most of the follow alg, but not 100% complete yet
+  * pass valid state samplers into the follow algorithm
+  * add constrained valid state sampler
+  * minor fixes
+  * fixes some catkin CMakeLists issues
+  * add code to allow execution of follow()
+  * port test to groovy
+  * placeholder for to-be-added algorithm
+  * minor touch-ups; no real functional changes other than a bias for state samplers wrt dimension of the space (when sampling in a ball of dimension D, focus the sampling towards the surface of the ball)
+  * minor & incomplete fix
+
+ -- Ioan Sucan <isucan@willowgarage.com>  Mon, 10 Dec 2012 08:00:00 -0000
+
+ros-kinetic-moveit-planners-ompl (0.2.5-1xenial) xenial; urgency=high
+
+  * update to new message API
+
+ -- Ioan Sucan <isucan@willowgarage.com>  Mon, 26 Nov 2012 08:00:00 -0000
+
+ros-kinetic-moveit-planners-ompl (0.2.4-1xenial) xenial; urgency=high
+
+  * improve error message
+  * stricter error checking
+  * update include path
+
+ -- Ioan Sucan <isucan@willowgarage.com>  Fri, 23 Nov 2012 08:00:00 -0000
+
+ros-kinetic-moveit-planners-ompl (0.2.3-1xenial) xenial; urgency=high
+
+  * use generalized version of getMaximumExtent()
+
+ -- Ioan Sucan <isucan@willowgarage.com>  Thu, 22 Nov 2012 06:47:00 -0000
+
+ros-kinetic-moveit-planners-ompl (0.2.2-1xenial) xenial; urgency=high
+
+  * more fixes to planners
+  * removed bad include dir
+  * fixed some plugin issues
+  * fixed include dirs in ompl ros interface
+  * added gitignore for ompl/ros
+
+ -- Ioan Sucan <isucan@willowgarage.com>  Thu, 22 Nov 2012 06:41:00 -0000
+
+ros-kinetic-moveit-planners-ompl (0.2.1-1xenial) xenial; urgency=high
+
+  * update install location of include/
+
+ -- Ioan Sucan <isucan@willowgarage.com>  Tue, 06 Nov 2012 08:00:00 -0000
+
+ros-kinetic-moveit-planners-ompl (0.2.0-1xenial) xenial; urgency=high
+
+  * udpate install targets
+
+ -- Ioan Sucan <isucan@willowgarage.com>  Mon, 05 Nov 2012 08:00:00 -0000
+
+ros-kinetic-moveit-planners-ompl (0.1.2-1xenial) xenial; urgency=high
+
+  * bump version
+  * install the plugin lib as well
+  * add TRRT to the list of options
+
+ -- Ioan Sucan <isucan@willowgarage.com>  Thu, 01 Nov 2012 07:00:00 -0000
+
+ros-kinetic-moveit-planners-ompl (0.1.1-1xenial) xenial; urgency=high
+
+  * fixes for build against groovy
+
+ -- Ioan Sucan <isucan@willowgarage.com>  Mon, 29 Oct 2012 07:00:00 -0000
+
+ros-kinetic-moveit-planners-ompl (0.1.0-1xenial) xenial; urgency=high
+
+  * port to groovy
+  * added some groovy build system files
+  * more moving around of packages
+
+ -- Ioan Sucan <isucan@willowgarage.com>  Sun, 28 Oct 2012 07:00:00 -0000
+
+
