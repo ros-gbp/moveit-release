@@ -2,6 +2,11 @@
 Changelog for package moveit_ros_manipulation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.9.6 (2017-04-12)
+------------------
+* [fix] Set planning frame correctly in evaluation of reachable and valid pose filter (`#476 <https://github.com/ros-planning/moveit/issues/476>`_)
+* Contributors: Yannick Jonetzko
+
 0.9.5 (2017-03-08)
 ------------------
 * [fix][moveit_ros_warehouse] gcc6 build error `#423 <https://github.com/ros-planning/moveit/pull/423>`_ 
