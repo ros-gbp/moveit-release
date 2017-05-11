@@ -1,0 +1,12 @@
+Source: ros-lunar-moveit-ros-planning
+Section: misc
+Priority: extra
+Maintainer: Michael Ferguson <mferguson@fetchrobotics.com>
+Build-Depends: debhelper (>= 9.0.0), libeigen3-dev, ros-lunar-actionlib, ros-lunar-angles, ros-lunar-catkin, ros-lunar-dynamic-reconfigure, ros-lunar-moveit-core, ros-lunar-moveit-ros-perception, ros-lunar-pluginlib (>= 1.10.4)
+Homepage: http://moveit.ros.org
+Standards-Version: 3.9.2
+
+Package: ros-lunar-moveit-ros-planning
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-lunar-actionlib, ros-lunar-angles, ros-lunar-dynamic-reconfigure, ros-lunar-moveit-core, ros-lunar-moveit-ros-perception, ros-lunar-pluginlib (>= 1.10.4)
+Description: Planning components of MoveIt that use ROS
