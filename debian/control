@@ -1,0 +1,12 @@
+Source: ros-lunar-moveit-kinematics
+Section: misc
+Priority: extra
+Maintainer: Dave Coleman <dave@dav.ee>
+Build-Depends: debhelper (>= 9.0.0), libeigen3-dev, ros-lunar-actionlib, ros-lunar-catkin, ros-lunar-moveit-core, ros-lunar-moveit-ros-planning, ros-lunar-pluginlib
+Homepage: http://moveit.ros.org
+Standards-Version: 3.9.2
+
+Package: ros-lunar-moveit-kinematics
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-lunar-actionlib, ros-lunar-moveit-core, ros-lunar-moveit-ros-planning, ros-lunar-pluginlib
+Description: Package for all inverse kinematics solvers in MoveIt!
