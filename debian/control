@@ -1,0 +1,12 @@
+Source: ros-lunar-moveit-ros-visualization
+Section: misc
+Priority: extra
+Maintainer: Jon Binney <jon.binney@gmail.com>
+Build-Depends: debhelper (>= 9.0.0), libeigen3-dev, pkg-config, ros-lunar-catkin, ros-lunar-geometric-shapes, ros-lunar-interactive-markers, ros-lunar-moveit-ros-perception, ros-lunar-moveit-ros-planning-interface, ros-lunar-moveit-ros-robot-interaction, ros-lunar-moveit-ros-warehouse, ros-lunar-object-recognition-msgs, ros-lunar-pluginlib, ros-lunar-roscpp, ros-lunar-rospy, ros-lunar-rostest, ros-lunar-rviz
+Homepage: http://moveit.ros.org
+Standards-Version: 3.9.2
+
+Package: ros-lunar-moveit-ros-visualization
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-lunar-geometric-shapes, ros-lunar-interactive-markers, ros-lunar-moveit-ros-perception, ros-lunar-moveit-ros-planning-interface, ros-lunar-moveit-ros-robot-interaction, ros-lunar-moveit-ros-warehouse, ros-lunar-object-recognition-msgs, ros-lunar-pluginlib, ros-lunar-roscpp, ros-lunar-rospy, ros-lunar-rviz
+Description: Components of MoveIt that offer visualization
