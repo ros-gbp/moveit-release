@@ -1,0 +1,12 @@
+Source: ros-lunar-moveit-commander
+Section: misc
+Priority: extra
+Maintainer: Michael Görner <me@v4hn.de>
+Build-Depends: debhelper (>= 9.0.0), python-catkin-pkg, python-dev, ros-lunar-catkin
+Homepage: http://moveit.ros.org
+Standards-Version: 3.9.2
+
+Package: ros-lunar-moveit-commander
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, python-dev, python-pyassimp, ros-lunar-geometry-msgs, ros-lunar-moveit-msgs, ros-lunar-moveit-ros-planning-interface, ros-lunar-rospy, ros-lunar-sensor-msgs, ros-lunar-shape-msgs, ros-lunar-tf
+Description: Python interfaces to MoveIt
