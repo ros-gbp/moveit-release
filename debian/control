@@ -1,0 +1,12 @@
+Source: ros-lunar-moveit-ros-planning-interface
+Section: misc
+Priority: extra
+Maintainer: Michael Ferguson <mferguson@fetchrobotics.com>
+Build-Depends: debhelper (>= 9.0.0), libeigen3-dev, python-catkin-pkg, python-dev, ros-lunar-actionlib, ros-lunar-catkin, ros-lunar-eigen-conversions, ros-lunar-moveit-resources, ros-lunar-moveit-ros-manipulation, ros-lunar-moveit-ros-move-group, ros-lunar-moveit-ros-planning, ros-lunar-moveit-ros-warehouse, ros-lunar-rosconsole, ros-lunar-roscpp, ros-lunar-rospy, ros-lunar-rostest, ros-lunar-tf, ros-lunar-tf-conversions
+Homepage: http://moveit.ros.org
+Standards-Version: 3.9.2
+
+Package: ros-lunar-moveit-ros-planning-interface
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, python-dev, ros-lunar-actionlib, ros-lunar-eigen-conversions, ros-lunar-moveit-ros-manipulation, ros-lunar-moveit-ros-move-group, ros-lunar-moveit-ros-planning, ros-lunar-moveit-ros-warehouse, ros-lunar-rosconsole, ros-lunar-roscpp, ros-lunar-rospy, ros-lunar-tf, ros-lunar-tf-conversions
+Description: Components of MoveIt that offer simpler interfaces to planning and execution
