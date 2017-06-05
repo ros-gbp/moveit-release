@@ -1,0 +1,12 @@
+Source: ros-lunar-moveit-ros-warehouse
+Section: misc
+Priority: extra
+Maintainer: Michael Ferguson <mferguson@fetchrobotics.com>
+Build-Depends: debhelper (>= 9.0.0), ros-lunar-catkin, ros-lunar-moveit-ros-planning, ros-lunar-rosconsole, ros-lunar-roscpp, ros-lunar-tf, ros-lunar-warehouse-ros
+Homepage: http://moveit.ros.org
+Standards-Version: 3.9.2
+
+Package: ros-lunar-moveit-ros-warehouse
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-lunar-moveit-ros-planning, ros-lunar-rosconsole, ros-lunar-roscpp, ros-lunar-tf, ros-lunar-warehouse-ros
+Description: Components of MoveIt connecting to MongoDB
