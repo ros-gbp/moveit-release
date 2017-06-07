@@ -40,12 +40,9 @@
 #define MOVEIT_TRAJECTORY_RVIZ_PLUGIN__TRAJECTORY_DISPLAY
 
 #include <rviz/display.h>
-
 #include <moveit/rviz_plugin_render_tools/trajectory_visualization.h>
-#ifndef Q_MOC_RUN
 #include <ros/ros.h>
 #include <moveit/rdf_loader/rdf_loader.h>
-#endif
 
 namespace rviz
 {
@@ -89,7 +86,6 @@ protected:
   rdf_loader::RDFLoaderPtr rdf_loader_;
   robot_model::RobotModelConstPtr robot_model_;
   robot_state::RobotStatePtr robot_state_;
-  bool load_robot_model_;  // for delayed robot initialization
 
   // Properties
   rviz::StringProperty* robot_description_property_;

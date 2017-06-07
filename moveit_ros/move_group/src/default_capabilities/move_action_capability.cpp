@@ -59,8 +59,6 @@ void move_group::MoveGroupMoveAction::initialize()
 void move_group::MoveGroupMoveAction::executeMoveCallback(const moveit_msgs::MoveGroupGoalConstPtr& goal)
 {
   setMoveState(PLANNING);
-  // before we start planning, ensure that we have the latest robot state received...
-  context_->planning_scene_monitor_->waitForCurrentRobotState(ros::Time::now());
   context_->planning_scene_monitor_->updateFrameTransforms();
 
   moveit_msgs::MoveGroupResult action_res;
@@ -165,9 +163,14 @@ void move_group::MoveGroupMoveAction::executeMoveCallback_PlanOnly(const moveit_
   {
     context_->planning_pipeline_->generatePlan(the_scene, goal->request, res);
   }
-  catch (std::exception& ex)
+  catch (std::runtime_error& ex)
   {
     ROS_ERROR("Planning pipeline threw an exception: %s", ex.what());
+    res.error_code_.val = moveit_msgs::MoveItErrorCodes::FAILURE;
+  }
+  catch (...)
+  {
+    ROS_ERROR("Planning pipeline threw an exception");
     res.error_code_.val = moveit_msgs::MoveItErrorCodes::FAILURE;
   }
 
@@ -188,9 +191,14 @@ bool move_group::MoveGroupMoveAction::planUsingPlanningPipeline(const planning_i
   {
     solved = context_->planning_pipeline_->generatePlan(plan.planning_scene_, req, res);
   }
-  catch (std::exception& ex)
+  catch (std::runtime_error& ex)
   {
     ROS_ERROR("Planning pipeline threw an exception: %s", ex.what());
+    res.error_code_.val = moveit_msgs::MoveItErrorCodes::FAILURE;
+  }
+  catch (...)
+  {
+    ROS_ERROR("Planning pipeline threw an exception");
     res.error_code_.val = moveit_msgs::MoveItErrorCodes::FAILURE;
   }
   if (res.trajectory_)

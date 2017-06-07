@@ -50,8 +50,6 @@
 
 #include <boost/thread/mutex.hpp>
 
-#include <memory>
-
 namespace occupancy_map_monitor
 {
 class OccupancyMapMonitor
@@ -144,7 +142,7 @@ private:
   OccMapTreePtr tree_;
   OccMapTreeConstPtr tree_const_;
 
-  std::unique_ptr<pluginlib::ClassLoader<OccupancyMapUpdater> > updater_plugin_loader_;
+  boost::scoped_ptr<pluginlib::ClassLoader<OccupancyMapUpdater> > updater_plugin_loader_;
   std::vector<OccupancyMapUpdaterPtr> map_updaters_;
   std::vector<std::map<ShapeHandle, ShapeHandle> > mesh_handles_;
   TransformCacheProvider transform_cache_callback_;

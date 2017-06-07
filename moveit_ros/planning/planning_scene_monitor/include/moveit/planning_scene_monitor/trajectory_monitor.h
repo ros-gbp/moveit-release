@@ -41,7 +41,6 @@
 #include <moveit/planning_scene_monitor/current_state_monitor.h>
 #include <moveit/robot_trajectory/robot_trajectory.h>
 #include <boost/thread.hpp>
-#include <memory>
 
 namespace planning_scene_monitor
 {
@@ -103,7 +102,7 @@ private:
   ros::Time trajectory_start_time_;
   ros::Time last_recorded_state_time_;
 
-  std::unique_ptr<boost::thread> record_states_thread_;
+  boost::scoped_ptr<boost::thread> record_states_thread_;
   TrajectoryStateAddedCallback state_add_callback_;
 };
 }

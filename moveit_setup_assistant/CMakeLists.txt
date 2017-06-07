@@ -1,10 +1,5 @@
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 2.8.11)
 project(moveit_setup_assistant)
-
-add_compile_options(-std=c++11)
-
-# definition needed for boost/math/constants/constants.hpp included by Ogre to compile
-add_definitions(-DBOOST_MATH_DISABLE_FLOAT128)
 
 if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
@@ -30,11 +25,16 @@ link_directories(${catkin_LIBRARY_DIRS})
 
 # Qt Stuff
 if(rviz_QT_VERSION VERSION_LESS "5")
-  find_package(Qt4 ${rviz_QT_VERSION} REQUIRED QtCore QtGui)
+  find_package(Qt4 ${rviz_QT_VERSION} EXACT REQUIRED QtCore QtGui)
   include(${QT_USE_FILE})
 else()
-  find_package(Qt5 ${rviz_QT_VERSION} REQUIRED Core Widgets)
+  find_package(Qt5 ${rviz_QT_VERSION} EXACT REQUIRED Core Widgets)
   set(QT_LIBRARIES Qt5::Widgets)
+
+  # this can be removed once CMAKE 2.8.12 is available (jade)
+  # it is due to a change in Qts use of -fPIE and -fPIC
+  # http://code.qt.io/cgit/qt/qtbase.git/tree/dist/changes-5.4.2
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Core_EXECUTABLE_COMPILE_FLAGS}")
 endif()
 # Instruct CMake to run moc automatically when needed.
 set(CMAKE_AUTOMOC ON)
@@ -82,12 +82,10 @@ set(HEADERS
 # Tools Library
 add_library(${PROJECT_NAME}_tools
   src/tools/compute_default_collisions.cpp
+  src/tools/file_loader.cpp
   src/tools/moveit_config_data.cpp
-  src/tools/collision_linear_model.cpp
-  src/tools/collision_matrix_model.cpp
-  src/tools/rotated_header_view.cpp
 )
-set_target_properties(${PROJECT_NAME}_tools PROPERTIES VERSION ${${PROJECT_NAME}_VERSION})
+set_target_properties(${PROJECT_NAME}_tools PROPERTIES VERSION 0.7.3)
 target_link_libraries(${PROJECT_NAME}_tools
   ${YAML}
   ${catkin_LIBRARIES}
@@ -115,7 +113,7 @@ add_library(${PROJECT_NAME}_widgets
   src/widgets/author_information_widget.cpp
   ${HEADERS}
 )
-set_target_properties(${PROJECT_NAME}_widgets PROPERTIES VERSION ${${PROJECT_NAME}_VERSION})
+set_target_properties(${PROJECT_NAME}_widgets PROPERTIES VERSION 0.7.3)
 target_link_libraries(${PROJECT_NAME}_widgets
   ${PROJECT_NAME}_tools
   ${QT_LIBRARIES}

@@ -40,21 +40,16 @@
 #include <QWidget>
 #include <QLabel>
 #include <QVBoxLayout>
-#include <QTableView>
+#include <QTableWidget>
 #include <QSlider>
 #include <QPushButton>
 #include <QGroupBox>
 #include <QProgressBar>
 #include <QCheckBox>
-#include <QRadioButton>
 #include <QSpinBox>
-#include <QThread>
-#include <QLineEdit>
-#include <QAction>
 
 #ifndef Q_MOC_RUN
 #include <boost/thread.hpp>
-#include <boost/function.hpp>
 #include <moveit/setup_assistant/tools/compute_default_collisions.h>
 #include <moveit/setup_assistant/tools/moveit_config_data.h>
 #endif
@@ -64,8 +59,6 @@
 
 namespace moveit_setup_assistant
 {
-class MonitorThread;
-
 /**
  * \brief User interface for editing the default collision matrix list in an SRDF
  */
@@ -74,12 +67,6 @@ class DefaultCollisionsWidget : public SetupScreenWidget
   Q_OBJECT
 
 public:
-  enum ViewMode
-  {
-    MatrixMode = 0,
-    LinearMode = 1
-  };
-
   // ******************************************************************************************
   // Public Functions
   // ******************************************************************************************
@@ -89,7 +76,6 @@ public:
    * \param urdf_file String srdf file location. It will create a new file or will edit an existing one
    */
   DefaultCollisionsWidget(QWidget* parent, moveit_setup_assistant::MoveItConfigDataPtr config_data);
-  ~DefaultCollisionsWidget();
 
   /**
    * \brief Output Link Pairs to SRDF Format
@@ -108,13 +94,10 @@ private Q_SLOTS:
   // ******************************************************************************************
 
   /**
-   * \brief start generating collision matrix in a worker thread
+   * \brief
+   Qt close event function for reminding user to saveCreates a thread and updates the GUI progress bar
    */
-  void startGeneratingCollisionTable();
-  /**
-   * \brief finish generating collision matrix after worker thread has finished
-   */
-  void finishGeneratingCollisionTable();
+  void generateCollisionTable();
 
   /**
    * \brief GUI func for showing sampling density amount
@@ -123,54 +106,36 @@ private Q_SLOTS:
   void changeDensityLabel(int value);
 
   /**
-   * \brief Update view and data model for the link_pairs data structure
+   * \brief Displays data in the link_pairs data structure into a QtTableWidget
    */
   void loadCollisionTable();
 
   /**
-   * \brief Change filter settings to show/hide enabled collisions
+   * \brief Changes the table to show or hide collisions that are not disabled (that have collision checking enabled
    */
-  void checkedFilterChanged();
+  void collisionCheckboxToggle();
 
   /**
-   * \brief Collision model changed
+   * \brief Called when user changes data in table, really just the checkbox
    */
-  void collisionsChanged(const QModelIndex& index);
-
-  /**
-   * \brief Revert current changes to collision matrix
-   */
-  void revertChanges();
+  void toggleCheckBox(int row, int column);
 
   /**
   * \brief Called when current row has changed
   */
-  void previewSelectedMatrix(const QModelIndex& index);
-  void previewSelectedLinear(const QModelIndex& index);
+  void previewSelected(int row);
 
   /**
    * \brief Called when setup assistant navigation switches to this screen
    */
   void focusGiven();
 
-  /**
-   * \brief Called when setup assistant navigation switches away from this screen
-   */
-  bool focusLost();
-
-  void showHeaderContextMenu(const QPoint& p);
-  void hideSections();
-  void hideOtherSections();
-  void showSections();
-
 private:
   // ******************************************************************************************
   // Qt Components
   // ******************************************************************************************
   QLabel* page_title_;
-  QTableView* collision_table_;
-  QAbstractItemModel* model_;
-  QItemSelectionModel* selection_model_;
+  QTableWidget* collision_table_;
   QVBoxLayout* layout_;
   QLabel* density_value_label_;
   QSlider* density_slider_;
@@ -178,21 +143,15 @@ private:
   QGroupBox* controls_box_;
   QProgressBar* progress_bar_;
   QLabel* progress_label_;
-  QLineEdit* link_name_filter_;
   QCheckBox* collision_checkbox_;
+  QGroupBox* controls_box_bottom_;
   QLabel* fraction_label_;
   QSpinBox* fraction_spinbox_;
-  QPushButton* btn_revert_;
-  QButtonGroup* view_mode_buttons_;
-
-  QList<QAction*> header_actions_;    // context actions for header sections
-  Qt::Orientations clicked_headers_;  // remember which header section activated context actions
-  int clicked_section_;               // remember which header section activated context actions
+  QTimer* update_timer_;
 
   // ******************************************************************************************
   // Variables
   // ******************************************************************************************
-  MonitorThread* worker_;
 
   /// main storage of link pair data
   moveit_setup_assistant::LinkPairMap link_pairs_;
@@ -209,55 +168,13 @@ private:
    * \param collision_progress A shared pointer between 3 threads to allow progress bar to update. See declaration
    * location for more details and warning.
    */
-  void generateCollisionTable(unsigned int* collision_progress);
+  void generateCollisionTableThread(unsigned int* collision_progress);
 
   /**
    * \brief Helper function to disable parts of GUI during computation
    * \param disable A command
    */
   void disableControls(bool disable);
-
-  /**
-   * \brief Allow toggling of all checkboxes in selection by filtering <space> keypresses
-   */
-  bool eventFilter(QObject* object, QEvent* event);
-
-  /**
-   * \brief Show header's sections in logicalIndexes and everything in between
-   */
-  void showSections(QHeaderView* header, const QList<int>& logicalIndexes);
-  /**
-   * \brief Toggle enabled status of selection
-   */
-  void toggleSelection(QItemSelection selection);
-};
-
-/**
- * \brief QThread to monitor progress of a boost::thread
- */
-class MonitorThread : public QThread
-{
-  Q_OBJECT
-
-public:
-  MonitorThread(const boost::function<void(unsigned int*)>& f, QProgressBar* progress_bar = NULL);
-  void run();
-  void cancel()
-  {
-    canceled_ = true;
-  }
-  bool canceled() const
-  {
-    return canceled_;
-  }
-
-Q_SIGNALS:
-  void progress(int);
-
-private:
-  boost::thread worker_;
-  unsigned int progress_;
-  bool canceled_;
 };
 }
 

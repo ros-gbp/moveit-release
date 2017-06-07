@@ -76,6 +76,11 @@ private:
   dynamic_reconfigure::Server<TrajectoryExecutionDynamicReconfigureConfig> dynamic_reconfigure_server_;
 };
 
+TrajectoryExecutionManager::TrajectoryExecutionManager(const moveit::core::RobotModelConstPtr& kmodel)
+  : TrajectoryExecutionManager(kmodel, planning_scene_monitor::CurrentStateMonitorPtr())
+{
+}
+
 TrajectoryExecutionManager::TrajectoryExecutionManager(const robot_model::RobotModelConstPtr& kmodel,
                                                        const planning_scene_monitor::CurrentStateMonitorPtr& csm)
   : robot_model_(kmodel), csm_(csm), node_handle_("~")
@@ -84,6 +89,12 @@ TrajectoryExecutionManager::TrajectoryExecutionManager(const robot_model::RobotM
     manage_controllers_ = false;
 
   initialize();
+}
+
+TrajectoryExecutionManager::TrajectoryExecutionManager(const moveit::core::RobotModelConstPtr& kmodel,
+                                                       bool manage_controllers)
+  : TrajectoryExecutionManager(kmodel, planning_scene_monitor::CurrentStateMonitorPtr(), manage_controllers)
+{
 }
 
 TrajectoryExecutionManager::TrajectoryExecutionManager(const robot_model::RobotModelConstPtr& kmodel,
@@ -179,6 +190,10 @@ void TrajectoryExecutionManager::initialize()
       root_node_handle_.subscribe(EXECUTION_EVENT_TOPIC, 100, &TrajectoryExecutionManager::receiveEvent, this);
 
   reconfigure_impl_ = new DynamicReconfigureImpl(this);
+
+  if (!csm_)
+    ROS_WARN_NAMED("traj_execution", "Trajectory validation is disabled, because no CurrentStateMonitor was provided "
+                                     "in constructor.");
 
   if (manage_controllers_)
     ROS_INFO_NAMED("traj_execution", "Trajectory execution is managing controllers");
@@ -441,9 +456,9 @@ void TrajectoryExecutionManager::continuousExecutionThread()
           {
             h = controller_manager_->getControllerHandle(context->controllers_[i]);
           }
-          catch (std::exception& ex)
+          catch (...)
           {
-            ROS_ERROR_NAMED("traj_execution", "%s caught when retrieving controller handle", ex.what());
+            ROS_ERROR_NAMED("traj_execution", "Exception caught when retrieving controller handle");
           }
           if (!h)
           {
@@ -471,9 +486,9 @@ void TrajectoryExecutionManager::continuousExecutionThread()
             {
               ok = handles[i]->sendTrajectory(context->trajectory_parts_[i]);
             }
-            catch (std::exception& ex)
+            catch (...)
             {
-              ROS_ERROR_NAMED("traj_execution", "Caught %s when sending trajectory to controller", ex.what());
+              ROS_ERROR_NAMED("traj_execution", "Exception caught when sending trajectory to controller");
             }
             if (!ok)
             {
@@ -482,9 +497,9 @@ void TrajectoryExecutionManager::continuousExecutionThread()
                 {
                   handles[j]->cancelExecution();
                 }
-                catch (std::exception& ex)
+                catch (...)
                 {
-                  ROS_ERROR_NAMED("traj_execution", "Caught %s when canceling execution", ex.what());
+                  ROS_ERROR_NAMED("traj_execution", "Exception caught when canceling execution");
                 }
               ROS_ERROR_NAMED("traj_execution", "Failed to send trajectory part %zu of %zu to controller %s", i + 1,
                               context->trajectory_parts_.size(), handles[i]->getName().c_str());
@@ -911,23 +926,24 @@ bool TrajectoryExecutionManager::distributeTrajectory(const moveit_msgs::RobotTr
 
 bool TrajectoryExecutionManager::validate(const TrajectoryExecutionContext& context) const
 {
-  if (allowed_start_tolerance_ == 0)  // skip validation on this magic number
+  if (!csm_ || allowed_start_tolerance_ == 0)  // skip validation if csm is nil or on this magic number
     return true;
 
   ROS_DEBUG_NAMED("traj_execution", "Validating trajectory with allowed_start_tolerance %g", allowed_start_tolerance_);
 
   robot_state::RobotStatePtr current_state;
-  if (!csm_->waitForCurrentState(ros::Time::now()) || !(current_state = csm_->getCurrentState()))
+  if (!csm_->waitForCurrentState(1.0) || !(current_state = csm_->getCurrentState()))
   {
     ROS_WARN_NAMED("traj_execution", "Failed to validate trajectory: couldn't receive full current joint state within "
                                      "1s");
     return false;
   }
 
-  for (const auto& trajectory : context.trajectory_parts_)
+  for (std::vector<moveit_msgs::RobotTrajectory>::const_iterator traj_it = context.trajectory_parts_.begin();
+       traj_it != context.trajectory_parts_.end(); ++traj_it)
   {
-    const std::vector<double>& positions = trajectory.joint_trajectory.points.front().positions;
-    const std::vector<std::string>& joint_names = trajectory.joint_trajectory.joint_names;
+    const std::vector<double>& positions = traj_it->joint_trajectory.points.front().positions;
+    const std::vector<std::string>& joint_names = traj_it->joint_trajectory.joint_names;
     const std::size_t n = joint_names.size();
     if (positions.size() != n)
     {
@@ -1073,9 +1089,9 @@ void TrajectoryExecutionManager::stopExecutionInternal()
     {
       active_handles_[i]->cancelExecution();
     }
-    catch (std::exception& ex)
+    catch (...)
     {
-      ROS_ERROR_NAMED("traj_execution", "Caught %s when canceling execution.", ex.what());
+      ROS_ERROR_NAMED("traj_execution", "Exception caught when canceling execution.");
     }
 }
 
@@ -1201,21 +1217,14 @@ void TrajectoryExecutionManager::executeThread(const ExecutionCompleteCallback& 
 
   // execute each trajectory, one after the other (executePart() is blocking) or until one fails.
   // on failure, the status is set by executePart(). Otherwise, it will remain as set above (success)
-  std::size_t i = 0;
-  for (; i < trajectories_.size(); ++i)
+  for (std::size_t i = 0; i < trajectories_.size(); ++i)
   {
     bool epart = executePart(i);
     if (epart && part_callback)
       part_callback(i);
     if (!epart || execution_complete_)
-    {
-      ++i;
       break;
-    }
   }
-
-  // only report that execution finished when the robot stopped moving
-  waitForRobotToStop(*trajectories_[i - 1]);
 
   ROS_DEBUG_NAMED("traj_execution", "Completed trajectory execution with status %s ...",
                   last_execution_status_.asString().c_str());
@@ -1263,9 +1272,9 @@ bool TrajectoryExecutionManager::executePart(std::size_t part_index)
           {
             h = controller_manager_->getControllerHandle(context.controllers_[i]);
           }
-          catch (std::exception& ex)
+          catch (...)
           {
-            ROS_ERROR_NAMED("traj_execution", "Caught %s when retrieving controller handle", ex.what());
+            ROS_ERROR_NAMED("traj_execution", "Exception caught when retrieving controller handle");
           }
           if (!h)
           {
@@ -1286,9 +1295,9 @@ bool TrajectoryExecutionManager::executePart(std::size_t part_index)
           {
             ok = active_handles_[i]->sendTrajectory(context.trajectory_parts_[i]);
           }
-          catch (std::exception& ex)
+          catch (...)
           {
-            ROS_ERROR_NAMED("traj_execution", "Caught %s when sending trajectory to controller", ex.what());
+            ROS_ERROR_NAMED("traj_execution", "Exception caught when sending trajectory to controller");
           }
           if (!ok)
           {
@@ -1297,9 +1306,9 @@ bool TrajectoryExecutionManager::executePart(std::size_t part_index)
               {
                 active_handles_[j]->cancelExecution();
               }
-              catch (std::exception& ex)
+              catch (...)
               {
-                ROS_ERROR_NAMED("traj_execution", "Caught %s when canceling execution", ex.what());
+                ROS_ERROR_NAMED("traj_execution", "Exception caught when canceling execution");
               }
             ROS_ERROR_NAMED("traj_execution", "Failed to send trajectory part %zu of %zu to controller %s", i + 1,
                             context.trajectory_parts_.size(), active_handles_[i]->getName().c_str());
@@ -1435,61 +1444,6 @@ bool TrajectoryExecutionManager::executePart(std::size_t part_index)
     last_execution_status_ = moveit_controller_manager::ExecutionStatus::ABORTED;
     return false;
   }
-}
-
-bool TrajectoryExecutionManager::waitForRobotToStop(const TrajectoryExecutionContext& context, double wait_time)
-{
-  if (allowed_start_tolerance_ == 0)  // skip validation on this magic number
-    return true;
-
-  ros::WallTime start = ros::WallTime::now();
-  double time_remaining = wait_time;
-
-  robot_state::RobotStatePtr prev_state, cur_state;
-  prev_state = csm_->getCurrentState();
-  prev_state->enforceBounds();
-
-  // assume robot stopped when 3 consecutive checks yield the same robot state
-  unsigned int no_motion_count = 0;  // count iterations with no motion
-  while (time_remaining > 0. && no_motion_count < 3)
-  {
-    if (!csm_->waitForCurrentState(ros::Time::now(), time_remaining) || !(cur_state = csm_->getCurrentState()))
-    {
-      ROS_WARN_NAMED("traj_execution", "Failed to receive current joint state");
-      return false;
-    }
-    cur_state->enforceBounds();
-    time_remaining = wait_time - (ros::WallTime::now() - start).toSec();  // remaining wait_time
-
-    // check for motion in effected joints of execution context
-    bool moved = false;
-    for (const auto& trajectory : context.trajectory_parts_)
-    {
-      const std::vector<std::string>& joint_names = trajectory.joint_trajectory.joint_names;
-      const std::size_t n = joint_names.size();
-
-      for (std::size_t i = 0; i < n && !moved; ++i)
-      {
-        const robot_model::JointModel* jm = cur_state->getJointModel(joint_names[i]);
-        if (!jm)
-          continue;  // joint vanished from robot state (shouldn't happen), but we don't care
-
-        if (fabs(cur_state->getJointPositions(jm)[0] - prev_state->getJointPositions(jm)[0]) > allowed_start_tolerance_)
-        {
-          moved = true;
-          no_motion_count = 0;
-          break;
-        }
-      }
-    }
-
-    if (!moved)
-      ++no_motion_count;
-
-    std::swap(prev_state, cur_state);
-  }
-
-  return time_remaining > 0;
 }
 
 std::pair<int, int> TrajectoryExecutionManager::getCurrentExpectedTrajectoryIndex() const
