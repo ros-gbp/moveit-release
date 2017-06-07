@@ -2,6 +2,11 @@
 Changelog for package moveit_kinematics
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.7.10 (2017-06-07)
+-------------------
+* [fix][Indigo] moveit_kinematics Eigen3 dependency (`#470 <https://github.com/ros-planning/moveit/issues/470>`_)
+* Contributors: YuehChuan
+
 0.7.9 (2017-04-03)
 ------------------
 
