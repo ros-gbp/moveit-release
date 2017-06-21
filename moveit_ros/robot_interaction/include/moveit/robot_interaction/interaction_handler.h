@@ -151,12 +151,12 @@ public:
   /** \brief Set the menu handler that defines menus and callbacks for all
    *         interactive markers drawn by this interaction handler.
    * @param  A menu handler. */
-  void setMenuHandler(const boost::shared_ptr<interactive_markers::MenuHandler>& mh);
+  void setMenuHandler(const std::shared_ptr<interactive_markers::MenuHandler>& mh);
 
   /** \brief Get the menu handler that defines menus and callbacks for all
    *         interactive markers drawn by this interaction handler.
    * @return  The menu handler. */
-  const boost::shared_ptr<interactive_markers::MenuHandler>& getMenuHandler();
+  const std::shared_ptr<interactive_markers::MenuHandler>& getMenuHandler();
 
   /** \brief Remove the menu handler for this interaction handler. */
   void clearMenuHandler();
@@ -303,7 +303,7 @@ private:
   //
   // PROTECTED BY state_lock_ - The POINTER is protected by state_lock_.  The
   // CONTENTS is not.
-  boost::shared_ptr<interactive_markers::MenuHandler> menu_handler_;
+  std::shared_ptr<interactive_markers::MenuHandler> menu_handler_;
 
   // Called when the RobotState maintained by the handler changes.
   // The caller may, for example, redraw the robot at the new state.
@@ -331,7 +331,7 @@ public:
   void setGroupStateValidityCallback(const robot_state::GroupStateValidityCallbackFn& callback);
   void setIKTimeout(double timeout);
   void setIKAttempts(unsigned int attempts);
-  const kinematics::KinematicsQueryOptions& getKinematicsQueryOptions() const;
+  kinematics::KinematicsQueryOptions getKinematicsQueryOptions() const;
   void setKinematicsQueryOptions(const kinematics::KinematicsQueryOptions& opt);
   void setKinematicsQueryOptionsForGroup(const std::string& group_name,
                                          const kinematics::KinematicsQueryOptions& options);

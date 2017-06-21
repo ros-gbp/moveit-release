@@ -41,6 +41,7 @@
 #include <fstream>
 #include <gtest/gtest.h>
 #include <boost/filesystem/path.hpp>
+#include <geometric_shapes/shapes.h>
 #include <moveit/profiler/profiler.h>
 #include <moveit_resources/config.h>
 
@@ -74,8 +75,8 @@ protected:
   }
 
 protected:
-  boost::shared_ptr<urdf::ModelInterface> urdf_model;
-  boost::shared_ptr<srdf::Model> srdf_model;
+  urdf::ModelInterfaceSharedPtr urdf_model;
+  srdf::ModelSharedPtr srdf_model;
   moveit::core::RobotModelConstPtr robot_model;
 };
 
@@ -87,7 +88,7 @@ TEST_F(LoadPlanningModelsPr2, InitOK)
 
 TEST_F(LoadPlanningModelsPr2, ModelInit)
 {
-  boost::shared_ptr<srdf::Model> srdfModel(new srdf::Model());
+  srdf::ModelSharedPtr srdfModel(new srdf::Model());
 
   // with no world multidof we should get a fixed joint
   moveit::core::RobotModel robot_model0(urdf_model, srdfModel);
@@ -131,7 +132,7 @@ TEST_F(LoadPlanningModelsPr2, GroupInit)
                                      "</group>"
                                      "</robot>";
 
-  boost::shared_ptr<srdf::Model> srdfModel(new srdf::Model());
+  srdf::ModelSharedPtr srdfModel(new srdf::Model());
   srdfModel->initString(*urdf_model, SMODEL1);
   moveit::core::RobotModel robot_model1(urdf_model, srdfModel);
 
