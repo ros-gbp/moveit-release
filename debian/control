@@ -1,0 +1,12 @@
+Source: ros-lunar-moveit-ros
+Section: misc
+Priority: extra
+Maintainer: Michael Ferguson <mferguson@fetchrobotics.com>
+Build-Depends: debhelper (>= 9.0.0), ros-lunar-catkin
+Homepage: http://moveit.ros.org
+Standards-Version: 3.9.2
+
+Package: ros-lunar-moveit-ros
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-lunar-moveit-ros-benchmarks, ros-lunar-moveit-ros-manipulation, ros-lunar-moveit-ros-move-group, ros-lunar-moveit-ros-perception, ros-lunar-moveit-ros-planning, ros-lunar-moveit-ros-planning-interface, ros-lunar-moveit-ros-robot-interaction, ros-lunar-moveit-ros-visualization, ros-lunar-moveit-ros-warehouse
+Description: Components of MoveIt that use ROS
