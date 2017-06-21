@@ -53,6 +53,7 @@ namespace rviz
 class Robot;
 class Shape;
 class Property;
+class IntProperty;
 class StringProperty;
 class BoolProperty;
 class FloatProperty;
@@ -90,6 +91,8 @@ public:
   void onDisable();
   void setName(const QString& name);
 
+  void dropTrajectory();
+
 public Q_SLOTS:
   void interruptCurrentDisplay();
 
@@ -103,6 +106,7 @@ private Q_SLOTS:
   void changedRobotPathAlpha();
   void changedLoopDisplay();
   void changedShowTrail();
+  void changedTrailStepSize();
   void changedTrajectoryTopic();
   void changedStateDisplayTime();
   void changedRobotColor();
@@ -129,6 +133,7 @@ protected:
   std::vector<rviz::Robot*> trajectory_trail_;
   ros::Subscriber trajectory_topic_sub_;
   bool animating_path_;
+  bool drop_displaying_trajectory_;
   int current_state_;
   float current_state_time_;
   boost::mutex update_trajectory_message_;
@@ -156,6 +161,7 @@ protected:
   rviz::BoolProperty* interrupt_display_property_;
   rviz::ColorProperty* robot_color_property_;
   rviz::BoolProperty* enable_robot_color_property_;
+  rviz::IntProperty* trail_step_size_property_;
 };
 
 }  // namespace moveit_rviz_plugin
