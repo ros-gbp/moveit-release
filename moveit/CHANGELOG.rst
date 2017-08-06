@@ -2,6 +2,17 @@
 Changelog for package moveit
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.7.12 (2017-08-06)
+-------------------
+* [fix][moveit_ros/planning] Support for MultiDoF only trajectories `#553 <https://github.com/ros-planning/moveit/pull/553>`_
+* [fix][moveit_core] segfault due to missing string format parameter. (`#547 <https://github.com/ros-planning/moveit/issues/547>`_)
+* [fix][moveit_core] doc-comment for robot_state::computeAABB (`#516 <https://github.com/ros-planning/moveit/issues/516>`_)
+* [fix][moveit_commander] numpy.ndarray indices bug (`#563 <https://github.com/ros-planning/moveit/issues/563>`_, from `#86 <https://github.com/ros-planning/moveit/issues/86>`_, `#450 <https://github.com/ros-planning/moveit/issues/450>`_)
+* [fix][moveit_ros_visualization] RobotStateVisualization: clear before load to avoid segfault `#572 <https://github.com/ros-planning/moveit/pull/572>`_
+* [enhancement][moveit_commander][moveit_ros][moveit_planners] Optional forced use of JointModelStateSpaceFactory (`#541 <https://github.com/ros-planning/moveit/issues/541>`_)
+* [enhancement][moveit_setup_assistant] support loading xacros that use Jade+ extensions on Indigo `#540 <https://github.com/ros-planning/moveit/issues/540>`_
+* Contributors: Christopher Schindlbeck, G.A. vd. Hoorn, Cyrille Morin, Martin Pecka, gavanderhoorn, henhenhen, v4hn
+
 0.7.11 (2017-06-21)
 -------------------
 * [fix][moveit_ros_visualization] TrajectoryVisualization crash if no window_context exists (`#523 <https://github.com/ros-planning/moveit/issues/523>`_, `#525 <https://github.com/ros-planning/moveit/issues/525>`_)
@@ -20,8 +31,7 @@ Changelog for package moveit
 * [fix] Build for Ubuntu YZ by adding BOOST_MATH_DISABLE_FLOAT128 (`#505 <https://github.com/ros-planning/moveit/issues/505>`_)
 * [fix][moveit_ros/visualization] Tentative encoding workaround (https://github.com/ros-infrastructure/catkin_pkg/issues/181).
 * [capability][vizualization] New panel with a slider to control the visualized trajectory (`#491 <https://github.com/ros-planning/moveit/issues/491>`_) (`#508 <https://github.com/ros-planning/moveit/issues/508>`_)
-* Contributors: Dave Coleman, Mikael Arguedas, Isaac I.Y. Saito, Yannick Jonetzko
-* Contributors: Jorge Nicho, Isaac I.Y. Saito
+* Contributors: Dave Coleman, Mikael Arguedas, Jorge Nicho, Isaac I.Y. Saito, Yannick Jonetzko
 
 0.7.9 (2017-04-03)
 ------------------
