@@ -42,24 +42,24 @@ const std::string moveit_warehouse::ConstraintsStorage::CONSTRAINTS_ID_NAME = "c
 const std::string moveit_warehouse::ConstraintsStorage::CONSTRAINTS_GROUP_NAME = "group_id";
 const std::string moveit_warehouse::ConstraintsStorage::ROBOT_NAME = "robot_id";
 
-using warehouse_ros::Metadata;
-using warehouse_ros::Query;
-
-moveit_warehouse::ConstraintsStorage::ConstraintsStorage(warehouse_ros::DatabaseConnection::Ptr conn)
-  : MoveItMessageStorage(conn)
+moveit_warehouse::ConstraintsStorage::ConstraintsStorage(const std::string& host, const unsigned int port,
+                                                         double wait_seconds)
+  : MoveItMessageStorage(host, port, wait_seconds)
 {
   createCollections();
+  ROS_DEBUG("Connected to MongoDB '%s' on host '%s' port '%u'.", DATABASE_NAME.c_str(), db_host_.c_str(), db_port_);
 }
 
 void moveit_warehouse::ConstraintsStorage::createCollections()
 {
-  constraints_collection_ = conn_->openCollectionPtr<moveit_msgs::Constraints>(DATABASE_NAME, "constraints");
+  constraints_collection_.reset(
+      new ConstraintsCollection::element_type(DATABASE_NAME, "constraints", db_host_, db_port_, timeout_));
 }
 
 void moveit_warehouse::ConstraintsStorage::reset()
 {
   constraints_collection_.reset();
-  conn_->dropDatabase(DATABASE_NAME);
+  MoveItMessageStorage::drop(DATABASE_NAME);
   createCollections();
 }
 
@@ -72,10 +72,7 @@ void moveit_warehouse::ConstraintsStorage::addConstraints(const moveit_msgs::Con
     removeConstraints(msg.name, robot, group);
     replace = true;
   }
-  Metadata::Ptr metadata = constraints_collection_->createMetadata();
-  metadata->append(CONSTRAINTS_ID_NAME, msg.name);
-  metadata->append(ROBOT_NAME, robot);
-  metadata->append(CONSTRAINTS_GROUP_NAME, group);
+  mongo_ros::Metadata metadata(CONSTRAINTS_ID_NAME, msg.name, ROBOT_NAME, robot, CONSTRAINTS_GROUP_NAME, group);
   constraints_collection_->insert(msg, metadata);
   ROS_DEBUG("%s constraints '%s'", replace ? "Replaced" : "Added", msg.name.c_str());
 }
@@ -83,13 +80,12 @@ void moveit_warehouse::ConstraintsStorage::addConstraints(const moveit_msgs::Con
 bool moveit_warehouse::ConstraintsStorage::hasConstraints(const std::string& name, const std::string& robot,
                                                           const std::string& group) const
 {
-  Query::Ptr q = constraints_collection_->createQuery();
-  q->append(CONSTRAINTS_ID_NAME, name);
+  mongo_ros::Query q(CONSTRAINTS_ID_NAME, name);
   if (!robot.empty())
-    q->append(ROBOT_NAME, robot);
+    q.append(ROBOT_NAME, robot);
   if (!group.empty())
-    q->append(CONSTRAINTS_GROUP_NAME, group);
-  std::vector<ConstraintsWithMetadata> constr = constraints_collection_->queryList(q, true);
+    q.append(CONSTRAINTS_GROUP_NAME, group);
+  std::vector<ConstraintsWithMetadata> constr = constraints_collection_->pullAllResults(q, true);
   return !constr.empty();
 }
 
@@ -105,27 +101,27 @@ void moveit_warehouse::ConstraintsStorage::getKnownConstraints(std::vector<std::
                                                                const std::string& robot, const std::string& group) const
 {
   names.clear();
-  Query::Ptr q = constraints_collection_->createQuery();
+  mongo_ros::Query q;
   if (!robot.empty())
-    q->append(ROBOT_NAME, robot);
+    q.append(ROBOT_NAME, robot);
   if (!group.empty())
-    q->append(CONSTRAINTS_GROUP_NAME, group);
-  std::vector<ConstraintsWithMetadata> constr = constraints_collection_->queryList(q, true, CONSTRAINTS_ID_NAME, true);
+    q.append(CONSTRAINTS_GROUP_NAME, group);
+  std::vector<ConstraintsWithMetadata> constr =
+      constraints_collection_->pullAllResults(q, true, CONSTRAINTS_ID_NAME, true);
   for (std::size_t i = 0; i < constr.size(); ++i)
-    if (constr[i]->lookupField(CONSTRAINTS_ID_NAME))
+    if (constr[i]->metadata.hasField(CONSTRAINTS_ID_NAME.c_str()))
       names.push_back(constr[i]->lookupString(CONSTRAINTS_ID_NAME));
 }
 
 bool moveit_warehouse::ConstraintsStorage::getConstraints(ConstraintsWithMetadata& msg_m, const std::string& name,
                                                           const std::string& robot, const std::string& group) const
 {
-  Query::Ptr q = constraints_collection_->createQuery();
-  q->append(CONSTRAINTS_ID_NAME, name);
+  mongo_ros::Query q(CONSTRAINTS_ID_NAME, name);
   if (!robot.empty())
-    q->append(ROBOT_NAME, robot);
+    q.append(ROBOT_NAME, robot);
   if (!group.empty())
-    q->append(CONSTRAINTS_GROUP_NAME, group);
-  std::vector<ConstraintsWithMetadata> constr = constraints_collection_->queryList(q, false);
+    q.append(CONSTRAINTS_GROUP_NAME, group);
+  std::vector<ConstraintsWithMetadata> constr = constraints_collection_->pullAllResults(q, false);
   if (constr.empty())
     return false;
   else
@@ -140,14 +136,12 @@ bool moveit_warehouse::ConstraintsStorage::getConstraints(ConstraintsWithMetadat
 void moveit_warehouse::ConstraintsStorage::renameConstraints(const std::string& old_name, const std::string& new_name,
                                                              const std::string& robot, const std::string& group)
 {
-  Query::Ptr q = constraints_collection_->createQuery();
-  q->append(CONSTRAINTS_ID_NAME, old_name);
+  mongo_ros::Query q(CONSTRAINTS_ID_NAME, old_name);
   if (!robot.empty())
-    q->append(ROBOT_NAME, robot);
+    q.append(ROBOT_NAME, robot);
   if (!group.empty())
-    q->append(CONSTRAINTS_GROUP_NAME, group);
-  Metadata::Ptr m = constraints_collection_->createMetadata();
-  m->append(CONSTRAINTS_ID_NAME, new_name);
+    q.append(CONSTRAINTS_GROUP_NAME, group);
+  mongo_ros::Metadata m(CONSTRAINTS_ID_NAME, new_name);
   constraints_collection_->modifyMetadata(q, m);
   ROS_DEBUG("Renamed constraints from '%s' to '%s'", old_name.c_str(), new_name.c_str());
 }
@@ -155,12 +149,11 @@ void moveit_warehouse::ConstraintsStorage::renameConstraints(const std::string& 
 void moveit_warehouse::ConstraintsStorage::removeConstraints(const std::string& name, const std::string& robot,
                                                              const std::string& group)
 {
-  Query::Ptr q = constraints_collection_->createQuery();
-  q->append(CONSTRAINTS_ID_NAME, name);
+  mongo_ros::Query q(CONSTRAINTS_ID_NAME, name);
   if (!robot.empty())
-    q->append(ROBOT_NAME, robot);
+    q.append(ROBOT_NAME, robot);
   if (!group.empty())
-    q->append(CONSTRAINTS_GROUP_NAME, group);
+    q.append(CONSTRAINTS_GROUP_NAME, group);
   unsigned int rem = constraints_collection_->removeMessages(q);
   ROS_DEBUG("Removed %u Constraints messages (named '%s')", rem, name.c_str());
 }

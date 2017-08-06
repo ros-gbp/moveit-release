@@ -244,7 +244,7 @@ if __name__ == '__main__':
    def_file_base = ik_library_name + "_description.xml"
    def_file_name = plugin_pkg_dir + "/" + def_file_base
    with open(def_file_name,'w') as f:
-      etree.ElementTree(plugin_def).write(f, xml_declaration=True, pretty_print=True, encoding="UTF-8")
+      etree.ElementTree(plugin_def).write(f, xml_declaration=True, pretty_print=True)
    print '\nCreated plugin definition at: \''+def_file_name+'\''
 
 
@@ -287,8 +287,15 @@ if __name__ == '__main__':
          etree.SubElement(e_parent, req_type).text = d
       return missing_deps
 
-   update_deps(build_deps, "build_depend", package_xml.getroot())
-   update_deps(run_deps, "run_depend", package_xml.getroot())
+   # empty sets evaluate to false
+   modified_pkg  = update_deps(build_deps, "build_depend", package_xml.getroot())
+   modified_pkg |= update_deps(run_deps, "run_depend", package_xml.getroot())
+
+   if modified_pkg:
+      with open(package_file_name,"w") as f:
+         package_xml.write(f, xml_declaration=True, pretty_print=True)
+
+      print '\nModified package.xml at \''+package_file_name+'\''
 
    # Check that plugin definition file is in the export list
    new_export = etree.Element("moveit_core", \
@@ -303,12 +310,9 @@ if __name__ == '__main__':
 
    if not found:
       export_element.append(new_export)
-
-   # Always write the package xml file, even if there are no changes, to ensure
-   # proper encodings are used in the future (UTF-8)
-   with open(package_file_name,"w") as f:
-      package_xml.write(f, xml_declaration=True, pretty_print=True, encoding="UTF-8")
-   print '\nModified package.xml at \''+package_file_name+'\''
+      with open(package_file_name,"w") as f:
+         package_xml.write(f, xml_declaration=True, pretty_print=True)
+      print '\nModified package.xml at \''+package_file_name+'\''
 
    # Modify kinematics.yaml file
    kin_yaml_file_name = plan_pkg_dir+"/config/kinematics.yaml"

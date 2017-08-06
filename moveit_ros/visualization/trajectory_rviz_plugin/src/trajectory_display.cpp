@@ -41,7 +41,7 @@
 
 namespace moveit_rviz_plugin
 {
-TrajectoryDisplay::TrajectoryDisplay() : Display(), load_robot_model_(false)
+TrajectoryDisplay::TrajectoryDisplay() : Display()
 {
   // The robot description property is only needed when using the trajectory playback standalone (not within motion
   // planning plugin)
@@ -65,24 +65,21 @@ void TrajectoryDisplay::onInitialize()
 
 void TrajectoryDisplay::loadRobotModel()
 {
-  load_robot_model_ = false;
   rdf_loader_.reset(new rdf_loader::RDFLoader(robot_description_property_->getStdString()));
 
   if (!rdf_loader_->getURDF())
   {
-    this->setStatus(rviz::StatusProperty::Error, "Robot Model",
-                    "Failed to load from parameter " + robot_description_property_->getString());
+    ROS_DEBUG_STREAM_NAMED("trajectory_display", "Unable to load robot model from parameter "
+                                                     << robot_description_property_->getStdString());
     return;
   }
-  this->setStatus(rviz::StatusProperty::Ok, "Robot Model", "Successfully loaded");
 
-  const srdf::ModelSharedPtr& srdf =
-      rdf_loader_->getSRDF() ? rdf_loader_->getSRDF() : srdf::ModelSharedPtr(new srdf::Model());
+  const boost::shared_ptr<srdf::Model>& srdf =
+      rdf_loader_->getSRDF() ? rdf_loader_->getSRDF() : boost::shared_ptr<srdf::Model>(new srdf::Model());
   robot_model_.reset(new robot_model::RobotModel(rdf_loader_->getURDF(), srdf));
 
   // Send to child class
   trajectory_visual_->onRobotModelLoaded(robot_model_);
-  trajectory_visual_->onEnable();
 }
 
 void TrajectoryDisplay::reset()
@@ -95,7 +92,8 @@ void TrajectoryDisplay::reset()
 void TrajectoryDisplay::onEnable()
 {
   Display::onEnable();
-  load_robot_model_ = true;  // allow loading of robot model in update()
+  loadRobotModel();
+  trajectory_visual_->onEnable();
 }
 
 void TrajectoryDisplay::onDisable()
@@ -107,10 +105,6 @@ void TrajectoryDisplay::onDisable()
 void TrajectoryDisplay::update(float wall_dt, float ros_dt)
 {
   Display::update(wall_dt, ros_dt);
-
-  if (load_robot_model_)
-    loadRobotModel();
-
   trajectory_visual_->update(wall_dt, ros_dt);
 }
 
@@ -122,10 +116,10 @@ void TrajectoryDisplay::setName(const QString& name)
 
 void TrajectoryDisplay::changedRobotDescription()
 {
+  loadRobotModel();
+
   if (isEnabled())
     reset();
-  else
-    loadRobotModel();
 }
 
 }  // namespace moveit_rviz_plugin

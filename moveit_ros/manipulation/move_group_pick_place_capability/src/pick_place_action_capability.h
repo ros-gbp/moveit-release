@@ -43,8 +43,6 @@
 #include <moveit_msgs/PickupAction.h>
 #include <moveit_msgs/PlaceAction.h>
 
-#include <memory>
-
 namespace move_group
 {
 class MoveGroupPickPlaceAction : public MoveGroupCapability
@@ -87,13 +85,13 @@ private:
 
   pick_place::PickPlacePtr pick_place_;
 
-  std::unique_ptr<actionlib::SimpleActionServer<moveit_msgs::PickupAction> > pickup_action_server_;
+  boost::scoped_ptr<actionlib::SimpleActionServer<moveit_msgs::PickupAction> > pickup_action_server_;
   moveit_msgs::PickupFeedback pickup_feedback_;
 
-  std::unique_ptr<actionlib::SimpleActionServer<moveit_msgs::PlaceAction> > place_action_server_;
+  boost::scoped_ptr<actionlib::SimpleActionServer<moveit_msgs::PlaceAction> > place_action_server_;
   moveit_msgs::PlaceFeedback place_feedback_;
 
-  std::unique_ptr<moveit_msgs::AttachedCollisionObject> diff_attached_object_;
+  boost::scoped_ptr<moveit_msgs::AttachedCollisionObject> diff_attached_object_;
 
   MoveGroupState pickup_state_;
   MoveGroupState place_state_;

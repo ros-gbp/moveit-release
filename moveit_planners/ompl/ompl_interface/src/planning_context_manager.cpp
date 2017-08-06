@@ -54,20 +54,9 @@
 #include <ompl/geometric/planners/rrt/RRTstar.h>
 #include <ompl/geometric/planners/prm/PRM.h>
 #include <ompl/geometric/planners/prm/PRMstar.h>
-#include <ompl/geometric/planners/fmt/FMT.h>
-#include <ompl/geometric/planners/fmt/BFMT.h>
-#include <ompl/geometric/planners/pdst/PDST.h>
-#include <ompl/geometric/planners/stride/STRIDE.h>
-#include <ompl/geometric/planners/rrt/BiTRRT.h>
-#include <ompl/geometric/planners/rrt/LBTRRT.h>
-#include <ompl/geometric/planners/est/BiEST.h>
-#include <ompl/geometric/planners/est/ProjEST.h>
-#include <ompl/geometric/planners/prm/LazyPRM.h>
-#include <ompl/geometric/planners/prm/LazyPRMstar.h>
-#include <ompl/geometric/planners/prm/SPARS.h>
-#include <ompl/geometric/planners/prm/SPARStwo.h>
 
 #include <moveit/ompl_interface/parameterization/joint_space/joint_model_state_space_factory.h>
+#include <moveit/ompl_interface/parameterization/joint_space/joint_model_state_space.h>
 #include <moveit/ompl_interface/parameterization/work_space/pose_model_state_space_factory.h>
 
 namespace ompl_interface
@@ -172,18 +161,6 @@ void ompl_interface::PlanningContextManager::registerDefaultPlanners()
   registerPlannerAllocator("geometric::RRTstar", boost::bind(&allocatePlanner<og::RRTstar>, _1, _2, _3));
   registerPlannerAllocator("geometric::PRM", boost::bind(&allocatePlanner<og::PRM>, _1, _2, _3));
   registerPlannerAllocator("geometric::PRMstar", boost::bind(&allocatePlanner<og::PRMstar>, _1, _2, _3));
-  registerPlannerAllocator("geometric::FMT", boost::bind(&allocatePlanner<og::FMT>, _1, _2, _3));
-  registerPlannerAllocator("geometric::BFMT", boost::bind(&allocatePlanner<og::BFMT>, _1, _2, _3));
-  registerPlannerAllocator("geometric::PDST", boost::bind(&allocatePlanner<og::PDST>, _1, _2, _3));
-  registerPlannerAllocator("geometric::STRIDE", boost::bind(&allocatePlanner<og::STRIDE>, _1, _2, _3));
-  registerPlannerAllocator("geometric::BiTRRT", boost::bind(&allocatePlanner<og::BiTRRT>, _1, _2, _3));
-  registerPlannerAllocator("geometric::LBTRRT", boost::bind(&allocatePlanner<og::LBTRRT>, _1, _2, _3));
-  registerPlannerAllocator("geometric::BiEST", boost::bind(&allocatePlanner<og::BiEST>, _1, _2, _3));
-  registerPlannerAllocator("geometric::ProjEST", boost::bind(&allocatePlanner<og::ProjEST>, _1, _2, _3));
-  registerPlannerAllocator("geometric::LazyPRM", boost::bind(&allocatePlanner<og::LazyPRM>, _1, _2, _3));
-  registerPlannerAllocator("geometric::LazyPRMstar", boost::bind(&allocatePlanner<og::LazyPRMstar>, _1, _2, _3));
-  registerPlannerAllocator("geometric::SPARS", boost::bind(&allocatePlanner<og::SPARS>, _1, _2, _3));
-  registerPlannerAllocator("geometric::SPARStwo", boost::bind(&allocatePlanner<og::SPARStwo>, _1, _2, _3));
 }
 
 void ompl_interface::PlanningContextManager::registerDefaultStateSpaces()
@@ -380,7 +357,6 @@ ompl_interface::ModelBasedPlanningContextPtr ompl_interface::PlanningContextMana
       logWarn("Cannot find planning configuration for group '%s' using planner '%s'. Will use defaults instead.",
               req.group_name.c_str(), req.planner_id.c_str());
   }
-
   if (pc == planner_configs_.end())
   {
     pc = planner_configs_.find(req.group_name);
@@ -391,8 +367,24 @@ ompl_interface::ModelBasedPlanningContextPtr ompl_interface::PlanningContextMana
     }
   }
 
-  ModelBasedPlanningContextPtr context =
-      getPlanningContext(pc->second, boost::bind(&PlanningContextManager::getStateSpaceFactory2, this, _1, req), req);
+  // Check if sampling in JointModelStateSpace is enforced for this group by user.
+  // This is done by setting 'enforce_joint_model_state_space' to 'true' for the desired group in ompl_planning.yaml.
+  //
+  // Some planning problems like orientation path constraints are represented in PoseModelStateSpace and sampled via IK.
+  // However consecutive IK solutions are not checked for proximity at the moment and sometimes happen to be flipped,
+  // leading to invalid trajectories. This workaround lets the user prevent this problem by forcing rejection sampling
+  // in JointModelStateSpace.
+  StateSpaceFactoryTypeSelector factory_selector;
+  std::map<std::string, std::string>::const_iterator it = pc->second.config.find("enforce_joint_model_state_space");
+
+  if (it != pc->second.config.end() && boost::lexical_cast<bool>(it->second))
+    factory_selector = boost::bind(&PlanningContextManager::getStateSpaceFactory1, this, _1,
+                                   JointModelStateSpace::PARAMETERIZATION_TYPE);
+  else
+    factory_selector = boost::bind(&PlanningContextManager::getStateSpaceFactory2, this, _1, req);
+
+  ModelBasedPlanningContextPtr context = getPlanningContext(pc->second, factory_selector, req);
+
   if (context)
   {
     context->clear();

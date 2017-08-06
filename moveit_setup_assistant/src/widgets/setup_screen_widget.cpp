@@ -40,8 +40,3 @@
 void SetupScreenWidget::focusGiven()
 {
 }
-
-bool SetupScreenWidget::focusLost()
-{
-  return true;  // accept switching by default
-}

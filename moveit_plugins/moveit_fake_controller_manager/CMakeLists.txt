@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(moveit_fake_controller_manager)
 
-add_compile_options(-std=c++11)
-
 if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
@@ -34,7 +32,7 @@ include_directories(include)
 add_library(${PROJECT_NAME}
    src/moveit_fake_controller_manager.cpp
    src/moveit_fake_controllers.cpp)
-set_target_properties(${PROJECT_NAME} PROPERTIES VERSION ${${PROJECT_NAME}_VERSION})
+set_target_properties(${PROJECT_NAME} PROPERTIES VERSION 0.7.3)
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 
 install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})

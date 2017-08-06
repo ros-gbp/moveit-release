@@ -86,8 +86,6 @@ MotionPlanningFrame::MotionPlanningFrame(MotionPlanningDisplay* pdisplay, rviz::
   connect(ui_->allow_external_program, SIGNAL(toggled(bool)), this, SLOT(allowExternalProgramCommunication(bool)));
   connect(ui_->planning_algorithm_combo_box, SIGNAL(currentIndexChanged(int)), this,
           SLOT(planningAlgorithmIndexChanged(int)));
-  connect(ui_->planning_algorithm_combo_box, SIGNAL(currentIndexChanged(int)), this,
-          SLOT(planningAlgorithmIndexChanged(int)));
   connect(ui_->import_file_button, SIGNAL(clicked()), this, SLOT(importFileButtonClicked()));
   connect(ui_->import_url_button, SIGNAL(clicked()), this, SLOT(importUrlButtonClicked()));
   connect(ui_->clear_scene_button, SIGNAL(clicked()), this, SLOT(clearSceneButtonClicked()));
@@ -158,7 +156,7 @@ MotionPlanningFrame::MotionPlanningFrame(MotionPlanningDisplay* pdisplay, rviz::
     {
       waitForAction(object_recognition_client_, nh_, ros::Duration(3.0), OBJECT_RECOGNITION_ACTION);
     }
-    catch (std::exception& ex)
+    catch (std::runtime_error& ex)
     {
       //      ROS_ERROR("Object recognition action: %s", ex.what());
       object_recognition_client_.reset();
@@ -168,7 +166,7 @@ MotionPlanningFrame::MotionPlanningFrame(MotionPlanningDisplay* pdisplay, rviz::
   {
     planning_scene_interface_.reset(new moveit::planning_interface::PlanningSceneInterface());
   }
-  catch (std::exception& ex)
+  catch (std::runtime_error& ex)
   {
     ROS_ERROR("%s", ex.what());
   }
@@ -187,7 +185,7 @@ MotionPlanningFrame::MotionPlanningFrame(MotionPlanningDisplay* pdisplay, rviz::
       semantic_world_->addTableCallback(boost::bind(&MotionPlanningFrame::updateTables, this));
     }
   }
-  catch (std::exception& ex)
+  catch (std::runtime_error& ex)
   {
     ROS_ERROR("%s", ex.what());
   }
@@ -284,8 +282,6 @@ void MotionPlanningFrame::changePlanningGroupHelper()
 
   const robot_model::RobotModelConstPtr& kmodel = planning_display_->getRobotModel();
   std::string group = planning_display_->getCurrentPlanningGroup();
-  planning_display_->addMainLoopJob(
-      boost::bind(&MotionPlanningParamWidget::setGroupName, ui_->planner_param_treeview, group));
 
   if (!group.empty() && kmodel)
   {
@@ -293,23 +289,21 @@ void MotionPlanningFrame::changePlanningGroupHelper()
       return;
     ROS_INFO("Constructing new MoveGroup connection for group '%s' in namespace '%s'", group.c_str(),
              planning_display_->getMoveGroupNS().c_str());
-    moveit::planning_interface::MoveGroupInterface::Options opt(group);
+    moveit::planning_interface::MoveGroup::Options opt(group);
     opt.robot_model_ = kmodel;
     opt.robot_description_.clear();
     opt.node_handle_ = ros::NodeHandle(planning_display_->getMoveGroupNS());
     try
     {
-      move_group_.reset(new moveit::planning_interface::MoveGroupInterface(
-          opt, context_->getFrameManager()->getTFClientPtr(), ros::WallDuration(30, 0)));
+      move_group_.reset(new moveit::planning_interface::MoveGroup(opt, context_->getFrameManager()->getTFClientPtr(),
+                                                                  ros::WallDuration(30, 0)));
       if (planning_scene_storage_)
         move_group_->setConstraintsDatabase(ui_->database_host->text().toStdString(), ui_->database_port->value());
     }
-    catch (std::exception& ex)
+    catch (std::runtime_error& ex)
     {
       ROS_ERROR("%s", ex.what());
     }
-    planning_display_->addMainLoopJob(
-        boost::bind(&MotionPlanningParamWidget::setMoveGroup, ui_->planner_param_treeview, move_group_));
     if (move_group_)
     {
       move_group_->allowLooking(ui_->allow_looking->isChecked());

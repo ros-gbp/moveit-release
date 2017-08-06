@@ -109,13 +109,13 @@ public:
   }
 
   /** @brief Get the parsed URDF model*/
-  const urdf::ModelInterfaceSharedPtr& getURDF() const
+  const boost::shared_ptr<urdf::ModelInterface>& getURDF() const
   {
     return rdf_loader_->getURDF();
   }
 
   /** @brief Get the parsed SRDF model*/
-  const srdf::ModelSharedPtr& getSRDF() const
+  const boost::shared_ptr<srdf::Model>& getSRDF() const
   {
     return rdf_loader_->getSRDF();
   }

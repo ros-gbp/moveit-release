@@ -58,10 +58,10 @@ bool PR2ArmIK::init(const urdf::ModelInterface& robot_model, const std::string& 
 {
   std::vector<urdf::Pose> link_offset;
   int num_joints = 0;
-  urdf::LinkConstSharedPtr link = robot_model.getLink(tip_name);
+  boost::shared_ptr<const urdf::Link> link = robot_model.getLink(tip_name);
   while (link && num_joints < 7)
   {
-    urdf::JointConstSharedPtr joint;
+    boost::shared_ptr<const urdf::Joint> joint;
     if (link->parent_joint)
       joint = robot_model.getJoint(link->parent_joint->name);
     if (!joint)
@@ -150,7 +150,7 @@ bool PR2ArmIK::init(const urdf::ModelInterface& robot_model, const std::string& 
   return true;
 }
 
-void PR2ArmIK::addJointToChainInfo(urdf::JointConstSharedPtr joint, moveit_msgs::KinematicSolverInfo& info)
+void PR2ArmIK::addJointToChainInfo(boost::shared_ptr<const urdf::Joint> joint, moveit_msgs::KinematicSolverInfo& info)
 {
   moveit_msgs::JointLimits limit;
   info.joint_names.push_back(joint->name);  // Joints are coming in reverse order
