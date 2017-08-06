@@ -1,0 +1,12 @@
+Source: ros-indigo-moveit-setup-assistant
+Section: misc
+Priority: extra
+Maintainer: Ioan Sucan <isucan@gmail.com>
+Build-Depends: debhelper (>= 9.0.0), libyaml-cpp-dev, ros-indigo-catkin, ros-indigo-moveit-core, ros-indigo-moveit-ros-planning, ros-indigo-moveit-ros-visualization, ros-indigo-srdfdom (>> 0.3.1)
+Homepage: http://moveit.ros.org
+Standards-Version: 3.9.2
+
+Package: ros-indigo-moveit-setup-assistant
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, libyaml-cpp-dev, ros-indigo-moveit-core, ros-indigo-moveit-ros-planning, ros-indigo-moveit-ros-visualization, ros-indigo-srdfdom (>> 0.3.1), ros-indigo-xacro
+Description: Generates a configuration package that makes it easy to use MoveIt!
