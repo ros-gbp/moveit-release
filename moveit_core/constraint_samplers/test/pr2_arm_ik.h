@@ -38,12 +38,13 @@
 #define PR2_ARM_IK_H
 
 #include <urdf_model/model.h>
+#include <urdf/model.h>
 #include <Eigen/Core>
 #include <Eigen/LU>  // provides LU decomposition
 #include <kdl/chainiksolver.hpp>
 #include <moveit_msgs/GetPositionFK.h>
 #include <moveit_msgs/GetPositionIK.h>
-#include <moveit_msgs/GetKinematicSolverInfo.h>
+#include <moveit_msgs/KinematicSolverInfo.h>
 
 namespace pr2_arm_kinematics
 {
@@ -167,7 +168,7 @@ public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 private:
-  void addJointToChainInfo(boost::shared_ptr<const urdf::Joint> joint, moveit_msgs::KinematicSolverInfo& info);
+  void addJointToChainInfo(urdf::JointConstSharedPtr joint, moveit_msgs::KinematicSolverInfo& info);
 
   bool checkJointLimits(const std::vector<double>& joint_values) const;
 

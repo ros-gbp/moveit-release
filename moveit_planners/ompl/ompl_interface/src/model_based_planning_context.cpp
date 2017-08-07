@@ -34,6 +34,8 @@
 
 /* Author: Ioan Sucan */
 
+#include <boost/algorithm/string/trim.hpp>
+
 #include <moveit/ompl_interface/model_based_planning_context.h>
 #include <moveit/ompl_interface/detail/state_validity_checker.h>
 #include <moveit/ompl_interface/detail/constrained_sampler.h>
@@ -241,7 +243,7 @@ void ompl_interface::ModelBasedPlanningContext::useConfig()
   if (it == cfg.end())
   {
     optimizer = "PathLengthOptimizationObjective";
-    logInform("No optimization objective specified, defaulting to %s", optimizer.c_str());
+    logDebug("No optimization objective specified, defaulting to %s", optimizer.c_str());
   }
   else
   {

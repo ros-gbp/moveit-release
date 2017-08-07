@@ -44,14 +44,14 @@ namespace moveit_warehouse
 class WarehouseConnector
 {
 public:
-  WarehouseConnector(const std::string& mongoexec);
+  WarehouseConnector(const std::string& dbexec);
 
   ~WarehouseConnector();
 
   bool connectToDatabase(const std::string& db_dirname);
 
 private:
-  std::string mongoexec_;
+  std::string dbexec_;
   int child_pid_;
 };
 }

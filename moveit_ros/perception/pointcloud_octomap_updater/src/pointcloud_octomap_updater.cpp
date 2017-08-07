@@ -41,6 +41,8 @@
 #include <sensor_msgs/point_cloud2_iterator.h>
 #include <XmlRpcException.h>
 
+#include <memory>
+
 namespace occupancy_map_monitor
 {
 PointCloudOctomapUpdater::PointCloudOctomapUpdater()
@@ -208,14 +210,14 @@ void PointCloudOctomapUpdater::cloudMsgCallback(const sensor_msgs::PointCloud2::
   updateMask(*cloud_msg, sensor_origin_eigen, mask_);
 
   octomap::KeySet free_cells, occupied_cells, model_cells, clip_cells;
-  boost::scoped_ptr<sensor_msgs::PointCloud2> filtered_cloud;
+  std::unique_ptr<sensor_msgs::PointCloud2> filtered_cloud;
 
   // We only use these iterators if we are creating a filtered_cloud for
-  // publishing. We cannot default construct these, so we use scoped_ptr's
+  // publishing. We cannot default construct these, so we use unique_ptr's
   // to defer construction
-  boost::scoped_ptr<sensor_msgs::PointCloud2Iterator<float> > iter_filtered_x;
-  boost::scoped_ptr<sensor_msgs::PointCloud2Iterator<float> > iter_filtered_y;
-  boost::scoped_ptr<sensor_msgs::PointCloud2Iterator<float> > iter_filtered_z;
+  std::unique_ptr<sensor_msgs::PointCloud2Iterator<float> > iter_filtered_x;
+  std::unique_ptr<sensor_msgs::PointCloud2Iterator<float> > iter_filtered_y;
+  std::unique_ptr<sensor_msgs::PointCloud2Iterator<float> > iter_filtered_z;
 
   if (!filtered_cloud_topic_.empty())
   {
@@ -251,7 +253,7 @@ void PointCloudOctomapUpdater::cloudMsgCallback(const sensor_msgs::PointCloud2::
         //  continue;
 
         /* check for NaN */
-        if (!isnan(pt_iter[0]) && !isnan(pt_iter[1]) && !isnan(pt_iter[2]))
+        if (!std::isnan(pt_iter[0]) && !std::isnan(pt_iter[1]) && !std::isnan(pt_iter[2]))
         {
           /* transform to map frame */
           tf::Vector3 point_tf = map_H_sensor * tf::Vector3(pt_iter[0], pt_iter[1], pt_iter[2]);

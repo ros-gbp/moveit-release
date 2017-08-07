@@ -52,7 +52,8 @@ planning_scene_monitor::CurrentStateMonitor::CurrentStateMonitor(const robot_mod
   , robot_model_(robot_model)
   , robot_state_(robot_model)
   , state_monitor_started_(false)
-  , error_(std::numeric_limits<float>::epsilon())
+  , copy_dynamics_(false)
+  , error_(std::numeric_limits<double>::epsilon())
 {
   robot_state_.setToDefaultValues();
 }
@@ -261,7 +262,24 @@ bool planning_scene_monitor::CurrentStateMonitor::haveCompleteState(const ros::D
   return result;
 }
 
-bool planning_scene_monitor::CurrentStateMonitor::waitForCurrentState(double wait_time) const
+bool planning_scene_monitor::CurrentStateMonitor::waitForCurrentState(const ros::Time t, double wait_time) const
+{
+  ros::WallTime start = ros::WallTime::now();
+  ros::WallDuration elapsed(0, 0);
+  ros::WallDuration timeout(wait_time);
+
+  boost::mutex::scoped_lock lock(state_update_lock_);
+  while (current_state_time_ < t)
+  {
+    state_update_condition_.wait_for(lock, boost::chrono::nanoseconds((timeout - elapsed).toNSec()));
+    elapsed = ros::WallTime::now() - start;
+    if (elapsed > timeout)
+      return false;
+  }
+  return true;
+}
+
+bool planning_scene_monitor::CurrentStateMonitor::waitForCompleteState(double wait_time) const
 {
   double slept_time = 0.0;
   double sleep_step_s = std::min(0.05, wait_time / 10.0);
@@ -273,10 +291,14 @@ bool planning_scene_monitor::CurrentStateMonitor::waitForCurrentState(double wai
   }
   return haveCompleteState();
 }
-
-bool planning_scene_monitor::CurrentStateMonitor::waitForCurrentState(const std::string& group, double wait_time) const
+bool planning_scene_monitor::CurrentStateMonitor::waitForCurrentState(double wait_time) const
 {
-  if (waitForCurrentState(wait_time))
+  waitForCompleteState(wait_time);
+}
+
+bool planning_scene_monitor::CurrentStateMonitor::waitForCompleteState(const std::string& group, double wait_time) const
+{
+  if (waitForCompleteState(wait_time))
     return true;
   bool ok = true;
 
@@ -299,6 +321,11 @@ bool planning_scene_monitor::CurrentStateMonitor::waitForCurrentState(const std:
       ok = false;
   }
   return ok;
+}
+
+bool planning_scene_monitor::CurrentStateMonitor::waitForCurrentState(const std::string& group, double wait_time) const
+{
+  waitForCompleteState(group, wait_time);
 }
 
 void planning_scene_monitor::CurrentStateMonitor::jointStateCallback(const sensor_msgs::JointStateConstPtr& joint_state)
@@ -331,6 +358,22 @@ void planning_scene_monitor::CurrentStateMonitor::jointStateCallback(const senso
       {
         update = true;
         robot_state_.setJointPositions(jm, &(joint_state->position[i]));
+
+        // optionally copy velocities and effort
+        if (copy_dynamics_)
+        {
+          // check if velocities exist
+          if (joint_state->name.size() == joint_state->velocity.size())
+          {
+            robot_state_.setJointVelocities(jm, &(joint_state->velocity[i]));
+
+            // check if effort exist. assume they are not useful if no velocities were passed in
+            if (joint_state->name.size() == joint_state->effort.size())
+            {
+              robot_state_.setJointEfforts(jm, &(joint_state->effort[i]));
+            }
+          }
+        }
 
         // continuous joints wrap, so we don't modify them (even if they are outside bounds!)
         if (jm->getType() == robot_model::JointModel::REVOLUTE)
@@ -394,4 +437,7 @@ void planning_scene_monitor::CurrentStateMonitor::jointStateCallback(const senso
   if (update)
     for (std::size_t i = 0; i < update_callbacks_.size(); ++i)
       update_callbacks_[i](joint_state);
+
+  // notify waitForCurrentState() *after* potential update callbacks
+  state_update_condition_.notify_all();
 }

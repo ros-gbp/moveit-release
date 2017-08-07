@@ -1,11 +1,11 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 2.8.12)
 project(moveit_ros_perception)
+
+add_compile_options(-std=c++11)
 
 if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
-
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake")
 
 find_package(Boost REQUIRED thread signals)
 
@@ -15,6 +15,9 @@ find_package(GLUT REQUIRED)
 if (OPENGL_FOUND)
   set(gl_LIBS ${gl_LIBS} ${OPENGL_LIBRARIES})
 endif(OPENGL_FOUND)
+if(APPLE)
+  find_package(X11 REQUIRED)
+endif(APPLE)
 
 find_package(catkin REQUIRED COMPONENTS
   moveit_core
@@ -27,11 +30,16 @@ find_package(catkin REQUIRED COMPONENTS
   pluginlib
   image_transport
   object_recognition_msgs
-  cmake_modules
   sensor_msgs
   moveit_msgs
 )
-find_package(Eigen REQUIRED)
+
+find_package(Eigen3 REQUIRED)
+
+# Eigen 3.2 (Wily) only provides EIGEN3_INCLUDE_DIR, not EIGEN3_INCLUDE_DIRS
+if(NOT EIGEN3_INCLUDE_DIRS)
+  set(EIGEN3_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
+endif()
 
 find_package(OpenMP)
 find_package(octomap REQUIRED)
@@ -57,7 +65,10 @@ catkin_package(
   CATKIN_DEPENDS
     moveit_core
     image_transport
-    moveit_msgs)
+    moveit_msgs
+  DEPENDS
+    EIGEN3
+)
 
 include_directories(mesh_filter/include
                     lazy_free_space_updater/include
@@ -66,18 +77,20 @@ include_directories(mesh_filter/include
                     occupancy_map_monitor/include
                     pointcloud_octomap_updater/include
                     semantic_world/include
-                    ${OpenCV_INCLUDE_DIRS}
                     ${Boost_INCLUDE_DIRS}
                     ${catkin_INCLUDE_DIRS}
                     )
 include_directories(SYSTEM
-                    ${EIGEN_INCLUDE_DIRS}
+                    ${OpenCV_INCLUDE_DIRS}
+                    ${EIGEN3_INCLUDE_DIRS}
                     ${GLEW_INCLUDE_DIR}
                     ${GLUT_INCLUDE_DIR}
+                    ${X11_INCLUDE_DIR}
                     )
 
 link_directories(${Boost_LIBRARY_DIRS})
 link_directories(${catkin_LIBRARY_DIRS})
+link_directories(${X11_LIBRARY_DIR})
 
 add_subdirectory(lazy_free_space_updater)
 add_subdirectory(point_containment_filter)
