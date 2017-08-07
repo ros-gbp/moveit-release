@@ -1,0 +1,12 @@
+Source: ros-kinetic-moveit-setup-assistant
+Section: misc
+Priority: extra
+Maintainer: Dave Coleman <dave@dav.ee>
+Build-Depends: debhelper (>= 9.0.0), libyaml-cpp-dev, ros-kinetic-catkin, ros-kinetic-moveit-core, ros-kinetic-moveit-ros-planning, ros-kinetic-moveit-ros-visualization, ros-kinetic-srdfdom (>> 0.3.1)
+Homepage: http://moveit.ros.org
+Standards-Version: 3.9.2
+
+Package: ros-kinetic-moveit-setup-assistant
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, libyaml-cpp-dev, ros-kinetic-moveit-core, ros-kinetic-moveit-ros-planning, ros-kinetic-moveit-ros-visualization, ros-kinetic-srdfdom (>> 0.3.1), ros-kinetic-xacro
+Description: Generates a configuration package that makes it easy to use MoveIt!
