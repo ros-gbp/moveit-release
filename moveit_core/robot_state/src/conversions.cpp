@@ -332,7 +332,7 @@ static bool _robotStateMsgToRobotStateHelper(const Transforms* tf, const moveit_
   bool valid;
   const moveit_msgs::RobotState& rs = robot_state;
 
-  if (rs.joint_state.name.empty() && rs.multi_dof_joint_state.joint_names.empty())
+  if (!rs.is_diff && rs.joint_state.name.empty() && rs.multi_dof_joint_state.joint_names.empty())
   {
     logError("Found empty JointState message");
     return false;
@@ -395,10 +395,17 @@ void moveit::core::robotStateToRobotStateMsg(const RobotState& state, moveit_msg
   {
     std::vector<const AttachedBody*> attached_bodies;
     state.getAttachedBodies(attached_bodies);
-    robot_state.attached_collision_objects.resize(attached_bodies.size());
-    for (std::size_t i = 0; i < attached_bodies.size(); ++i)
-      _attachedBodyToMsg(*attached_bodies[i], robot_state.attached_collision_objects[i]);
+    attachedBodiesToAttachedCollisionObjectMsgs(attached_bodies, robot_state.attached_collision_objects);
   }
+}
+
+void moveit::core::attachedBodiesToAttachedCollisionObjectMsgs(
+    const std::vector<const AttachedBody*>& attached_bodies,
+    std::vector<moveit_msgs::AttachedCollisionObject> attached_collision_objs)
+{
+  attached_collision_objs.resize(attached_bodies.size());
+  for (std::size_t i = 0; i < attached_bodies.size(); ++i)
+    _attachedBodyToMsg(*attached_bodies[i], attached_collision_objs[i]);
 }
 
 void moveit::core::robotStateToJointStateMsg(const RobotState& state, sensor_msgs::JointState& joint_state)
