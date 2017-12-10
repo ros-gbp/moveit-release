@@ -57,7 +57,7 @@ HeaderWidget::HeaderWidget(const std::string& title, const std::string& instruct
   // Page Title
   QLabel* page_title = new QLabel(this);
   page_title->setText(title.c_str());
-  QFont page_title_font("Arial", 18, QFont::Bold);
+  QFont page_title_font(QFont().defaultFamily(), 18, QFont::Bold);
   page_title->setFont(page_title_font);
   page_title->setWordWrap(true);
   layout->addWidget(page_title);
@@ -107,7 +107,7 @@ LoadPathWidget::LoadPathWidget(const std::string& title, const std::string& inst
   // Widget Title
   QLabel* widget_title = new QLabel(this);
   widget_title->setText(title.c_str());
-  QFont widget_title_font("Arial", 12, QFont::Bold);
+  QFont widget_title_font(QFont().defaultFamily(), 12, QFont::Bold);
   widget_title->setFont(widget_title_font);
   layout->addWidget(widget_title);
   layout->setAlignment(widget_title, Qt::AlignTop);
