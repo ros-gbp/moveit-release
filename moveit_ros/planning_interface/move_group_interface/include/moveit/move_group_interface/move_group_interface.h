@@ -63,18 +63,26 @@ public:
   MoveItErrorCode()
   {
     val = 0;
-  };
+  }
   MoveItErrorCode(int code)
   {
     val = code;
-  };
+  }
   MoveItErrorCode(const moveit_msgs::MoveItErrorCodes& code)
   {
     val = code.val;
-  };
-  operator bool() const
+  }
+  explicit operator bool() const
   {
     return val == moveit_msgs::MoveItErrorCodes::SUCCESS;
+  }
+  bool operator==(const int c) const
+  {
+    return val == c;
+  }
+  bool operator!=(const int c) const
+  {
+    return val != c;
   }
 };
 
@@ -155,6 +163,17 @@ public:
                                        const ros::Duration& wait_for_servers);
 
   ~MoveGroupInterface();
+
+  /**
+   * @brief This class owns unique resources (e.g. action clients, threads) and its not very
+   * meaningful to copy. Pass by references, move it, or simply create multiple instances where
+   * required.
+   */
+  MoveGroupInterface(const MoveGroupInterface&) = delete;
+  MoveGroupInterface& operator=(const MoveGroupInterface&) = delete;
+
+  MoveGroupInterface(MoveGroupInterface&& other);
+  MoveGroupInterface& operator=(MoveGroupInterface&& other);
 
   /** \brief Get the name of the group this instance operates on */
   const std::string& getName() const;
@@ -745,7 +764,7 @@ public:
   /** \brief Pick up an object
 
       calls the external moveit_msgs::GraspPlanning service "plan_grasps" to compute possible grasps */
-  MoveItErrorCode planGraspsAndPick(const std::string& object);
+  MoveItErrorCode planGraspsAndPick(const std::string& object = "");
 
   /** \brief Pick up an object
 
