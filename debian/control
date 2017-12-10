@@ -1,0 +1,12 @@
+Source: ros-kinetic-moveit-commander
+Section: misc
+Priority: extra
+Maintainer: Michael Görner <me@v4hn.de>
+Build-Depends: debhelper (>= 9.0.0), python-catkin-pkg, python-dev, ros-kinetic-catkin
+Homepage: http://moveit.ros.org
+Standards-Version: 3.9.2
+
+Package: ros-kinetic-moveit-commander
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, python-dev, python-pyassimp, ros-kinetic-geometry-msgs, ros-kinetic-moveit-msgs, ros-kinetic-moveit-ros-planning-interface, ros-kinetic-rospy, ros-kinetic-sensor-msgs, ros-kinetic-shape-msgs, ros-kinetic-tf
+Description: Python interfaces to MoveIt
