@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>moveit_kinematics</name>
-  <version>0.9.9</version>
+  <version>0.9.10</version>
   <description>Package for all inverse kinematics solvers in MoveIt!</description>
 
   <author email="dave@dav.ee">Dave Coleman</author>
@@ -11,6 +11,7 @@
   <maintainer email="dave@dav.ee">Dave Coleman</maintainer>
   <maintainer email="g.a.vanderhoorn@tudelft.nl">G.A. vd. Hoorn</maintainer>
   <maintainer email="jorge.nicho@swri.org">Jorge Nicho</maintainer>
+  <maintainer email="moveit_releasers@googlegroups.com">MoveIt! Release Team</maintainer>
 
   <license>BSD</license>
 
@@ -30,6 +31,7 @@
   <run_depend>pluginlib</run_depend>
   <run_depend>actionlib</run_depend>
   <run_depend>moveit_ros_planning</run_depend>
+
 
   <export>
     <moveit_core plugin="${prefix}/kdl_kinematics_plugin_description.xml"/>
