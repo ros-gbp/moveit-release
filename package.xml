@@ -1,11 +1,12 @@
 <package>
   <name>moveit_ros_warehouse</name>
-  <version>0.9.9</version>
+  <version>0.9.10</version>
   <description>Components of MoveIt connecting to MongoDB</description>
 
   <author email="isucan@google.com">Ioan Sucan</author>
 
   <maintainer email="mferguson@fetchrobotics.com">Michael Ferguson</maintainer>
+  <maintainer email="moveit_releasers@googlegroups.com">MoveIt! Release Team</maintainer>
 
   <license>BSD</license>
 
