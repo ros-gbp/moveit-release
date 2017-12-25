@@ -2,6 +2,9 @@
 Changelog for package moveit_commander
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.9.11 (2017-12-25)
+-------------------
+
 0.9.10 (2017-12-09)
 -------------------
 * [fix] Bugs in moveit_commander/robot.py (`#621 <https://github.com/ros-planning/moveit/issues/621>`_)
