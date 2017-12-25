@@ -2,10 +2,12 @@
   <name>moveit_planners_chomp</name>
   <description>The interface for using CHOMP within MoveIt!</description>
 
-  <version>0.7.12</version>
+  <version>0.7.13</version>
   <author email="gjones@willowgarage.com">Gil Jones</author>
 
-  <maintainer email="chitt@live.in">Chittaranjan S Srinivas</maintainer>
+  <maintainer email="chitt@live.in">Chittaranjan Srinivas Swaminathan</maintainer>
+  <maintainer email="dave@dav.ee">Dave Coleman</maintainer>
+  <maintainer email="moveit_releasers@googlegroups.com">MoveIt! Release Team</maintainer>
 
   <license>BSD</license>
 
