@@ -131,6 +131,8 @@ public:
       end_effector_link_ = joint_model_group_->getLinkModelNames().back();
     pose_reference_frame_ = getRobotModel()->getModelFrame();
 
+    setPlannerId(getDefaultPlannerId(opt.group_name_));
+
     trajectory_event_publisher_ = node_handle_.advertise<std_msgs::String>(
         trajectory_execution_manager::TrajectoryExecutionManager::EXECUTION_EVENT_TOPIC, 1, false);
     attached_object_publisher_ = node_handle_.advertise<moveit_msgs::AttachedCollisionObject>(
@@ -701,6 +703,10 @@ public:
 
   MoveItErrorCode planGraspsAndPick(const std::string& object)
   {
+    if (object.empty())
+    {
+      return planGraspsAndPick(moveit_msgs::CollisionObject());
+    }
     moveit::planning_interface::PlanningSceneInterface psi;
 
     std::map<std::string, moveit_msgs::CollisionObject> objects = psi.getObjects(std::vector<std::string>(1, object));
@@ -896,6 +902,7 @@ public:
     req.jump_threshold = jump_threshold;
     req.path_constraints = path_constraints;
     req.avoid_collisions = avoid_collisions;
+    req.link_name = getEndEffectorLink();
 
     if (cartesian_path_service_.call(req, res))
     {
