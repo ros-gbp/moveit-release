@@ -1,0 +1,12 @@
+Source: ros-indigo-moveit-full
+Section: misc
+Priority: extra
+Maintainer: Michael Ferguson <mferguson@fetchrobotics.com>
+Build-Depends: debhelper (>= 9.0.0), ros-indigo-catkin
+Homepage: http://moveit.ros.org
+Standards-Version: 3.9.2
+
+Package: ros-indigo-moveit-full
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-indigo-moveit
+Description: All MoveIt components and plugins
