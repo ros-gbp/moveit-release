@@ -1487,6 +1487,14 @@ as the new values that correspond to the group */
   std::pair<double, const JointModel*>
   getMinDistanceToPositionBounds(const std::vector<const JointModel*>& joints) const;
 
+  /**
+   * \brief Check that the time to move between two waypoints is sufficient given velocity limits and time step
+   * \param other - robot state to compare joint positions against
+   * \param group - planning group to compare joint positions against
+   * \param dt - time step between the two points
+   */
+  bool isValidVelocityMove(const RobotState& other, const JointModelGroup* group, double dt) const;
+
   /** @} */
 
   /** \name Managing attached bodies
@@ -1726,6 +1734,17 @@ private:
   void getMissingKeys(const std::map<std::string, double>& variable_map,
                       std::vector<std::string>& missing_variables) const;
   void getStateTreeJointString(std::ostream& ss, const JointModel* jm, const std::string& pfx0, bool last) const;
+
+  /**
+   * \brief Tests joint space jumps of a trajectory. First, the average distance between adjacent trajectory points is
+   * computed. If two adjacent trajectory points have distance > \e jump_threshold * average, the trajectory is cut of
+   * at this point.
+   * @param group The joint model group of the robot state.
+   * @param traj The trajectory that should be tested.
+   * @param jump_threshold The threshold to determine if a joint space jump has occurred .
+   * @return The fraction of the trajectory that passed.
+   */
+  double testJointSpaceJump(const JointModelGroup* group, std::vector<RobotStatePtr>& traj, double jump_threshold);
 
   /** \brief This function is only called in debug mode */
   bool checkJointTransforms(const JointModel* joint) const;

@@ -44,6 +44,8 @@
 #include <boost/function.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/thread/mutex.hpp>
+#include <moveit/macros/deprecation.h>
+#include <boost/thread/condition_variable.hpp>
 
 namespace planning_scene_monitor
 {
@@ -134,13 +136,22 @@ public:
    *  @return Returns the map from joint names to joint state values*/
   std::map<std::string, double> getCurrentStateValues() const;
 
-  /** @brief Wait for at most \e wait_time seconds until the complete current state is known. Return true if the full
-   * state is known */
-  bool waitForCurrentState(double wait_time) const;
+  /** @brief Wait for at most \e wait_time seconds (default 1s) for a robot state more recent than t
+   *  @return true on success, false if up-to-date robot state wasn't received within \e wait_time
+  */
+  bool waitForCurrentState(const ros::Time t = ros::Time::now(), double wait_time = 1.0) const;
+
+  /** @brief Wait for at most \e wait_time seconds until the complete robot state is known.
+      @return true if the full state is known */
+  bool waitForCompleteState(double wait_time) const;
+  /** replaced by waitForCompleteState, will be removed in L-turtle: function waits for complete robot state */
+  MOVEIT_DEPRECATED bool waitForCurrentState(double wait_time) const;
 
   /** @brief Wait for at most \e wait_time seconds until the joint values from the group \e group are known. Return true
    * if values for all joints in \e group are known */
-  bool waitForCurrentState(const std::string& group, double wait_time) const;
+  bool waitForCompleteState(const std::string& group, double wait_time) const;
+  /** replaced by waitForCompleteState, will be removed in L-turtle: function waits for complete robot state */
+  MOVEIT_DEPRECATED bool waitForCurrentState(const std::string& group, double wait_time) const;
 
   /** @brief Get the time point when the monitor was started */
   const ros::Time& getMonitorStartTime() const
@@ -172,6 +183,14 @@ public:
     return error_;
   }
 
+  /** @brief Allow the joint_state arrrays velocity and effort to be copied into the robot state
+   *  this is useful in some but not all applications
+   */
+  void enableCopyDynamics(bool enabled)
+  {
+    copy_dynamics_ = enabled;
+  }
+
 private:
   void jointStateCallback(const sensor_msgs::JointStateConstPtr& joint_state);
   bool isPassiveOrMimicDOF(const std::string& dof) const;
@@ -182,6 +201,7 @@ private:
   robot_state::RobotState robot_state_;
   std::map<std::string, ros::Time> joint_time_;
   bool state_monitor_started_;
+  bool copy_dynamics_;  // Copy velocity and effort from joint_state
   ros::Time monitor_start_time_;
   double error_;
   ros::Subscriber joint_state_subscriber_;
@@ -189,6 +209,7 @@ private:
   ros::Time last_tf_update_;
 
   mutable boost::mutex state_update_lock_;
+  mutable boost::condition_variable state_update_condition_;
   std::vector<JointStateUpdateCallback> update_callbacks_;
 };
 

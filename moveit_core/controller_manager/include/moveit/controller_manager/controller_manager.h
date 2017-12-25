@@ -39,7 +39,6 @@
 
 #include <vector>
 #include <string>
-#include <boost/shared_ptr.hpp>
 #include <moveit_msgs/RobotTrajectory.h>
 #include <moveit/macros/class_forward.h>
 
@@ -69,7 +68,7 @@ struct ExecutionStatus
     return status_;
   }
 
-  operator bool() const
+  explicit operator bool() const
   {
     return status_ == SUCCEEDED;
   }

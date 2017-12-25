@@ -42,8 +42,10 @@
 #include <moveit/trajectory_processing/trajectory_tools.h>
 #include <moveit/robot_state/conversions.h>
 #include <moveit/exceptions/exceptions.h>
+#include <moveit/robot_state/attached_body.h>
 #include <octomap_msgs/conversions.h>
 #include <eigen_conversions/eigen_msg.h>
+#include <memory>
 #include <set>
 
 namespace planning_scene
@@ -125,8 +127,8 @@ planning_scene::PlanningScene::PlanningScene(const robot_model::RobotModelConstP
   initialize();
 }
 
-planning_scene::PlanningScene::PlanningScene(const boost::shared_ptr<const urdf::ModelInterface>& urdf_model,
-                                             const boost::shared_ptr<const srdf::Model>& srdf_model,
+planning_scene::PlanningScene::PlanningScene(const urdf::ModelInterfaceSharedPtr& urdf_model,
+                                             const srdf::ModelConstSharedPtr& srdf_model,
                                              collision_detection::WorldPtr world)
   : world_(world), world_const_(world)
 {
@@ -172,9 +174,8 @@ void planning_scene::PlanningScene::initialize()
 }
 
 /* return NULL on failure */
-robot_model::RobotModelPtr
-planning_scene::PlanningScene::createRobotModel(const boost::shared_ptr<const urdf::ModelInterface>& urdf_model,
-                                                const boost::shared_ptr<const srdf::Model>& srdf_model)
+robot_model::RobotModelPtr planning_scene::PlanningScene::createRobotModel(
+    const urdf::ModelInterfaceSharedPtr& urdf_model, const srdf::ModelConstSharedPtr& srdf_model)
 {
   robot_model::RobotModelPtr robot_model(new robot_model::RobotModel(urdf_model, srdf_model));
   if (!robot_model || !robot_model->getRootJoint())
@@ -498,6 +499,7 @@ void planning_scene::PlanningScene::pushDiffs(const PlanningScenePtr& scene)
       {
         scene->world_->removeObject(it->first);
         scene->removeObjectColor(it->first);
+        scene->removeObjectType(it->first);
       }
       else
       {
@@ -763,10 +765,13 @@ void planning_scene::PlanningScene::getPlanningSceneDiffMsg(moveit_msgs::Plannin
         scene_msg.world.collision_objects.push_back(co);
       }
       else
-        getPlanningSceneMsgCollisionObject(scene_msg, it->first);
+      {
+        scene_msg.world.collision_objects.emplace_back();
+        getCollisionObjectMsg(scene_msg.world.collision_objects.back(), it->first);
+      }
     }
     if (do_omap)
-      getPlanningSceneMsgOctomap(scene_msg);
+      getOctomapMsg(scene_msg.world.octomap);
   }
 }
 
@@ -811,17 +816,16 @@ private:
 }
 }
 
-void planning_scene::PlanningScene::getPlanningSceneMsgCollisionObject(moveit_msgs::PlanningScene& scene_msg,
-                                                                       const std::string& ns) const
+bool planning_scene::PlanningScene::getCollisionObjectMsg(moveit_msgs::CollisionObject& collision_obj,
+                                                          const std::string& ns) const
 {
-  moveit_msgs::CollisionObject co;
-  co.header.frame_id = getPlanningFrame();
-  co.id = ns;
-  co.operation = moveit_msgs::CollisionObject::ADD;
+  collision_obj.header.frame_id = getPlanningFrame();
+  collision_obj.id = ns;
+  collision_obj.operation = moveit_msgs::CollisionObject::ADD;
   collision_detection::CollisionWorld::ObjectConstPtr obj = world_->getObject(ns);
   if (!obj)
-    return;
-  ShapeVisitorAddToCollisionObject sv(&co);
+    return false;
+  ShapeVisitorAddToCollisionObject sv(&collision_obj);
   for (std::size_t j = 0; j < obj->shapes_.size(); ++j)
   {
     shapes::ShapeMsg sm;
@@ -835,27 +839,55 @@ void planning_scene::PlanningScene::getPlanningSceneMsgCollisionObject(moveit_ms
     }
   }
 
-  if (!co.primitives.empty() || !co.meshes.empty() || !co.planes.empty())
+  if (!collision_obj.primitives.empty() || !collision_obj.meshes.empty() || !collision_obj.planes.empty())
   {
-    if (hasObjectType(co.id))
-      co.type = getObjectType(co.id);
-    scene_msg.world.collision_objects.push_back(co);
+    if (hasObjectType(collision_obj.id))
+      collision_obj.type = getObjectType(collision_obj.id);
   }
+  return true;
 }
 
-void planning_scene::PlanningScene::getPlanningSceneMsgCollisionObjects(moveit_msgs::PlanningScene& scene_msg) const
+void planning_scene::PlanningScene::getCollisionObjectMsgs(
+    std::vector<moveit_msgs::CollisionObject>& collision_objs) const
 {
-  scene_msg.world.collision_objects.clear();
+  collision_objs.clear();
   const std::vector<std::string>& ns = world_->getObjectIds();
   for (std::size_t i = 0; i < ns.size(); ++i)
     if (ns[i] != OCTOMAP_NS)
-      getPlanningSceneMsgCollisionObject(scene_msg, ns[i]);
+    {
+      collision_objs.emplace_back();
+      getCollisionObjectMsg(collision_objs.back(), ns[i]);
+    }
 }
 
-void planning_scene::PlanningScene::getPlanningSceneMsgOctomap(moveit_msgs::PlanningScene& scene_msg) const
+bool planning_scene::PlanningScene::getAttachedCollisionObjectMsg(
+    moveit_msgs::AttachedCollisionObject& attached_collision_obj, const std::string& ns) const
 {
-  scene_msg.world.octomap.header.frame_id = getPlanningFrame();
-  scene_msg.world.octomap.octomap = octomap_msgs::Octomap();
+  std::vector<moveit_msgs::AttachedCollisionObject> attached_collision_objs;
+  getAttachedCollisionObjectMsgs(attached_collision_objs);
+  for (std::size_t i = 0; i < attached_collision_objs.size(); ++i)
+  {
+    if (attached_collision_objs[i].object.id == ns)
+    {
+      attached_collision_obj = attached_collision_objs[i];
+      return true;
+    }
+  }
+  return false;
+}
+
+void planning_scene::PlanningScene::getAttachedCollisionObjectMsgs(
+    std::vector<moveit_msgs::AttachedCollisionObject>& attached_collision_objs) const
+{
+  std::vector<const moveit::core::AttachedBody*> attached_bodies;
+  getCurrentState().getAttachedBodies(attached_bodies);
+  attachedBodiesToAttachedCollisionObjectMsgs(attached_bodies, attached_collision_objs);
+}
+
+bool planning_scene::PlanningScene::getOctomapMsg(octomap_msgs::OctomapWithPose& octomap) const
+{
+  octomap.header.frame_id = getPlanningFrame();
+  octomap.octomap = octomap_msgs::Octomap();
 
   collision_detection::CollisionWorld::ObjectConstPtr map = world_->getObject(OCTOMAP_NS);
   if (map)
@@ -863,12 +895,27 @@ void planning_scene::PlanningScene::getPlanningSceneMsgOctomap(moveit_msgs::Plan
     if (map->shapes_.size() == 1)
     {
       const shapes::OcTree* o = static_cast<const shapes::OcTree*>(map->shapes_[0].get());
-      octomap_msgs::fullMapToMsg(*o->octree, scene_msg.world.octomap.octomap);
-      tf::poseEigenToMsg(map->shape_poses_[0], scene_msg.world.octomap.origin);
+      octomap_msgs::fullMapToMsg(*o->octree, octomap.octomap);
+      tf::poseEigenToMsg(map->shape_poses_[0], octomap.origin);
+      return true;
     }
-    else
-      logError("Unexpected number of shapes in octomap collision object. Not including '%s' object",
-               OCTOMAP_NS.c_str());
+    logError("Unexpected number of shapes in octomap collision object. Not including '%s' object", OCTOMAP_NS.c_str());
+  }
+  return false;
+}
+
+void planning_scene::PlanningScene::getObjectColorMsgs(std::vector<moveit_msgs::ObjectColor>& object_colors) const
+{
+  object_colors.clear();
+
+  unsigned int i = 0;
+  ObjectColorMap cmap;
+  getKnownObjectColors(cmap);
+  object_colors.resize(cmap.size());
+  for (ObjectColorMap::const_iterator it = cmap.begin(); it != cmap.end(); ++it, ++i)
+  {
+    object_colors[i].id = it->first;
+    object_colors[i].color = it->second;
   }
 }
 
@@ -884,28 +931,13 @@ void planning_scene::PlanningScene::getPlanningSceneMsg(moveit_msgs::PlanningSce
   getCollisionRobot()->getPadding(scene_msg.link_padding);
   getCollisionRobot()->getScale(scene_msg.link_scale);
 
-  getPlanningSceneMsgObjectColors(scene_msg);
+  getObjectColorMsgs(scene_msg.object_colors);
 
   // add collision objects
-  getPlanningSceneMsgCollisionObjects(scene_msg);
+  getCollisionObjectMsgs(scene_msg.world.collision_objects);
 
   // get the octomap
-  getPlanningSceneMsgOctomap(scene_msg);
-}
-
-void planning_scene::PlanningScene::getPlanningSceneMsgObjectColors(moveit_msgs::PlanningScene& scene_msg) const
-{
-  scene_msg.object_colors.clear();
-
-  unsigned int i = 0;
-  ObjectColorMap cmap;
-  getKnownObjectColors(cmap);
-  scene_msg.object_colors.resize(cmap.size());
-  for (ObjectColorMap::const_iterator it = cmap.begin(); it != cmap.end(); ++it, ++i)
-  {
-    scene_msg.object_colors[i].id = it->first;
-    scene_msg.object_colors[i].color = it->second;
-  }
+  getOctomapMsg(scene_msg.world.octomap);
 }
 
 void planning_scene::PlanningScene::getPlanningSceneMsg(moveit_msgs::PlanningScene& scene_msg,
@@ -949,11 +981,11 @@ void planning_scene::PlanningScene::getPlanningSceneMsg(moveit_msgs::PlanningSce
   }
 
   if (comp.components & moveit_msgs::PlanningSceneComponents::OBJECT_COLORS)
-    getPlanningSceneMsgObjectColors(scene_msg);
+    getObjectColorMsgs(scene_msg.object_colors);
 
   // add collision objects
   if (comp.components & moveit_msgs::PlanningSceneComponents::WORLD_OBJECT_GEOMETRY)
-    getPlanningSceneMsgCollisionObjects(scene_msg);
+    getCollisionObjectMsgs(scene_msg.world.collision_objects);
   else if (comp.components & moveit_msgs::PlanningSceneComponents::WORLD_OBJECT_NAMES)
   {
     const std::vector<std::string>& ns = world_->getObjectIds();
@@ -972,7 +1004,7 @@ void planning_scene::PlanningScene::getPlanningSceneMsg(moveit_msgs::PlanningSce
 
   // get the octomap
   if (comp.components & moveit_msgs::PlanningSceneComponents::OCTOMAP)
-    getPlanningSceneMsgOctomap(scene_msg);
+    getOctomapMsg(scene_msg.world.octomap);
 }
 
 void planning_scene::PlanningScene::saveGeometryToStream(std::ostream& out) const
@@ -1215,12 +1247,8 @@ bool planning_scene::PlanningScene::setPlanningSceneDiffMsg(const moveit_msgs::P
   }
 
   // if any colors have been specified, replace the ones we have with the specified ones
-  if (!scene_msg.object_colors.empty())
-  {
-    object_colors_.reset();
-    for (std::size_t i = 0; i < scene_msg.object_colors.size(); ++i)
-      setObjectColor(scene_msg.object_colors[i].id, scene_msg.object_colors[i].color);
-  }
+  for (std::size_t i = 0; i < scene_msg.object_colors.size(); ++i)
+    setObjectColor(scene_msg.object_colors[i].id, scene_msg.object_colors[i].color);
 
   // process collision object updates
   for (std::size_t i = 0; i < scene_msg.world.collision_objects.size(); ++i)
@@ -1297,7 +1325,7 @@ void planning_scene::PlanningScene::processOctomapMsg(const octomap_msgs::Octoma
     return;
   }
 
-  boost::shared_ptr<octomap::OcTree> om(static_cast<octomap::OcTree*>(octomap_msgs::msgToMap(map)));
+  std::shared_ptr<octomap::OcTree> om(static_cast<octomap::OcTree*>(octomap_msgs::msgToMap(map)));
   if (!map.header.frame_id.empty())
   {
     const Eigen::Affine3d& t = getTransforms().getTransform(map.header.frame_id);
@@ -1314,7 +1342,11 @@ void planning_scene::PlanningScene::removeAllCollisionObjects()
   const std::vector<std::string>& object_ids = world_->getObjectIds();
   for (std::size_t i = 0; i < object_ids.size(); ++i)
     if (object_ids[i] != OCTOMAP_NS)
+    {
       world_->removeObject(object_ids[i]);
+      removeObjectColor(object_ids[i]);
+      removeObjectType(object_ids[i]);
+    }
 }
 
 void planning_scene::PlanningScene::processOctomapMsg(const octomap_msgs::OctomapWithPose& map)
@@ -1331,7 +1363,7 @@ void planning_scene::PlanningScene::processOctomapMsg(const octomap_msgs::Octoma
     return;
   }
 
-  boost::shared_ptr<octomap::OcTree> om(static_cast<octomap::OcTree*>(octomap_msgs::msgToMap(map.octomap)));
+  std::shared_ptr<octomap::OcTree> om(static_cast<octomap::OcTree*>(octomap_msgs::msgToMap(map.octomap)));
   const Eigen::Affine3d& t = getTransforms().getTransform(map.header.frame_id);
   Eigen::Affine3d p;
   tf::poseMsgToEigen(map.origin, p);
@@ -1339,7 +1371,7 @@ void planning_scene::PlanningScene::processOctomapMsg(const octomap_msgs::Octoma
   world_->addToObject(OCTOMAP_NS, shapes::ShapeConstPtr(new shapes::OcTree(om)), p);
 }
 
-void planning_scene::PlanningScene::processOctomapPtr(const boost::shared_ptr<const octomap::OcTree>& octree,
+void planning_scene::PlanningScene::processOctomapPtr(const std::shared_ptr<const octomap::OcTree>& octree,
                                                       const Eigen::Affine3d& t)
 {
   collision_detection::CollisionWorld::ObjectConstPtr map = world_->getObject(OCTOMAP_NS);
@@ -1698,7 +1730,11 @@ bool planning_scene::PlanningScene::processCollisionObjectMsg(const moveit_msgs:
       removeAllCollisionObjects();
     }
     else
+    {
       world_->removeObject(object.id);
+      removeObjectColor(object.id);
+      removeObjectType(object.id);
+    }
     return true;
   }
   else if (object.operation == moveit_msgs::CollisionObject::MOVE)
