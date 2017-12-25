@@ -1,0 +1,12 @@
+Source: ros-lunar-moveit-planners
+Section: misc
+Priority: extra
+Maintainer: Dave Coleman <dave@dav.ee>
+Build-Depends: debhelper (>= 9.0.0), ros-lunar-catkin
+Homepage: http://moveit.ros.org
+Standards-Version: 3.9.2
+
+Package: ros-lunar-moveit-planners
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-lunar-moveit-planners-ompl
+Description: Metapacakge that installs all available planners for MoveIt
