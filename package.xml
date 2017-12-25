@@ -1,14 +1,14 @@
 <package>
   <name>moveit_ros_perception</name>
-  <version>0.7.12</version>
+  <version>0.7.13</version>
   <description>Components of MoveIt connecting to perception</description>
 
   <author email="isucan@google.com">Ioan Sucan</author>
   <author email="jon.binney@gmail.com">Jon Binney</author>
   <author email="gedikli@willowgarage.com">Suat Gedikli</author>
 
-  <maintainer email="isucan@google.com">Ioan Sucan</maintainer>
   <maintainer email="mferguson@fetchrobotics.com">Michael Ferguson</maintainer>
+  <maintainer email="moveit_releasers@googlegroups.com">MoveIt! Release Team</maintainer>
 
   <license>BSD</license>
 
