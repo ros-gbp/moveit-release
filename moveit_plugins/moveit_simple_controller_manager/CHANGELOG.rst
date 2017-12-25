@@ -2,6 +2,11 @@
 Changelog for package moveit_simple_controller_manager
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.7.13 (2017-12-25)
+-------------------
+* [capability][kinetic onward] optionally wait for controllers indefinitely (`#695 <https://github.com/ros-planning/moveit/issues/695>`_)
+* Contributors: Bruno Brito, Michael Görner
+
 0.7.12 (2017-08-06)
 -------------------
 
