@@ -55,7 +55,7 @@ GroupEditWidget::GroupEditWidget(QWidget* parent, moveit_setup_assistant::MoveIt
 
   // Label ------------------------------------------------
   title_ = new QLabel(this);  // specify the title from the parent widget
-  QFont group_title_font(QFont().defaultFamily(), 12, QFont::Bold);
+  QFont group_title_font("Arial", 12, QFont::Bold);
   title_->setFont(group_title_font);
   layout->addWidget(title_);
 
@@ -97,12 +97,12 @@ GroupEditWidget::GroupEditWidget(QWidget* parent, moveit_setup_assistant::MoveIt
   QVBoxLayout* new_buttons_layout = new QVBoxLayout();
 
   QLabel* save_and_add = new QLabel("Next, Add Components To Group:", this);
-  QFont save_and_add_font(QFont().defaultFamily(), 12, QFont::Bold);
+  QFont save_and_add_font("Arial", 12, QFont::Bold);
   save_and_add->setFont(save_and_add_font);
   new_buttons_layout->addWidget(save_and_add);
 
   QLabel* add_subtitle = new QLabel("Recommended: ", this);
-  QFont add_subtitle_font(QFont().defaultFamily(), 10, QFont::Bold);
+  QFont add_subtitle_font("Arial", 10, QFont::Bold);
   add_subtitle->setFont(add_subtitle_font);
   new_buttons_layout->addWidget(add_subtitle);
 
@@ -261,7 +261,7 @@ void GroupEditWidget::loadKinematicPlannersComboBox()
   kinematics_solver_field_->addItem("None");
 
   // load all avail kin planners
-  std::unique_ptr<pluginlib::ClassLoader<kinematics::KinematicsBase>> loader;
+  boost::scoped_ptr<pluginlib::ClassLoader<kinematics::KinematicsBase> > loader;
   try
   {
     loader.reset(new pluginlib::ClassLoader<kinematics::KinematicsBase>("moveit_core", "kinematics::KinematicsBase"));

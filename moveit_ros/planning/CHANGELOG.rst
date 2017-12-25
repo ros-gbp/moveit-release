@@ -2,79 +2,82 @@
 Changelog for package moveit_ros_planning
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.9.10 (2017-12-09)
+0.7.13 (2017-12-25)
 -------------------
 * [fix] Avoid segfault when validating a multidof-only trajectory (`#691 <https://github.com/ros-planning/moveit/issues/691>`_). Fixes `#539 <https://github.com/ros-planning/moveit/issues/539>`_
 * [fix] find and link against tinyxml where needed (`#569 <https://github.com/ros-planning/moveit/issues/569>`_)
 * [capability] Multi DOF Trajectory only providing translation not velocity (`#555 <https://github.com/ros-planning/moveit/issues/555>`_)
 * Contributors: Isaac I.Y. Saito, Michael Görner, Mikael Arguedas, Troy Cordie
 
-0.9.9 (2017-08-06)
-------------------
-* [fix] Change getCurrentExpectedTrajectory index so collision detection is still performed even if the path timing is not known (`#550 <https://github.com/ros-planning/moveit/issues/550>`_)
-* [fix] Support for MultiDoF only trajectories `#553 <https://github.com/ros-planning/moveit/pull/553>`_ 
-* [fix] ros_error macro name (`#544 <https://github.com/ros-planning/moveit/issues/544>`_)
-* [fix] check plan size for plan length=0 `#535 <https://github.com/ros-planning/moveit/issues/535>`_
-* Contributors: Cyrille Morin, Michael Görner, Mikael Arguedas, Notou, Unknown
+0.7.12 (2017-08-06)
+-------------------
+* [fix] Support for MultiDoF only trajectories `#553 <https://github.com/ros-planning/moveit/pull/553>`_
+* Contributors: Cyrille Morin
 
-0.9.8 (2017-06-21)
-------------------
+0.7.11 (2017-06-21)
+-------------------
 * [fix] Include callback of execution status if trajectory is invalid. (`#524 <https://github.com/ros-planning/moveit/issues/524>`_)
-+* Contributors: dougsm
+* Contributors: dougsm
 
-0.9.7 (2017-06-05)
-------------------
+0.7.10 (2017-06-07)
+-------------------
 
-0.9.6 (2017-04-12)
+0.7.9 (2017-04-03)
 ------------------
 * [fix] gcc6 build error (`#471 <https://github.com/ros-planning/moveit/issues/471>`_, `#458 <https://github.com/ros-planning/moveit/issues/458>`_)
-* [fix] undefined symbol in planning_scene_monitor (`#463 <https://github.com/ros-planning/moveit/issues/463>`_)
+* [fix][moveit_ros_planning] undefined symbol in planning_scene_monitor (`#463 <https://github.com/ros-planning/moveit/issues/463>`_)
 * Contributors: Dmitry Rozhkov, Ruben Burger
 
-0.9.5 (2017-03-08)
+0.7.8 (2017-03-08)
 ------------------
-* [enhancement] Remove "catch (...)" instances, catch std::exception instead of std::runtime_error (`#445 <https://github.com/ros-planning/moveit/issues/445>`_)
-* Contributors: Bence Magyar
+* [fix][moveit_ros_warehouse] gcc6 build error `#423 <https://github.com/ros-planning/moveit/pull/423>`_
+* [fix][moveit_ros_planning] Remove unnecessary dependency on Qt4
+* Contributors: Dave Coleman, Dmitry Rozhkov
 
-0.9.4 (2017-02-06)
+0.7.7 (2017-02-06)
 ------------------
-* [fix] race conditions when updating PlanningScene (`#350 <https://github.com/ros-planning/moveit/issues/350>`_)
-* [maintenance] Use static_cast to cast to const. (`#433 <https://github.com/ros-planning/moveit/issues/433>`_)
-* [maintenance] clang-format upgraded to 3.8 (`#367 <https://github.com/ros-planning/moveit/issues/367>`_)
-* Contributors: Dave Coleman, Maarten de Vries, Robert Haschke
+* [maintenance] Use static_cast to cast to const. (`#434 <https://github.com/ros-planning/moveit/issues/434>`_)
+* [enhancement] Improved IPTP by fitting a cubic spline (`#382 <https://github.com/ros-planning/moveit/issues/382>`_)
+* Contributors: Dave Coleman, Maarten de Vries, Ruben Burger
 
-0.9.3 (2016-11-16)
+0.7.6 (2016-12-30)
 ------------------
-* [fix] cleanup urdfdom compatibility (`#319 <https://github.com/ros-planning/moveit/issues/319>`_)
-* [maintenance] Updated package.xml maintainers and author emails `#330 <https://github.com/ros-planning/moveit/issues/330>`_
-* Contributors: Dave Coleman, Ian McMahon, Robert Haschke
 
-0.9.2 (2016-11-05)
+0.7.5 (2016-12-25)
 ------------------
-* [Capability] compatibility to urdfdom < 0.4 (`#317 <https://github.com/ros-planning/moveit/issues/317>`_)
-* [Maintenance] Auto format codebase using clang-format (`#284 <https://github.com/ros-planning/moveit/issues/284>`_)
-* Contributors: Dave Coleman, Robert Haschke
 
-0.6.6 (2016-06-08)
+0.7.4 (2016-12-22)
 ------------------
-* Add library moveit_collision_plugin_loader as an exported catkin library (`#678 <https://github.com/ros-planning/moveit_ros/issues/678>`_)
-* replaced cmake_modules dependency with eigen
-* [jade] eigen3 adjustment
-* Fix compilation with C++11.
-* Enable optional build against Qt5, use -DUseQt5=On to enable it
-* merge indigo-devel changes (PR `#633 <https://github.com/ros-planning/moveit_ros/issues/633>`_ trailing whitespace) into jade-devel
+
+0.7.3 (2016-12-20)
+------------------
+
+0.7.2 (2016-06-20)
+------------------
+* apply planning scene: use newly exposed success value of newPlanningSceneMessage
+* simplify newPlanningSceneMessage
+* monitor: make newPlanningSceneMessage public
+  This is required for capabilities to update the planning scene.
+  ABI-compatible.
+* Add library moveit_collision_plugin_loader as an exported catkin library (`#677 <https://github.com/ros-planning/moveit_ros/issues/677>`_)
+* Contributors: Levi Armstrong, v4hn
+
+0.7.1 (2016-04-11)
+------------------
+* Adding acceleration scaling factor
+* Contributors: hemes
+
+0.7.0 (2016-01-30)
+------------------
 * Removed trailing whitespace from entire repository
-* Optional ability to copy velocity and effort to RobotState
-* cherry-picked PR `#614 <https://github.com/ros-planning/moveit_ros/issues/614>`_
-  fixed segfault on shutdown
 * fixed segfault on shutdown
   use of pluginlib's createUnmanagedInstance() is strongly discouraged:
   http://wiki.ros.org/class_loader#Understanding_Loading_and_Unloading
   here, the kinematics plugin libs were unloaded before destruction of corresponding pointers
 * Deprecate shape_tools
 * CurrentStateMonitor no longer requires hearing mimic joint state values.
-* Fix crash due to robot state not getting updated (moveit_ros `#559 <https://github.com/ros-planning/moveit_ros/issues/559>`_)
-* Contributors: Dave Coleman, Dave Hershberger, Isaac I.Y. Saito, Levi Armstrong, Maarten de Vries, Robert Haschke, Simon Schmeisser (isys vision), kohlbrecher
+* Fix crash due to robot state not getting updated (moveit_ros #559)
+* Contributors: Dave Coleman, Dave Hershberger, Robert Haschke, kohlbrecher
 
 0.6.5 (2015-01-24)
 ------------------

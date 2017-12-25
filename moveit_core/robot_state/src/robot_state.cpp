@@ -69,7 +69,6 @@ moveit::core::RobotState::RobotState(const RobotState& other) : rng_(NULL)
 
 moveit::core::RobotState::~RobotState()
 {
-  clearAttachedBodies();
   free(memory_);
   if (rng_)
     delete rng_;
@@ -779,28 +778,6 @@ moveit::core::RobotState::getMinDistanceToPositionBounds(const std::vector<const
     }
   }
   return std::make_pair(distance, index);
-}
-
-bool moveit::core::RobotState::isValidVelocityMove(const RobotState& other, const JointModelGroup* group,
-                                                   double dt) const
-{
-  const std::vector<const JointModel*>& jm = group->getActiveJointModels();
-  for (std::size_t joint_id = 0; joint_id < jm.size(); ++joint_id)
-  {
-    const int idx = jm[joint_id]->getFirstVariableIndex();
-    const std::vector<moveit::core::VariableBounds>& bounds = jm[joint_id]->getVariableBounds();
-
-    // Check velocity for each joint variable
-    for (std::size_t var_id = 0; var_id < jm[joint_id]->getVariableCount(); ++var_id)
-    {
-      const double dtheta = std::abs(*(position_ + idx + var_id) - *(other.getVariablePositions() + idx + var_id));
-
-      if (dtheta > dt * bounds[var_id].max_velocity_)
-        return false;
-    }
-  }
-
-  return true;
 }
 
 double moveit::core::RobotState::distance(const RobotState& other, const JointModelGroup* joint_group) const
@@ -1930,6 +1907,9 @@ double moveit::core::RobotState::computeCartesianPath(const JointModelGroup* gro
   traj.clear();
   traj.push_back(RobotStatePtr(new RobotState(*this)));
 
+  std::vector<double> dist_vector;
+  double total_dist = 0.0;
+
   double last_valid_percentage = 0.0;
   Eigen::Quaterniond start_quaternion(start_pose.rotation());
   Eigen::Quaterniond target_quaternion(rotated_target.rotation());
@@ -1943,46 +1923,35 @@ double moveit::core::RobotState::computeCartesianPath(const JointModelGroup* gro
     if (setFromIK(group, pose, link->getName(), 1, 0.0, validCallback, options))
     {
       traj.push_back(RobotStatePtr(new RobotState(*this)));
+
+      // compute the distance to the previous point (infinity norm)
+      if (test_joint_space_jump)
+      {
+        double dist_prev_point = traj.back()->distance(*traj[traj.size() - 2], group);
+        dist_vector.push_back(dist_prev_point);
+        total_dist += dist_prev_point;
+      }
     }
     else
       break;
     last_valid_percentage = percentage;
   }
 
-  if (test_joint_space_jump)
+  if (test_joint_space_jump && !dist_vector.empty())
   {
-    last_valid_percentage *= testJointSpaceJump(group, traj, jump_threshold);
+    // compute the average distance between the states we looked at
+    double thres = jump_threshold * (total_dist / (double)dist_vector.size());
+    for (std::size_t i = 0; i < dist_vector.size(); ++i)
+      if (dist_vector[i] > thres)
+      {
+        logDebug("Truncating Cartesian path due to detected jump in joint-space distance");
+        last_valid_percentage = (double)i / (double)steps;
+        traj.resize(i);
+        break;
+      }
   }
 
   return last_valid_percentage;
-}
-
-double moveit::core::RobotState::testJointSpaceJump(const JointModelGroup* group, std::vector<RobotStatePtr>& traj,
-                                                    double jump_threshold)
-{
-  std::vector<double> dist_vector;
-  dist_vector.reserve(traj.size() - 1);
-  double total_dist = 0.0;
-  for (std::size_t i = 1; i < traj.size(); ++i)
-  {
-    double dist_prev_point = traj[i]->distance(*traj[i - 1], group);
-    dist_vector.push_back(dist_prev_point);
-    total_dist += dist_prev_point;
-  }
-
-  double percentage = 1.0;
-  // compute the average distance between the states we looked at
-  double thres = jump_threshold * (total_dist / (double)dist_vector.size());
-  for (std::size_t i = 0; i < dist_vector.size(); ++i)
-    if (dist_vector[i] > thres)
-    {
-      logDebug("Truncating Cartesian path due to detected jump in joint-space distance");
-      percentage = (double)i / (double)dist_vector.size();
-      traj.resize(i);
-      break;
-    }
-
-  return percentage;
 }
 
 double moveit::core::RobotState::computeCartesianPath(const JointModelGroup* group, std::vector<RobotStatePtr>& traj,
@@ -1995,11 +1964,9 @@ double moveit::core::RobotState::computeCartesianPath(const JointModelGroup* gro
   double percentage_solved = 0.0;
   for (std::size_t i = 0; i < waypoints.size(); ++i)
   {
-    // Don't test joint space jumps for every waypoint, test them later on the whole trajectory.
-    static const double no_joint_space_jump_test = 0.0;
     std::vector<RobotStatePtr> waypoint_traj;
     double wp_percentage_solved = computeCartesianPath(group, waypoint_traj, link, waypoints[i], global_reference_frame,
-                                                       max_step, no_joint_space_jump_test, validCallback, options);
+                                                       max_step, jump_threshold, validCallback, options);
     if (fabs(wp_percentage_solved - 1.0) < std::numeric_limits<double>::epsilon())
     {
       percentage_solved = (double)(i + 1) / (double)waypoints.size();
@@ -2017,11 +1984,6 @@ double moveit::core::RobotState::computeCartesianPath(const JointModelGroup* gro
       traj.insert(traj.end(), start, waypoint_traj.end());
       break;
     }
-  }
-
-  if (jump_threshold > 0.0)
-  {
-    percentage_solved *= testJointSpaceJump(group, traj, jump_threshold);
   }
 
   return percentage_solved;

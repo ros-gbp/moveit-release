@@ -232,8 +232,6 @@ void constraint_samplers::IKConstraintSampler::clear()
   kb_.reset();
   ik_frame_ = "";
   transform_ik_ = false;
-  eef_to_ik_tip_transform_ = Eigen::Affine3d::Identity();
-  need_eef_to_ik_tip_transform_ = false;
 }
 
 bool constraint_samplers::IKConstraintSampler::configure(const IKSamplingPose& sp)
@@ -370,8 +368,8 @@ bool constraint_samplers::IKConstraintSampler::loadIKSolver()
       for (moveit::core::LinkTransformMap::const_iterator it = fixed_links.begin(); it != fixed_links.end(); ++it)
         if (moveit::core::Transforms::sameFrame(it->first->getName(), kb_->getTipFrame()))
         {
-          eef_to_ik_tip_transform_ = it->second;
-          need_eef_to_ik_tip_transform_ = true;
+          sampling_pose_.position_constraint_->swapLinkModel(jmg_->getParentModel().getLinkModel(it->first->getName()),
+                                                             it->second);
           wrong_link = false;
           break;
         }
@@ -388,8 +386,8 @@ bool constraint_samplers::IKConstraintSampler::loadIKSolver()
       for (moveit::core::LinkTransformMap::const_iterator it = fixed_links.begin(); it != fixed_links.end(); ++it)
         if (moveit::core::Transforms::sameFrame(it->first->getName(), kb_->getTipFrame()))
         {
-          eef_to_ik_tip_transform_ = it->second;
-          need_eef_to_ik_tip_transform_ = true;
+          sampling_pose_.orientation_constraint_->swapLinkModel(
+              jmg_->getParentModel().getLinkModel(it->first->getName()), it->second.rotation());
           wrong_link = false;
           break;
         }
@@ -497,6 +495,18 @@ bool constraint_samplers::IKConstraintSampler::samplePose(Eigen::Vector3d& pos, 
     // the rotation matrix that corresponds to the desired orientation
     pos = pos - quat.toRotationMatrix() * sampling_pose_.position_constraint_->getLinkOffset();
 
+  // we now have the transform we wish to perform IK for, in the planning frame
+
+  if (transform_ik_)
+  {
+    // we need to convert this transform to the frame expected by the IK solver
+    // both the planning frame and the frame for the IK are assumed to be robot links
+    Eigen::Affine3d ikq(Eigen::Translation3d(pos) * quat.toRotationMatrix());
+    ikq = ks.getFrameTransform(ik_frame_).inverse() * ikq;
+    pos = ikq.translation();
+    quat = Eigen::Quaterniond(ikq.rotation());
+  }
+
   return true;
 }
 
@@ -553,26 +563,6 @@ bool constraint_samplers::IKConstraintSampler::sampleHelper(robot_state::RobotSt
       if (verbose_)
         logInform("IK constraint sampler was unable to produce a pose to run IK for");
       return false;
-    }
-
-    // we now have the transform we wish to perform IK for, in the planning frame
-    if (transform_ik_)
-    {
-      // we need to convert this transform to the frame expected by the IK solver
-      // both the planning frame and the frame for the IK are assumed to be robot links
-      Eigen::Affine3d ikq(Eigen::Translation3d(point) * quat.toRotationMatrix());
-      ikq = reference_state.getFrameTransform(ik_frame_).inverse() * ikq;
-      point = ikq.translation();
-      quat = Eigen::Quaterniond(ikq.rotation());
-    }
-
-    if (need_eef_to_ik_tip_transform_)
-    {
-      // After sampling the pose needs to be transformed to the ik chain tip
-      Eigen::Affine3d ikq(Eigen::Translation3d(point) * quat.toRotationMatrix());
-      ikq = ikq * eef_to_ik_tip_transform_;
-      point = ikq.translation();
-      quat = Eigen::Quaterniond(ikq.rotation());
     }
 
     geometry_msgs::Pose ik_query;

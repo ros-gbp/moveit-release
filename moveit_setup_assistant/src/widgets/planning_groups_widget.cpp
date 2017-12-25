@@ -287,8 +287,8 @@ void PlanningGroupsWidget::loadGroupsTree()
 void PlanningGroupsWidget::loadGroupsTreeRecursive(srdf::Model::Group& group_it, QTreeWidgetItem* parent)
 {
   // Fonts for tree
-  const QFont top_level_font(QFont().defaultFamily(), 11, QFont::Bold);
-  const QFont type_font(QFont().defaultFamily(), 11, QFont::Normal, QFont::StyleItalic);
+  const QFont top_level_font("Arial", 11, QFont::Bold);
+  const QFont type_font("Arial", 11, QFont::Normal, QFont::StyleItalic);
 
   QTreeWidgetItem* group;
 

@@ -47,8 +47,6 @@
 #include <moveit_msgs/DisplayRobotState.h>
 #include <moveit_msgs/DisplayTrajectory.h>
 
-#include <memory>
-
 namespace ompl_interface
 {
 using namespace moveit_planners_ompl;
@@ -257,9 +255,9 @@ private:
   }
 
   ros::NodeHandle nh_;
-  std::unique_ptr<dynamic_reconfigure::Server<OMPLDynamicReconfigureConfig> > dynamic_reconfigure_server_;
-  std::unique_ptr<OMPLInterface> ompl_interface_;
-  std::unique_ptr<boost::thread> pub_valid_states_thread_;
+  boost::scoped_ptr<dynamic_reconfigure::Server<OMPLDynamicReconfigureConfig> > dynamic_reconfigure_server_;
+  boost::scoped_ptr<OMPLInterface> ompl_interface_;
+  boost::scoped_ptr<boost::thread> pub_valid_states_thread_;
   bool display_random_valid_states_;
   ros::Publisher pub_markers_;
   ros::Publisher pub_valid_states_;

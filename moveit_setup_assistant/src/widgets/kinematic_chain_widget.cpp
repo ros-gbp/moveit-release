@@ -57,7 +57,7 @@ KinematicChainWidget::KinematicChainWidget(QWidget* parent, moveit_setup_assista
 
   // Label ------------------------------------------------
   title_ = new QLabel("", this);  // specify the title from the parent widget
-  QFont group_title_font(QFont().defaultFamily(), 12, QFont::Bold);
+  QFont group_title_font("Arial", 12, QFont::Bold);
   title_->setFont(group_title_font);
   layout->addWidget(title_);
 

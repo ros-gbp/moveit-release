@@ -149,7 +149,7 @@ ConfigurationFilesWidget::ConfigurationFilesWidget(QWidget* parent,
 
   // Success label
   success_label_ = new QLabel(this);
-  QFont success_label_font(QFont().defaultFamily(), 12, QFont::Bold);
+  QFont success_label_font("Arial", 12, QFont::Bold);
   success_label_->setFont(success_label_font);
   success_label_->hide();  // only show once the files have been generated
   success_label_->setText("Configuration package generated successfully!");
@@ -1002,7 +1002,16 @@ void ConfigurationFilesWidget::loadTemplateStrings()
 
   // Pair 3
   if (config_data_->urdf_from_xacro_)
-    addTemplateString("[URDF_LOAD_ATTRIBUTE]", "command=\"$(find xacro)/xacro --inorder '" + urdf_location + "'\"");
+  {
+    // Always use xacro if urdf was actually converted from one
+    std::string cmd = "$(find xacro)/xacro.py";
+
+    // but only enable Jade+ xacro extensions if needed
+    if (config_data_->urdf_requires_jade_xacro_)
+      cmd += " --inorder";
+
+    addTemplateString("[URDF_LOAD_ATTRIBUTE]", "command=\"" + cmd + " '" + urdf_location + "'\"");
+  }
   else
     addTemplateString("[URDF_LOAD_ATTRIBUTE]", "textfile=\"" + urdf_location + "\"");
 

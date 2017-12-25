@@ -45,10 +45,10 @@
 #include <std_msgs/String.h>
 #include <ros/ros.h>
 #include <moveit/controller_manager/controller_manager.h>
+#include <moveit/macros/deprecation.h>
 #include <boost/thread.hpp>
 #include <pluginlib/class_loader.h>
-
-#include <memory>
+#include <boost/scoped_ptr.hpp>
 
 namespace trajectory_execution_manager
 {
@@ -82,10 +82,14 @@ public:
   };
 
   /// Load the controller manager plugin, start listening for events on a topic.
+  MOVEIT_DEPRECATED TrajectoryExecutionManager(const robot_model::RobotModelConstPtr& kmodel);  // switch to following
+                                                                                                // constructor!
   TrajectoryExecutionManager(const robot_model::RobotModelConstPtr& kmodel,
                              const planning_scene_monitor::CurrentStateMonitorPtr& csm);
 
   /// Load the controller manager plugin, start listening for events on a topic.
+  MOVEIT_DEPRECATED TrajectoryExecutionManager(const robot_model::RobotModelConstPtr& kmodel,
+                                               bool manage_controllers);  // switch to following constructor!
   TrajectoryExecutionManager(const robot_model::RobotModelConstPtr& kmodel,
                              const planning_scene_monitor::CurrentStateMonitorPtr& csm, bool manage_controllers);
 
@@ -289,7 +293,6 @@ private:
   void executeThread(const ExecutionCompleteCallback& callback, const PathSegmentCompleteCallback& part_callback,
                      bool auto_clear);
   bool executePart(std::size_t part_index);
-  bool waitForRobotToStop(const TrajectoryExecutionContext& context, double wait_time = 1.0);
   void continuousExecutionThread();
 
   void stopExecutionInternal();
@@ -306,10 +309,10 @@ private:
   bool manage_controllers_;
 
   // thread used to execute trajectories using the execute() command
-  std::unique_ptr<boost::thread> execution_thread_;
+  boost::scoped_ptr<boost::thread> execution_thread_;
 
   // thread used to execute trajectories using pushAndExecute()
-  std::unique_ptr<boost::thread> continuous_execution_thread_;
+  boost::scoped_ptr<boost::thread> continuous_execution_thread_;
 
   boost::mutex execution_state_mutex_;
   boost::mutex continuous_execution_mutex_;
@@ -331,7 +334,7 @@ private:
   std::vector<TrajectoryExecutionContext*> trajectories_;
   std::deque<TrajectoryExecutionContext*> continuous_execution_queue_;
 
-  std::unique_ptr<pluginlib::ClassLoader<moveit_controller_manager::MoveItControllerManager> >
+  boost::scoped_ptr<pluginlib::ClassLoader<moveit_controller_manager::MoveItControllerManager> >
       controller_manager_loader_;
   moveit_controller_manager::MoveItControllerManagerPtr controller_manager_;
 

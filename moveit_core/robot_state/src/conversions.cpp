@@ -90,9 +90,8 @@ static bool _multiDOFJointsToRobotState(const sensor_msgs::MultiDOFJointState& m
         inv_t = t2fixed_frame.inverse();
         use_inv_t = true;
       }
-      catch (std::exception& ex)
+      catch (std::runtime_error&)
       {
-        logError("Caught %s", ex.what());
         error = true;
       }
     else
@@ -395,17 +394,10 @@ void moveit::core::robotStateToRobotStateMsg(const RobotState& state, moveit_msg
   {
     std::vector<const AttachedBody*> attached_bodies;
     state.getAttachedBodies(attached_bodies);
-    attachedBodiesToAttachedCollisionObjectMsgs(attached_bodies, robot_state.attached_collision_objects);
+    robot_state.attached_collision_objects.resize(attached_bodies.size());
+    for (std::size_t i = 0; i < attached_bodies.size(); ++i)
+      _attachedBodyToMsg(*attached_bodies[i], robot_state.attached_collision_objects[i]);
   }
-}
-
-void moveit::core::attachedBodiesToAttachedCollisionObjectMsgs(
-    const std::vector<const AttachedBody*>& attached_bodies,
-    std::vector<moveit_msgs::AttachedCollisionObject> attached_collision_objs)
-{
-  attached_collision_objs.resize(attached_bodies.size());
-  for (std::size_t i = 0; i < attached_bodies.size(); ++i)
-    _attachedBodyToMsg(*attached_bodies[i], attached_collision_objs[i]);
 }
 
 void moveit::core::robotStateToJointStateMsg(const RobotState& state, sensor_msgs::JointState& joint_state)

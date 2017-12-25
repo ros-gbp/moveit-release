@@ -40,8 +40,6 @@
 #include <moveit/macros/class_forward.h>
 #include <rviz/display.h>
 #include <rviz/panel_dock_widget.h>
-
-#ifndef Q_MOC_RUN
 #include <moveit/rviz_plugin_render_tools/robot_state_visualization.h>
 #include <moveit/rviz_plugin_render_tools/trajectory_panel.h>
 #include <ros/ros.h>
@@ -49,7 +47,6 @@
 #include <moveit/robot_state/robot_state.h>
 #include <moveit/robot_trajectory/robot_trajectory.h>
 #include <moveit_msgs/DisplayTrajectory.h>
-#endif
 
 namespace rviz
 {

@@ -43,7 +43,7 @@
 
 // This function needs to return void so the gtest FAIL() macro inside
 // it works right.
-void loadRobotModel(urdf::ModelInterfaceSharedPtr& robot_model_out)
+void loadRobotModel(boost::shared_ptr<urdf::ModelInterface>& robot_model_out)
 {
   boost::filesystem::path res_path(MOVEIT_TEST_RESOURCES_DIR);
 
@@ -62,9 +62,9 @@ void loadRobotModel(urdf::ModelInterfaceSharedPtr& robot_model_out)
 
 TEST(PlanningScene, LoadRestore)
 {
-  urdf::ModelInterfaceSharedPtr urdf_model;
+  boost::shared_ptr<urdf::ModelInterface> urdf_model;
   loadRobotModel(urdf_model);
-  srdf::ModelSharedPtr srdf_model(new srdf::Model());
+  boost::shared_ptr<srdf::Model> srdf_model(new srdf::Model());
   planning_scene::PlanningScene ps(urdf_model, srdf_model);
   moveit_msgs::PlanningScene ps_msg;
   ps.getPlanningSceneMsg(ps_msg);
@@ -73,9 +73,9 @@ TEST(PlanningScene, LoadRestore)
 
 TEST(PlanningScene, LoadRestoreDiff)
 {
-  urdf::ModelInterfaceSharedPtr urdf_model;
+  boost::shared_ptr<urdf::ModelInterface> urdf_model;
   loadRobotModel(urdf_model);
-  srdf::ModelSharedPtr srdf_model(new srdf::Model());
+  boost::shared_ptr<srdf::Model> srdf_model(new srdf::Model());
 
   planning_scene::PlanningScenePtr ps(new planning_scene::PlanningScene(urdf_model, srdf_model));
 
@@ -110,8 +110,8 @@ TEST(PlanningScene, LoadRestoreDiff)
 
 TEST(PlanningScene, MakeAttachedDiff)
 {
-  srdf::ModelSharedPtr srdf_model(new srdf::Model());
-  urdf::ModelInterfaceSharedPtr urdf_model;
+  boost::shared_ptr<srdf::Model> srdf_model(new srdf::Model());
+  boost::shared_ptr<urdf::ModelInterface> urdf_model;
   loadRobotModel(urdf_model);
 
   planning_scene::PlanningScenePtr ps(new planning_scene::PlanningScene(urdf_model, srdf_model));

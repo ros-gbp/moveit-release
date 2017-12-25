@@ -45,8 +45,6 @@
 #include <geometry_msgs/Vector3.h>
 #include <geometry_msgs/Wrench.h>
 
-#include <memory>
-
 /** \brief This namespace includes the dynamics_solver library */
 namespace dynamics_solver
 {
@@ -136,8 +134,8 @@ public:
   }
 
 private:
-  std::shared_ptr<KDL::ChainIdSolver_RNE> chain_id_solver_;  // KDL chain inverse dynamics
-  KDL::Chain kdl_chain_;                                     // KDL chain
+  boost::shared_ptr<KDL::ChainIdSolver_RNE> chain_id_solver_;  // KDL chain inverse dynamics
+  KDL::Chain kdl_chain_;                                       // KDL chain
 
   robot_model::RobotModelConstPtr robot_model_;
   const robot_model::JointModelGroup* joint_model_group_;

@@ -151,9 +151,9 @@ void TransformProvider::updateTransforms()
       handle2context_[contextIt->first]->mutex_.unlock();
       continue;
     }
-    catch (std::exception& ex)
+    catch (...)
     {
-      ROS_ERROR("Caught %s while updating transforms", ex.what());
+      ROS_ERROR("unknwon tf error");
     }
     poseTFToEigen(out_pose, transformation);
     handle2context_[contextIt->first]->mutex_.lock();

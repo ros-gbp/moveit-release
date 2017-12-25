@@ -278,7 +278,7 @@ void robot_trajectory::RobotTrajectory::getRobotTrajectoryMsg(moveit_msgs::Robot
         tf::transformEigenToMsg(waypoints_[i]->getJointTransform(mdof[j]),
                                 trajectory.multi_dof_joint_trajectory.points[i].transforms[j]);
         // TODO: currently only checking for planar multi DOF joints / need to add check for floating
-        if (waypoints_[i]->hasVelocities() && (mdof[j]->getType() == robot_model::JointModel::JointType::PLANAR))
+        if (waypoints_[i]->hasVelocities() && (mdof[j]->getType() == robot_model::JointModel::PLANAR))
         {
           const std::vector<std::string> names = mdof[j]->getVariableNames();
           const double* velocities = waypoints_[i]->getJointVelocities(mdof[j]);
@@ -430,7 +430,7 @@ void robot_trajectory::RobotTrajectory::findWayPointIndicesForDurationAfterStart
     blend = (duration - before_time) / duration_from_previous_[index];
 }
 
-double robot_trajectory::RobotTrajectory::getWayPointDurationFromStart(std::size_t index) const
+double robot_trajectory::RobotTrajectory::getWaypointDurationFromStart(std::size_t index) const
 {
   if (duration_from_previous_.empty())
     return 0.0;
@@ -441,11 +441,6 @@ double robot_trajectory::RobotTrajectory::getWayPointDurationFromStart(std::size
   for (std::size_t i = 0; i <= index; ++i)
     time += duration_from_previous_[i];
   return time;
-}
-
-double robot_trajectory::RobotTrajectory::getWaypointDurationFromStart(std::size_t index) const
-{
-  return getWayPointDurationFromStart(index);
 }
 
 bool robot_trajectory::RobotTrajectory::getStateAtDurationFromStart(const double request_duration,

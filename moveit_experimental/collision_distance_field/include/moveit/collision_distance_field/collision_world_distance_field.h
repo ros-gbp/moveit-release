@@ -37,25 +37,20 @@
 #ifndef MOVEIT_COLLISION_DISTANCE_FIELD_COLLISION_WORLD_DISTANCE_FIELD_
 #define MOVEIT_COLLISION_DISTANCE_FIELD_COLLISION_WORLD_DISTANCE_FIELD_
 
-#include <moveit/macros/class_forward.h>
 #include <moveit/collision_detection/collision_world.h>
 #include <moveit/collision_distance_field/collision_distance_field_types.h>
 #include <moveit/collision_distance_field/collision_robot_distance_field.h>
 
 namespace collision_detection
 {
-MOVEIT_CLASS_FORWARD(CollisionWorldDistanceField)
-
 class CollisionWorldDistanceField : public CollisionWorld
 {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
-  MOVEIT_CLASS_FORWARD(DistanceFieldCacheEntry)
   struct DistanceFieldCacheEntry
   {
     std::map<std::string, std::vector<PosedBodyPointDecompositionPtr>> posed_body_point_decompositions_;
-    distance_field::DistanceFieldPtr distance_field_;
+    boost::shared_ptr<distance_field::DistanceField> distance_field_;
   };
 
   CollisionWorldDistanceField(Eigen::Vector3d size = Eigen::Vector3d(DEFAULT_SIZE_X, DEFAULT_SIZE_Y, DEFAULT_SIZE_Z),
@@ -80,27 +75,29 @@ public:
                               const robot_state::RobotState& state) const;
 
   virtual void checkCollision(const CollisionRequest& req, CollisionResult& res, const CollisionRobot& robot,
-                              const robot_state::RobotState& state, GroupStateRepresentationPtr& gsr) const;
+                              const robot_state::RobotState& state,
+                              boost::shared_ptr<GroupStateRepresentation>& gsr) const;
 
   virtual void checkCollision(const CollisionRequest& req, CollisionResult& res, const CollisionRobot& robot,
                               const robot_state::RobotState& state, const AllowedCollisionMatrix& acm) const;
 
   virtual void checkCollision(const CollisionRequest& req, CollisionResult& res, const CollisionRobot& robot,
                               const robot_state::RobotState& state, const AllowedCollisionMatrix& acm,
-                              GroupStateRepresentationPtr& gsr) const;
+                              boost::shared_ptr<GroupStateRepresentation>& gsr) const;
 
   virtual void checkRobotCollision(const CollisionRequest& req, CollisionResult& res, const CollisionRobot& robot,
                                    const robot_state::RobotState& state) const;
 
   virtual void checkRobotCollision(const CollisionRequest& req, CollisionResult& res, const CollisionRobot& robot,
-                                   const robot_state::RobotState& state, GroupStateRepresentationPtr& gsr) const;
+                                   const robot_state::RobotState& state,
+                                   boost::shared_ptr<GroupStateRepresentation>& gsr) const;
 
   virtual void checkRobotCollision(const CollisionRequest& req, CollisionResult& res, const CollisionRobot& robot,
                                    const robot_state::RobotState& state, const AllowedCollisionMatrix& acm) const;
 
   virtual void checkRobotCollision(const CollisionRequest& req, CollisionResult& res, const CollisionRobot& robot,
                                    const robot_state::RobotState& state, const AllowedCollisionMatrix& acm,
-                                   GroupStateRepresentationPtr& gsr) const;
+                                   boost::shared_ptr<GroupStateRepresentation>& gsr) const;
 
   virtual void checkRobotCollision(const CollisionRequest& req, CollisionResult& res, const CollisionRobot& robot,
                                    const robot_state::RobotState& state1, const robot_state::RobotState& state2) const
@@ -120,22 +117,20 @@ public:
   {
   }
 
-  virtual double distanceRobot(const CollisionRobot& robot, const robot_state::RobotState& state,
-                               bool verbose = false) const
+  virtual double distanceRobot(const CollisionRobot& robot, const robot_state::RobotState& state) const
   {
     return 0.0;
   }
   virtual double distanceRobot(const CollisionRobot& robot, const robot_state::RobotState& state,
-                               const AllowedCollisionMatrix& acm, bool verbose = false) const
+                               const AllowedCollisionMatrix& acm) const
   {
     return 0.0;
   }
-  virtual double distanceWorld(const CollisionWorld& world, bool verbose = false) const
+  virtual double distanceWorld(const CollisionWorld& world) const
   {
     return 0.0;
   }
-  virtual double distanceWorld(const CollisionWorld& world, const AllowedCollisionMatrix& acm,
-                               bool verbose = false) const
+  virtual double distanceWorld(const CollisionWorld& world, const AllowedCollisionMatrix& acm) const
   {
     return 0.0;
   }
@@ -144,36 +139,38 @@ public:
 
   void generateEnvironmentDistanceField(bool redo = true);
 
-  distance_field::DistanceFieldConstPtr getDistanceField() const
+  boost::shared_ptr<const distance_field::DistanceField> getDistanceField() const
   {
     return distance_field_cache_entry_->distance_field_;
   }
 
-  collision_detection::GroupStateRepresentationConstPtr getLastGroupStateRepresentation() const
+  boost::shared_ptr<const collision_detection::GroupStateRepresentation> getLastGroupStateRepresentation() const
   {
     return last_gsr_;
   }
 
   void getCollisionGradients(const CollisionRequest& req, CollisionResult& res, const CollisionRobot& robot,
                              const robot_state::RobotState& state, const AllowedCollisionMatrix* acm,
-                             GroupStateRepresentationPtr& gsr) const;
+                             boost::shared_ptr<GroupStateRepresentation>& gsr) const;
 
   void getAllCollisions(const CollisionRequest& req, CollisionResult& res, const CollisionRobot& robot,
                         const robot_state::RobotState& state, const AllowedCollisionMatrix* acm,
-                        GroupStateRepresentationPtr& gsr) const;
+                        boost::shared_ptr<GroupStateRepresentation>& gsr) const;
 
 protected:
-  DistanceFieldCacheEntryPtr generateDistanceFieldCacheEntry();
+  boost::shared_ptr<DistanceFieldCacheEntry> generateDistanceFieldCacheEntry();
 
-  void updateDistanceObject(const std::string& id, CollisionWorldDistanceField::DistanceFieldCacheEntryPtr& dfce,
+  void updateDistanceObject(const std::string& id,
+                            boost::shared_ptr<CollisionWorldDistanceField::DistanceFieldCacheEntry>& dfce,
                             EigenSTL::vector_Vector3d& add_points, EigenSTL::vector_Vector3d& subtract_points);
 
   bool getEnvironmentCollisions(const CollisionRequest& req, CollisionResult& res,
-                                const distance_field::DistanceFieldConstPtr& env_distance_field,
-                                GroupStateRepresentationPtr& gsr) const;
+                                const boost::shared_ptr<const distance_field::DistanceField>& env_distance_field,
+                                boost::shared_ptr<GroupStateRepresentation>& gsr) const;
 
-  bool getEnvironmentProximityGradients(const distance_field::DistanceFieldConstPtr& env_distance_field,
-                                        GroupStateRepresentationPtr& gsr) const;
+  bool
+  getEnvironmentProximityGradients(const boost::shared_ptr<const distance_field::DistanceField>& env_distance_field,
+                                   boost::shared_ptr<GroupStateRepresentation>& gsr) const;
 
   static void notifyObjectChange(CollisionWorldDistanceField* self, const ObjectConstPtr& obj, World::Action action);
 
@@ -185,8 +182,8 @@ protected:
   double max_propogation_distance_;
 
   mutable boost::mutex update_cache_lock_;
-  DistanceFieldCacheEntryPtr distance_field_cache_entry_;
-  GroupStateRepresentationPtr last_gsr_;
+  boost::shared_ptr<DistanceFieldCacheEntry> distance_field_cache_entry_;
+  boost::shared_ptr<collision_detection::GroupStateRepresentation> last_gsr_;
   World::ObserverHandle observer_handle_;
 };
 }

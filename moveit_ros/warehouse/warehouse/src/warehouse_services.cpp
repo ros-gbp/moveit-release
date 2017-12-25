@@ -133,27 +133,9 @@ int main(int argc, char** argv)
   int port;
   node.param<std::string>("warehouse_host", host, "localhost");
   node.param<int>("warehouse_port", port, 33829);
-  warehouse_ros::DatabaseConnection::Ptr conn;
 
-  try
-  {
-    conn = moveit_warehouse::loadDatabase();
-    conn->setParams(host, port, 5.0);
-
-    ROS_INFO("Connecting to warehouse on %s:%d", host.c_str(), port);
-    if (!conn->connect())
-    {
-      ROS_ERROR("Failed to connect to DB on %s:%d", host.c_str(), port);
-      return 1;
-    }
-  }
-  catch (std::exception& ex)
-  {
-    ROS_ERROR("%s", ex.what());
-    return 1;
-  }
-
-  moveit_warehouse::RobotStateStorage rs(conn);
+  ROS_INFO("Connecting to warehouse on %s:%d", host.c_str(), port);
+  moveit_warehouse::RobotStateStorage rs(host, port);
 
   std::vector<std::string> names;
   rs.getKnownRobotStates(names);
