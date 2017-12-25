@@ -870,8 +870,33 @@ bool TrajectoryExecutionManager::distributeTrajectory(const moveit_msgs::RobotTr
               trajectory.multi_dof_joint_trajectory.points[j].time_from_start;
           parts[i].multi_dof_joint_trajectory.points[j].transforms.resize(bijection.size());
           for (std::size_t k = 0; k < bijection.size(); ++k)
+          {
             parts[i].multi_dof_joint_trajectory.points[j].transforms[k] =
                 trajectory.multi_dof_joint_trajectory.points[j].transforms[bijection[k]];
+
+            if (!trajectory.multi_dof_joint_trajectory.points[j].velocities.empty())
+            {
+              parts[i].multi_dof_joint_trajectory.points[j].velocities.resize(bijection.size());
+
+              parts[i].multi_dof_joint_trajectory.points[j].velocities[0].linear.x =
+                  trajectory.multi_dof_joint_trajectory.points[j].velocities[0].linear.x * execution_velocity_scaling_;
+
+              parts[i].multi_dof_joint_trajectory.points[j].velocities[0].linear.y =
+                  trajectory.multi_dof_joint_trajectory.points[j].velocities[0].linear.y * execution_velocity_scaling_;
+
+              parts[i].multi_dof_joint_trajectory.points[j].velocities[0].linear.z =
+                  trajectory.multi_dof_joint_trajectory.points[j].velocities[0].linear.z * execution_velocity_scaling_;
+
+              parts[i].multi_dof_joint_trajectory.points[j].velocities[0].angular.x =
+                  trajectory.multi_dof_joint_trajectory.points[j].velocities[0].angular.x * execution_velocity_scaling_;
+
+              parts[i].multi_dof_joint_trajectory.points[j].velocities[0].angular.y =
+                  trajectory.multi_dof_joint_trajectory.points[j].velocities[0].angular.y * execution_velocity_scaling_;
+
+              parts[i].multi_dof_joint_trajectory.points[j].velocities[0].angular.z =
+                  trajectory.multi_dof_joint_trajectory.points[j].velocities[0].angular.z * execution_velocity_scaling_;
+            }
+          }
         }
       }
       if (!intersect_single.empty())
@@ -942,6 +967,16 @@ bool TrajectoryExecutionManager::validate(const TrajectoryExecutionContext& cont
   for (std::vector<moveit_msgs::RobotTrajectory>::const_iterator traj_it = context.trajectory_parts_.begin();
        traj_it != context.trajectory_parts_.end(); ++traj_it)
   {
+    if (!traj_it->multi_dof_joint_trajectory.points.empty())
+    {
+      ROS_WARN_NAMED("traj_execution", "Validation of MultiDOFJointTrajectory is not implemented.");
+      // go on to check joint_trajectory component though
+    }
+    if (traj_it->joint_trajectory.points.empty())
+    {
+      // There is nothing to check
+      continue;
+    }
     const std::vector<double>& positions = traj_it->joint_trajectory.points.front().positions;
     const std::vector<std::string>& joint_names = traj_it->joint_trajectory.joint_names;
     const std::size_t n = joint_names.size();
@@ -960,7 +995,6 @@ bool TrajectoryExecutionManager::validate(const TrajectoryExecutionContext& cont
         return false;
       }
 
-      // TODO: check multi-DoF joints ?
       double cur_position = current_state->getJointPositions(jm)[0];
       double traj_position = positions[i];
       // normalize positions and compare
