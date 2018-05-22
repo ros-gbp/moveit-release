@@ -39,8 +39,6 @@
 #include <moveit/plan_execution/plan_with_sensing.h>
 #include <moveit/move_group_pick_place_capability/capability_names.h>
 
-#include <eigen_conversions/eigen_msg.h>
-
 move_group::MoveGroupPickPlaceAction::MoveGroupPickPlaceAction()
   : MoveGroupCapability("PickPlaceAction"), pickup_state_(IDLE)
 {
@@ -460,5 +458,5 @@ void move_group::MoveGroupPickPlaceAction::fillGrasps(moveit_msgs::PickupGoal& g
   goal.possible_grasps.push_back(g);
 }
 
-#include <class_loader/class_loader.h>
+#include <class_loader/class_loader.hpp>
 CLASS_LOADER_REGISTER_CLASS(move_group::MoveGroupPickPlaceAction, move_group::MoveGroupCapability)

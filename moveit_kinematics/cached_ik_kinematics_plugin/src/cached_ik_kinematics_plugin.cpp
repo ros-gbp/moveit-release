@@ -1,7 +1,7 @@
 /*********************************************************************
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2012, Willow Garage, Inc.
+ *  Copyright (c) 2017, Rice University
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -14,7 +14,7 @@
  *     copyright notice, this list of conditions and the following
  *     disclaimer in the documentation and/or other materials provided
  *     with the distribution.
- *   * Neither the name of Willow Garage nor the names of its
+ *   * Neither the name of the Rice University nor the names of its
  *     contributors may be used to endorse or promote products derived
  *     from this software without specific prior written permission.
  *
@@ -32,32 +32,33 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-/* Author: Ioan Sucan */
+/* Author: Mark Moll */
 
-#ifndef MOVEIT_MOVE_GROUP_EXECUTE_TRAJECTORY_SERVICE_CAPABILITY_
-#define MOVEIT_MOVE_GROUP_EXECUTE_TRAJECTORY_SERVICE_CAPABILITY_
+#include <moveit/cached_ik_kinematics_plugin/cached_ik_kinematics_plugin.h>
+#include <moveit/kdl_kinematics_plugin/kdl_kinematics_plugin.h>
+// compilation error: KDL and LMA kinematics plugins declare same types
+//#include <moveit/lma_kinematics_plugin/lma_kinematics_plugin.h>
+#include <moveit/srv_kinematics_plugin/srv_kinematics_plugin.h>
 
-#include <moveit/move_group/move_group_capability.h>
-#include <moveit_msgs/ExecuteKnownTrajectory.h>
+#include <pluginlib/class_list_macros.hpp>
+// register CachedIKKinematicsPlugin<KDLKinematicsPlugin> as a KinematicsBase implementation
+PLUGINLIB_EXPORT_CLASS(
+    cached_ik_kinematics_plugin::CachedIKKinematicsPlugin<kdl_kinematics_plugin::KDLKinematicsPlugin>,
+    kinematics::KinematicsBase);
 
-namespace move_group
-{
-class MoveGroupExecuteService : public MoveGroupCapability
-{
-public:
-  MoveGroupExecuteService();
-  ~MoveGroupExecuteService();
+// register CachedIKKinematicsPlugin<SrvKinematicsPlugin> as a KinematicsBase implementation
+// PLUGINLIB_EXPORT_CLASS(cached_ik_kinematics_plugin::CachedIKKinematicsPlugin<lma_kinematics_plugin::LMAKinematicsPlugin>,
+// kinematics::KinematicsBase);
 
-  virtual void initialize();
+// register CachedIKKinematicsPlugin<SrvKinematicsPlugin> as a KinematicsBase implementation
+PLUGINLIB_EXPORT_CLASS(
+    cached_ik_kinematics_plugin::CachedIKKinematicsPlugin<srv_kinematics_plugin::SrvKinematicsPlugin>,
+    kinematics::KinematicsBase);
 
-private:
-  bool executeTrajectoryService(moveit_msgs::ExecuteKnownTrajectory::Request& req,
-                                moveit_msgs::ExecuteKnownTrajectory::Response& res);
-
-  ros::ServiceServer execute_service_;
-  ros::CallbackQueue callback_queue_;
-  ros::AsyncSpinner spinner_;
-};
-}
-
+#ifdef CACHED_IK_KINEMATICS_TRAC_IK
+#include <trac_ik/trac_ik_kinematics_plugin.hpp>
+// register CachedIKKinematicsPlugin<TRAC_IKKinematicsPlugin> as a KinematicsBase implementation
+PLUGINLIB_EXPORT_CLASS(
+    cached_ik_kinematics_plugin::CachedIKKinematicsPlugin<trac_ik_kinematics_plugin::TRAC_IKKinematicsPlugin>,
+    kinematics::KinematicsBase);
 #endif

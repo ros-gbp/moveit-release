@@ -3,14 +3,14 @@ project(moveit_core)
 
 add_compile_options(-std=c++11)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
   message("${PROJECT_NAME}: You did not request a specific build type: Choosing 'Release' for maximum performance")
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
 find_package(Boost REQUIRED system filesystem date_time thread iostreams)
-
-find_package(console_bridge REQUIRED)
 
 find_package(Eigen3 REQUIRED)
 
@@ -32,7 +32,8 @@ find_package(urdfdom_headers REQUIRED)
 
 find_package(catkin REQUIRED
 COMPONENTS
-  eigen_conversions
+  tf2_eigen
+  tf2_kdl
   eigen_stl_containers
   geometric_shapes
   geometry_msgs
@@ -42,6 +43,7 @@ COMPONENTS
   random_numbers
   roslib
   rostime
+  rosconsole
   sensor_msgs
   shape_msgs
   srdfdom
@@ -110,7 +112,7 @@ catkin_package(
     moveit_dynamics_solver
     ${OCTOMAP_LIBRARIES}
   CATKIN_DEPENDS
-    eigen_conversions
+    tf2_eigen
     eigen_stl_containers
     geometric_shapes
     geometry_msgs
@@ -128,7 +130,6 @@ catkin_package(
     EIGEN3
     LIBFCL
     OCTOMAP
-    console_bridge
     urdfdom
     urdfdom_headers
     )
@@ -141,7 +142,6 @@ include_directories(${THIS_PACKAGE_INCLUDE_DIRS}
                     ${VERSION_FILE_PATH}
                     ${Boost_INCLUDE_DIRS}
                     ${catkin_INCLUDE_DIRS}
-                    ${console_bridge_INCLUDE_DIRS}
                     ${urdfdom_INCLUDE_DIRS}
                     ${urdfdom_headers_INCLUDE_DIRS}
                     ${OCTOMAP_INCLUDE_DIRS}

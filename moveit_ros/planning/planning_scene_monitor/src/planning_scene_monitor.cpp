@@ -41,7 +41,10 @@
 
 #include <dynamic_reconfigure/server.h>
 #include <moveit_ros_planning/PlanningSceneMonitorDynamicReconfigureConfig.h>
-#include <tf_conversions/tf_eigen.h>
+#include <tf2/exceptions.h>
+#include <tf2/LinearMath/Transform.h>
+#include <tf2_eigen/tf2_eigen.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <moveit/profiler/profiler.h>
 
 #include <memory>
@@ -115,9 +118,9 @@ const std::string planning_scene_monitor::PlanningSceneMonitor::MONITORED_PLANNI
                                                                                                  "scene";
 
 planning_scene_monitor::PlanningSceneMonitor::PlanningSceneMonitor(const std::string& robot_description,
-                                                                   const boost::shared_ptr<tf::Transformer>& tf,
+                                                                   const std::shared_ptr<tf2_ros::Buffer>& tf_buffer,
                                                                    const std::string& name)
-  : monitor_name_(name), nh_("~"), tf_(tf)
+  : monitor_name_(name), nh_("~"), tf_buffer_(tf_buffer)
 {
   rm_loader_.reset(new robot_model_loader::RobotModelLoader(robot_description));
   initialize(planning_scene::PlanningScenePtr());
@@ -125,26 +128,26 @@ planning_scene_monitor::PlanningSceneMonitor::PlanningSceneMonitor(const std::st
 
 planning_scene_monitor::PlanningSceneMonitor::PlanningSceneMonitor(const planning_scene::PlanningScenePtr& scene,
                                                                    const std::string& robot_description,
-                                                                   const boost::shared_ptr<tf::Transformer>& tf,
+                                                                   const std::shared_ptr<tf2_ros::Buffer>& tf_buffer,
                                                                    const std::string& name)
-  : monitor_name_(name), nh_("~"), tf_(tf)
+  : monitor_name_(name), nh_("~"), tf_buffer_(tf_buffer)
 {
   rm_loader_.reset(new robot_model_loader::RobotModelLoader(robot_description));
   initialize(scene);
 }
 
 planning_scene_monitor::PlanningSceneMonitor::PlanningSceneMonitor(
-    const robot_model_loader::RobotModelLoaderPtr& rm_loader, const boost::shared_ptr<tf::Transformer>& tf,
+    const robot_model_loader::RobotModelLoaderPtr& rm_loader, const std::shared_ptr<tf2_ros::Buffer>& tf_buffer,
     const std::string& name)
-  : monitor_name_(name), nh_("~"), tf_(tf), rm_loader_(rm_loader)
+  : monitor_name_(name), nh_("~"), tf_buffer_(tf_buffer), rm_loader_(rm_loader)
 {
   initialize(planning_scene::PlanningScenePtr());
 }
 
 planning_scene_monitor::PlanningSceneMonitor::PlanningSceneMonitor(
     const planning_scene::PlanningScenePtr& scene, const robot_model_loader::RobotModelLoaderPtr& rm_loader,
-    const boost::shared_ptr<tf::Transformer>& tf, const std::string& name)
-  : monitor_name_(name), nh_("~"), tf_(tf), rm_loader_(rm_loader)
+    const std::shared_ptr<tf2_ros::Buffer>& tf_buffer, const std::string& name)
+  : monitor_name_(name), nh_("~"), tf_buffer_(tf_buffer), rm_loader_(rm_loader)
 {
   initialize(scene);
 }
@@ -174,7 +177,6 @@ void planning_scene_monitor::PlanningSceneMonitor::initialize(const planning_sce
 {
   moveit::tools::Profiler::ScopedStart prof_start;
   moveit::tools::Profiler::ScopedBlock prof_block("PlanningSceneMonitor::initialize");
-  enforce_next_state_update_ = false;
 
   if (monitor_name_.empty())
     monitor_name_ = "planning_scene_monitor";
@@ -608,10 +610,10 @@ void planning_scene_monitor::PlanningSceneMonitor::newPlanningSceneWorldCallback
 }
 
 void planning_scene_monitor::PlanningSceneMonitor::collisionObjectFailTFCallback(
-    const moveit_msgs::CollisionObjectConstPtr& obj, tf::filter_failure_reasons::FilterFailureReason reason)
+    const moveit_msgs::CollisionObjectConstPtr& obj, tf2_ros::filter_failure_reasons::FilterFailureReason reason)
 {
   // if we just want to remove objects, the frame does not matter
-  if (reason == tf::filter_failure_reasons::EmptyFrameID && obj->operation == moveit_msgs::CollisionObject::REMOVE)
+  if (reason == tf2_ros::filter_failure_reasons::EmptyFrameID && obj->operation == moveit_msgs::CollisionObject::REMOVE)
     collisionObjectCallback(obj);
 }
 
@@ -871,17 +873,24 @@ bool planning_scene_monitor::PlanningSceneMonitor::waitForCurrentRobotState(cons
 
   if (current_state_monitor_)
   {
-    // Wait for next robot update in state monitor. Those updates are only passed to PSM when robot actually moved!
-    enforce_next_state_update_ = true;  // enforce potential updates to be directly applied
+    // Wait for next robot update in state monitor.
     bool success = current_state_monitor_->waitForCurrentState(t, wait_time);
-    enforce_next_state_update_ =
-        false;  // back to normal throttling behavior, not applying incoming updates immediately
 
-    /* If the robot doesn't move, we will never receive an update from CSM in planning scene.
-       As we ensured that an update, if it is triggered by CSM, is directly passed to the scene,
-       we can early return true here (if we successfully received a CSM update). Otherwise return false. */
+    /* As robot updates are passed to the planning scene only in throttled fashion, there might
+       be still an update pending. If so, explicitly update the planning scene here.
+       If waitForCurrentState failed, we didn't get any new state updates within wait_time. */
     if (success)
+    {
+      boost::mutex::scoped_lock lock(state_pending_mutex_);
+      if (state_update_pending_)  // enforce state update
+      {
+        state_update_pending_ = false;
+        last_robot_state_update_wall_time_ = ros::WallTime::now();
+        lock.unlock();
+        updateSceneWithCurrentState();
+      }
       return true;
+    }
 
     ROS_WARN_NAMED(LOGNAME, "Failed to fetch current robot state.");
     return false;
@@ -965,7 +974,7 @@ bool planning_scene_monitor::PlanningSceneMonitor::getShapeTransformCache(
     const std::string& target_frame, const ros::Time& target_time,
     occupancy_map_monitor::ShapeTransformCache& cache) const
 {
-  if (!tf_)
+  if (!tf_buffer_)
     return false;
   try
   {
@@ -973,40 +982,35 @@ bool planning_scene_monitor::PlanningSceneMonitor::getShapeTransformCache(
 
     for (LinkShapeHandles::const_iterator it = link_shape_handles_.begin(); it != link_shape_handles_.end(); ++it)
     {
-      tf::StampedTransform tr;
-      tf_->waitForTransform(target_frame, it->first->getName(), target_time, shape_transform_cache_lookup_wait_time_);
-      tf_->lookupTransform(target_frame, it->first->getName(), target_time, tr);
-      Eigen::Affine3d ttr;
-      tf::transformTFToEigen(tr, ttr);
+      tf_buffer_->canTransform(target_frame, it->first->getName(), target_time,
+                               shape_transform_cache_lookup_wait_time_);
+      Eigen::Affine3d ttr =
+          tf2::transformToEigen(tf_buffer_->lookupTransform(target_frame, it->first->getName(), target_time));
       for (std::size_t j = 0; j < it->second.size(); ++j)
         cache[it->second[j].first] = ttr * it->first->getCollisionOriginTransforms()[it->second[j].second];
     }
     for (AttachedBodyShapeHandles::const_iterator it = attached_body_shape_handles_.begin();
          it != attached_body_shape_handles_.end(); ++it)
     {
-      tf::StampedTransform tr;
-      tf_->waitForTransform(target_frame, it->first->getAttachedLinkName(), target_time,
-                            shape_transform_cache_lookup_wait_time_);
-      tf_->lookupTransform(target_frame, it->first->getAttachedLinkName(), target_time, tr);
-      Eigen::Affine3d transform;
-      tf::transformTFToEigen(tr, transform);
+      tf_buffer_->canTransform(target_frame, it->first->getAttachedLinkName(), target_time,
+                               shape_transform_cache_lookup_wait_time_);
+      Eigen::Affine3d transform = tf2::transformToEigen(
+          tf_buffer_->lookupTransform(target_frame, it->first->getAttachedLinkName(), target_time));
       for (std::size_t k = 0; k < it->second.size(); ++k)
         cache[it->second[k].first] = transform * it->first->getFixedTransforms()[it->second[k].second];
     }
     {
-      tf::StampedTransform tr;
-      tf_->waitForTransform(target_frame, scene_->getPlanningFrame(), target_time,
-                            shape_transform_cache_lookup_wait_time_);
-      tf_->lookupTransform(target_frame, scene_->getPlanningFrame(), target_time, tr);
-      Eigen::Affine3d transform;
-      tf::transformTFToEigen(tr, transform);
+      tf_buffer_->canTransform(target_frame, scene_->getPlanningFrame(), target_time,
+                               shape_transform_cache_lookup_wait_time_);
+      Eigen::Affine3d transform =
+          tf2::transformToEigen(tf_buffer_->lookupTransform(target_frame, scene_->getPlanningFrame(), target_time));
       for (CollisionBodyShapeHandles::const_iterator it = collision_body_shape_handles_.begin();
            it != collision_body_shape_handles_.end(); ++it)
         for (std::size_t k = 0; k < it->second.size(); ++k)
           cache[it->second[k].first] = transform * (*it->second[k].second);
     }
   }
-  catch (tf::TransformException& ex)
+  catch (tf2::TransformException& ex)
   {
     ROS_ERROR_THROTTLE_NAMED(1, LOGNAME, "Transform error: %s", ex.what());
     return false;
@@ -1026,10 +1030,10 @@ void planning_scene_monitor::PlanningSceneMonitor::startWorldGeometryMonitor(
   {
     collision_object_subscriber_.reset(
         new message_filters::Subscriber<moveit_msgs::CollisionObject>(root_nh_, collision_objects_topic, 1024));
-    if (tf_)
+    if (tf_buffer_)
     {
-      collision_object_filter_.reset(new tf::MessageFilter<moveit_msgs::CollisionObject>(
-          *collision_object_subscriber_, *tf_, scene_->getPlanningFrame(), 1024));
+      collision_object_filter_.reset(new tf2_ros::MessageFilter<moveit_msgs::CollisionObject>(
+          *collision_object_subscriber_, *tf_buffer_, scene_->getPlanningFrame(), 1024, root_nh_));
       collision_object_filter_->registerCallback(boost::bind(&PlanningSceneMonitor::collisionObjectCallback, this, _1));
       collision_object_filter_->registerFailureCallback(
           boost::bind(&PlanningSceneMonitor::collisionObjectFailTFCallback, this, _1, _2));
@@ -1058,7 +1062,7 @@ void planning_scene_monitor::PlanningSceneMonitor::startWorldGeometryMonitor(
   {
     if (!octomap_monitor_)
     {
-      octomap_monitor_.reset(new occupancy_map_monitor::OccupancyMapMonitor(tf_, scene_->getPlanningFrame()));
+      octomap_monitor_.reset(new occupancy_map_monitor::OccupancyMapMonitor(tf_buffer_, scene_->getPlanningFrame()));
       excludeRobotLinksFromOctree();
       excludeAttachedBodiesFromOctree();
       excludeWorldObjectsFromOctree();
@@ -1096,7 +1100,7 @@ void planning_scene_monitor::PlanningSceneMonitor::startStateMonitor(const std::
   if (scene_)
   {
     if (!current_state_monitor_)
-      current_state_monitor_.reset(new CurrentStateMonitor(getRobotModel(), tf_, root_nh_));
+      current_state_monitor_.reset(new CurrentStateMonitor(getRobotModel(), tf_buffer_, root_nh_));
     current_state_monitor_->addUpdateCallback(boost::bind(&PlanningSceneMonitor::onStateUpdate, this, _1));
     current_state_monitor_->startStateMonitor(joint_states_topic);
 
@@ -1140,11 +1144,11 @@ void planning_scene_monitor::PlanningSceneMonitor::onStateUpdate(
   const ros::WallTime& n = ros::WallTime::now();
   ros::WallDuration dt = n - last_robot_state_update_wall_time_;
 
-  bool update = enforce_next_state_update_;
+  bool update = false;
   {
     boost::mutex::scoped_lock lock(state_pending_mutex_);
 
-    if (dt < dt_state_update_ && !update)
+    if (dt < dt_state_update_)
     {
       state_update_pending_ = true;
     }
@@ -1292,58 +1296,33 @@ void planning_scene_monitor::PlanningSceneMonitor::getUpdatedFrameTransforms(
   const std::string& target = getRobotModel()->getModelFrame();
 
   std::vector<std::string> all_frame_names;
-  tf_->getFrameStrings(all_frame_names);
+  tf_buffer_->_getFrameStrings(all_frame_names);
   for (std::size_t i = 0; i < all_frame_names.size(); ++i)
   {
-    const std::string& frame_no_slash = (!all_frame_names[i].empty() && all_frame_names[i][0] == '/') ?
-                                            all_frame_names[i].substr(1) :
-                                            all_frame_names[i];
-    const std::string& frame_with_slash =
-        (!all_frame_names[i].empty() && all_frame_names[i][0] != '/') ? '/' + all_frame_names[i] : all_frame_names[i];
-
-    if (frame_with_slash == target || getRobotModel()->hasLinkModel(frame_no_slash))
+    if (all_frame_names[i] == target || getRobotModel()->hasLinkModel(all_frame_names[i]))
       continue;
 
-    ros::Time stamp(0);
-    std::string err_string;
-    if (tf_->getLatestCommonTime(target, all_frame_names[i], stamp, &err_string) != tf::NO_ERROR)
-    {
-      ROS_WARN_STREAM_NAMED(LOGNAME, "No transform available between frame '"
-                                         << all_frame_names[i] << "' and planning frame '" << target << "' ("
-                                         << err_string << ")");
-      continue;
-    }
-
-    tf::StampedTransform t;
+    geometry_msgs::TransformStamped f;
     try
     {
-      tf_->lookupTransform(target, all_frame_names[i], stamp, t);
+      f = tf_buffer_->lookupTransform(target, all_frame_names[i], ros::Time(0));
     }
-    catch (tf::TransformException& ex)
+    catch (tf2::TransformException& ex)
     {
       ROS_WARN_STREAM_NAMED(LOGNAME, "Unable to transform object from frame '"
                                          << all_frame_names[i] << "' to planning frame '" << target << "' ("
                                          << ex.what() << ")");
       continue;
     }
-    geometry_msgs::TransformStamped f;
-    f.header.frame_id = frame_with_slash;
+    f.header.frame_id = all_frame_names[i];
     f.child_frame_id = target;
-    f.transform.translation.x = t.getOrigin().x();
-    f.transform.translation.y = t.getOrigin().y();
-    f.transform.translation.z = t.getOrigin().z();
-    const tf::Quaternion& q = t.getRotation();
-    f.transform.rotation.x = q.x();
-    f.transform.rotation.y = q.y();
-    f.transform.rotation.z = q.z();
-    f.transform.rotation.w = q.w();
     transforms.push_back(f);
   }
 }
 
 void planning_scene_monitor::PlanningSceneMonitor::updateFrameTransforms()
 {
-  if (!tf_)
+  if (!tf_buffer_)
     return;
 
   if (scene_)

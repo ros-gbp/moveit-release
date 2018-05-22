@@ -15,12 +15,11 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rosconsole
   pluginlib
-  tf
+  tf2_ros
   dynamic_reconfigure
-  eigen_conversions
   )
 
-find_package(OMPL REQUIRED)
+find_package(ompl REQUIRED)
 
 generate_dynamic_reconfigure_options("ompl_interface/cfg/OMPLDynamicReconfigure.cfg")
 

@@ -43,7 +43,6 @@
 #include <kdl_parser/kdl_parser.hpp>
 
 #include <angles/angles.h>
-#include <tf_conversions/tf_kdl.h>
 
 #include <moveit/macros/class_forward.h>
 #include <moveit_msgs/GetPositionFK.h>
@@ -86,6 +85,8 @@ public:
                  const std::string& tip_frame_name, const double& search_discretization_angle, const int& free_angle);
 
   ~PR2ArmIKSolver(){};
+
+  virtual void updateInternalDataStructures();
 
   /**
    * @brief The PR2 inverse kinematics solver

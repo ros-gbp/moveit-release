@@ -2,6 +2,9 @@
 Changelog for package moveit
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.10.0 (2018-05-22)
+-------------------
+
 0.9.11 (2017-12-25)
 -------------------
 * [fix][moveit_core] #723; attached bodies are not shown in trajectory visualization anymore `#724 <https://github.com/ros-planning/moveit/issues/724>`_

@@ -49,8 +49,8 @@
 #include <moveit_msgs/PlaceLocation.h>
 #include <moveit_msgs/MotionPlanRequest.h>
 #include <geometry_msgs/PoseStamped.h>
-#include <boost/shared_ptr.hpp>
-#include <tf/tf.h>
+#include <memory>
+#include <tf2_ros/buffer.h>
 
 namespace moveit
 {
@@ -141,25 +141,27 @@ public:
       \param opt. A MoveGroupInterface::Options structure, if you pass a ros::NodeHandle with a specific callback queue,
      it has to be of type ros::CallbackQueue
         (which is the default type of callback queues used in ROS)
-      \param tf. Specify a TF instance to use. If not specified, one will be constructed internally.
+      \param tf_buffer. Specify a TF2_ROS Buffer instance to use. If not specified,
+                        one will be constructed internally along with an internal TF2_ROS TransformListener
       \param wait_for_servers. Timeout for connecting to action servers. Zero time means unlimited waiting.
     */
   MoveGroupInterface(const Options& opt,
-                     const boost::shared_ptr<tf::Transformer>& tf = boost::shared_ptr<tf::Transformer>(),
+                     const std::shared_ptr<tf2_ros::Buffer>& tf_buffer = std::shared_ptr<tf2_ros::Buffer>(),
                      const ros::WallDuration& wait_for_servers = ros::WallDuration());
-  MOVEIT_DEPRECATED MoveGroupInterface(const Options& opt, const boost::shared_ptr<tf::Transformer>& tf,
+  MOVEIT_DEPRECATED MoveGroupInterface(const Options& opt, const std::shared_ptr<tf2_ros::Buffer>& tf_buffer,
                                        const ros::Duration& wait_for_servers);
 
   /**
       \brief Construct a client for the MoveGroup action for a particular \e group.
 
-      \param tf. Specify a TF instance to use. If not specified, one will be constructed internally.
+      \param tf_buffer. Specify a TF2_ROS Buffer instance to use. If not specified,
+                        one will be constructed internally along with an internal TF2_ROS TransformListener
       \param wait_for_servers. Timeout for connecting to action servers. Zero time means unlimited waiting.
     */
   MoveGroupInterface(const std::string& group,
-                     const boost::shared_ptr<tf::Transformer>& tf = boost::shared_ptr<tf::Transformer>(),
+                     const std::shared_ptr<tf2_ros::Buffer>& tf_buffer = std::shared_ptr<tf2_ros::Buffer>(),
                      const ros::WallDuration& wait_for_servers = ros::WallDuration());
-  MOVEIT_DEPRECATED MoveGroupInterface(const std::string& group, const boost::shared_ptr<tf::Transformer>& tf,
+  MOVEIT_DEPRECATED MoveGroupInterface(const std::string& group, const std::shared_ptr<tf2_ros::Buffer>& tf_buffer,
                                        const ros::Duration& wait_for_servers);
 
   ~MoveGroupInterface();
@@ -225,6 +227,9 @@ public:
 
   /** \brief Specify a planner to be used for further planning */
   void setPlannerId(const std::string& planner_id);
+
+  /** \brief Get the current planner_id */
+  const std::string& getPlannerId() const;
 
   /** \brief Specify the maximum amount of time to use when planning */
   void setPlanningTime(double seconds);
@@ -825,8 +830,8 @@ public:
   /** \brief Get the current joint values for the joints planned for by this instance (see getJoints()) */
   std::vector<double> getCurrentJointValues();
 
-  /** \brief Get the current state of the robot */
-  robot_state::RobotStatePtr getCurrentState();
+  /** \brief Get the current state of the robot within the duration specified by wait. */
+  robot_state::RobotStatePtr getCurrentState(double wait = 1);
 
   /** \brief Get the pose for the end-effector \e end_effector_link.
       If \e end_effector_link is empty (the default value) then the end-effector reported by getEndEffectorLink() is
@@ -905,6 +910,10 @@ public:
   /** \brief Specify that no path constraints are to be used.
       This removes any path constraints set in previous calls to setPathConstraints(). */
   void clearPathConstraints();
+
+  moveit_msgs::TrajectoryConstraints getTrajectoryConstraints() const;
+  void setTrajectoryConstraints(const moveit_msgs::TrajectoryConstraints& constraint);
+  void clearTrajectoryConstraints();
 
   /**@}*/
 

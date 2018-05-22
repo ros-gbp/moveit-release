@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 2.8.12)
 project(moveit_kinematics)
-find_package(catkin REQUIRED)
 
 add_compile_options(-std=c++11)
 
@@ -18,8 +17,8 @@ find_package(catkin REQUIRED COMPONENTS
   rosconsole
   srdfdom
   urdf
-  tf
-  tf_conversions
+  tf2
+  tf2_kdl
 )
 
 find_package(PkgConfig REQUIRED)
@@ -29,6 +28,7 @@ set(THIS_PACKAGE_INCLUDE_DIRS
     kdl_kinematics_plugin/include
     lma_kinematics_plugin/include
     srv_kinematics_plugin/include
+    cached_ik_kinematics_plugin/include
 )
 
 catkin_package(
@@ -58,11 +58,13 @@ add_subdirectory(kdl_kinematics_plugin)
 add_subdirectory(lma_kinematics_plugin)
 add_subdirectory(srv_kinematics_plugin)
 add_subdirectory(ikfast_kinematics_plugin)
+add_subdirectory(cached_ik_kinematics_plugin)
 
 install(
   FILES
     kdl_kinematics_plugin_description.xml
     lma_kinematics_plugin_description.xml
     srv_kinematics_plugin_description.xml
+    cached_ik_kinematics_plugin_description.xml
   DESTINATION
     ${CATKIN_PACKAGE_SHARE_DESTINATION})

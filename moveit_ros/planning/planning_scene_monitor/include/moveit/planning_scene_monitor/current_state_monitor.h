@@ -38,11 +38,10 @@
 #define MOVEIT_PLANNING_SCENE_MONITOR_CURRENT_STATE_MONITOR_
 
 #include <ros/ros.h>
-#include <tf/tf.h>
+#include <tf2_ros/buffer.h>
 #include <moveit/robot_state/robot_state.h>
 #include <sensor_msgs/JointState.h>
 #include <boost/function.hpp>
-#include <boost/shared_ptr.hpp>
 #include <boost/thread/mutex.hpp>
 #include <moveit/macros/deprecation.h>
 #include <boost/thread/condition_variable.hpp>
@@ -55,21 +54,26 @@ typedef boost::function<void(const sensor_msgs::JointStateConstPtr& joint_state)
     @brief Monitors the joint_states topic and tf to maintain the current state of the robot. */
 class CurrentStateMonitor
 {
+  /* tf changed their interface between indigo and kinetic
+     from boost::signals::connection to boost::signals2::connection */
+  typedef decltype(tf2_ros::Buffer()._addTransformsChangedListener(boost::function<void(void)>())) TFConnection;
+
 public:
   /**
    * @brief Constructor.
    * @param robot_model The current kinematic model to build on
-   * @param tf A pointer to the tf transformer to use
+   * @param tf_buffer A pointer to the tf2_ros Buffer to use
    */
-  CurrentStateMonitor(const robot_model::RobotModelConstPtr& robot_model, const boost::shared_ptr<tf::Transformer>& tf);
+  CurrentStateMonitor(const robot_model::RobotModelConstPtr& robot_model,
+                      const std::shared_ptr<tf2_ros::Buffer>& tf_buffer);
 
   /** @brief Constructor.
    *  @param robot_model The current kinematic model to build on
-   *  @param tf A pointer to the tf transformer to use
+   *  @param tf_buffer A pointer to the tf2_ros Buffer to use
    *  @param nh A ros::NodeHandle to pass node specific options
    */
-  CurrentStateMonitor(const robot_model::RobotModelConstPtr& robot_model, const boost::shared_ptr<tf::Transformer>& tf,
-                      ros::NodeHandle nh);
+  CurrentStateMonitor(const robot_model::RobotModelConstPtr& robot_model,
+                      const std::shared_ptr<tf2_ros::Buffer>& tf_buffer, ros::NodeHandle nh);
 
   ~CurrentStateMonitor();
 
@@ -193,24 +197,25 @@ public:
 
 private:
   void jointStateCallback(const sensor_msgs::JointStateConstPtr& joint_state);
-  bool isPassiveOrMimicDOF(const std::string& dof) const;
+  void tfCallback();
 
   ros::NodeHandle nh_;
-  boost::shared_ptr<tf::Transformer> tf_;
+  std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
   robot_model::RobotModelConstPtr robot_model_;
   robot_state::RobotState robot_state_;
-  std::map<std::string, ros::Time> joint_time_;
+  std::map<const moveit::core::JointModel*, ros::Time> joint_time_;
   bool state_monitor_started_;
   bool copy_dynamics_;  // Copy velocity and effort from joint_state
   ros::Time monitor_start_time_;
   double error_;
   ros::Subscriber joint_state_subscriber_;
   ros::Time current_state_time_;
-  ros::Time last_tf_update_;
 
   mutable boost::mutex state_update_lock_;
   mutable boost::condition_variable state_update_condition_;
   std::vector<JointStateUpdateCallback> update_callbacks_;
+
+  std::shared_ptr<TFConnection> tf_connection_;
 };
 
 MOVEIT_CLASS_FORWARD(CurrentStateMonitor);

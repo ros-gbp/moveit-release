@@ -16,15 +16,15 @@ COMPONENTS
   kdl_parser
   geometric_shapes
   eigen_stl_containers
-  eigen_conversions
+  tf2_eigen
   random_numbers
   visualization_msgs
   roslib
   rostime
+  rosconsole
   pluginlib
   cmake_modules
 )
-find_package(console_bridge REQUIRED)
 find_package(Eigen3 REQUIRED)
 
 # Eigen 3.2 (Wily) only provides EIGEN3_INCLUDE_DIR, not EIGEN3_INCLUDE_DIRS
@@ -57,7 +57,6 @@ catkin_package(
     moveit_core
     geometric_shapes
     eigen_stl_containers
-    eigen_conversions
     moveit_msgs
     kdl_parser
     pluginlib
@@ -66,7 +65,6 @@ catkin_package(
     Boost
     urdfdom
     urdfdom_headers
-    console_bridge
 )
 
 include_directories(SYSTEM ${EIGEN3_INCLUDE_DIRS}
@@ -75,7 +73,6 @@ include_directories(SYSTEM ${EIGEN3_INCLUDE_DIRS}
 include_directories(${THIS_PACKAGE_INCLUDE_DIRS}
                     ${Boost_INCLUDE_DIR}
                     ${catkin_INCLUDE_DIRS}
-                    ${console_bridge_INCLUDE_DIRS}
                     ${urdfdom_INCLUDE_DIRS}
                     ${urdfdom_headers_INCLUDE_DIRS}
                     ${OCTOMAP_INCLUDE_DIRS}

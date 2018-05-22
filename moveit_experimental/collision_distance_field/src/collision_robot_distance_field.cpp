@@ -40,7 +40,7 @@
 #include <moveit/distance_field/propagation_distance_field.h>
 #include <ros/console.h>
 #include <ros/assert.h>
-#include <eigen_conversions/eigen_msg.h>
+#include <tf2_eigen/tf2_eigen.h>
 
 namespace collision_detection
 {
@@ -140,7 +140,7 @@ void CollisionRobotDistanceField::generateCollisionCheckingStructures(
   DistanceFieldCacheEntryConstPtr dfce = getDistanceFieldCacheEntry(group_name, state, acm);
   if (!dfce || (generate_distance_field && !dfce->distance_field_))
   {
-    // ROS_DEBUG_STREAM_NAMED("distance_field","Generating new
+    // ROS_DEBUG_STREAM_NAMED("collision_distance_field", "Generating new
     // DistanceFieldCacheEntry for CollisionRobot");
     DistanceFieldCacheEntryPtr new_dfce =
         generateDistanceFieldCacheEntry(group_name, state, acm, generate_distance_field);
@@ -194,7 +194,7 @@ DistanceFieldCacheEntryConstPtr CollisionRobotDistanceField::getDistanceFieldCac
   else if (!compareCacheEntryToState(cur, state))
   {
     // Regenerating distance field as state has changed from last time
-    // ROS_DEBUG_STREAM_NAMED("distance_field","Regenerating distance field as
+    // ROS_DEBUG_STREAM_NAMED("collision_distance_field", "Regenerating distance field as
     // state has changed from last time");
     return ret;
   }
@@ -1030,7 +1030,7 @@ void CollisionRobotDistanceField::createCollisionModelMarker(const moveit::core:
     sphere_representation->updatePose(state.getGlobalLinkTransform(link_name));
     for (unsigned int j = 0; j < sphere_representation->getCollisionSpheres().size(); j++)
     {
-      tf::pointEigenToMsg(sphere_representation->getSphereCenters()[j], sphere_marker.pose.position);
+      sphere_marker.pose.position = tf2::toMsg(sphere_representation->getSphereCenters()[j]);
       sphere_marker.scale.x = sphere_marker.scale.y = sphere_marker.scale.z =
           2 * sphere_representation->getCollisionSpheres()[j].radius_;
       sphere_marker.id = id;
@@ -1087,7 +1087,7 @@ CollisionRobotDistanceField::getPosedLinkBodyPointDecomposition(const moveit::co
   std::map<std::string, unsigned int>::const_iterator it = link_body_decomposition_index_map_.find(ls->getName());
   if (it == link_body_decomposition_index_map_.end())
   {
-    logError("No link body decomposition for link %s.", ls->getName().c_str());
+    ROS_ERROR_NAMED("collision_distance_field", "No link body decomposition for link %s.", ls->getName().c_str());
     return ret;
   }
   ret.reset(new PosedBodyPointDecomposition(link_body_decomposition_vector_[it->second]));

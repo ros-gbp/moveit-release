@@ -2,6 +2,11 @@
 Changelog for package moveit_controller_manager_example
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.10.0 (2018-05-22)
+-------------------
+* update include statements to use new pluginlib and class_loader headers (`#827 <https://github.com/ros-planning/moveit/issues/827>`_)
+* Contributors: Mikael Arguedas
+
 0.9.11 (2017-12-25)
 -------------------
 
