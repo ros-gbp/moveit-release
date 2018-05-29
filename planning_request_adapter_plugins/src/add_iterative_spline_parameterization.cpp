@@ -2,6 +2,7 @@
  * Software License Agreement (BSD License)
  *
  *  Copyright (c) 2012, Willow Garage, Inc.
+ *  Copyright (c) 2017, Ken Anderson
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -32,19 +33,19 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-/* Author: Ioan Sucan */
+/* Author: Ken Anderson, based off add_time_parameterization.cpp by Ioan Sucan */
 
 #include <moveit/planning_request_adapter/planning_request_adapter.h>
-#include <moveit/trajectory_processing/iterative_time_parameterization.h>
+#include <moveit/trajectory_processing/iterative_spline_parameterization.h>
 #include <class_loader/class_loader.hpp>
 #include <ros/console.h>
 
 namespace default_planner_request_adapters
 {
-class AddTimeParameterization : public planning_request_adapter::PlanningRequestAdapter
+class AddIterativeSplineParameterization : public planning_request_adapter::PlanningRequestAdapter
 {
 public:
-  AddTimeParameterization() : planning_request_adapter::PlanningRequestAdapter()
+  AddIterativeSplineParameterization() : planning_request_adapter::PlanningRequestAdapter()
   {
   }
 
@@ -71,9 +72,9 @@ public:
   }
 
 private:
-  trajectory_processing::IterativeParabolicTimeParameterization time_param_;
+  trajectory_processing::IterativeSplineParameterization time_param_;
 };
 }
 
-CLASS_LOADER_REGISTER_CLASS(default_planner_request_adapters::AddTimeParameterization,
+CLASS_LOADER_REGISTER_CLASS(default_planner_request_adapters::AddIterativeSplineParameterization,
                             planning_request_adapter::PlanningRequestAdapter);
