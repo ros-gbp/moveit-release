@@ -30,7 +30,8 @@ catkin_package(
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
-  ${Boost_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIRS}
+  ${Boost_INCLUDE_DIRS}
+  ${EIGEN3_INCLUDE_DIRS}
 )
 
 add_library(${PROJECT_NAME} src/chomp_interface.cpp src/chomp_planning_context.cpp)
@@ -53,3 +54,19 @@ install(TARGETS ${PROJECT_NAME} chomp_planner_plugin
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
+
+if(CATKIN_ENABLE_TESTING)
+  # additional packages needed for testing
+  find_package(rostest REQUIRED)
+  find_package(moveit_ros_planning_interface REQUIRED)
+  include_directories(
+    ${rostest_INCLUDE_DIRS}
+    ${moveit_ros_planning_interface_INCLUDE_DIRS})
+  add_rostest_gtest(chomp_moveit_test
+    test/chomp_moveit.test
+    test/chomp_moveit_test.cpp)
+  target_link_libraries(chomp_moveit_test
+    ${catkin_LIBRARIES}
+    ${rostest_LIBRARIES}
+    ${moveit_ros_planning_interface_LIBRARIES})
+endif()
