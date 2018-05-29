@@ -2,9 +2,10 @@
 Changelog for package moveit_core
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.10.1 (2018-05-25)
+0.9.12 (2018-05-29)
 -------------------
-* Clang tidy moveit_core (`#880 <https://github.com/ros-planning/moveit/issues/880>`_) (`#911 <https://github.com/ros-planning/moveit/issues/911>`_)
+* consider max linear+rotational eef step in computeCartesianPath() (`#884 <https://github.com/ros-planning/moveit/issues/884>`_)
+* clang-tidy moveit_core (`#880 <https://github.com/ros-planning/moveit/issues/880>`_) (`#911 <https://github.com/ros-planning/moveit/issues/911>`_)
 * Allow to retrieve Jacobian of a child link of a move group. (`#877 <https://github.com/ros-planning/moveit/issues/877>`_)
 * Contributors: Bryce Willey, Dave Coleman, Michael Görner
 * migration from tf to tf2 API (`#830 <https://github.com/ros-planning/moveit/issues/830>`_)

@@ -2,7 +2,7 @@
 Changelog for package moveit_ros_planning_interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.10.1 (2018-05-25)
+0.9.12 (2018-05-29)
 -------------------
 * [maintenance] Remove deprecated ExecuteTrajectoryServiceCapability (`#833 <https://github.com/ros-planning/moveit/issues/833>`_)
 * [maintenance] migration from tf to tf2 API (`#830 <https://github.com/ros-planning/moveit/issues/830>`_)

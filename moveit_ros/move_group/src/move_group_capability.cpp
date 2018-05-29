@@ -36,7 +36,6 @@
 
 #include <moveit/move_group/move_group_capability.h>
 #include <moveit/robot_state/conversions.h>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 void move_group::MoveGroupCapability::setContext(const MoveGroupContextPtr& context)
 {
@@ -185,13 +184,20 @@ bool move_group::MoveGroupCapability::performTransform(geometry_msgs::PoseStampe
 
   try
   {
-    geometry_msgs::TransformStamped common_tf = context_->planning_scene_monitor_->getTFClient()->lookupTransform(
-        pose_msg.header.frame_id, target_frame, ros::Time(0.0));
-    geometry_msgs::PoseStamped pose_msg_in(pose_msg);
-    pose_msg_in.header.stamp = common_tf.header.stamp;
-    context_->planning_scene_monitor_->getTFClient()->transform(pose_msg_in, pose_msg, target_frame);
+    std::string error;
+    ros::Time common_time;
+    context_->planning_scene_monitor_->getTFClient()->getLatestCommonTime(pose_msg.header.frame_id, target_frame,
+                                                                          common_time, &error);
+    if (!error.empty())
+      ROS_ERROR("TF Problem: %s", error.c_str());
+
+    tf::Stamped<tf::Pose> pose_tf, pose_tf_out;
+    tf::poseStampedMsgToTF(pose_msg, pose_tf);
+    pose_tf.stamp_ = common_time;
+    context_->planning_scene_monitor_->getTFClient()->transformPose(target_frame, pose_tf, pose_tf_out);
+    tf::poseStampedTFToMsg(pose_tf_out, pose_msg);
   }
-  catch (tf2::TransformException& ex)
+  catch (tf::TransformException& ex)
   {
     ROS_ERROR("TF Problem: %s", ex.what());
     return false;

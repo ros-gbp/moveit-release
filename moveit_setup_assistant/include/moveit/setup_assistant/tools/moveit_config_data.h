@@ -37,6 +37,7 @@
 #ifndef MOVEIT_MOVEIT_SETUP_ASSISTANT_TOOLS_MOVEIT_CONFIG_DATA_
 #define MOVEIT_MOVEIT_SETUP_ASSISTANT_TOOLS_MOVEIT_CONFIG_DATA_
 
+#include <boost/shared_ptr.hpp>
 #include <srdfdom/model.h>        // use their struct datastructures
 #include <srdfdom/srdf_writer.h>  // for writing srdf data
 #include <urdf/model.h>           // to share throughout app
@@ -73,6 +74,7 @@ struct GroupMetaData
   double kinematics_solver_search_resolution_;  // resolution to use with solver
   double kinematics_solver_timeout_;            // solver timeout
   int kinematics_solver_attempts_;              // solver attempts
+  std::string default_planner_;                 // Name of the default planner to use
 };
 
 /**
@@ -246,6 +248,7 @@ public:
   // ******************************************************************************************
   // Public Functions for outputting configuration and setting files
   // ******************************************************************************************
+  std::vector<OMPLPlannerDescription> getOMPLPlanners();
   bool outputSetupAssistantFile(const std::string& file_path);
   bool outputOMPLPlanningYAML(const std::string& file_path);
   bool outputKinematicsYAML(const std::string& file_path);
@@ -265,6 +268,13 @@ public:
    * \return string - value to insert into yaml file
    */
   std::string decideProjectionJoints(std::string planning_group);
+
+  /**
+   * Input ompl_planning.yaml file for editing its values
+   * @param file_path path to ompl_planning.yaml in the input package
+   * @return bool if the file was read correctly
+   */
+  bool inputOMPLYAML(const std::string& file_path);
 
   /**
    * Input kinematics.yaml file for editing its values

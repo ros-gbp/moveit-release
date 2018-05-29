@@ -2,7 +2,7 @@
 Changelog for package moveit_ros_perception
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.10.1 (2018-05-25)
+0.9.12 (2018-05-29)
 -------------------
 * boost::shared_ptr -> std::shared_ptr
 * migration from tf to tf2 API (`#830 <https://github.com/ros-planning/moveit/issues/830>`_)

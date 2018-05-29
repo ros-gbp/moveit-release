@@ -34,6 +34,8 @@
 
 /*
  * Capability of execute trajectory with a ROS action.
+ * In order to allow monitoring and stopping the execution,
+ * the service should be turned into an action.
  *
  * Author: Kentaro Wada
  * */

@@ -41,13 +41,11 @@
 #include <moveit/robot_state/conversions.h>
 #include <moveit/robot_trajectory/robot_trajectory.h>
 #include <moveit/trajectory_processing/iterative_time_parameterization.h>
-#include <tf2_eigen/tf2_eigen.h>
-#include <tf2/LinearMath/Quaternion.h>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
-#include <tf2_ros/buffer.h>
+#include <eigen_conversions/eigen_msg.h>
+#include <tf_conversions/tf_eigen.h>
 
 #include <boost/python.hpp>
-#include <memory>
+#include <boost/shared_ptr.hpp>
 #include <Python.h>
 
 /** @cond IGNORE */
@@ -67,7 +65,7 @@ public:
                             const std::string& ns = "")
     : py_bindings_tools::ROScppInitializer()
     , MoveGroupInterface(Options(group_name, robot_description, ros::NodeHandle(ns)),
-                         std::shared_ptr<tf2_ros::Buffer>(), ros::WallDuration(5, 0))
+                         boost::shared_ptr<tf::Transformer>(), ros::WallDuration(5, 0))
   {
   }
 
@@ -289,16 +287,15 @@ public:
         Eigen::Affine3d p;
         if (v.size() == 6)
         {
-          tf2::Quaternion tq;
-          tq.setRPY(v[3], v[4], v[5]);
-          Eigen::Quaterniond eq;
-          tf2::convert(tq, eq);
-          p = Eigen::Affine3d(eq);
+          Eigen::Quaterniond q;
+          tf::quaternionTFToEigen(tf::createQuaternionFromRPY(v[3], v[4], v[5]), q);
+          p = Eigen::Affine3d(q);
         }
         else
           p = Eigen::Affine3d(Eigen::Quaterniond(v[6], v[3], v[4], v[5]));
         p.translation() = Eigen::Vector3d(v[0], v[1], v[2]);
-        geometry_msgs::Pose pm = tf2::toMsg(p);
+        geometry_msgs::Pose pm;
+        tf::poseEigenToMsg(p, pm);
         msg.push_back(pm);
       }
       else
@@ -342,11 +339,7 @@ public:
     std::vector<double> v = py_bindings_tools::doubleFromList(pose);
     geometry_msgs::Pose msg;
     if (v.size() == 6)
-    {
-      tf2::Quaternion q;
-      q.setRPY(v[3], v[4], v[5]);
-      tf2::convert(q, msg.orientation);
-    }
+      tf::quaternionTFToMsg(tf::createQuaternionFromRPY(v[3], v[4], v[5]), msg.orientation);
     else if (v.size() == 7)
     {
       msg.orientation.x = v[3];

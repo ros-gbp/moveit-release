@@ -12,7 +12,6 @@ endif()
 find_package(Boost REQUIRED filesystem)
 
 find_package(catkin REQUIRED COMPONENTS
-  tf2_eigen
   moveit_ros_planning
   moveit_ros_warehouse
   roscpp
@@ -21,7 +20,6 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
   LIBRARIES ${MOVEIT_LIB_NAME}
   CATKIN_DEPENDS
-    tf2_eigen
     moveit_ros_planning
     moveit_ros_warehouse
     roscpp

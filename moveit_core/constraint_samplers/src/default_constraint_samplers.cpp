@@ -37,6 +37,7 @@
 #include <moveit/constraint_samplers/default_constraint_samplers.h>
 #include <set>
 #include <cassert>
+#include <eigen_conversions/eigen_msg.h>
 #include <boost/bind.hpp>
 
 namespace constraint_samplers

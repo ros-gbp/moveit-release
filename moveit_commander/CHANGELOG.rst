@@ -2,7 +2,7 @@
 Changelog for package moveit_commander
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.10.1 (2018-05-25)
+0.9.12 (2018-05-29)
 -------------------
 * Get robot markers from state (`#836 <https://github.com/ros-planning/moveit/issues/836>`_)
 * Add namespace capabilities to moveit_commander (`#835 <https://github.com/ros-planning/moveit/issues/835>`_)

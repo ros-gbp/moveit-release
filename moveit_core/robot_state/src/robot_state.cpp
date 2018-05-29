@@ -38,7 +38,7 @@
 #include <moveit/robot_state/robot_state.h>
 #include <moveit/transforms/transforms.h>
 #include <geometric_shapes/shape_operations.h>
-#include <tf2_eigen/tf2_eigen.h>
+#include <eigen_conversions/eigen_msg.h>
 #include <moveit/backtrace/backtrace.h>
 #include <moveit/profiler/profiler.h>
 #include <boost/bind.hpp>
@@ -978,7 +978,7 @@ const Eigen::Affine3d& RobotState::getFrameTransform(const std::string& id) cons
   BOOST_VERIFY(checkLinkTransforms());
 
   static const Eigen::Affine3d identity_transform = Eigen::Affine3d::Identity();
-  if (id == robot_model_->getModelFrame())
+  if (id.size() + 1 == robot_model_->getModelFrame().size() && '/' + id == robot_model_->getModelFrame())
     return identity_transform;
   if (robot_model_->hasLinkModel(id))
   {
@@ -1058,7 +1058,7 @@ void RobotState::getRobotMarkers(visualization_msgs::MarkerArray& arr, const std
               // if the object is invisible (0 volume) we skip it
               if (fabs(att_mark.scale.x * att_mark.scale.y * att_mark.scale.z) < std::numeric_limits<float>::epsilon())
                 continue;
-              att_mark.pose = tf2::toMsg(it->second->getGlobalCollisionBodyTransforms()[j]);
+              tf::poseEigenToMsg(it->second->getGlobalCollisionBodyTransforms()[j], att_mark.pose);
               arr.markers.push_back(att_mark);
             }
           }
@@ -1082,7 +1082,7 @@ void RobotState::getRobotMarkers(visualization_msgs::MarkerArray& arr, const std
         // if the object is invisible (0 volume) we skip it
         if (fabs(mark.scale.x * mark.scale.y * mark.scale.z) < std::numeric_limits<float>::epsilon())
           continue;
-        mark.pose = tf2::toMsg(global_collision_body_transforms_[lm->getFirstCollisionBodyTransformIndex() + j]);
+        tf::poseEigenToMsg(global_collision_body_transforms_[lm->getFirstCollisionBodyTransformIndex() + j], mark.pose);
       }
       else
       {
@@ -1094,7 +1094,7 @@ void RobotState::getRobotMarkers(visualization_msgs::MarkerArray& arr, const std
         mark.scale.x = mesh_scale[0];
         mark.scale.y = mesh_scale[1];
         mark.scale.z = mesh_scale[2];
-        mark.pose = tf2::toMsg(global_link_transforms_[lm->getLinkIndex()] * lm->getVisualMeshOrigin());
+        tf::poseEigenToMsg(global_link_transforms_[lm->getLinkIndex()] * lm->getVisualMeshOrigin(), mark.pose);
       }
 
       arr.markers.push_back(mark);
@@ -1230,7 +1230,7 @@ bool RobotState::setFromDiffIK(const JointModelGroup* jmg, const geometry_msgs::
                                double dt, const GroupStateValidityCallbackFn& constraint)
 {
   Eigen::Matrix<double, 6, 1> t;
-  tf2::fromMsg(twist, t);
+  tf::twistMsgToEigen(twist, t);
   return setFromDiffIK(jmg, t, tip, dt, constraint);
 }
 
@@ -1312,7 +1312,7 @@ bool RobotState::setFromIK(const JointModelGroup* jmg, const geometry_msgs::Pose
                            const kinematics::KinematicsQueryOptions& options)
 {
   Eigen::Affine3d mat;
-  tf2::fromMsg(pose, mat);
+  tf::poseMsgToEigen(pose, mat);
   static std::vector<double> consistency_limits;
   return setFromIK(jmg, mat, tip, consistency_limits, attempts, timeout, constraint, options);
 }
@@ -1563,7 +1563,7 @@ bool RobotState::setFromIK(const JointModelGroup* jmg, const EigenSTL::vector_Af
 
     // Convert Eigen pose to geometry_msgs pose
     geometry_msgs::Pose ik_query;
-    ik_query = tf2::toMsg(pose);
+    tf::poseEigenToMsg(pose, ik_query);
 
     // Save into vectors
     ik_queries[solver_tip_id] = ik_query;
@@ -1593,7 +1593,7 @@ bool RobotState::setFromIK(const JointModelGroup* jmg, const EigenSTL::vector_Af
 
     // Convert Eigen pose to geometry_msgs pose
     geometry_msgs::Pose ik_query;
-    ik_query = tf2::toMsg(current_pose);
+    tf::poseEigenToMsg(current_pose, ik_query);
 
     // Save into vectors - but this needs to be ordered in the same order as the IK solver expects its tip frames
     ik_queries[solver_tip_id] = ik_query;
@@ -1871,7 +1871,7 @@ bool RobotState::setFromIKSubgroups(const JointModelGroup* jmg, const EigenSTL::
 
 double RobotState::computeCartesianPath(const JointModelGroup* group, std::vector<RobotStatePtr>& traj,
                                         const LinkModel* link, const Eigen::Vector3d& direction,
-                                        bool global_reference_frame, double distance, double max_step,
+                                        bool global_reference_frame, double distance, const MaxEEFStep& max_step,
                                         const JumpThreshold& jump_threshold,
                                         const GroupStateValidityCallbackFn& validCallback,
                                         const kinematics::KinematicsQueryOptions& options)
@@ -1893,7 +1893,7 @@ double RobotState::computeCartesianPath(const JointModelGroup* group, std::vecto
 
 double RobotState::computeCartesianPath(const JointModelGroup* group, std::vector<RobotStatePtr>& traj,
                                         const LinkModel* link, const Eigen::Affine3d& target,
-                                        bool global_reference_frame, double max_step,
+                                        bool global_reference_frame, const MaxEEFStep& max_step,
                                         const JumpThreshold& jump_threshold,
                                         const GroupStateValidityCallbackFn& validCallback,
                                         const kinematics::KinematicsQueryOptions& options)
@@ -1911,22 +1911,30 @@ double RobotState::computeCartesianPath(const JointModelGroup* group, std::vecto
 
   Eigen::Quaterniond start_quaternion(start_pose.rotation());
   Eigen::Quaterniond target_quaternion(rotated_target.rotation());
-  double distance = start_quaternion.dot(target_quaternion);
-  if (distance < 0)  // need to bring quaternions to same half sphere?
+
+  if (max_step.translation <= 0.0 && max_step.rotation <= 0.0)
   {
-    target_quaternion.w() = -target_quaternion.w();
-    target_quaternion.x() = -target_quaternion.x();
-    target_quaternion.y() = -target_quaternion.y();
-    target_quaternion.z() = -target_quaternion.z();
+    ROS_ERROR_NAMED("robot_state",
+                    "Invalid MaxEEFStep passed into computeCartesianPath. Both the MaxEEFStep.rotation and "
+                    "MaxEEFStep.translation components must be non-negative and at least one component must be "
+                    "greater than zero");
+    return 0.0;
   }
 
+  double rotation_distance = start_quaternion.angularDistance(target_quaternion);
+  double translation_distance = (rotated_target.translation() - start_pose.translation()).norm();
+
   // decide how many steps we will need for this trajectory
-  // TODO: use separate max_step arguments for translational and rotational motion
-  distance = std::max((rotated_target.translation() - start_pose.translation()).norm(),
-                      std::acos(start_quaternion.dot(target_quaternion)));
+  std::size_t translation_steps = 0;
+  if (max_step.translation > 0.0)
+    translation_steps = floor(translation_distance / max_step.translation);
+
+  std::size_t rotation_steps = 0;
+  if (max_step.rotation > 0.0)
+    rotation_steps = floor(rotation_distance / max_step.rotation);
 
   // If we are testing for relative jumps, we always want at least MIN_STEPS_FOR_JUMP_THRESH steps
-  unsigned int steps = floor(distance / max_step) + 1;
+  std::size_t steps = std::max(translation_steps, rotation_steps) + 1;
   if (jump_threshold.factor > 0 && steps < MIN_STEPS_FOR_JUMP_THRESH)
     steps = MIN_STEPS_FOR_JUMP_THRESH;
 
@@ -1934,7 +1942,7 @@ double RobotState::computeCartesianPath(const JointModelGroup* group, std::vecto
   traj.push_back(RobotStatePtr(new RobotState(*this)));
 
   double last_valid_percentage = 0.0;
-  for (unsigned int i = 1; i <= steps; ++i)
+  for (std::size_t i = 1; i <= steps; ++i)
   {
     double percentage = (double)i / (double)steps;
 
@@ -1942,11 +1950,10 @@ double RobotState::computeCartesianPath(const JointModelGroup* group, std::vecto
     pose.translation() = percentage * rotated_target.translation() + (1 - percentage) * start_pose.translation();
 
     if (setFromIK(group, pose, link->getName(), 1, 0.0, validCallback, options))
-    {
       traj.push_back(RobotStatePtr(new RobotState(*this)));
-    }
     else
       break;
+
     last_valid_percentage = percentage;
   }
 
@@ -1957,7 +1964,7 @@ double RobotState::computeCartesianPath(const JointModelGroup* group, std::vecto
 
 double RobotState::computeCartesianPath(const JointModelGroup* group, std::vector<RobotStatePtr>& traj,
                                         const LinkModel* link, const EigenSTL::vector_Affine3d& waypoints,
-                                        bool global_reference_frame, double max_step,
+                                        bool global_reference_frame, const MaxEEFStep& max_step,
                                         const JumpThreshold& jump_threshold,
                                         const GroupStateValidityCallbackFn& validCallback,
                                         const kinematics::KinematicsQueryOptions& options)
@@ -1966,7 +1973,7 @@ double RobotState::computeCartesianPath(const JointModelGroup* group, std::vecto
   for (std::size_t i = 0; i < waypoints.size(); ++i)
   {
     // Don't test joint space jumps for every waypoint, test them later on the whole trajectory.
-    static const double no_joint_space_jump_test = 0.0;
+    static const JumpThreshold no_joint_space_jump_test;
     std::vector<RobotStatePtr> waypoint_traj;
     double wp_percentage_solved = computeCartesianPath(group, waypoint_traj, link, waypoints[i], global_reference_frame,
                                                        max_step, no_joint_space_jump_test, validCallback, options);
@@ -1997,13 +2004,17 @@ double RobotState::computeCartesianPath(const JointModelGroup* group, std::vecto
 double RobotState::testJointSpaceJump(const JointModelGroup* group, std::vector<RobotStatePtr>& traj,
                                       const JumpThreshold& jump_threshold)
 {
-  if (jump_threshold.factor > 0.0 && traj.size() > 1)
-    return testRelativeJointSpaceJump(group, traj, jump_threshold.factor);
+  double percentage_solved = 1.0;
+  if (traj.size() <= 1)
+    return percentage_solved;
 
-  if (jump_threshold.prismatic > 0.0 || jump_threshold.revolute > 0.0)
-    return testAbsoluteJointSpaceJump(group, traj, jump_threshold.revolute, jump_threshold.prismatic);
+  if (jump_threshold.factor > 0.0)
+    percentage_solved *= testRelativeJointSpaceJump(group, traj, jump_threshold.factor);
 
-  return 1.0;
+  if (jump_threshold.revolute > 0.0 || jump_threshold.prismatic > 0.0)
+    percentage_solved *= testAbsoluteJointSpaceJump(group, traj, jump_threshold.revolute, jump_threshold.prismatic);
+
+  return percentage_solved;
 }
 
 double RobotState::testRelativeJointSpaceJump(const JointModelGroup* group, std::vector<RobotStatePtr>& traj,
@@ -2087,9 +2098,9 @@ double RobotState::testAbsoluteJointSpaceJump(const JointModelGroup* group, std:
 
     if (!still_valid)
     {
-      double percentage = (double)(traj_ix + 1) / (double)(traj.size());
+      double percent_valid = (double)(traj_ix + 1) / (double)(traj.size());
       traj.resize(traj_ix + 1);
-      return percentage;
+      return percent_valid;
     }
   }
   return 1.0;

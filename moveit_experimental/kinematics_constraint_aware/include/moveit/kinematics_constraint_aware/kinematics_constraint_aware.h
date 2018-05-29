@@ -39,6 +39,7 @@
 #define MOVEIT_KINEMATICS_CONSTRAINT_AWARE_
 
 // System
+#include <boost/shared_ptr.hpp>
 #include <boost/function.hpp>
 
 // ROS msgs
@@ -61,8 +62,8 @@
 namespace kinematics_constraint_aware
 {
 class KinematicsConstraintAware;
-typedef std::shared_ptr<KinematicsConstraintAware> KinematicsConstraintAwarePtr;
-typedef std::shared_ptr<const KinematicsConstraintAware> KinematicsConstraintAwareConstPtr;
+typedef boost::shared_ptr<KinematicsConstraintAware> KinematicsConstraintAwarePtr;
+typedef boost::shared_ptr<const KinematicsConstraintAware> KinematicsConstraintAwareConstPtr;
 
 /**
  * @class A kinematics solver that can be used with multiple arms

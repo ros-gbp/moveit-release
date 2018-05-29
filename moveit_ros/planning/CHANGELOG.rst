@@ -2,8 +2,10 @@
 Changelog for package moveit_ros_planning
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.10.1 (2018-05-25)
+0.9.12 (2018-05-29)
 -------------------
+* CSM: copy dynamics to output if enabled (`#922 <https://github.com/ros-planning/moveit/issues/922>`_)
+* move PlanExecution::executeAndMonitor() into public API (`#812 <https://github.com/ros-planning/moveit/issues/812>`_)
 * [fix] explicitly enforce updateSceneWithCurrentState() in waitForCurrentRobotState() (`#824 <https://github.com/ros-planning/moveit/issues/824>`_)
 * Support static TFs for multi-DOF joints in CurrentStateMonitor (`#799 <https://github.com/ros-planning/moveit/issues/799>`_)
 * support xacro args (`#796 <https://github.com/ros-planning/moveit/issues/796>`_)
@@ -12,7 +14,7 @@ Changelog for package moveit_ros_planning
 * Iterative cubic spline interpolation (`#441 <https://github.com/ros-planning/moveit/issues/441>`_)
 * Floating Joint Support in CurrentStateMonitor (`#748 <https://github.com/ros-planning/moveit/issues/748>`_)
 * validate multi-dof trajectories before execution (`#713 <https://github.com/ros-planning/moveit/issues/713>`_)
-* Contributors: Bruno Brito, Dave Coleman, Ian McMahon, Ken Anderson, Michael Görner, Mikael Arguedas, Robert Haschke
+* Contributors: 2scholz, Bruno Brito, Dave Coleman, Ian McMahon, Ken Anderson, Michael Görner, Mikael Arguedas, Robert Haschke
 
 0.9.11 (2017-12-25)
 -------------------

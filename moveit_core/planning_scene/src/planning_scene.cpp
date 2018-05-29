@@ -44,7 +44,7 @@
 #include <moveit/exceptions/exceptions.h>
 #include <moveit/robot_state/attached_body.h>
 #include <octomap_msgs/conversions.h>
-#include <tf2_eigen/tf2_eigen.h>
+#include <eigen_conversions/eigen_msg.h>
 #include <memory>
 #include <set>
 
@@ -821,7 +821,9 @@ bool PlanningScene::getCollisionObjectMsg(moveit_msgs::CollisionObject& collisio
     shapes::ShapeMsg sm;
     if (constructMsgFromShape(obj->shapes_[j].get(), sm))
     {
-      geometry_msgs::Pose p = tf2::toMsg(obj->shape_poses_[j]);
+      geometry_msgs::Pose p;
+      tf::poseEigenToMsg(obj->shape_poses_[j], p);
+
       sv.setPoseMessage(&p);
       boost::apply_visitor(sv, sm);
     }
@@ -883,7 +885,7 @@ bool PlanningScene::getOctomapMsg(octomap_msgs::OctomapWithPose& octomap) const
     {
       const shapes::OcTree* o = static_cast<const shapes::OcTree*>(map->shapes_[0].get());
       octomap_msgs::fullMapToMsg(*o->octree, octomap.octomap);
-      octomap.origin = tf2::toMsg(map->shape_poses_[0]);
+      tf::poseEigenToMsg(map->shape_poses_[0], octomap.origin);
       return true;
     }
     ROS_ERROR_NAMED("planning_scene",
@@ -1357,7 +1359,7 @@ void PlanningScene::processOctomapMsg(const octomap_msgs::OctomapWithPose& map)
   std::shared_ptr<octomap::OcTree> om(static_cast<octomap::OcTree*>(octomap_msgs::msgToMap(map.octomap)));
   const Eigen::Affine3d& t = getTransforms().getTransform(map.header.frame_id);
   Eigen::Affine3d p;
-  tf2::fromMsg(map.origin, p);
+  tf::poseMsgToEigen(map.origin, p);
   p = t * p;
   world_->addToObject(OCTOMAP_NS, shapes::ShapeConstPtr(new shapes::OcTree(om)), p);
 }
@@ -1498,7 +1500,7 @@ bool PlanningScene::processAttachedCollisionObjectMsg(const moveit_msgs::Attache
           if (s)
           {
             Eigen::Affine3d p;
-            tf2::fromMsg(object.object.primitive_poses[i], p);
+            tf::poseMsgToEigen(object.object.primitive_poses[i], p);
             shapes.push_back(shapes::ShapeConstPtr(s));
             poses.push_back(p);
           }
@@ -1509,7 +1511,7 @@ bool PlanningScene::processAttachedCollisionObjectMsg(const moveit_msgs::Attache
           if (s)
           {
             Eigen::Affine3d p;
-            tf2::fromMsg(object.object.mesh_poses[i], p);
+            tf::poseMsgToEigen(object.object.mesh_poses[i], p);
             shapes.push_back(shapes::ShapeConstPtr(s));
             poses.push_back(p);
           }
@@ -1520,7 +1522,7 @@ bool PlanningScene::processAttachedCollisionObjectMsg(const moveit_msgs::Attache
           if (s)
           {
             Eigen::Affine3d p;
-            tf2::fromMsg(object.object.plane_poses[i], p);
+            tf::poseMsgToEigen(object.object.plane_poses[i], p);
             shapes.push_back(shapes::ShapeConstPtr(s));
             poses.push_back(p);
           }
@@ -1697,7 +1699,7 @@ bool PlanningScene::processCollisionObjectMsg(const moveit_msgs::CollisionObject
       if (s)
       {
         Eigen::Affine3d p;
-        tf2::fromMsg(object.primitive_poses[i], p);
+        tf::poseMsgToEigen(object.primitive_poses[i], p);
         world_->addToObject(object.id, shapes::ShapeConstPtr(s), t * p);
       }
     }
@@ -1707,7 +1709,7 @@ bool PlanningScene::processCollisionObjectMsg(const moveit_msgs::CollisionObject
       if (s)
       {
         Eigen::Affine3d p;
-        tf2::fromMsg(object.mesh_poses[i], p);
+        tf::poseMsgToEigen(object.mesh_poses[i], p);
         world_->addToObject(object.id, shapes::ShapeConstPtr(s), t * p);
       }
     }
@@ -1717,7 +1719,7 @@ bool PlanningScene::processCollisionObjectMsg(const moveit_msgs::CollisionObject
       if (s)
       {
         Eigen::Affine3d p;
-        tf2::fromMsg(object.plane_poses[i], p);
+        tf::poseMsgToEigen(object.plane_poses[i], p);
         world_->addToObject(object.id, shapes::ShapeConstPtr(s), t * p);
       }
     }
@@ -1753,19 +1755,19 @@ bool PlanningScene::processCollisionObjectMsg(const moveit_msgs::CollisionObject
       for (std::size_t i = 0; i < object.primitive_poses.size(); ++i)
       {
         Eigen::Affine3d p;
-        tf2::fromMsg(object.primitive_poses[i], p);
+        tf::poseMsgToEigen(object.primitive_poses[i], p);
         new_poses.push_back(t * p);
       }
       for (std::size_t i = 0; i < object.mesh_poses.size(); ++i)
       {
         Eigen::Affine3d p;
-        tf2::fromMsg(object.mesh_poses[i], p);
+        tf::poseMsgToEigen(object.mesh_poses[i], p);
         new_poses.push_back(t * p);
       }
       for (std::size_t i = 0; i < object.plane_poses.size(); ++i)
       {
         Eigen::Affine3d p;
-        tf2::fromMsg(object.plane_poses[i], p);
+        tf::poseMsgToEigen(object.plane_poses[i], p);
         new_poses.push_back(t * p);
       }
 
