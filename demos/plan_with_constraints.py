@@ -2,7 +2,7 @@
 
 # Software License Agreement (BSD License)
 #
-# Copyright (c) 2013, Willow Garage, Inc.
+# Copyright (c) 2018, Houston Mechatronics, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -32,49 +32,44 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 #
-# Author: Ioan Sucan
+# Author: Siddharth Srivatsa
 
 import sys
 import rospy
-from moveit_commander import RobotCommander, PlanningSceneInterface, roscpp_initialize, roscpp_shutdown
-from geometry_msgs.msg import PoseStamped
+from moveit_commander import RobotCommander, roscpp_initialize, roscpp_shutdown
+from moveit_msgs.msg import RobotState, Constraints
+from geometry_msgs.msg import Pose
 
 if __name__=='__main__':
 
     roscpp_initialize(sys.argv)
     rospy.init_node('moveit_py_demo', anonymous=True)
 
-    scene = PlanningSceneInterface()
     robot = RobotCommander()
     rospy.sleep(1)
 
-    # clean the scene
-    scene.remove_world_object("pole")
-    scene.remove_world_object("table")
-    scene.remove_world_object("part")
+    a = robot.right_arm
+    a.set_start_state(RobotState())
 
-    # publish a demo scene
-    p = PoseStamped()
-    p.header.frame_id = robot.get_planning_frame()
-    p.pose.position.x = 0.7
-    p.pose.position.y = -0.4
-    p.pose.position.z = 0.85
-    p.pose.orientation.w = 1.0
-    scene.add_box("pole", p, (0.3, 0.1, 1.0))
+    print "current pose:"
+    print a.get_current_pose()
+    c = Constraints()
 
-    p.pose.position.y = -0.2
-    p.pose.position.z = 0.175
-    scene.add_box("table", p, (0.5, 1.5, 0.35))
+    waypoints = []
+    waypoints.append(a.get_current_pose().pose)
 
-    p.pose.position.x = 0.6
-    p.pose.position.y = -0.7
-    p.pose.position.z = 0.5
-    scene.add_box("part", p, (0.15, 0.1, 0.3))
+    # Move forward
+    wpose = Pose()
+    wpose.position.x = wpose.position.x + 0.1
+    waypoints.append(wpose)
 
-    rospy.sleep(1)
+    # Move down
+    wpose.position.z -= 0.10
+    waypoints.append(wpose)
 
-    # pick an object
-    robot.right_arm.pick("part")
+    # Move to the side
+    wpose.position.y += 0.05
+    waypoints.append(wpose)
 
-    rospy.spin()
-    roscpp_shutdown()
+    plan, fraction = a.compute_cartesian_path(waypoints, 0.01, 0.0, path_constraints=c)
+    print 'Plan success percent: ', fraction
