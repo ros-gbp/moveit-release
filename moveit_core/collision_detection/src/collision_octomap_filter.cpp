@@ -64,25 +64,24 @@ int collision_detection::refineContactNormals(const World::ObjectConstPtr& objec
 {
   if (!object)
   {
-    logError("No valid Object passed in, cannot refine Normals!");
+    ROS_ERROR_NAMED("collision_detection", "No valid Object passed in, cannot refine Normals!");
     return 0;
   }
   if (res.contact_count < 1)
   {
-    logWarn("There do not appear to be any contacts, so there is nothing to refine!");
+    ROS_WARN_NAMED("collision_detection", "There do not appear to be any contacts, so there is nothing to refine!");
     return 0;
   }
 
   int modified = 0;
 
   // iterate through contacts
-  for (collision_detection::CollisionResult::ContactMap::iterator it = res.contacts.begin(); it != res.contacts.end();
-       ++it)
+  for (auto& contact : res.contacts)
   {
-    std::string contact1 = it->first.first;
-    std::string contact2 = it->first.second;
+    std::string contact1 = contact.first.first;
+    std::string contact2 = contact.first.second;
     std::string octomap_name = "";
-    std::vector<collision_detection::Contact>& contact_vector = it->second;
+    std::vector<collision_detection::Contact>& contact_vector = contact.second;
 
     if (contact1.find("octomap") != std::string::npos)
       octomap_name = contact1;
@@ -102,10 +101,10 @@ int collision_detection::refineContactNormals(const World::ObjectConstPtr& objec
       {
         std::shared_ptr<const octomap::OcTree> octree = shape_octree->octree;
         cell_size = octree->getResolution();
-        for (size_t contact_index = 0; contact_index < contact_vector.size(); contact_index++)
+        for (auto& contact_info : contact_vector)
         {
-          const Eigen::Vector3d& point = contact_vector[contact_index].pos;
-          const Eigen::Vector3d& normal = contact_vector[contact_index].normal;
+          const Eigen::Vector3d& point = contact_info.pos;
+          const Eigen::Vector3d& normal = contact_info.normal;
 
           octomath::Vector3 contact_point(point[0], point[1], point[2]);
           octomath::Vector3 contact_normal(normal[0], normal[1], normal[2]);
@@ -126,14 +125,17 @@ int collision_detection::refineContactNormals(const World::ObjectConstPtr& objec
             {
               count++;
               node_centers.push_back(pt);
-              // logInform("Adding point %d with prob %.3f at [%.3f, %.3f, %.3f]", count, prob, pt.x(), pt.y(), pt.z());
+              // ROS_INFO_NAMED("collision_detection", "Adding point %d with prob %.3f at [%.3f, %.3f, %.3f]",
+              //                          count, prob, pt.x(), pt.y(), pt.z());
             }
           }
-          // logInform("Contact point at [%.3f, %.3f, %.3f], cell size %.3f, occupied cells %d",
-          //          contact_point.x(), contact_point.y(), contact_point.z(), cell_size, count);
+          // ROS_INFO_NAMED("collision_detection", "Contact point at [%.3f, %.3f, %.3f], cell size %.3f, occupied cells
+          // %d",
+          //                          contact_point.x(), contact_point.y(), contact_point.z(), cell_size, count);
 
           // octree->getOccupiedLeafsBBX(node_centers, bbx_min, bbx_max);
-          // logError("bad stuff in collision_octomap_filter.cpp; need to port octomap call for groovy");
+          // ROS_ERROR_NAMED("collision_detection", "bad stuff in collision_octomap_filter.cpp; need to port octomap
+          // call for groovy");
 
           octomath::Vector3 n;
           double depth;
@@ -145,15 +147,15 @@ int collision_detection::refineContactNormals(const World::ObjectConstPtr& objec
             if (divergence > allowed_angle_divergence)
             {
               modified++;
-              //              logInform("Normals differ by %.3f, changing: [%.3f, %.3f, %.3f] -> [%.3f, %.3f, %.3f]",
-              //                        divergence,
-              //                        contact_normal.x(), contact_normal.y(), contact_normal.z(),
-              //                        n.x(), n.y(), n.z());
-              contact_vector[contact_index].normal = Eigen::Vector3d(n.x(), n.y(), n.z());
+              // ROS_INFO_NAMED("collision_detection", "Normals differ by %.3f, changing: [%.3f, %.3f, %.3f] -> [%.3f,
+              // %.3f, %.3f]",
+              //                          divergence, contact_normal.x(), contact_normal.y(), contact_normal.z(),
+              //                          n.x(), n.y(), n.z());
+              contact_info.normal = Eigen::Vector3d(n.x(), n.y(), n.z());
             }
 
             if (estimate_depth)
-              contact_vector[contact_index].depth = depth;
+              contact_info.depth = depth;
           }
         }
       }
@@ -267,7 +269,7 @@ bool sampleCloud(const octomap::point3d_list& cloud, const double& spacing, cons
     }
     else
     {
-      logError("This should not be called!");
+      ROS_ERROR_NAMED("collision_detection", "This should not be called!");
     }
 
     double f_val = 0;
@@ -293,7 +295,7 @@ bool sampleCloud(const octomap::point3d_list& cloud, const double& spacing, cons
     }
     else
     {
-      logError("This should not be called!");
+      ROS_ERROR_NAMED("collision_detection", "This should not be called!");
       double r_scaled = r / R;
       // TODO still need to address the scaling...
       f_val = pow((1 - r_scaled), 4) * (4 * r_scaled + 1);
