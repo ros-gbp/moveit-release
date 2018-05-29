@@ -1,0 +1,12 @@
+Source: ros-lunar-moveit-plugins
+Section: misc
+Priority: extra
+Maintainer: Michael Görner <me@v4hn.de>
+Build-Depends: debhelper (>= 9.0.0), ros-lunar-catkin
+Homepage: http://moveit.ros.org
+Standards-Version: 3.9.2
+
+Package: ros-lunar-moveit-plugins
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-lunar-moveit-fake-controller-manager, ros-lunar-moveit-ros-control-interface, ros-lunar-moveit-simple-controller-manager
+Description: Metapackage for moveit plugins.
