@@ -1,0 +1,12 @@
+Source: ros-kinetic-moveit-kinematics
+Section: misc
+Priority: extra
+Maintainer: Dave Coleman <dave@dav.ee>
+Build-Depends: debhelper (>= 9.0.0), libeigen3-dev, ros-kinetic-actionlib, ros-kinetic-catkin, ros-kinetic-moveit-core, ros-kinetic-moveit-ros-planning, ros-kinetic-pluginlib
+Homepage: http://moveit.ros.org
+Standards-Version: 3.9.2
+
+Package: ros-kinetic-moveit-kinematics
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-kinetic-actionlib, ros-kinetic-moveit-core, ros-kinetic-moveit-ros-planning, ros-kinetic-pluginlib
+Description: Package for all inverse kinematics solvers in MoveIt!
