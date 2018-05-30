@@ -1,0 +1,12 @@
+Source: ros-lunar-moveit-ros-perception
+Section: misc
+Priority: extra
+Maintainer: Michael Ferguson <mferguson@fetchrobotics.com>
+Build-Depends: debhelper (>= 9.0.0), freeglut3-dev, libeigen3-dev, libgl1-mesa-dev, libglew-dev, libglu1-mesa-dev, ros-lunar-catkin, ros-lunar-cv-bridge, ros-lunar-image-transport, ros-lunar-message-filters, ros-lunar-moveit-core, ros-lunar-moveit-msgs, ros-lunar-octomap, ros-lunar-pluginlib, ros-lunar-rosconsole, ros-lunar-roscpp, ros-lunar-sensor-msgs, ros-lunar-tf, ros-lunar-tf-conversions, ros-lunar-urdf
+Homepage: http://moveit.ros.org
+Standards-Version: 3.9.2
+
+Package: ros-lunar-moveit-ros-perception
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, freeglut3-dev, libgl1-mesa-dev, libglew-dev, libglu1-mesa-dev, ros-lunar-cv-bridge, ros-lunar-image-transport, ros-lunar-message-filters, ros-lunar-moveit-core, ros-lunar-moveit-msgs, ros-lunar-octomap, ros-lunar-pluginlib, ros-lunar-rosconsole, ros-lunar-roscpp, ros-lunar-sensor-msgs, ros-lunar-tf, ros-lunar-tf-conversions, ros-lunar-urdf
+Description: Components of MoveIt connecting to perception
