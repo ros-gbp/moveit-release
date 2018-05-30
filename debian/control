@@ -1,0 +1,12 @@
+Source: ros-kinetic-moveit-ros-benchmarks
+Section: misc
+Priority: extra
+Maintainer: Dave Coleman <dave@dav.ee>
+Build-Depends: debhelper (>= 9.0.0), ros-kinetic-catkin, ros-kinetic-moveit-ros-planning, ros-kinetic-moveit-ros-warehouse, ros-kinetic-pluginlib (>= 1.10.4), ros-kinetic-roscpp
+Homepage: http://moveit.ros.org
+Standards-Version: 3.9.2
+
+Package: ros-kinetic-moveit-ros-benchmarks
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-kinetic-moveit-ros-planning, ros-kinetic-moveit-ros-warehouse, ros-kinetic-pluginlib (>= 1.10.4), ros-kinetic-roscpp
+Description: Enhanced tools for benchmarks in MoveIt!
