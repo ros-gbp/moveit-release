@@ -35,7 +35,7 @@
 /* Author: Dave Coleman, Masaki Murooka */
 
 #include <moveit/srv_kinematics_plugin/srv_kinematics_plugin.h>
-#include <class_loader/class_loader.hpp>
+#include <class_loader/class_loader.h>
 
 // URDF, SRDF
 #include <urdf_model/model.h>
@@ -68,8 +68,8 @@ bool SrvKinematicsPlugin::initialize(const std::string& robot_description, const
   setValues(robot_description, group_name, base_frame, tip_frames, search_discretization);
 
   rdf_loader::RDFLoader rdf_loader(robot_description_);
-  const srdf::ModelSharedPtr& srdf = rdf_loader.getSRDF();
-  const urdf::ModelInterfaceSharedPtr& urdf_model = rdf_loader.getURDF();
+  const boost::shared_ptr<srdf::Model>& srdf = rdf_loader.getSRDF();
+  const boost::shared_ptr<urdf::ModelInterface>& urdf_model = rdf_loader.getURDF();
 
   if (!urdf_model || !srdf)
   {
@@ -106,7 +106,7 @@ bool SrvKinematicsPlugin::initialize(const std::string& robot_description, const
 
   if (debug)
   {
-    ROS_ERROR_STREAM_NAMED("srv", "tip links available:");
+    ROS_ERROR_STREAM_NAMED("temp", "tip links available:");
     std::copy(tip_frames_.begin(), tip_frames_.end(), std::ostream_iterator<std::string>(std::cout, "\n"));
   }
 
@@ -134,7 +134,7 @@ bool SrvKinematicsPlugin::initialize(const std::string& robot_description, const
 
   // Create the ROS service client
   ros::NodeHandle nonprivate_handle("");
-  ik_service_client_ = std::make_shared<ros::ServiceClient>(
+  ik_service_client_ = boost::make_shared<ros::ServiceClient>(
       nonprivate_handle.serviceClient<moveit_msgs::GetPositionIK>(ik_service_name));
   if (!ik_service_client_->waitForExistence(ros::Duration(0.1)))  // wait 0.1 seconds, blocking
     ROS_WARN_STREAM_NAMED("srv",
@@ -381,8 +381,7 @@ bool SrvKinematicsPlugin::searchPositionIK(const std::vector<geometry_msgs::Pose
           ROS_ERROR_STREAM_NAMED("srv", "IK solution callback failed with with error code: FAILURE");
           break;
         case moveit_msgs::MoveItErrorCodes::NO_IK_SOLUTION:
-          ROS_ERROR_STREAM_NAMED("srv", "IK solution callback failed with with error code: "
-                                        "NO IK SOLUTION");
+          ROS_ERROR_STREAM_NAMED("srv", "IK solution callback failed with with error code: NO IK SOLUTION");
           break;
         default:
           ROS_ERROR_STREAM_NAMED("srv", "IK solution callback failed with with error code: " << error_code.val);

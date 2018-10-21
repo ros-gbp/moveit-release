@@ -40,7 +40,7 @@
 #include <moveit_msgs/GetMotionPlan.h>
 #include <sbpl_interface/sbpl_meta_interface.h>
 
-#include <pluginlib/class_list_macros.hpp>
+#include <pluginlib/class_list_macros.h>
 
 namespace sbpl_interface_ros
 {

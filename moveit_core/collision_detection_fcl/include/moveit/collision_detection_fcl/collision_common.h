@@ -43,7 +43,6 @@
 #include <fcl/broadphase/broadphase.h>
 #include <fcl/collision.h>
 #include <fcl/distance.h>
-#include <memory>
 #include <set>
 
 namespace collision_detection
@@ -149,25 +148,6 @@ struct CollisionData
   bool done_;
 };
 
-struct DistanceData
-{
-  DistanceData(const DistanceRequest* req, DistanceResult* res) : req(req), res(res), done(false)
-  {
-  }
-  ~DistanceData()
-  {
-  }
-
-  /// Distance query request information
-  const DistanceRequest* req;
-
-  /// Distance query results information
-  DistanceResult* res;
-
-  /// Indicates if distance query is finished.
-  bool done;
-};
-
 MOVEIT_CLASS_FORWARD(FCLGeometry);
 
 struct FCLGeometry
@@ -204,12 +184,12 @@ struct FCLGeometry
     collision_geometry_->setUserData(collision_geometry_data_.get());
   }
 
-  std::shared_ptr<fcl::CollisionGeometry> collision_geometry_;
-  CollisionGeometryDataPtr collision_geometry_data_;
+  boost::shared_ptr<fcl::CollisionGeometry> collision_geometry_;
+  boost::shared_ptr<CollisionGeometryData> collision_geometry_data_;
 };
 
-typedef std::shared_ptr<fcl::CollisionObject> FCLCollisionObjectPtr;
-typedef std::shared_ptr<const fcl::CollisionObject> FCLCollisionObjectConstPtr;
+typedef boost::shared_ptr<fcl::CollisionObject> FCLCollisionObjectPtr;
+typedef boost::shared_ptr<const fcl::CollisionObject> FCLCollisionObjectConstPtr;
 
 struct FCLObject
 {
@@ -224,7 +204,7 @@ struct FCLObject
 struct FCLManager
 {
   FCLObject object_;
-  std::shared_ptr<fcl::BroadPhaseCollisionManager> manager_;
+  boost::shared_ptr<fcl::BroadPhaseCollisionManager> manager_;
 };
 
 bool collisionCallback(fcl::CollisionObject* o1, fcl::CollisionObject* o2, void* data);

@@ -91,9 +91,10 @@ void RobotInteraction::decideActiveComponents(const std::string& group, Interact
 {
   decideActiveEndEffectors(group, style);
   decideActiveJoints(group);
-  if (!group.empty() && active_eef_.empty() && active_vj_.empty() && active_generic_.empty())
+  if (active_eef_.empty() && active_vj_.empty() && active_generic_.empty())
     ROS_INFO_NAMED("robot_interaction", "No active joints or end effectors found for group '%s'. "
-                                        "Make sure that kinematics.yaml is loaded in this node's namespace.",
+                                        "Make sure you have defined an end effector in your SRDF file and that "
+                                        "kinematics.yaml is loaded in this node's namespace.",
                    group.c_str());
 }
 
@@ -184,12 +185,12 @@ void RobotInteraction::decideActiveJoints(const std::string& group)
   boost::unique_lock<boost::mutex> ulock(marker_access_lock_);
   active_vj_.clear();
 
+  ROS_DEBUG_NAMED("robot_interaction", "Deciding active joints for group '%s'", group.c_str());
+
   if (group.empty())
     return;
 
-  ROS_DEBUG_NAMED("robot_interaction", "Deciding active joints for group '%s'", group.c_str());
-
-  const srdf::ModelConstSharedPtr& srdf = robot_model_->getSRDF();
+  const boost::shared_ptr<const srdf::Model>& srdf = robot_model_->getSRDF();
   const robot_model::JointModelGroup* jmg = robot_model_->getJointModelGroup(group);
 
   if (!jmg || !srdf)
@@ -260,12 +261,12 @@ void RobotInteraction::decideActiveEndEffectors(const std::string& group, Intera
   boost::unique_lock<boost::mutex> ulock(marker_access_lock_);
   active_eef_.clear();
 
+  ROS_DEBUG_NAMED("robot_interaction", "Deciding active end-effectors for group '%s'", group.c_str());
+
   if (group.empty())
     return;
 
-  ROS_DEBUG_NAMED("robot_interaction", "Deciding active end-effectors for group '%s'", group.c_str());
-
-  const srdf::ModelConstSharedPtr& srdf = robot_model_->getSRDF();
+  const boost::shared_ptr<const srdf::Model>& srdf = robot_model_->getSRDF();
   const robot_model::JointModelGroup* jmg = robot_model_->getJointModelGroup(group);
 
   if (!jmg || !srdf)
@@ -281,28 +282,30 @@ void RobotInteraction::decideActiveEndEffectors(const std::string& group, Intera
   // if we have an IK solver for the selected group, we check if there are any end effectors attached to this group
   if (smap.first)
   {
-    for (std::size_t i = 0; i < eef.size(); ++i)
-      if ((jmg->hasLinkModel(eef[i].parent_link_) || jmg->getName() == eef[i].parent_group_) &&
-          jmg->canSetStateFromIK(eef[i].parent_link_))
-      {
-        // We found an end-effector whose parent is the group.
-        EndEffectorInteraction ee;
-        ee.parent_group = group;
-        ee.parent_link = eef[i].parent_link_;
-        ee.eef_group = eef[i].component_group_;
-        ee.interaction = style;
-        active_eef_.push_back(ee);
-      }
-
-    // No end effectors found.  Use last link in group as the "end effector".
-    if (active_eef_.empty() && !jmg->getLinkModelNames().empty())
+    if (eef.empty() && !jmg->getLinkModelNames().empty())
     {
+      // No end effectors.  Use last link in group as the "end effector".
       EndEffectorInteraction ee;
       ee.parent_group = group;
       ee.parent_link = jmg->getLinkModelNames().back();
       ee.eef_group = group;
       ee.interaction = style;
       active_eef_.push_back(ee);
+    }
+    else
+    {
+      for (std::size_t i = 0; i < eef.size(); ++i)
+        if ((jmg->hasLinkModel(eef[i].parent_link_) || jmg->getName() == eef[i].parent_group_) &&
+            jmg->canSetStateFromIK(eef[i].parent_link_))
+        {
+          // We found an end-effector whose parent is the group.
+          EndEffectorInteraction ee;
+          ee.parent_group = group;
+          ee.parent_link = eef[i].parent_link_;
+          ee.eef_group = eef[i].component_group_;
+          ee.interaction = style;
+          active_eef_.push_back(ee);
+        }
     }
   }
   else if (!smap.second.empty())
@@ -553,7 +556,7 @@ void RobotInteraction::addInteractiveMarkers(const ::robot_interaction::Interact
                                     boost::bind(&RobotInteraction::processInteractiveMarkerFeedback, this, _1));
 
     // Add menu handler to all markers that this interaction handler creates.
-    if (std::shared_ptr<interactive_markers::MenuHandler> mh = handler->getMenuHandler())
+    if (boost::shared_ptr<interactive_markers::MenuHandler> mh = handler->getMenuHandler())
       mh->apply(*int_marker_server_, ims[i].name);
   }
 }
@@ -796,9 +799,13 @@ void RobotInteraction::processingThread()
           {
             ih->handleEndEffector(eef, feedback);
           }
-          catch (std::exception& ex)
+          catch (std::runtime_error& ex)
           {
             ROS_ERROR("Exception caught while handling end-effector update: %s", ex.what());
+          }
+          catch (...)
+          {
+            ROS_ERROR("Exception caught while handling end-effector update");
           }
           marker_access_lock_.lock();
         }
@@ -812,9 +819,13 @@ void RobotInteraction::processingThread()
           {
             ih->handleJoint(vj, feedback);
           }
-          catch (std::exception& ex)
+          catch (std::runtime_error& ex)
           {
             ROS_ERROR("Exception caught while handling joint update: %s", ex.what());
+          }
+          catch (...)
+          {
+            ROS_ERROR("Exception caught while handling joint update");
           }
           marker_access_lock_.lock();
         }
@@ -827,18 +838,26 @@ void RobotInteraction::processingThread()
           {
             ih->handleGeneric(g, feedback);
           }
-          catch (std::exception& ex)
+          catch (std::runtime_error& ex)
           {
             ROS_ERROR("Exception caught while handling joint update: %s", ex.what());
+          }
+          catch (...)
+          {
+            ROS_ERROR("Exception caught while handling joint update");
           }
           marker_access_lock_.lock();
         }
         else
           ROS_ERROR("Unknown marker class ('%s') for marker '%s'", marker_class.c_str(), feedback->marker_name.c_str());
       }
-      catch (std::exception& ex)
+      catch (std::runtime_error& ex)
       {
         ROS_ERROR("Exception caught while processing event: %s", ex.what());
+      }
+      catch (...)
+      {
+        ROS_ERROR("Exception caught while processing event");
       }
     }
   }

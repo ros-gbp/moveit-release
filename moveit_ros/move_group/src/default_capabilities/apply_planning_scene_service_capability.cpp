@@ -60,5 +60,5 @@ bool move_group::ApplyPlanningSceneService::applyScene(moveit_msgs::ApplyPlannin
   return true;
 }
 
-#include <class_loader/class_loader.hpp>
+#include <class_loader/class_loader.h>
 CLASS_LOADER_REGISTER_CLASS(move_group::ApplyPlanningSceneService, move_group::MoveGroupCapability)

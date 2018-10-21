@@ -40,7 +40,7 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include <pluginlib/class_list_macros.hpp>
+#include <pluginlib/class_list_macros.h>
 
 namespace chomp_interface
 {

@@ -1,6 +1,6 @@
 <package>
   <name>moveit_ros_move_group</name>
-  <version>0.9.12</version>
+  <version>0.7.14</version>
   <description>The move_group node for MoveIt</description>
   <author email="isucan@google.com">Ioan Sucan</author>
   <author email="robot.moveit@gmail.com">Sachin Chitta</author>
@@ -31,9 +31,6 @@
   <run_depend>tf</run_depend>
   <run_depend>pluginlib</run_depend>
   <run_depend>std_srvs</run_depend>
-
-  <test_depend>rostest</test_depend>
-  <test_depend>moveit_resources</test_depend>
 
   <export>
     <moveit_ros_move_group plugin="${prefix}/default_capabilities_plugin_description.xml"/>

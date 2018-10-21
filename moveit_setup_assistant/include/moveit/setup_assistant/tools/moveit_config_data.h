@@ -74,7 +74,6 @@ struct GroupMetaData
   double kinematics_solver_search_resolution_;  // resolution to use with solver
   double kinematics_solver_timeout_;            // solver timeout
   int kinematics_solver_attempts_;              // solver attempts
-  std::string default_planner_;                 // Name of the default planner to use
 };
 
 /**
@@ -169,13 +168,14 @@ public:
   /// Path relative to urdf package (note: this may be same as urdf_path_)
   std::string urdf_pkg_relative_path_;
 
+  /// Flag indicating whether Jade+ extensions should be enabled when loading xacro
+  bool urdf_requires_jade_xacro_;
+
   /// Flag indicating whether the URDF was loaded from .xacro format
   bool urdf_from_xacro_;
-  /// xacro arguments
-  std::string xacro_args_;
 
   /// URDF robot model
-  urdf::ModelSharedPtr urdf_model_;
+  boost::shared_ptr<urdf::Model> urdf_model_;
 
   // ******************************************************************************************
   // SRDF Data
@@ -248,7 +248,6 @@ public:
   // ******************************************************************************************
   // Public Functions for outputting configuration and setting files
   // ******************************************************************************************
-  std::vector<OMPLPlannerDescription> getOMPLPlanners();
   bool outputSetupAssistantFile(const std::string& file_path);
   bool outputOMPLPlanningYAML(const std::string& file_path);
   bool outputKinematicsYAML(const std::string& file_path);
@@ -268,13 +267,6 @@ public:
    * \return string - value to insert into yaml file
    */
   std::string decideProjectionJoints(std::string planning_group);
-
-  /**
-   * Input ompl_planning.yaml file for editing its values
-   * @param file_path path to ompl_planning.yaml in the input package
-   * @return bool if the file was read correctly
-   */
-  bool inputOMPLYAML(const std::string& file_path);
 
   /**
    * Input kinematics.yaml file for editing its values

@@ -201,12 +201,10 @@ void ChompOptimizer::initialize()
     fixed_link_resolution_map[joint_names_[i]] = joint_names_[i];
   }
 
-  for (const moveit::core::JointModel* jm : joint_model_group_->getFixedJointModels())
+  for (size_t i = 0; i < joint_model_group_->getFixedJointModels().size(); i++)
   {
-    if (!jm->getParentLinkModel())  // root joint doesn't have a parent
-      continue;
-
-    fixed_link_resolution_map[jm->getName()] = jm->getParentLinkModel()->getParentJointModel()->getName();
+    const moveit::core::JointModel* model = joint_model_group_->getFixedJointModels()[i];
+    fixed_link_resolution_map[model->getName()] = model->getParentLinkModel()->getParentJointModel()->getName();
   }
 
   // TODO - is this just the joint_roots_?
@@ -577,7 +575,7 @@ bool ChompOptimizer::isCurrentTrajectoryMeshToMeshCollisionFree() const
   }
   moveit_msgs::RobotState start_state_msg;
   moveit::core::robotStateToRobotStateMsg(start_state_, start_state_msg);
-  return planning_scene_->isPathValid(start_state_msg, traj, planning_group_);
+  return planning_scene_->isPathValid(start_state_msg, traj);
 }
 
 // CollisionProximitySpace::TrajectorySafety ChompOptimizer::checkCurrentIterValidity()

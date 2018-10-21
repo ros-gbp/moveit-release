@@ -35,10 +35,9 @@
 /* Author: Ioan Sucan */
 
 #include <moveit/constraint_sampler_manager_loader/constraint_sampler_manager_loader.h>
-#include <pluginlib/class_loader.hpp>
+#include <pluginlib/class_loader.h>
 #include <ros/ros.h>
 #include <boost/tokenizer.hpp>
-#include <memory>
 
 namespace constraint_sampler_manager_loader
 {
@@ -82,7 +81,7 @@ public:
 
 private:
   ros::NodeHandle nh_;
-  std::unique_ptr<pluginlib::ClassLoader<constraint_samplers::ConstraintSamplerAllocator> >
+  boost::scoped_ptr<pluginlib::ClassLoader<constraint_samplers::ConstraintSamplerAllocator> >
       constraint_sampler_plugin_loader_;
 };
 

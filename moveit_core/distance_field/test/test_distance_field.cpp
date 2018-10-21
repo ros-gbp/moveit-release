@@ -39,12 +39,11 @@
 #include <moveit/distance_field/voxel_grid.h>
 #include <moveit/distance_field/propagation_distance_field.h>
 #include <moveit/distance_field/find_internal_points.h>
+#include <console_bridge/console.h>
 #include <geometric_shapes/body_operations.h>
 #include <eigen_conversions/eigen_msg.h>
 #include <octomap/octomap.h>
-#include <ros/console.h>
-
-#include <memory>
+#include <boost/make_shared.hpp>
 
 using namespace distance_field;
 
@@ -91,7 +90,7 @@ void print(PropagationDistanceField& pdf, int numX, int numY, int numZ)
       {
         if (pdf.getCell(x, y, z).distance_square_ == 0)
         {
-          // ROS_INFO_NAMED("distance_field", "Obstacle cell %d %d %d", x, y, z);
+          // logInform("Obstacle cell %d %d %d", x, y, z);
         }
       }
     }
@@ -353,7 +352,7 @@ TEST(TestPropagationDistanceField, TestAddRemovePoints)
   EigenSTL::vector_Vector3d points;
   points.push_back(point1);
   points.push_back(point2);
-  ROS_INFO_NAMED("distance_field", "Adding %zu points", points.size());
+  logInform("Adding %u points", points.size());
   df.addPointsToField(points);
   // print(df, numX, numY, numZ);
 
@@ -469,7 +468,7 @@ TEST(TestSignedPropagationDistanceField, TestSignedAddRemovePoints)
   }
 
   df.reset();
-  ROS_INFO_NAMED("distance_field", "Adding %zu points", points.size());
+  logInform("Adding %u points", points.size());
   df.addPointsToField(points);
   // print(df, numX, numY, numZ);
   // printNeg(df, numX, numY, numZ);
@@ -530,7 +529,7 @@ TEST(TestSignedPropagationDistanceField, TestSignedAddRemovePoints)
 
         EXPECT_EQ(ncell_dist, dist);
 
-        if (ncell == nullptr)
+        if (ncell == NULL)
         {
           if (ncell_dist > 0)
           {
@@ -767,7 +766,7 @@ TEST(TestSignedPropagationDistanceField, TestPerformance)
 
         if (!valid)
         {
-          ROS_WARN_NAMED("distance_field", "Something wrong");
+          logWarn("Something wrong");
           continue;
         }
         bad_vec.push_back(loc);
@@ -863,7 +862,7 @@ TEST(TestSignedPropagationDistanceField, TestOcTree)
   std::cout << "Occupied cells " << countOccupiedCells(df_highres) << std::endl;
 
   // testing adding shape that happens to be octree
-  std::shared_ptr<octomap::OcTree> tree_shape(new octomap::OcTree(.05));
+  boost::shared_ptr<octomap::OcTree> tree_shape(new octomap::OcTree(.05));
   octomap::point3d tpoint1(1.0, .5, 1.0);
   octomap::point3d tpoint2(1.7, .5, .5);
   octomap::point3d tpoint3(1.8, .5, .5);
@@ -871,7 +870,7 @@ TEST(TestSignedPropagationDistanceField, TestOcTree)
   tree_shape->updateNode(tpoint2, true);
   tree_shape->updateNode(tpoint3, true);
 
-  std::shared_ptr<shapes::OcTree> shape_oc(new shapes::OcTree(tree_shape));
+  boost::shared_ptr<shapes::OcTree> shape_oc(new shapes::OcTree(tree_shape));
 
   PropagationDistanceField df_test_shape_1(PERF_WIDTH, PERF_HEIGHT, PERF_DEPTH, PERF_RESOLUTION, PERF_ORIGIN_X,
                                            PERF_ORIGIN_Y, PERF_ORIGIN_Z, PERF_MAX_DIST, false);

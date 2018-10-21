@@ -86,7 +86,7 @@ ConfigurationFilesWidget::ConfigurationFilesWidget(QWidget* parent,
                                    "Specify the desired directory for the MoveIt configuration package to be "
                                    "generated. Overwriting an existing configuration package directory is acceptable. "
                                    "Example: <i>/u/robot/ros/pr2_moveit_config</i>",
-                                   this, true);  // is directory
+                                   true, this);  // is directory
   layout->addWidget(stack_path_);
 
   // Pass the package path from start screen to configuration files screen
@@ -149,7 +149,7 @@ ConfigurationFilesWidget::ConfigurationFilesWidget(QWidget* parent,
 
   // Success label
   success_label_ = new QLabel(this);
-  QFont success_label_font(QFont().defaultFamily(), 12, QFont::Bold);
+  QFont success_label_font("Arial", 12, QFont::Bold);
   success_label_->setFont(success_label_font);
   success_label_->hide();  // only show once the files have been generated
   success_label_->setText("Configuration package generated successfully!");
@@ -1002,8 +1002,16 @@ void ConfigurationFilesWidget::loadTemplateStrings()
 
   // Pair 3
   if (config_data_->urdf_from_xacro_)
-    addTemplateString("[URDF_LOAD_ATTRIBUTE]",
-                      "command=\"xacro " + config_data_->xacro_args_ + " '" + urdf_location + "'\"");
+  {
+    // Always use xacro if urdf was actually converted from one
+    std::string cmd = "$(find xacro)/xacro.py";
+
+    // but only enable Jade+ xacro extensions if needed
+    if (config_data_->urdf_requires_jade_xacro_)
+      cmd += " --inorder";
+
+    addTemplateString("[URDF_LOAD_ATTRIBUTE]", "command=\"" + cmd + " '" + urdf_location + "'\"");
+  }
   else
     addTemplateString("[URDF_LOAD_ATTRIBUTE]", "textfile=\"" + urdf_location + "\"");
 

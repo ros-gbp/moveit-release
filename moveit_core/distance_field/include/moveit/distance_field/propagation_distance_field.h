@@ -521,14 +521,14 @@ private:
   void initNeighborhoods();
 
   /**
-   * \brief Debug function that prints all voxels in a set to ROS_DEBUG_NAMED
+   * \brief Debug function that prints all voxels in a set to logDebug
    *
    * @param set Voxel set to print
    */
   void print(const VoxelSet& set);
 
   /**
-   * \brief Debug function that prints all points in a vector to ROS_DEBUG_NAMED
+   * \brief Debug function that prints all points in a vector to logDebug
    *
    * @param points Points to print
    */

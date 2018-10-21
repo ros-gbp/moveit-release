@@ -45,7 +45,7 @@
 class LoadPlanningModelsPr2 : public testing::Test
 {
 protected:
-  void SetUp() override
+  virtual void SetUp()
   {
     boost::filesystem::path res_path(MOVEIT_TEST_RESOURCES_DIR);
 
@@ -67,13 +67,13 @@ protected:
     robot_model.reset(new moveit::core::RobotModel(urdf_model, srdf_model));
   };
 
-  void TearDown() override
+  virtual void TearDown()
   {
   }
 
 protected:
-  urdf::ModelInterfaceSharedPtr urdf_model;
-  srdf::ModelSharedPtr srdf_model;
+  boost::shared_ptr<urdf::ModelInterface> urdf_model;
+  boost::shared_ptr<srdf::Model> srdf_model;
   moveit::core::RobotModelConstPtr robot_model;
 };
 

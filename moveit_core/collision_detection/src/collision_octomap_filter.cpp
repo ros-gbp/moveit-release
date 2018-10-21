@@ -40,8 +40,6 @@
 #include <octomap/math/Vector3.h>
 #include <octomap/math/Utils.h>
 #include <octomap/octomap.h>
-#include <geometric_shapes/shapes.h>
-#include <memory>
 
 // static const double ISO_VALUE  = 0.5; // TODO magic number! (though, probably a good one).
 // static const double R_MULTIPLE = 1.5; // TODO magic number! (though, probably a good one).
@@ -64,24 +62,25 @@ int collision_detection::refineContactNormals(const World::ObjectConstPtr& objec
 {
   if (!object)
   {
-    ROS_ERROR_NAMED("collision_detection", "No valid Object passed in, cannot refine Normals!");
+    logError("No valid Object passed in, cannot refine Normals!");
     return 0;
   }
   if (res.contact_count < 1)
   {
-    ROS_WARN_NAMED("collision_detection", "There do not appear to be any contacts, so there is nothing to refine!");
+    logWarn("There do not appear to be any contacts, so there is nothing to refine!");
     return 0;
   }
 
   int modified = 0;
 
   // iterate through contacts
-  for (auto& contact : res.contacts)
+  for (collision_detection::CollisionResult::ContactMap::iterator it = res.contacts.begin(); it != res.contacts.end();
+       ++it)
   {
-    std::string contact1 = contact.first.first;
-    std::string contact2 = contact.first.second;
+    std::string contact1 = it->first.first;
+    std::string contact2 = it->first.second;
     std::string octomap_name = "";
-    std::vector<collision_detection::Contact>& contact_vector = contact.second;
+    std::vector<collision_detection::Contact>& contact_vector = it->second;
 
     if (contact1.find("octomap") != std::string::npos)
       octomap_name = contact1;
@@ -96,15 +95,15 @@ int collision_detection::refineContactNormals(const World::ObjectConstPtr& objec
     if (!object->shapes_.empty())
     {
       const shapes::ShapeConstPtr& shape = object->shapes_[0];
-      std::shared_ptr<const shapes::OcTree> shape_octree = std::dynamic_pointer_cast<const shapes::OcTree>(shape);
+      boost::shared_ptr<const shapes::OcTree> shape_octree = boost::dynamic_pointer_cast<const shapes::OcTree>(shape);
       if (shape_octree)
       {
-        std::shared_ptr<const octomap::OcTree> octree = shape_octree->octree;
+        boost::shared_ptr<const octomap::OcTree> octree = shape_octree->octree;
         cell_size = octree->getResolution();
-        for (auto& contact_info : contact_vector)
+        for (size_t contact_index = 0; contact_index < contact_vector.size(); contact_index++)
         {
-          const Eigen::Vector3d& point = contact_info.pos;
-          const Eigen::Vector3d& normal = contact_info.normal;
+          const Eigen::Vector3d& point = contact_vector[contact_index].pos;
+          const Eigen::Vector3d& normal = contact_vector[contact_index].normal;
 
           octomath::Vector3 contact_point(point[0], point[1], point[2]);
           octomath::Vector3 contact_normal(normal[0], normal[1], normal[2]);
@@ -125,17 +124,14 @@ int collision_detection::refineContactNormals(const World::ObjectConstPtr& objec
             {
               count++;
               node_centers.push_back(pt);
-              // ROS_INFO_NAMED("collision_detection", "Adding point %d with prob %.3f at [%.3f, %.3f, %.3f]",
-              //                          count, prob, pt.x(), pt.y(), pt.z());
+              // logInform("Adding point %d with prob %.3f at [%.3f, %.3f, %.3f]", count, prob, pt.x(), pt.y(), pt.z());
             }
           }
-          // ROS_INFO_NAMED("collision_detection", "Contact point at [%.3f, %.3f, %.3f], cell size %.3f, occupied cells
-          // %d",
-          //                          contact_point.x(), contact_point.y(), contact_point.z(), cell_size, count);
+          // logInform("Contact point at [%.3f, %.3f, %.3f], cell size %.3f, occupied cells %d",
+          //          contact_point.x(), contact_point.y(), contact_point.z(), cell_size, count);
 
           // octree->getOccupiedLeafsBBX(node_centers, bbx_min, bbx_max);
-          // ROS_ERROR_NAMED("collision_detection", "bad stuff in collision_octomap_filter.cpp; need to port octomap
-          // call for groovy");
+          // logError("bad stuff in collision_octomap_filter.cpp; need to port octomap call for groovy");
 
           octomath::Vector3 n;
           double depth;
@@ -147,15 +143,15 @@ int collision_detection::refineContactNormals(const World::ObjectConstPtr& objec
             if (divergence > allowed_angle_divergence)
             {
               modified++;
-              // ROS_INFO_NAMED("collision_detection", "Normals differ by %.3f, changing: [%.3f, %.3f, %.3f] -> [%.3f,
-              // %.3f, %.3f]",
-              //                          divergence, contact_normal.x(), contact_normal.y(), contact_normal.z(),
-              //                          n.x(), n.y(), n.z());
-              contact_info.normal = Eigen::Vector3d(n.x(), n.y(), n.z());
+              //              logInform("Normals differ by %.3f, changing: [%.3f, %.3f, %.3f] -> [%.3f, %.3f, %.3f]",
+              //                        divergence,
+              //                        contact_normal.x(), contact_normal.y(), contact_normal.z(),
+              //                        n.x(), n.y(), n.z());
+              contact_vector[contact_index].normal = Eigen::Vector3d(n.x(), n.y(), n.z());
             }
 
             if (estimate_depth)
-              contact_info.depth = depth;
+              contact_vector[contact_index].depth = depth;
           }
         }
       }
@@ -269,7 +265,7 @@ bool sampleCloud(const octomap::point3d_list& cloud, const double& spacing, cons
     }
     else
     {
-      ROS_ERROR_NAMED("collision_detection", "This should not be called!");
+      logError("This should not be called!");
     }
 
     double f_val = 0;
@@ -295,7 +291,7 @@ bool sampleCloud(const octomap::point3d_list& cloud, const double& spacing, cons
     }
     else
     {
-      ROS_ERROR_NAMED("collision_detection", "This should not be called!");
+      logError("This should not be called!");
       double r_scaled = r / R;
       // TODO still need to address the scaling...
       f_val = pow((1 - r_scaled), 4) * (4 * r_scaled + 1);

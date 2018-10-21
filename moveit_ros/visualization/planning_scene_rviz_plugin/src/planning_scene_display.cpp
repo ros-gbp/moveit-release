@@ -247,9 +247,13 @@ void PlanningSceneDisplay::executeMainLoopJobs()
     {
       fn();
     }
-    catch (std::exception& ex)
+    catch (std::runtime_error& ex)
     {
       ROS_ERROR("Exception caught executing main loop job: %s", ex.what());
+    }
+    catch (...)
+    {
+      ROS_ERROR("Exception caught executing main loop job");
     }
     main_loop_jobs_lock_.lock();
   }
@@ -342,9 +346,9 @@ void PlanningSceneDisplay::renderPlanningScene()
           static_cast<OctreeVoxelColorMode>(octree_coloring_property_->getOptionInt()),
           scene_alpha_property_->getFloat());
     }
-    catch (std::exception& ex)
+    catch (...)
     {
-      ROS_ERROR("Caught %s while rendering planning scene", ex.what());
+      ROS_ERROR("Exception thrown while rendering planning scene");
     }
     planning_scene_needs_render_ = false;
     planning_scene_render_->getGeometryNode()->setVisible(scene_enabled_property_->getBool());

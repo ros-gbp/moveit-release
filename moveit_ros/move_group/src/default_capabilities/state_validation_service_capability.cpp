@@ -122,5 +122,5 @@ bool move_group::MoveGroupStateValidationService::computeService(moveit_msgs::Ge
   return true;
 }
 
-#include <class_loader/class_loader.hpp>
+#include <class_loader/class_loader.h>
 CLASS_LOADER_REGISTER_CLASS(move_group::MoveGroupStateValidationService, move_group::MoveGroupCapability)

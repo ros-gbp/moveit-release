@@ -42,15 +42,10 @@
 #include <string>
 #include <vector>
 #include <map>
-#include <memory>
 #include <boost/function.hpp>
 #include <Eigen/Geometry>
 #include <eigen_stl_containers/eigen_stl_vector_container.h>
-
-namespace shapes
-{
-MOVEIT_CLASS_FORWARD(Shape);
-}
+#include <geometric_shapes/shapes.h>
 
 namespace collision_detection
 {
@@ -74,7 +69,9 @@ public:
   /* Collision Bodies                                                   */
   /**********************************************************************/
 
-  MOVEIT_CLASS_FORWARD(Object);
+  struct Object;
+  typedef boost::shared_ptr<Object> ObjectPtr;
+  typedef boost::shared_ptr<Object> ObjectConstPtr;
 
   /** \brief A representation of an object */
   struct Object
@@ -114,7 +111,7 @@ public:
   ObjectConstPtr getObject(const std::string& id) const;
 
   /** iterator over the objects in the world. */
-  typedef std::map<std::string, ObjectPtr>::const_iterator const_iterator;
+  typedef std::map<std::string, ObjectConstPtr>::const_iterator const_iterator;
   /** iterator pointing to first change */
   const_iterator begin() const
   {

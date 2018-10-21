@@ -37,37 +37,35 @@
 #include <moveit/collision_detection/world_diff.h>
 #include <boost/bind.hpp>
 
-namespace collision_detection
-{
-WorldDiff::~WorldDiff()
+collision_detection::WorldDiff::~WorldDiff()
 {
   WorldPtr old_world = world_.lock();
   if (old_world)
     old_world->removeObserver(observer_handle_);
 }
 
-WorldDiff::WorldDiff()
+collision_detection::WorldDiff::WorldDiff()
 {
 }
 
-WorldDiff::WorldDiff(const WorldPtr& world) : world_(world)
+collision_detection::WorldDiff::WorldDiff(const WorldPtr& world) : world_(world)
 {
   observer_handle_ = world->addObserver(boost::bind(&WorldDiff::notify, this, _1, _2));
 }
 
-WorldDiff::WorldDiff(WorldDiff& other)
+collision_detection::WorldDiff::WorldDiff(WorldDiff& other)
 {
   WorldPtr world = other.world_.lock();
   if (world)
   {
     changes_ = other.changes_;
 
-    std::weak_ptr<World>(world).swap(world_);
+    boost::weak_ptr<World>(world).swap(world_);
     observer_handle_ = world->addObserver(boost::bind(&WorldDiff::notify, this, _1, _2));
   }
 }
 
-void WorldDiff::reset()
+void collision_detection::WorldDiff::reset()
 {
   clearChanges();
 
@@ -78,7 +76,7 @@ void WorldDiff::reset()
   world_.reset();
 }
 
-void WorldDiff::reset(const WorldPtr& world)
+void collision_detection::WorldDiff::reset(const WorldPtr& world)
 {
   clearChanges();
 
@@ -86,11 +84,11 @@ void WorldDiff::reset(const WorldPtr& world)
   if (old_world)
     old_world->removeObserver(observer_handle_);
 
-  std::weak_ptr<World>(world).swap(world_);
+  boost::weak_ptr<World>(world).swap(world_);
   observer_handle_ = world->addObserver(boost::bind(&WorldDiff::notify, this, _1, _2));
 }
 
-void WorldDiff::setWorld(const WorldPtr& world)
+void collision_detection::WorldDiff::setWorld(const WorldPtr& world)
 {
   WorldPtr old_world = world_.lock();
   if (old_world)
@@ -99,18 +97,18 @@ void WorldDiff::setWorld(const WorldPtr& world)
     old_world->removeObserver(observer_handle_);
   }
 
-  std::weak_ptr<World>(world).swap(world_);
+  boost::weak_ptr<World>(world).swap(world_);
 
   observer_handle_ = world->addObserver(boost::bind(&WorldDiff::notify, this, _1, _2));
   world->notifyObserverAllObjects(observer_handle_, World::CREATE | World::ADD_SHAPE);
 }
 
-void WorldDiff::clearChanges()
+void collision_detection::WorldDiff::clearChanges()
 {
   changes_.clear();
 }
 
-void WorldDiff::notify(const World::ObjectConstPtr& obj, World::Action action)
+void collision_detection::WorldDiff::notify(const World::ObjectConstPtr& obj, World::Action action)
 {
   World::Action& a = changes_[obj->id_];
   if (action == World::DESTROY)
@@ -118,5 +116,3 @@ void WorldDiff::notify(const World::ObjectConstPtr& obj, World::Action action)
   else
     a = a | action;
 }
-
-}  // end of namespace collision_detection

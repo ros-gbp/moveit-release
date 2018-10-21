@@ -44,8 +44,6 @@
 #include <tf_conversions/tf_eigen.h>
 #include <moveit/profiler/profiler.h>
 
-#include <memory>
-
 namespace planning_scene_monitor
 {
 using namespace moveit_ros_planning;
@@ -160,7 +158,6 @@ planning_scene_monitor::PlanningSceneMonitor::~PlanningSceneMonitor()
   stopStateMonitor();
   stopWorldGeometryMonitor();
   stopSceneMonitor();
-
   delete reconfigure_impl_;
   current_state_monitor_.reset();
   scene_const_.reset();
@@ -231,8 +228,8 @@ void planning_scene_monitor::PlanningSceneMonitor::initialize(const planning_sce
   publish_planning_scene_frequency_ = 2.0;
   new_scene_update_ = UPDATE_NONE;
 
-  last_update_time_ = last_robot_motion_time_ = ros::Time::now();
-  last_robot_state_update_wall_time_ = ros::WallTime::now();
+  last_update_time_ = ros::Time::now();
+  last_state_update_ = ros::WallTime::now();
   dt_state_update_ = ros::WallDuration(0.1);
 
   double temp_wait_time = 0.05;
@@ -301,7 +298,7 @@ void planning_scene_monitor::PlanningSceneMonitor::stopPublishingPlanningScene()
 {
   if (publish_planning_scene_)
   {
-    std::unique_ptr<boost::thread> copy;
+    boost::scoped_ptr<boost::thread> copy;
     copy.swap(publish_planning_scene_);
     new_scene_update_condition_.notify_all();
     copy->join();
@@ -387,7 +384,8 @@ void planning_scene_monitor::PlanningSceneMonitor::scenePublishingThread()
             scene_->getPlanningSceneMsg(msg);
           }
           // also publish timestamp of this robot_state
-          msg.robot_state.joint_state.header.stamp = last_robot_motion_time_;
+          if (current_state_monitor_)
+            msg.robot_state.joint_state.header.stamp = current_state_monitor_->getCurrentStateTime();
           publish_msg = true;
         }
         new_scene_update_ = UPDATE_NONE;
@@ -516,10 +514,6 @@ bool planning_scene_monitor::PlanningSceneMonitor::newPlanningSceneMessage(const
     boost::recursive_mutex::scoped_lock prevent_shape_cache_updates(shape_handles_lock_);
 
     last_update_time_ = ros::Time::now();
-    last_robot_motion_time_ = scene.robot_state.joint_state.header.stamp;
-    ROS_DEBUG_STREAM_NAMED("planning_scene_monitor",
-                           "scene update " << fmod(last_update_time_.toSec(), 10.)
-                                           << " robot stamp: " << fmod(last_robot_motion_time_.toSec(), 10.));
     old_scene_name = scene_->getName();
     result = scene_->usePlanningSceneMsg(scene);
     if (octomap_monitor_)
@@ -863,10 +857,6 @@ bool planning_scene_monitor::PlanningSceneMonitor::waitForCurrentRobotState(cons
 {
   if (t.isZero())
     return false;
-  ros::WallTime start = ros::WallTime::now();
-  ros::WallDuration timeout(wait_time);
-
-  ROS_DEBUG_NAMED(LOGNAME, "sync robot state to: %.3fs", fmod(t.toSec(), 10.));
 
   if (current_state_monitor_)
   {
@@ -882,7 +872,6 @@ bool planning_scene_monitor::PlanningSceneMonitor::waitForCurrentRobotState(cons
       if (state_update_pending_)  // enforce state update
       {
         state_update_pending_ = false;
-        last_robot_state_update_wall_time_ = ros::WallTime::now();
         lock.unlock();
         updateSceneWithCurrentState();
       }
@@ -896,23 +885,22 @@ bool planning_scene_monitor::PlanningSceneMonitor::waitForCurrentRobotState(cons
   // Sometimes there is no state monitor. In this case state updates are received as part of scene updates only.
   // However, scene updates are only published if the robot actually moves. Hence we need a timeout!
   // As publishing planning scene updates is throttled (2Hz by default), a 1s timeout is a suitable default.
+  ros::WallTime timeout = ros::WallTime::now() + ros::WallDuration(wait_time);
+  ros::WallDuration busywait(0.1);
   boost::shared_lock<boost::shared_mutex> lock(scene_update_mutex_);
-  ros::Time prev_robot_motion_time = last_robot_motion_time_;
-  while (last_robot_motion_time_ < t &&  // Wait until the state update actually reaches the scene.
-         timeout > ros::WallDuration())
+  ros::Time prev_update_time = last_update_time_;
+  while (last_update_time_ < t &&  // Wait until the state update actually reaches the scene.
+         ros::WallTime::now() < timeout)
   {
-    ROS_DEBUG_STREAM_NAMED(LOGNAME, "last robot motion: " << (t - last_robot_motion_time_).toSec() << " ago");
-    new_scene_update_condition_.wait_for(lock, boost::chrono::nanoseconds(timeout.toNSec()));
-    timeout -= ros::WallTime::now() - start;  // compute remaining wait_time
+    lock.unlock();
+    busywait.sleep();
+    lock.lock();
   }
-  bool success = last_robot_motion_time_ >= t;
+  bool success = last_update_time_ >= t;
   // suppress warning if we received an update at all
-  if (!success && prev_robot_motion_time != last_robot_motion_time_)
-    ROS_WARN_NAMED(LOGNAME, "Maybe failed to update robot state, time diff: %.3fs",
-                   (t - last_robot_motion_time_).toSec());
+  if (!success && prev_update_time != last_update_time_)
+    ROS_WARN_NAMED(LOGNAME, "Maybe failed to update robot state, time diff: %.3fs", (t - last_update_time_).toSec());
 
-  ROS_DEBUG_STREAM_NAMED(LOGNAME, "sync done: robot motion: " << (t - last_robot_motion_time_).toSec()
-                                                              << " scene update: " << (t - last_update_time_).toSec());
   return success;
 }
 
@@ -1102,7 +1090,7 @@ void planning_scene_monitor::PlanningSceneMonitor::startStateMonitor(const std::
   if (scene_)
   {
     if (!current_state_monitor_)
-      current_state_monitor_.reset(new CurrentStateMonitor(getRobotModel(), tf_, root_nh_));
+      current_state_monitor_.reset(new CurrentStateMonitor(getRobotModel(), tf_));
     current_state_monitor_->addUpdateCallback(boost::bind(&PlanningSceneMonitor::onStateUpdate, this, _1));
     current_state_monitor_->startStateMonitor(joint_states_topic);
 
@@ -1144,7 +1132,7 @@ void planning_scene_monitor::PlanningSceneMonitor::onStateUpdate(
     const sensor_msgs::JointStateConstPtr& /* joint_state */)
 {
   const ros::WallTime& n = ros::WallTime::now();
-  ros::WallDuration dt = n - last_robot_state_update_wall_time_;
+  ros::WallDuration dt = n - last_state_update_;
 
   bool update = false;
   {
@@ -1157,10 +1145,11 @@ void planning_scene_monitor::PlanningSceneMonitor::onStateUpdate(
     else
     {
       state_update_pending_ = false;
-      last_robot_state_update_wall_time_ = n;
+      last_state_update_ = n;
       update = true;
     }
   }
+
   // run the state update with state_pending_mutex_ unlocked
   if (update)
     updateSceneWithCurrentState();
@@ -1173,7 +1162,7 @@ void planning_scene_monitor::PlanningSceneMonitor::stateUpdateTimerCallback(cons
     bool update = false;
 
     const ros::WallTime& n = ros::WallTime::now();
-    ros::WallDuration dt = n - last_robot_state_update_wall_time_;
+    ros::WallDuration dt = n - last_state_update_;
 
     {
       // lock for access to dt_state_update_ and state_update_pending_
@@ -1181,19 +1170,14 @@ void planning_scene_monitor::PlanningSceneMonitor::stateUpdateTimerCallback(cons
       if (state_update_pending_ && dt >= dt_state_update_)
       {
         state_update_pending_ = false;
-        last_robot_state_update_wall_time_ = ros::WallTime::now();
+        last_state_update_ = ros::WallTime::now();
         update = true;
-        ROS_DEBUG_STREAM_NAMED(LOGNAME,
-                               "performPendingStateUpdate: " << fmod(last_robot_state_update_wall_time_.toSec(), 10));
       }
     }
 
     // run the state update with state_pending_mutex_ unlocked
     if (update)
-    {
       updateSceneWithCurrentState();
-      ROS_DEBUG_NAMED(LOGNAME, "performPendingStateUpdate done");
-    }
   }
 }
 
@@ -1261,9 +1245,8 @@ void planning_scene_monitor::PlanningSceneMonitor::updateSceneWithCurrentState()
 
     {
       boost::unique_lock<boost::shared_mutex> ulock(scene_update_mutex_);
-      last_update_time_ = last_robot_motion_time_ = current_state_monitor_->getCurrentStateTime();
-      ROS_DEBUG_STREAM_NAMED(LOGNAME, "robot state update " << fmod(last_robot_motion_time_.toSec(), 10.));
       current_state_monitor_->setToCurrentState(scene_->getCurrentStateNonConst());
+      last_update_time_ = current_state_monitor_->getCurrentStateTime();
       scene_->getCurrentStateNonConst().update();  // compute all transforms
     }
     triggerSceneUpdateEvent(UPDATE_STATE);

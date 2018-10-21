@@ -42,19 +42,116 @@
 #include <boost/filesystem.hpp>        // for creating folders/files
 #include <boost/algorithm/string.hpp>  // for string find and replace in templates
 
+#ifdef HAVE_NEW_YAMLCPP
+#include <boost/optional.hpp>  // optional
+#endif
+
 // ROS
 #include <ros/console.h>
 #include <ros/package.h>  // for getting file path for loading images
+
+#ifdef HAVE_NEW_YAMLCPP
+namespace YAML
+{
+// Create a legacy Iterator that can be used with the yaml-cpp 0.3 API.
+class Iterator
+{
+public:
+  typedef YAML::iterator iterator_t;
+  typedef YAML::const_iterator const_iterator_t;
+
+  Iterator(iterator_t iter) : iter_(iter)
+  {
+  }
+
+  const Node& first() const
+  {
+    return iter_->first;
+  }
+
+  const Node& second() const
+  {
+    return iter_->second;
+  }
+
+  detail::iterator_value operator*()
+  {
+    return *iter_;
+  }
+
+  Iterator operator++()
+  {
+    return Iterator(++iter_);
+  }
+
+  bool operator==(iterator_t const& other) const
+  {
+    return iter_ == other;
+  }
+
+  bool operator!=(iterator_t const& other) const
+  {
+    return iter_ != other;
+  }
+
+private:
+  iterator_t iter_;
+};
+}
+#endif
 
 namespace moveit_setup_assistant
 {
 // File system
 namespace fs = boost::filesystem;
 
+#ifdef HAVE_NEW_YAMLCPP
+typedef boost::optional<YAML::Node> yaml_node_t;
+
+// Helper function to find a value (yaml-cpp 0.5)
+template <typename T>
+yaml_node_t findValue(const YAML::Node& node, const T& key)
+{
+  if (node[key])
+    return node[key];
+  return yaml_node_t();
+}
+
+// The >> operator disappeared in yaml-cpp 0.5, so this function is
+// added to provide support for code written under the yaml-cpp 0.3 API.
+template <typename T>
+void operator>>(const YAML::Node& node, T& i)
+{
+  i = node.as<T>();
+}
+
+#else
+typedef const YAML::Node* yaml_node_t;
+
+// Helper function to find a value (yaml-cpp 0.3)
+template <typename T>
+yaml_node_t findValue(const YAML::Node& node, const T& key)
+{
+  return node.FindValue(key);
+}
+#endif
+
+// yaml-cpp 0.5 also changed how you load the YAML document.  This
+// function hides the changes.
+void loadYaml(std::istream& in_stream, YAML::Node& doc_out)
+{
+#ifdef HAVE_NEW_YAMLCPP
+  doc_out = YAML::Load(in_stream);
+#else
+  YAML::Parser parser(in_stream);
+  parser.GetNextDocument(doc_out);
+#endif
+}
+
 // ******************************************************************************************
 // Constructor
 // ******************************************************************************************
-MoveItConfigData::MoveItConfigData() : config_pkg_generated_timestamp_(0)
+MoveItConfigData::MoveItConfigData() : config_pkg_generated_timestamp_(0), urdf_requires_jade_xacro_(false)
 {
   // Create an instance of SRDF writer and URDF model for all widgets to share
   srdf_.reset(new srdf::SRDFWriter());
@@ -161,7 +258,8 @@ bool MoveItConfigData::outputSetupAssistantFile(const std::string& file_path)
   emitter << YAML::Value << YAML::BeginMap;
   emitter << YAML::Key << "package" << YAML::Value << urdf_pkg_name_;
   emitter << YAML::Key << "relative_path" << YAML::Value << urdf_pkg_relative_path_;
-  emitter << YAML::Key << "xacro_args" << YAML::Value << xacro_args_;
+  if (urdf_requires_jade_xacro_)
+    emitter << YAML::Key << "use_jade_xacro" << YAML::Value << urdf_requires_jade_xacro_;
   emitter << YAML::EndMap;
 
   /// SRDF Path Location
@@ -206,76 +304,6 @@ bool MoveItConfigData::outputOMPLPlanningYAML(const std::string& file_path)
 
   emitter << YAML::Value << YAML::BeginMap;
 
-  std::vector<OMPLPlannerDescription> planner_des = getOMPLPlanners();
-
-  // Add Planners with parameter values
-  std::vector<std::string> pconfigs;
-  for (std::size_t i = 0; i < planner_des.size(); ++i)
-  {
-    std::string defaultconfig = planner_des[i].name_;
-    emitter << YAML::Key << defaultconfig;
-    emitter << YAML::Value << YAML::BeginMap;
-    emitter << YAML::Key << "type" << YAML::Value << "geometric::" + planner_des[i].name_;
-    for (std::size_t j = 0; j < planner_des[i].parameter_list_.size(); j++)
-    {
-      emitter << YAML::Key << planner_des[i].parameter_list_[j].name;
-      emitter << YAML::Value << planner_des[i].parameter_list_[j].value;
-      emitter << YAML::Comment(planner_des[i].parameter_list_[j].comment.c_str());
-    }
-    emitter << YAML::EndMap;
-
-    pconfigs.push_back(defaultconfig);
-  }
-
-  // End of every avail planner
-  emitter << YAML::EndMap;
-
-  // Output every group and the planners it can use ----------------------------------
-  for (std::vector<srdf::Model::Group>::iterator group_it = srdf_->groups_.begin(); group_it != srdf_->groups_.end();
-       ++group_it)
-  {
-    emitter << YAML::Key << group_it->name_;
-    emitter << YAML::Value << YAML::BeginMap;
-    // Output associated planners
-    emitter << YAML::Key << "default_planner_config" << YAML::Value
-            << group_meta_data_[group_it->name_].default_planner_ + "kConfigDefault";
-    emitter << YAML::Key << "planner_configs";
-    emitter << YAML::Value << YAML::BeginSeq;
-    for (std::size_t i = 0; i < pconfigs.size(); ++i)
-      emitter << pconfigs[i] + "kConfigDefault";
-    emitter << YAML::EndSeq;
-
-    // Output projection_evaluator
-    std::string projection_joints = decideProjectionJoints(group_it->name_);
-    if (!projection_joints.empty())
-    {
-      emitter << YAML::Key << "projection_evaluator";
-      emitter << YAML::Value << projection_joints;
-      // OMPL collision checking discretization
-      emitter << YAML::Key << "longest_valid_segment_fraction";
-      emitter << YAML::Value << "0.005";
-    }
-
-    emitter << YAML::EndMap;
-  }
-
-  emitter << YAML::EndMap;
-
-  std::ofstream output_stream(file_path.c_str(), std::ios_base::trunc);
-  if (!output_stream.good())
-  {
-    ROS_ERROR_STREAM("Unable to open file for writing " << file_path);
-    return false;
-  }
-
-  output_stream << emitter.c_str();
-  output_stream.close();
-
-  return true;  // file created successfully
-}
-
-std::vector<OMPLPlannerDescription> MoveItConfigData::getOMPLPlanners()
-{
   std::vector<OMPLPlannerDescription> planner_des;
 
   OMPLPlannerDescription SBL("SBL", "geometric");
@@ -348,115 +376,70 @@ std::vector<OMPLPlannerDescription> MoveItConfigData::getOMPLPlanners()
   PRM.addParameter("max_nearest_neighbors", "10", "use k nearest neighbors. default: 10");
   planner_des.push_back(PRM);
 
-  OMPLPlannerDescription PRMstar("PRMstar", "geometric");  // no declares in code
+  OMPLPlannerDescription PRMstar("PRMstar", "geometric");  // no delcares in code
   planner_des.push_back(PRMstar);
 
-  OMPLPlannerDescription FMT("FMT", "geometric");
-  FMT.addParameter("num_samples", "1000", "number of states that the planner should sample. default: 1000");
-  FMT.addParameter("radius_multiplier", "1.1", "multiplier used for the nearest neighbors search radius. default: 1.1");
-  FMT.addParameter("nearest_k", "1", "use Knearest strategy. default: 1");
-  FMT.addParameter("cache_cc", "1", "use collision checking cache. default: 1");
-  FMT.addParameter("heuristics", "0", "activate cost to go heuristics. default: 0");
-  FMT.addParameter("extended_fmt", "1", "activate the extended FMT*: adding new samples if planner does not finish "
-                                        "successfully. default: 1");
-  planner_des.push_back(FMT);
+  // Add Planners with parameter values
+  std::vector<std::string> pconfigs;
+  for (std::size_t i = 0; i < planner_des.size(); ++i)
+  {
+    std::string defaultconfig = planner_des[i].name_ + "kConfigDefault";
+    emitter << YAML::Key << defaultconfig;
+    emitter << YAML::Value << YAML::BeginMap;
+    emitter << YAML::Key << "type" << YAML::Value << "geometric::" + planner_des[i].name_;
+    for (std::size_t j = 0; j < planner_des[i].parameter_list_.size(); j++)
+    {
+      emitter << YAML::Key << planner_des[i].parameter_list_[j].name;
+      emitter << YAML::Value << planner_des[i].parameter_list_[j].value;
+      emitter << YAML::Comment(planner_des[i].parameter_list_[j].comment.c_str());
+    }
+    emitter << YAML::EndMap;
 
-  OMPLPlannerDescription BFMT("BFMT", "geometric");
-  BFMT.addParameter("num_samples", "1000", "number of states that the planner should sample. default: 1000");
-  BFMT.addParameter("radius_multiplier", "1.0", "multiplier used for the nearest neighbors search radius. default: "
-                                                "1.0");
-  BFMT.addParameter("nearest_k", "1", "use the Knearest strategy. default: 1");
-  BFMT.addParameter("balanced", "0", "exploration strategy: balanced true expands one tree every iteration. False will "
-                                     "select the tree with lowest maximum cost to go. default: 1");
-  BFMT.addParameter("optimality", "1", "termination strategy: optimality true finishes when the best possible path is "
-                                       "found. Otherwise, the algorithm will finish when the first feasible path is "
-                                       "found. default: 1");
-  BFMT.addParameter("heuristics", "1", "activates cost to go heuristics. default: 1");
-  BFMT.addParameter("cache_cc", "1", "use the collision checking cache. default: 1");
-  BFMT.addParameter("extended_fmt", "1", "Activates the extended FMT*: adding new samples if planner does not finish "
-                                         "successfully. default: 1");
-  planner_des.push_back(BFMT);
+    pconfigs.push_back(defaultconfig);
+  }
 
-  OMPLPlannerDescription PDST("PDST", "geometric");
-  RRT.addParameter("goal_bias", "0.05", "When close to goal select goal, with this probability? default: 0.05");
-  planner_des.push_back(PDST);
+  // End of every avail planner
+  emitter << YAML::EndMap;
 
-  OMPLPlannerDescription STRIDE("STRIDE", "geometric");
-  STRIDE.addParameter("range", "0.0", "Max motion added to tree. ==> maxDistance_ default: 0.0, if 0.0, set on "
-                                      "setup()");
-  STRIDE.addParameter("goal_bias", "0.05", "When close to goal select goal, with this probability. default: 0.05 ");
-  STRIDE.addParameter("use_projected_distance", "0", "whether nearest neighbors are computed based on distances in a "
-                                                     "projection of the state rather distances in the state space "
-                                                     "itself. default: 0");
-  STRIDE.addParameter("degree", "16", "desired degree of a node in the Geometric Near-neightbor Access Tree (GNAT). "
-                                      "default: 16 ");
-  STRIDE.addParameter("max_degree", "18", "max degree of a node in the GNAT. default: 12");
-  STRIDE.addParameter("min_degree", "12", "min degree of a node in the GNAT. default: 12");
-  STRIDE.addParameter("max_pts_per_leaf", "6", "max points per leaf in the GNAT. default: 6");
-  STRIDE.addParameter("estimated_dimension", "0.0", "estimated dimension of the free space. default: 0.0");
-  STRIDE.addParameter("min_valid_path_fraction", "0.2", "Accept partially valid moves above fraction. default: 0.2");
-  planner_des.push_back(STRIDE);
+  // Output every group and the planners it can use ----------------------------------
+  for (std::vector<srdf::Model::Group>::iterator group_it = srdf_->groups_.begin(); group_it != srdf_->groups_.end();
+       ++group_it)
+  {
+    emitter << YAML::Key << group_it->name_;
+    emitter << YAML::Value << YAML::BeginMap;
+    // Output associated planners
+    emitter << YAML::Key << "planner_configs";
+    emitter << YAML::Value << YAML::BeginSeq;
+    for (std::size_t i = 0; i < pconfigs.size(); ++i)
+      emitter << pconfigs[i];
+    emitter << YAML::EndSeq;
 
-  OMPLPlannerDescription BiTRRT("BiTRRT", "geometric");
-  BiTRRT.addParameter("range", "0.0", "Max motion added to tree. ==> maxDistance_ default: 0.0, if 0.0, set on "
-                                      "setup()");
-  BiTRRT.addParameter("temp_change_factor", "0.1", "how much to increase or decrease temp. default: 0.1");
-  BiTRRT.addParameter("init_temperature", "100", "initial temperature. default: 100");
-  BiTRRT.addParameter("frountier_threshold", "0.0", "dist new state to nearest neighbor to disqualify as frontier. "
-                                                    "default: 0.0 set in setup() ");
-  BiTRRT.addParameter("frountier_node_ratio", "0.1", "1/10, or 1 nonfrontier for every 10 frontier. default: 0.1");
-  BiTRRT.addParameter("cost_threshold", "1e300", "the cost threshold. Any motion cost that is not better will not be "
-                                                 "expanded. default: inf");
-  planner_des.push_back(BiTRRT);
+    // Output projection_evaluator
+    std::string projection_joints = decideProjectionJoints(group_it->name_);
+    if (!projection_joints.empty())
+    {
+      emitter << YAML::Key << "projection_evaluator";
+      emitter << YAML::Value << projection_joints;
+      emitter << YAML::Key << "longest_valid_segment_fraction";
+      emitter << YAML::Value << "0.05";
+    }
 
-  OMPLPlannerDescription LBTRRT("LBTRRT", "geometric");
-  LBTRRT.addParameter("range", "0.0", "Max motion added to tree. ==> maxDistance_ default: 0.0, if 0.0, set on "
-                                      "setup()");
-  LBTRRT.addParameter("goal_bias", "0.05", "When close to goal select goal, with this probability. default: 0.05 ");
-  LBTRRT.addParameter("epsilon", "0.4", "optimality approximation factor. default: 0.4");
-  planner_des.push_back(LBTRRT);
+    emitter << YAML::EndMap;
+  }
 
-  OMPLPlannerDescription BiEST("BiEST", "geometric");
-  BiEST.addParameter("range", "0.0", "Max motion added to tree. ==> maxDistance_ default: 0.0, if 0.0, set on "
-                                     "setup()");
-  planner_des.push_back(BiEST);
+  emitter << YAML::EndMap;
 
-  OMPLPlannerDescription ProjEST("ProjEST", "geometric");
-  ProjEST.addParameter("range", "0.0", "Max motion added to tree. ==> maxDistance_ default: 0.0, if 0.0, set on "
-                                       "setup()");
-  ProjEST.addParameter("goal_bias", "0.05", "When close to goal select goal, with this probability. default: 0.05 ");
-  planner_des.push_back(ProjEST);
+  std::ofstream output_stream(file_path.c_str(), std::ios_base::trunc);
+  if (!output_stream.good())
+  {
+    ROS_ERROR_STREAM("Unable to open file for writing " << file_path);
+    return false;
+  }
 
-  OMPLPlannerDescription LazyPRM("LazyPRM", "geometric");
-  LazyPRM.addParameter("range", "0.0", "Max motion added to tree. ==> maxDistance_ default: 0.0, if 0.0, set on "
-                                       "setup()");
-  planner_des.push_back(LazyPRM);
+  output_stream << emitter.c_str();
+  output_stream.close();
 
-  OMPLPlannerDescription LazyPRMstar("LazyPRMstar", "geometric");  // no declares in code
-  planner_des.push_back(LazyPRMstar);
-
-  OMPLPlannerDescription SPARS("SPARS", "geometric");
-  SPARS.addParameter("stretch_factor", "3.0", "roadmap spanner stretch factor. multiplicative upper bound on path "
-                                              "quality. It does not make sense to make this parameter more than 3. "
-                                              "default: 3.0");
-  SPARS.addParameter("sparse_delta_fraction", "0.25", "delta fraction for connection distance. This value represents "
-                                                      "the visibility range of sparse samples. default: 0.25");
-  SPARS.addParameter("dense_delta_fraction", "0.001", "delta fraction for interface detection. default: 0.001");
-  SPARS.addParameter("max_failures", "1000", "maximum consecutive failure limit. default: 1000");
-  planner_des.push_back(SPARS);
-
-  OMPLPlannerDescription SPARStwo("SPARStwo", "geometric");
-  SPARStwo.addParameter("stretch_factor", "3.0", "roadmap spanner stretch factor. multiplicative upper bound on path "
-                                                 "quality. It does not make sense to make this parameter more than 3. "
-                                                 "default: 3.0");
-  SPARStwo.addParameter("sparse_delta_fraction", "0.25",
-                        "delta fraction for connection distance. This value represents "
-                        "the visibility range of sparse samples. default: 0.25");
-  SPARStwo.addParameter("dense_delta_fraction", "0.001", "delta fraction for interface detection. default: 0.001");
-  SPARStwo.addParameter("max_failures", "5000", "maximum consecutive failure limit. default: 5000");
-  planner_des.push_back(SPARStwo);
-
-  return planner_des;
+  return true;  // file created successfully
 }
 
 // ******************************************************************************************
@@ -521,6 +504,9 @@ bool MoveItConfigData::outputFakeControllersYAML(const std::string& file_path)
   emitter << YAML::Key << "controller_list";
   emitter << YAML::Value << YAML::BeginSeq;
 
+  // Union all the joints in groups
+  std::set<const robot_model::JointModel*> joints;
+
   // Loop through groups
   for (std::vector<srdf::Model::Group>::iterator group_it = srdf_->groups_.begin(); group_it != srdf_->groups_.end();
        ++group_it)
@@ -535,11 +521,15 @@ bool MoveItConfigData::outputFakeControllersYAML(const std::string& file_path)
     emitter << YAML::Value << YAML::BeginSeq;
 
     // Iterate through the joints
-    for (const robot_model::JointModel* joint : joint_models)
+    for (std::vector<const robot_model::JointModel*>::const_iterator joint_it = joint_models.begin();
+         joint_it != joint_models.end(); ++joint_it)
     {
-      if (joint->isPassive() || joint->getMimic() != NULL || joint->getType() == robot_model::JointModel::FIXED)
+      if ((*joint_it)->isPassive() || (*joint_it)->getMimic() != NULL ||
+          (*joint_it)->getType() == robot_model::JointModel::FIXED)
+      {
         continue;
-      emitter << joint->getName();
+      }
+      emitter << (*joint_it)->getName();
     }
     emitter << YAML::EndSeq;
     emitter << YAML::EndMap;
@@ -737,60 +727,6 @@ std::string MoveItConfigData::decideProjectionJoints(std::string planning_group)
   return joint_pair;
 }
 
-template <typename T>
-bool parse(const YAML::Node& node, const std::string& key, T& storage, const T& default_value = T())
-{
-  const YAML::Node& n = node[key];
-  bool valid = n;
-  storage = valid ? n.as<T>() : default_value;
-  return valid;
-}
-
-bool MoveItConfigData::inputOMPLYAML(const std::string& file_path)
-{
-  // Load file
-  std::ifstream input_stream(file_path.c_str());
-  if (!input_stream.good())
-  {
-    ROS_ERROR_STREAM("Unable to open file for reading " << file_path);
-    return false;
-  }
-
-  // Begin parsing
-  try
-  {
-    YAML::Node doc = YAML::Load(input_stream);
-
-    // Loop through all groups
-    for (YAML::const_iterator group_it = doc.begin(); group_it != doc.end(); ++group_it)
-    {
-      // get group name
-      const std::string group_name = group_it->first.as<std::string>();
-
-      // compare group name found to list of groups in group_meta_data_
-      std::map<std::string, GroupMetaData>::iterator group_meta_it;
-      group_meta_it = group_meta_data_.find(group_name);
-      if (group_meta_it != group_meta_data_.end())
-      {
-        std::string planner;
-        parse(group_it->second, "default_planner_config", planner);
-        int pos = planner.find_last_not_of("kConfigDefault");
-        if (pos != std::string::npos)
-        {
-          planner = planner.substr(0, pos + 1);
-        }
-        group_meta_data_[group_name].default_planner_ = planner;
-      }
-    }
-  }
-  catch (YAML::ParserException& e)  // Catch errors
-  {
-    ROS_ERROR_STREAM(e.what());
-    return false;
-  }
-  return true;
-}
-
 // ******************************************************************************************
 // Input kinematics.yaml file
 // ******************************************************************************************
@@ -807,25 +743,82 @@ bool MoveItConfigData::inputKinematicsYAML(const std::string& file_path)
   // Begin parsing
   try
   {
-    YAML::Node doc = YAML::Load(input_stream);
+    YAML::Node doc;
+    loadYaml(input_stream, doc);
 
-    // Loop through all groups
+    yaml_node_t prop_name;
+
+// Loop through all groups
+#ifdef HAVE_NEW_YAMLCPP
     for (YAML::const_iterator group_it = doc.begin(); group_it != doc.end(); ++group_it)
+#else
+    for (YAML::Iterator group_it = doc.begin(); group_it != doc.end(); ++group_it)
+#endif
     {
-      const std::string& group_name = group_it->first.as<std::string>();
-      const YAML::Node& group = group_it->second;
+#ifdef HAVE_NEW_YAMLCPP
+      const std::string group_name = group_it->first.as<std::string>();
+#else
+      std::string group_name;
+      group_it.first() >> group_name;
+#endif
 
       // Create new meta data
-      GroupMetaData meta_data;
+      GroupMetaData new_meta_data;
 
-      parse(group, "kinematics_solver", meta_data.kinematics_solver_);
-      parse(group, "kinematics_solver_search_resolution", meta_data.kinematics_solver_search_resolution_,
-            DEFAULT_KIN_SOLVER_SEARCH_RESOLUTION_);
-      parse(group, "kinematics_solver_timeout", meta_data.kinematics_solver_timeout_, DEFAULT_KIN_SOLVER_TIMEOUT_);
-      parse(group, "kinematics_solver_attempts", meta_data.kinematics_solver_attempts_, DEFAULT_KIN_SOLVER_ATTEMPTS_);
+// kinematics_solver
+#ifdef HAVE_NEW_YAMLCPP
+      if (prop_name = findValue(group_it->second, "kinematics_solver"))
+#else
+      if (prop_name = findValue(group_it.second(), "kinematics_solver"))
+#endif
+      {
+        *prop_name >> new_meta_data.kinematics_solver_;
+      }
+
+// kinematics_solver_search_resolution
+#ifdef HAVE_NEW_YAMLCPP
+      if (prop_name = findValue(group_it->second, "kinematics_solver_search_resolution"))
+#else
+      if (prop_name = findValue(group_it.second(), "kinematics_solver_search_resolution"))
+#endif
+      {
+        *prop_name >> new_meta_data.kinematics_solver_search_resolution_;
+      }
+      else
+      {
+        new_meta_data.kinematics_solver_attempts_ = DEFAULT_KIN_SOLVER_SEARCH_RESOLUTION_;
+      }
+
+// kinematics_solver_timeout
+#ifdef HAVE_NEW_YAMLCPP
+      if (prop_name = findValue(group_it->second, "kinematics_solver_timeout"))
+#else
+      if (prop_name = findValue(group_it.second(), "kinematics_solver_timeout"))
+#endif
+      {
+        *prop_name >> new_meta_data.kinematics_solver_timeout_;
+      }
+      else
+      {
+        new_meta_data.kinematics_solver_attempts_ = DEFAULT_KIN_SOLVER_TIMEOUT_;
+      }
+
+// kinematics_solver_attempts
+#ifdef HAVE_NEW_YAMLCPP
+      if (prop_name = findValue(group_it->second, "kinematics_solver_attempts"))
+#else
+      if (prop_name = findValue(group_it.second(), "kinematics_solver_attempts"))
+#endif
+      {
+        *prop_name >> new_meta_data.kinematics_solver_attempts_;
+      }
+      else
+      {
+        new_meta_data.kinematics_solver_attempts_ = DEFAULT_KIN_SOLVER_ATTEMPTS_;
+      }
 
       // Assign meta data to vector
-      group_meta_data_[group_name] = meta_data;
+      group_meta_data_[group_name] = new_meta_data;
     }
   }
   catch (YAML::ParserException& e)  // Catch errors
@@ -936,34 +929,81 @@ bool MoveItConfigData::inputSetupAssistantYAML(const std::string& file_path)
   // Begin parsing
   try
   {
-    const YAML::Node& doc = YAML::Load(input_stream);
+    YAML::Node doc;
+    loadYaml(input_stream, doc);
+
+    yaml_node_t title_node, urdf_node, package_node, jade_xacro_node, srdf_node, relative_node, config_node,
+        timestamp_node, author_name_node, author_email_node;
 
     // Get title node
-    if (const YAML::Node& title_node = doc["moveit_setup_assistant_config"])
+    if (title_node = findValue(doc, "moveit_setup_assistant_config"))
     {
       // URDF Properties
-      if (const YAML::Node& urdf_node = title_node["URDF"])
+      if (urdf_node = findValue(*title_node, "URDF"))
       {
-        if (!parse(urdf_node, "package", urdf_pkg_name_))
+        // Load first property
+        if (package_node = findValue(*urdf_node, "package"))
+        {
+          *package_node >> urdf_pkg_name_;
+        }
+        else
+        {
           return false;  // if we do not find this value we cannot continue
+        }
 
-        if (!parse(urdf_node, "relative_path", urdf_pkg_relative_path_))
+        // Load second property
+        if (relative_node = findValue(*urdf_node, "relative_path"))
+        {
+          *relative_node >> urdf_pkg_relative_path_;
+        }
+        else
+        {
           return false;  // if we do not find this value we cannot continue
-
-        parse(urdf_node, "xacro_args", xacro_args_);
+        }
+        // should Jade+ xacro extensions be enabled for this package?
+        if (jade_xacro_node = findValue(*urdf_node, "use_jade_xacro"))
+        {
+          *jade_xacro_node >> urdf_requires_jade_xacro_;
+        }
+        else
+        {
+          // value for this node is not required
+        }
       }
       // SRDF Properties
-      if (const YAML::Node& srdf_node = title_node["SRDF"])
+      if (srdf_node = findValue(*title_node, "SRDF"))
       {
-        if (!parse(srdf_node, "relative_path", srdf_pkg_relative_path_))
+        // Load first property
+        if (relative_node = findValue(*srdf_node, "relative_path"))
+        {
+          *relative_node >> srdf_pkg_relative_path_;
+        }
+        else
+        {
           return false;  // if we do not find this value we cannot continue
+        }
       }
       // Package generation time
-      if (const YAML::Node& config_node = title_node["CONFIG"])
+      if (config_node = findValue(*title_node, "CONFIG"))
       {
-        parse(config_node, "author_name", author_name_);
-        parse(config_node, "author_email", author_email_);
-        parse(config_node, "generated_timestamp", config_pkg_generated_timestamp_);
+        // Load author contact details
+        if (author_name_node = findValue(*config_node, "author_name"))
+        {
+          *author_name_node >> author_name_;
+        }
+        if (author_email_node = findValue(*config_node, "author_email"))
+        {
+          *author_email_node >> author_email_;
+        }
+        // Load first property
+        if (timestamp_node = findValue(*config_node, "generated_timestamp"))
+        {
+          *timestamp_node >> config_pkg_generated_timestamp_;
+        }
+        else
+        {
+          // if we do not find this value it is fine, not required
+        }
       }
       return true;
     }

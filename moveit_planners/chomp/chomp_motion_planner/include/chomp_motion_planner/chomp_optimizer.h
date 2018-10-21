@@ -73,11 +73,6 @@ public:
     return initialized_;
   }
 
-  bool isCollisionFree() const
-  {
-    return is_collision_free_;
-  }
-
 private:
   inline double getPotential(double field_distance, double radius, double clearence)
   {
@@ -136,7 +131,7 @@ private:
   const collision_detection::CollisionRobotHybrid* hy_robot_;
 
   std::vector<ChompCost> joint_costs_;
-  collision_detection::GroupStateRepresentationPtr gsr_;
+  boost::shared_ptr<collision_detection::GroupStateRepresentation> gsr_;
   bool initialized_;
 
   std::vector<std::vector<std::string> > collision_point_joint_names_;

@@ -35,14 +35,14 @@
 /* Author: Acorn Pooley, Ioan Sucan */
 
 #include <moveit/exceptions/exceptions.h>
-#include <ros/console.h>
+#include <console_bridge/console.h>
 
 moveit::ConstructException::ConstructException(const std::string& what_arg) : std::runtime_error(what_arg)
 {
-  ROS_ERROR_NAMED("exceptions", "Error during construction of object: %s\nException thrown.", what_arg.c_str());
+  logError("Error during construction of object: %s\nException thrown.", what_arg.c_str());
 }
 
 moveit::Exception::Exception(const std::string& what_arg) : std::runtime_error(what_arg)
 {
-  ROS_ERROR_NAMED("exceptions", "%s\nException thrown.", what_arg.c_str());
+  logError("%s\nException thrown.", what_arg.c_str());
 }

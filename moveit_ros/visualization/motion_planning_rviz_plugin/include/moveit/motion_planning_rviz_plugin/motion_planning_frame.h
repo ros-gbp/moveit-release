@@ -43,7 +43,7 @@
 
 #ifndef Q_MOC_RUN
 #include <moveit/macros/class_forward.h>
-#include <moveit/move_group_interface/move_group_interface.h>
+#include <moveit/move_group_interface/move_group.h>
 #include <moveit/planning_scene_interface/planning_scene_interface.h>
 #include <moveit/planning_scene_monitor/planning_scene_monitor.h>
 #include <moveit/robot_interaction/robot_interaction.h>
@@ -54,14 +54,12 @@
 #include <moveit_msgs/MotionPlanRequest.h>
 #include <actionlib/client/simple_action_client.h>
 #include <object_recognition_msgs/ObjectRecognitionAction.h>
+#endif
 
 #include <std_msgs/Bool.h>
 #include <std_msgs/Empty.h>
-#endif
-
 #include <map>
 #include <string>
-#include <memory>
 
 namespace rviz
 {
@@ -122,16 +120,16 @@ protected:
   rviz::DisplayContext* context_;
   Ui::MotionPlanningUI* ui_;
 
-  moveit::planning_interface::MoveGroupInterfacePtr move_group_;
+  moveit::planning_interface::MoveGroupPtr move_group_;
   moveit::planning_interface::PlanningSceneInterfacePtr planning_scene_interface_;
   moveit::semantic_world::SemanticWorldPtr semantic_world_;
 
-  moveit::planning_interface::MoveGroupInterface::PlanPtr current_plan_;
+  moveit::planning_interface::MoveGroup::PlanPtr current_plan_;
   moveit_warehouse::PlanningSceneStoragePtr planning_scene_storage_;
   moveit_warehouse::ConstraintsStoragePtr constraints_storage_;
   moveit_warehouse::RobotStateStoragePtr robot_state_storage_;
 
-  std::shared_ptr<rviz::InteractiveMarker> scene_marker_;
+  boost::shared_ptr<rviz::InteractiveMarker> scene_marker_;
 
   typedef std::map<std::string, moveit_msgs::RobotState> RobotStateMap;
   typedef std::pair<std::string, moveit_msgs::RobotState> RobotStatePair;
@@ -275,7 +273,7 @@ private:
   std::string selected_object_name_;
   std::string selected_support_surface_name_;
 
-  std::unique_ptr<actionlib::SimpleActionClient<object_recognition_msgs::ObjectRecognitionAction> >
+  boost::scoped_ptr<actionlib::SimpleActionClient<object_recognition_msgs::ObjectRecognitionAction> >
       object_recognition_client_;
   template <typename T>
   void waitForAction(const T& action, const ros::NodeHandle& node_handle, const ros::Duration& wait_for_server,
@@ -285,11 +283,8 @@ private:
 
   ros::Subscriber plan_subscriber_;
   ros::Subscriber execute_subscriber_;
-  ros::Subscriber stop_subscriber_;
   ros::Subscriber update_start_state_subscriber_;
   ros::Subscriber update_goal_state_subscriber_;
-  ros::Subscriber update_custom_start_state_subscriber_;
-  ros::Subscriber update_custom_goal_state_subscriber_;
   // General
   void changePlanningGroupHelper();
   void importResource(const std::string& path);
@@ -297,11 +292,8 @@ private:
 
   void remotePlanCallback(const std_msgs::EmptyConstPtr& msg);
   void remoteExecuteCallback(const std_msgs::EmptyConstPtr& msg);
-  void remoteStopCallback(const std_msgs::EmptyConstPtr& msg);
   void remoteUpdateStartStateCallback(const std_msgs::EmptyConstPtr& msg);
   void remoteUpdateGoalStateCallback(const std_msgs::EmptyConstPtr& msg);
-  void remoteUpdateCustomStartStateCallback(const moveit_msgs::RobotStateConstPtr& msg);
-  void remoteUpdateCustomGoalStateCallback(const moveit_msgs::RobotStateConstPtr& msg);
 
   /* Selects or unselects a item in a list by the item name */
   void setItemSelectionInList(const std::string& item_name, bool selection, QListWidget* list);

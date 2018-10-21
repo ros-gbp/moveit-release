@@ -39,25 +39,24 @@
 const std::string moveit_warehouse::PlanningSceneWorldStorage::DATABASE_NAME = "moveit_planning_scene_worlds";
 const std::string moveit_warehouse::PlanningSceneWorldStorage::PLANNING_SCENE_WORLD_ID_NAME = "world_id";
 
-using warehouse_ros::Metadata;
-using warehouse_ros::Query;
-
-moveit_warehouse::PlanningSceneWorldStorage::PlanningSceneWorldStorage(warehouse_ros::DatabaseConnection::Ptr conn)
-  : MoveItMessageStorage(conn)
+moveit_warehouse::PlanningSceneWorldStorage::PlanningSceneWorldStorage(const std::string& host, const unsigned int port,
+                                                                       double wait_seconds)
+  : MoveItMessageStorage(host, port, wait_seconds)
 {
   createCollections();
+  ROS_DEBUG("Connected to MongoDB '%s' on host '%s' port '%u'.", DATABASE_NAME.c_str(), db_host_.c_str(), db_port_);
 }
 
 void moveit_warehouse::PlanningSceneWorldStorage::createCollections()
 {
-  planning_scene_world_collection_ =
-      conn_->openCollectionPtr<moveit_msgs::PlanningSceneWorld>(DATABASE_NAME, "planning_scene_worlds");
+  planning_scene_world_collection_.reset(new PlanningSceneWorldCollection::element_type(
+      DATABASE_NAME, "planning_scene_worlds", db_host_, db_port_, timeout_));
 }
 
 void moveit_warehouse::PlanningSceneWorldStorage::reset()
 {
   planning_scene_world_collection_.reset();
-  conn_->dropDatabase(DATABASE_NAME);
+  MoveItMessageStorage::drop(DATABASE_NAME);
   createCollections();
 }
 
@@ -70,17 +69,15 @@ void moveit_warehouse::PlanningSceneWorldStorage::addPlanningSceneWorld(const mo
     removePlanningSceneWorld(name);
     replace = true;
   }
-  Metadata::Ptr metadata = planning_scene_world_collection_->createMetadata();
-  metadata->append(PLANNING_SCENE_WORLD_ID_NAME, name);
+  mongo_ros::Metadata metadata(PLANNING_SCENE_WORLD_ID_NAME, name);
   planning_scene_world_collection_->insert(msg, metadata);
   ROS_DEBUG("%s planning scene world '%s'", replace ? "Replaced" : "Added", name.c_str());
 }
 
 bool moveit_warehouse::PlanningSceneWorldStorage::hasPlanningSceneWorld(const std::string& name) const
 {
-  Query::Ptr q = planning_scene_world_collection_->createQuery();
-  q->append(PLANNING_SCENE_WORLD_ID_NAME, name);
-  std::vector<PlanningSceneWorldWithMetadata> psw = planning_scene_world_collection_->queryList(q, true);
+  mongo_ros::Query q(PLANNING_SCENE_WORLD_ID_NAME, name);
+  std::vector<PlanningSceneWorldWithMetadata> psw = planning_scene_world_collection_->pullAllResults(q, true);
   return !psw.empty();
 }
 
@@ -94,20 +91,19 @@ void moveit_warehouse::PlanningSceneWorldStorage::getKnownPlanningSceneWorlds(co
 void moveit_warehouse::PlanningSceneWorldStorage::getKnownPlanningSceneWorlds(std::vector<std::string>& names) const
 {
   names.clear();
-  Query::Ptr q = planning_scene_world_collection_->createQuery();
+  mongo_ros::Query q;
   std::vector<PlanningSceneWorldWithMetadata> constr =
-      planning_scene_world_collection_->queryList(q, true, PLANNING_SCENE_WORLD_ID_NAME, true);
+      planning_scene_world_collection_->pullAllResults(q, true, PLANNING_SCENE_WORLD_ID_NAME, true);
   for (std::size_t i = 0; i < constr.size(); ++i)
-    if (constr[i]->lookupField(PLANNING_SCENE_WORLD_ID_NAME))
+    if (constr[i]->metadata.hasField(PLANNING_SCENE_WORLD_ID_NAME.c_str()))
       names.push_back(constr[i]->lookupString(PLANNING_SCENE_WORLD_ID_NAME));
 }
 
 bool moveit_warehouse::PlanningSceneWorldStorage::getPlanningSceneWorld(PlanningSceneWorldWithMetadata& msg_m,
                                                                         const std::string& name) const
 {
-  Query::Ptr q = planning_scene_world_collection_->createQuery();
-  q->append(PLANNING_SCENE_WORLD_ID_NAME, name);
-  std::vector<PlanningSceneWorldWithMetadata> psw = planning_scene_world_collection_->queryList(q, false);
+  mongo_ros::Query q(PLANNING_SCENE_WORLD_ID_NAME, name);
+  std::vector<PlanningSceneWorldWithMetadata> psw = planning_scene_world_collection_->pullAllResults(q, false);
   if (psw.empty())
     return false;
   else
@@ -120,18 +116,15 @@ bool moveit_warehouse::PlanningSceneWorldStorage::getPlanningSceneWorld(Planning
 void moveit_warehouse::PlanningSceneWorldStorage::renamePlanningSceneWorld(const std::string& old_name,
                                                                            const std::string& new_name)
 {
-  Query::Ptr q = planning_scene_world_collection_->createQuery();
-  q->append(PLANNING_SCENE_WORLD_ID_NAME, old_name);
-  Metadata::Ptr m = planning_scene_world_collection_->createMetadata();
-  m->append(PLANNING_SCENE_WORLD_ID_NAME, new_name);
+  mongo_ros::Query q(PLANNING_SCENE_WORLD_ID_NAME, old_name);
+  mongo_ros::Metadata m(PLANNING_SCENE_WORLD_ID_NAME, new_name);
   planning_scene_world_collection_->modifyMetadata(q, m);
   ROS_DEBUG("Renamed planning scene world from '%s' to '%s'", old_name.c_str(), new_name.c_str());
 }
 
 void moveit_warehouse::PlanningSceneWorldStorage::removePlanningSceneWorld(const std::string& name)
 {
-  Query::Ptr q = planning_scene_world_collection_->createQuery();
-  q->append(PLANNING_SCENE_WORLD_ID_NAME, name);
+  mongo_ros::Query q(PLANNING_SCENE_WORLD_ID_NAME, name);
   unsigned int rem = planning_scene_world_collection_->removeMessages(q);
   ROS_DEBUG("Removed %u PlanningSceneWorld messages (named '%s')", rem, name.c_str());
 }
