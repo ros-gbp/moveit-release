@@ -1,0 +1,12 @@
+Source: ros-indigo-moveit-kinematics
+Section: misc
+Priority: extra
+Maintainer: Dave Coleman <dave@dav.ee>
+Build-Depends: debhelper (>= 9.0.0), libeigen3-dev, ros-indigo-actionlib, ros-indigo-catkin, ros-indigo-moveit-core, ros-indigo-moveit-ros-planning, ros-indigo-pluginlib
+Homepage: http://moveit.ros.org
+Standards-Version: 3.9.2
+
+Package: ros-indigo-moveit-kinematics
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-indigo-actionlib, ros-indigo-moveit-core, ros-indigo-moveit-ros-planning, ros-indigo-pluginlib
+Description: Package for all inverse kinematics solvers in MoveIt!
