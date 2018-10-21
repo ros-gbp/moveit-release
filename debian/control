@@ -1,0 +1,12 @@
+Source: ros-indigo-moveit-ros
+Section: misc
+Priority: extra
+Maintainer: Michael Ferguson <mferguson@fetchrobotics.com>
+Build-Depends: debhelper (>= 9.0.0), ros-indigo-catkin
+Homepage: http://moveit.ros.org
+Standards-Version: 3.9.2
+
+Package: ros-indigo-moveit-ros
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-indigo-moveit-ros-benchmarks, ros-indigo-moveit-ros-benchmarks-gui, ros-indigo-moveit-ros-manipulation, ros-indigo-moveit-ros-move-group, ros-indigo-moveit-ros-perception, ros-indigo-moveit-ros-planning, ros-indigo-moveit-ros-planning-interface, ros-indigo-moveit-ros-robot-interaction, ros-indigo-moveit-ros-visualization, ros-indigo-moveit-ros-warehouse
+Description: Components of MoveIt that use ROS
