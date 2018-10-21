@@ -137,7 +137,7 @@ void planning_scene_monitor::CurrentStateMonitor::stopStateMonitor()
   if (state_monitor_started_)
   {
     joint_state_subscriber_.shutdown();
-    ROS_DEBUG("No longer listening o joint states");
+    ROS_DEBUG("No longer listening for joint states");
     state_monitor_started_ = false;
   }
 }
@@ -259,6 +259,23 @@ bool planning_scene_monitor::CurrentStateMonitor::haveCompleteState(const ros::D
     }
   }
   return result;
+}
+
+bool planning_scene_monitor::CurrentStateMonitor::waitForCurrentState(const ros::Time t, double wait_time) const
+{
+  ros::WallTime timeout = ros::WallTime::now() + ros::WallDuration(wait_time);
+  ros::WallDuration busywait(0.1);
+
+  boost::mutex::scoped_lock lock(state_update_lock_);
+  while (current_state_time_ < t)
+  {
+    lock.unlock();
+    busywait.sleep();
+    if (ros::WallTime::now() >= timeout)
+      return false;
+    lock.lock();
+  }
+  return true;
 }
 
 bool planning_scene_monitor::CurrentStateMonitor::waitForCurrentState(double wait_time) const
