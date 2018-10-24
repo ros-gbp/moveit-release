@@ -1,0 +1,438 @@
+ros-melodic-moveit-ros-visualization (0.10.2-0stretch) stretch; urgency=high
+
+  * [fix] build issue in boost/thread/mutex.hpp (#1055 <https://github.com/ros-planning/moveit/issues/1055>)
+  * [fix] optional namespace args (#929 <https://github.com/ros-planning/moveit/issues/929>)
+  * [maintenance] Python3 support (#1103 <https://github.com/ros-planning/moveit/issues/1103>, #1054 <https://github.com/ros-planning/moveit/issues/1054>)
+  * [maintenance] add minimum required pluginlib version (#927 <https://github.com/ros-planning/moveit/issues/927>)
+  * Contributors: Michael Görner, Mikael Arguedas, Mohmmad Ayman, Robert Haschke, Timon Engelke, mike lautman
+
+ -- Jon Binney <jon.binney@gmail.com>  Wed, 24 Oct 2018 07:00:00 -0000
+
+ros-melodic-moveit-ros-visualization (0.10.1-0stretch) stretch; urgency=high
+
+  * [maintenance] migration from tf to tf2 API (#830 <https://github.com/ros-planning/moveit/issues/830>)
+  * [feature] rviz plugin: set start/goal RobotState from external (#823 <https://github.com/ros-planning/moveit/issues/823>)
+    - /rviz/moveit/update_custom_start_state
+    - /rviz/moveit/update_custom_goal_state
+    stopping from external:
+    - /rviz/moveit/stop
+  * [feature] namespace capabilities for moveit_commander (#835 <https://github.com/ros-planning/moveit/issues/835>)
+  * [fix] consider shape transform for OcTree
+  * [fix] realtime trajectory display (#761 <https://github.com/ros-planning/moveit/issues/761>)
+  * Contributors: Alexander Rössler, Dave Coleman, Ian McMahon, Mikael Arguedas, Pan Hy, Phy, Robert Haschke, Will Baker
+
+ -- Jon Binney <jon.binney@gmail.com>  Fri, 25 May 2018 07:00:00 -0000
+
+ros-melodic-moveit-ros-visualization (0.9.11-0stretch) stretch; urgency=high
+
+
+
+ -- Jon Binney <jon.binney@gmail.com>  Mon, 25 Dec 2017 08:00:00 -0000
+
+ros-melodic-moveit-ros-visualization (0.9.10-0stretch) stretch; urgency=high
+
+  * [fix] don't crash on empty robot_description in RobotState plugin #688 <https://github.com/ros-planning/moveit/issues/688>
+  * [fix] RobotState rviz previewer: First message from e.g. latching publishers is not applied to robot state correctly (#596 <https://github.com/ros-planning/moveit/issues/596>)
+  * [doc] Document auto scale in Rviz plugin (#602 <https://github.com/ros-planning/moveit/issues/602>)
+  * Contributors: Dave Coleman, Isaac I.Y. Saito, Simon Schmeisser, axelschroth
+
+ -- Jon Binney <jon.binney@gmail.com>  Sat, 09 Dec 2017 08:00:00 -0000
+
+ros-melodic-moveit-ros-visualization (0.9.9-0stretch) stretch; urgency=high
+
+  * [fix] RobotStateVisualization: clear before load to avoid segfault #572 <https://github.com/ros-planning/moveit/pull/572>
+  * Contributors: v4hn
+
+ -- Jon Binney <jon.binney@gmail.com>  Sun, 06 Aug 2017 07:00:00 -0000
+
+ros-melodic-moveit-ros-visualization (0.9.8-0stretch) stretch; urgency=high
+
+  * [fix] TrajectoryVisualization crash if no window_context exists (#523 <https://github.com/ros-planning/moveit/issues/523>, #525 <https://github.com/ros-planning/moveit/issues/525>)
+  * [fix] robot display: Don't reload robot model upon topic change (Fixes #528 <https://github.com/ros-planning/moveit/issues/528>)
+  * [build] add Qt-moc guards for boost 1.64 compatibility (#534 <https://github.com/ros-planning/moveit/issues/534>)
+  * [enhance] rviz display: stop trajectory visualization on new plan. Fixes #526 <https://github.com/ros-planning/moveit/issues/526> (#531 <https://github.com/ros-planning/moveit/issues/531>, #510 <https://github.com/ros-planning/moveit/issues/510>).
+  * Contributors: Isaac I.Y. Saito, Simon Schmeisser, Yannick Jonetzko, henhenhen, v4hn
+
+ -- Jon Binney <jon.binney@gmail.com>  Wed, 21 Jun 2017 07:00:00 -0000
+
+ros-melodic-moveit-ros-visualization (0.9.7-0stretch) stretch; urgency=high
+
+  * [capability] New panel with a slider to control the visualized trajectory (#491 <https://github.com/ros-planning/moveit/issues/491>) (#508 <https://github.com/ros-planning/moveit/issues/508>)
+  * [fix] Build for Ubuntu YZ by adding BOOST_MATH_DISABLE_FLOAT128 (#505 <https://github.com/ros-planning/moveit/issues/505>)
+  * Contributors: Dave Coleman, Mikael Arguedas
+
+ -- Jon Binney <jon.binney@gmail.com>  Mon, 05 Jun 2017 07:00:00 -0000
+
+ros-melodic-moveit-ros-visualization (0.9.6-0stretch) stretch; urgency=high
+
+  * [fix] RViz plugin some cosmetics and minor refactoring #482 <https://github.com/ros-planning/moveit/issues/482>
+  * [fix] rviz panel: Don't add object marker if the wrong tab is selected #454 <https://github.com/ros-planning/moveit/pull/454>
+  * [improve] RobotState display [kinetic] (#465 <https://github.com/ros-planning/moveit/issues/465>)
+  * Contributors: Jorge Nicho, Michael Goerner, Yannick Jonetzko
+
+ -- Jon Binney <jon.binney@gmail.com>  Wed, 12 Apr 2017 07:00:00 -0000
+
+ros-melodic-moveit-ros-visualization (0.9.5-0stretch) stretch; urgency=high
+
+  * [fix] correct "simplify widget handling" #452 <https://github.com/ros-planning/moveit/pull/452> This reverts "simplify widget handling (#442 <https://github.com/ros-planning/moveit/issues/442>)"
+  * [fix][moveit_ros_warehouse] gcc6 build error #423 <https://github.com/ros-planning/moveit/pull/423>
+  * [enhancement] Remove "catch (...)" instances, catch std::exception instead of std::runtime_error (#445 <https://github.com/ros-planning/moveit/issues/445>)
+  * Contributors: Bence Magyar, Dave Coleman, Isaac I.Y. Saito, Yannick Jonetzko
+
+ -- Jon Binney <jon.binney@gmail.com>  Wed, 08 Mar 2017 08:00:00 -0000
+
+ros-melodic-moveit-ros-visualization (0.9.4-0stretch) stretch; urgency=high
+
+  * [fix] race conditions when updating PlanningScene (#350 <https://github.com/ros-planning/moveit/issues/350>)
+  * [enhancement] Add colours to trajectory_visualisation display (#362 <https://github.com/ros-planning/moveit/issues/362>)
+  * [maintenance] clang-format upgraded to 3.8 (#367 <https://github.com/ros-planning/moveit/issues/367>)
+  * Contributors: Bence Magyar, Dave Coleman, Robert Haschke
+
+ -- Jon Binney <jon.binney@gmail.com>  Mon, 06 Feb 2017 08:00:00 -0000
+
+ros-melodic-moveit-ros-visualization (0.9.3-0stretch) stretch; urgency=high
+
+  * [maintenance] Updated package.xml maintainers and author emails #330 <https://github.com/ros-planning/moveit/issues/330>
+  * Contributors: Dave Coleman, Ian McMahon
+
+ -- Jon Binney <jon.binney@gmail.com>  Wed, 16 Nov 2016 08:00:00 -0000
+
+ros-melodic-moveit-ros-visualization (0.9.2-0stretch) stretch; urgency=high
+
+  * [Maintenance] Auto format codebase using clang-format (#284 <https://github.com/ros-planning/moveit/issues/284>)
+  * Contributors: Dave Coleman
+
+ -- Jon Binney <jon.binney@gmail.com>  Sat, 05 Nov 2016 07:00:00 -0000
+
+ros-melodic-moveit-ros-visualization (0.6.6-0stretch) stretch; urgency=high
+
+  * cleanup cmake tests, fix empty output
+  * added missing rostest dependency (#680 <https://github.com/ros-planning/moveit_ros/issues/680>), fixes c6d0ede (#639 <https://github.com/ros-planning/moveit_ros/issues/639>)
+  * [moveit joy] Add friendlier error message
+  * relax Qt-version requirement
+    Minor Qt version updates are ABI-compatible with each other:
+    https://wiki.qt.io/Qt-Version-Compatibility
+  * replaced cmake_modules dependency with eigen
+  * [jade] eigen3 adjustment
+  * always (re)create collision object marker
+    other properties than pose (such as name of the marker) need to be adapted too
+  * use getModelFrame() as reference frame for markers
+  * moved "Publish Scene" button to "Scene Objects" tab
+    previous location on "Context" tab was weird
+  * cherry-pick PR #635 <https://github.com/ros-planning/moveit_ros/issues/635> from indigo-devel
+  * unify Qt4 / Qt5 usage across cmake files
+    - fetch Qt version from rviz
+    - define variables/macros commonly used for Qt4 and Qt5
+    - QT_LIBRARIES
+    - qt_wrap_ui()
+  * leave frame transforms to rviz
+    The old code
+    (1.) reimplemented frame transforms in rviz
+    although it could simply utilize rviz' FrameManager
+    (2.) assumed the transform between the model-frame
+    and the fixed_frame was constant and only needed to be updated
+    if the frame changes (ever tried to make the endeffector
+    your fixed frame?)
+    (3.) was broken because on startup calculateOffsetPosition was called
+    *before* the robot model is loaded, so the first (and usually only)
+    call to calculateOffsetPosition failed.
+    Disabling/Enabling the display could be used to work around this...
+    This fixes all three issues.
+  * display planned path in correct rviz context
+    This was likely a typo.
+  * Solved parse error with Boost 1.58. Fixes #653 <https://github.com/ros-planning/moveit_ros/issues/653>
+  * Enable optional build against Qt5, use -DUseQt5=On to enable it
+  * explicitly link rviz' default_plugin library
+    The library is not exported anymore and now is provided separately from rviz_LIBRARIES.
+    See https://github.com/ros-visualization/rviz/pull/979 for details.
+  * merge indigo-devel changes (PR #633 <https://github.com/ros-planning/moveit_ros/issues/633> trailing whitespace) into jade-devel
+  * Removed trailing whitespace from entire repository
+  * correctly handle int and float parameters
+    Try to parse parameter as int and float (in that series)
+    and use IntProperty or FloatProperty on success to have
+    input checking.
+    Floats formatted without decimal dot, e.g. "0", will be
+    considered as int!
+    All other parameters will be handled as string.
+  * access planner params in rviz' MotionPlanningFrame
+  * new method MoveGroup::getDefaultPlannerId(const std::string &group)
+    ... to retrieve default planner config from param server
+    moved corresponding code from rviz plugin to MoveGroup interface
+    to facilitate re-use
+  * correctly initialize scene robot's parameters after initialization
+    - loaded parameters were ignored
+    - changed default alpha value to 1 to maintain previous behaviour
+  * load default_planner_config from default location
+    instead of loading from /<ns>/default_planner_config, use
+    /<ns>/move_group/<group>/default_planner_config, which is the default
+    location for planner_configs too
+  * Merge pull request #610 <https://github.com/ros-planning/moveit_ros/issues/610>: correctly update all markers after robot motion
+  * fixing conflicts, renaming variable
+  * Merge pull request #612 <https://github.com/ros-planning/moveit_ros/issues/612> from ubi-agni/interrupt-traj-vis
+    interrupt trajectory visualization on arrival of new display trajectory
+  * cherry-picked PR #611 <https://github.com/ros-planning/moveit_ros/issues/611>: fix segfault when disabling and re-enabling TrajectoryVisualization
+  * cherry-picked PR #609 <https://github.com/ros-planning/moveit_ros/issues/609>: load / save rviz' workspace config
+  * added missing initialization
+  * correctly setAlpha for new trail
+  * fixed race condition for trajectory-display interruption
+  * cleanup TrajectoryVisualization::update
+    simplified code to switch to new trajectory / start over animation in loop mode
+  * new GUI property to allow immediate interruption of displayed trajectory
+  * immediately show trajectory after planning (interrupting current display)
+  * fix segfault when disabling and re-enabling TrajectoryVisualization
+  * update pose of all markers when any marker moved
+    Having several end-effector markers attached to a group (e.g. a multi-
+    fingered hand having an end-effector per fingertip and an end-effector
+    for the hand base), all markers need to update their pose on any motion
+    of any marker. In the example: if the hand base is moved, the fingertip
+    markers should be moved too.
+  * use move_group/default_workspace_bounds as a fallback for workspace bounds
+  * code style cleanup
+  * fixed tab order of rviz plugin widgets
+  * load / save rviz' workspace config
+  * saves robot name to db from moveit. also robot name accessible through robot interface python wrapper
+  * Added install rule to install moveit_joy.py.
+  * motion_planning_frame_planning: use /default_planner_config parma to specify default planning algorithm
+  * Avoid adding a slash if getMoveGroupNS() is empty.
+    If the getMoveGroupNS() returns an empty string, ros::names::append() inserts a slash in front of 'right', which changes it to a global name.
+    Checking getMoveGroupNS() before calling append removes the issue.
+    append() behaviour will not be changed in ros/ros_comm.
+  * Contributors: Ammar Najjar, Dave Coleman, Isaac I.Y. Saito, Jochen Welle, Kei Okada, Michael Ferguson, Michael Görner, Robert Haschke, Sachin Chitta, Simon Schmeisser (isys vision), TheDash, Thomas Burghout, dg, v4hn
+
+ -- Jon Binney <jon.binney@gmail.com>  Wed, 08 Jun 2016 07:00:00 -0000
+
+ros-melodic-moveit-ros-visualization (0.6.5-0stretch) stretch; urgency=high
+
+  * update maintainers
+  * Created new trajectory display, split from motion planning display
+  * Added new trajectory display inside of motion planning display
+  * Fix bug with alpha property in trajectory robot
+  * Optimized number of URDFs loaded
+  * Changed motion planning Rviz icon to MoveIt icon
+  * Add time factor support for iterative_time_parametrization
+  * Contributors: Dave Coleman, Michael Ferguson, kohlbrecher
+
+ -- Jon Binney <jon.binney@gmail.com>  Sat, 24 Jan 2015 08:00:00 -0000
+
+ros-melodic-moveit-ros-visualization (0.6.4-0stretch) stretch; urgency=high
+
+
+
+ -- Jon Binney <jon.binney@gmail.com>  Sat, 20 Dec 2014 08:00:00 -0000
+
+ros-melodic-moveit-ros-visualization (0.6.3-0stretch) stretch; urgency=high
+
+  * fix duplicate planning attempt box, also fix warning about name
+  * Contributors: Michael Ferguson
+
+ -- Jon Binney <jon.binney@gmail.com>  Wed, 03 Dec 2014 08:00:00 -0000
+
+ros-melodic-moveit-ros-visualization (0.6.2-0stretch) stretch; urgency=high
+
+
+
+ -- Jon Binney <jon.binney@gmail.com>  Fri, 31 Oct 2014 07:00:00 -0000
+
+ros-melodic-moveit-ros-visualization (0.6.1-0stretch) stretch; urgency=high
+
+  * Fixed joystick documentation
+  * Joystick documentation and queue_size addition
+  * Contributors: Dave Coleman
+
+ -- Jon Binney <jon.binney@gmail.com>  Fri, 31 Oct 2014 07:00:00 -0000
+
+ros-melodic-moveit-ros-visualization (0.6.0-0stretch) stretch; urgency=high
+
+  * Added move_group capability for clearing octomap.
+  * Fix coding style according to the moveit style
+  * Better user output, kinematic solver error handling, disclaimer
+  * Remove sample launch file for joystick and update
+    joystick python script.
+    1) Use moveit-python binding to parse SRDF.
+    2) Make the speed slower to control the marker from joystick.
+    3) Change joystick button mapping to be suitable for the users.
+  * Update joystick documentation and rename the
+    the launch file for joy stick program.
+    Shorten the message the check box to toggle
+    communication with joy stick script.
+  * add checkbox to toggle if moveit rviz plugin subscribes
+    the topics to be used for communication to the external ros nodes.
+    update moveit_joy.py to parse srdf to know planning_groups and the
+    names of the end effectors and support multi-endeffector planning groups.
+  * motion_planning_rviz_plugin: add move_group namespace option
+    This allows multiple motion_planning_rviz_plugin /
+    planning_scene_rviz_plugin to be used in RViz and connect to
+    differently-namespaced move_group nodes.
+  * moved planning_attempts down one row in gui to maintain gui width
+  * Added field next to planning_time for planning_attempts
+    Now, ParallelPlanner terminates either due to timeout, or due to this many attempts.
+    Note, that ParallelPlanner run's Dijkstra's on all the nodes of all the sucessful plans (hybridize==true).
+  * adding PoseStamped topic to move the interactive marker from other ros nodes
+    such as joystick programs.
+  * motion_planning_rviz_plugin: add move_group namespace option
+    This allows multiple motion_planning_rviz_plugin /
+    planning_scene_rviz_plugin to be used in RViz and connect to
+    differently-namespaced move_group nodes.
+  * Contributors: Chris Lewis, Dave Coleman, Dave Hershberger, Jonathan Bohren, Ryohei Ueda, Sachin Chitta
+
+ -- Jon Binney <jon.binney@gmail.com>  Mon, 27 Oct 2014 07:00:00 -0000
+
+ros-melodic-moveit-ros-visualization (0.5.19-0stretch) stretch; urgency=high
+
+  * Changed rviz plugin action server wait to non-simulated time
+  * Fix [-Wreorder] warning.
+  * Fix RobotState rviz plugin to not display when disabled
+  * Add check for planning scene monitor connection, with 5 sec delay
+  * Contributors: Adolfo Rodriguez Tsouroukdissian, Dave Coleman
+
+ -- Jon Binney <jon.binney@gmail.com>  Mon, 23 Jun 2014 07:00:00 -0000
+
+ros-melodic-moveit-ros-visualization (0.5.18-0stretch) stretch; urgency=high
+
+  * add pkg-config as dep
+  * find PkgConfig before using pkg_check_modules
+    PC specific functions mustn't be used before including PkgConfig
+  * Contributors: Ioan Sucan, v4hn
+
+ -- Jon Binney <jon.binney@gmail.com>  Sun, 23 Mar 2014 07:00:00 -0000
+
+ros-melodic-moveit-ros-visualization (0.5.17-0stretch) stretch; urgency=high
+
+  * update build system for ROS indigo
+  * update maintainer e-mail
+  * Contributors: Ioan Sucan
+
+ -- Jon Binney <jon.binney@gmail.com>  Sat, 22 Mar 2014 07:00:00 -0000
+
+ros-melodic-moveit-ros-visualization (0.5.16-0stretch) stretch; urgency=high
+
+  * back out problematic ogre fixes
+  * robot_interaction: split InteractionHandler into its own file
+  * Switched from isStateColliding to isStateValid
+  * Changed per PR review
+  * Clean up debug output
+  * Added ability to set a random <collision free> start/goal position
+  * Merge branch 'hydro-devel' of https://github.com/ros-planning/moveit_ros into acorn_rviz_stereo
+  * rviz: prepare for Ogre1.10
+  * Contributors: Acorn Pooley, Dave Coleman
+
+ -- Jon Binney <jon.binney@gmail.com>  Thu, 27 Feb 2014 08:00:00 -0000
+
+ros-melodic-moveit-ros-visualization (0.5.14-0stretch) stretch; urgency=high
+
+
+
+ -- Jon Binney <jon.binney@gmail.com>  Thu, 06 Feb 2014 08:00:00 -0000
+
+ros-melodic-moveit-ros-visualization (0.5.13-0stretch) stretch; urgency=high
+
+  * remove debug printfs
+  * planning_scene_display: use requestPlanningSceneState()
+    Get current planning scene state when planning scene display is
+    enabled and/or model is loaded.
+  * Fix Parse error at "BOOST_JOIN" error
+    See: https://bugreports.qt-project.org/browse/QTBUG-22829
+  * Contributors: Acorn Pooley, Benjamin Chretien
+
+ -- Jon Binney <jon.binney@gmail.com>  Thu, 06 Feb 2014 08:00:00 -0000
+
+ros-melodic-moveit-ros-visualization (0.5.12-0stretch) stretch; urgency=high
+
+
+
+ -- Jon Binney <jon.binney@gmail.com>  Fri, 03 Jan 2014 08:00:00 -0000
+
+ros-melodic-moveit-ros-visualization (0.5.11-0stretch) stretch; urgency=high
+
+  * Added back-link to tutorial and updated moveit website URL.
+  * Ported MoveIt RViz plugin tutorial to sphinx.
+  * Contributors: Dave Hershberger
+
+ -- Jon Binney <jon.binney@gmail.com>  Fri, 03 Jan 2014 08:00:00 -0000
+
+ros-melodic-moveit-ros-visualization (0.5.10-0stretch) stretch; urgency=high
+
+
+
+ -- Jon Binney <jon.binney@gmail.com>  Sun, 08 Dec 2013 08:00:00 -0000
+
+ros-melodic-moveit-ros-visualization (0.5.9-0stretch) stretch; urgency=high
+
+  * correcting maintainer email
+  * Fixed an occasional crash bug in rviz plugin caused by gui calls in non-gui thread.
+  * Added planning feedback to gui, refactored states tab
+  * Stored states are auto loaded when warehouse database is connected
+
+ -- Jon Binney <jon.binney@gmail.com>  Tue, 03 Dec 2013 08:00:00 -0000
+
+ros-melodic-moveit-ros-visualization (0.5.8-0stretch) stretch; urgency=high
+
+  * Added option to rviz plugin to show scene robot collision geometry
+
+ -- Jon Binney <jon.binney@gmail.com>  Fri, 11 Oct 2013 07:00:00 -0000
+
+ros-melodic-moveit-ros-visualization (0.5.7-0stretch) stretch; urgency=high
+
+
+
+ -- Jon Binney <jon.binney@gmail.com>  Tue, 01 Oct 2013 07:00:00 -0000
+
+ros-melodic-moveit-ros-visualization (0.5.6-0stretch) stretch; urgency=high
+
+
+
+ -- Jon Binney <jon.binney@gmail.com>  Thu, 26 Sep 2013 07:00:00 -0000
+
+ros-melodic-moveit-ros-visualization (0.5.5-0stretch) stretch; urgency=high
+
+  * Fix crash when the destructor is called before onInitialize
+  * remove call for getting the combined joint limits of a group
+  * bugfixes
+  * porting to new RobotState API
+  * use new helper class from rviz for rendering meshes
+
+ -- Jon Binney <jon.binney@gmail.com>  Mon, 23 Sep 2013 07:00:00 -0000
+
+ros-melodic-moveit-ros-visualization (0.5.4-0stretch) stretch; urgency=high
+
+  * Added manipulation tab, added plan id to manipulation request
+  * make headers and author definitions aligned the same way; white space fixes
+  * using action client for object recognition instead of topic
+  * move background_processing lib to core
+  * display collision pairs instead of simply colliding links
+
+ -- Jon Binney <jon.binney@gmail.com>  Wed, 14 Aug 2013 07:00:00 -0000
+
+ros-melodic-moveit-ros-visualization (0.5.2-0stretch) stretch; urgency=high
+
+
+
+ -- Jon Binney <jon.binney@gmail.com>  Mon, 15 Jul 2013 07:00:00 -0000
+
+ros-melodic-moveit-ros-visualization (0.5.1-0stretch) stretch; urgency=high
+
+
+
+ -- Jon Binney <jon.binney@gmail.com>  Sun, 14 Jul 2013 07:00:00 -0000
+
+ros-melodic-moveit-ros-visualization (0.5.0-0stretch) stretch; urgency=high
+
+  * fix #275 <https://github.com/ros-planning/moveit_ros/issues/275>
+  * white space fixes (tabs are now spaces)
+
+ -- Jon Binney <jon.binney@gmail.com>  Fri, 12 Jul 2013 07:00:00 -0000
+
+ros-melodic-moveit-ros-visualization (0.4.5-0stretch) stretch; urgency=high
+
+
+
+ -- Jon Binney <jon.binney@gmail.com>  Wed, 03 Jul 2013 07:00:00 -0000
+
+ros-melodic-moveit-ros-visualization (0.4.4-0stretch) stretch; urgency=high
+
+  * remove root_link_name property
+  * add status tab to Rviz plugin
+
+ -- Jon Binney <jon.binney@gmail.com>  Wed, 26 Jun 2013 07:00:00 -0000
+
+
