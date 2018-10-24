@@ -1,7 +1,7 @@
 /*********************************************************************
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2012, Willow Garage, Inc.
+ *  Copyright (c) 2018, Mohamad Ayman.
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -14,8 +14,7 @@
  *     copyright notice, this list of conditions and the following
  *     disclaimer in the documentation and/or other materials provided
  *     with the distribution.
- *   * Neither the name of Willow Garage nor the names of its
- *     contributors may be used to endorse or promote products derived
+ *   * The name of Mohamad Ayman may not be used to endorse or promote products derived
  *     from this software without specific prior written permission.
  *
  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
@@ -32,24 +31,32 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-/* Author: Dave Coleman */
+/* Author: Mohamad Ayman */
 
-#ifndef MOVEIT_ROS_MOVEIT_SETUP_ASSISTANT_WIDGETS_GROUP_EDIT_WIDGET_
-#define MOVEIT_ROS_MOVEIT_SETUP_ASSISTANT_WIDGETS_GROUP_EDIT_WIDGET_
+#ifndef MOVEIT_MOVEIT_SETUP_ASSISTANT_WIDGETS_SIMULATION_WIDGET_H
+#define MOVEIT_MOVEIT_SETUP_ASSISTANT_WIDGETS_SIMULATION_WIDGET_H
 
-#include <QWidget>
-#include <QLabel>
-#include <QLineEdit>
-#include <QComboBox>
-#include <QPushButton>
+// Qt
+#include <QScrollArea>
+#include <QTextEdit>
+#include <QString>
 
+// SA
 #ifndef Q_MOC_RUN
 #include <moveit/setup_assistant/tools/moveit_config_data.h>
 #endif
 
+#include "header_widget.h"
+#include "setup_screen_widget.h"  // a base class for screens in the setup assistant
+
 namespace moveit_setup_assistant
 {
-class GroupEditWidget : public QWidget
+// ******************************************************************************************
+// ******************************************************************************************
+// Class for showing changes needed to help user bring his robot into gazebo simulation
+// ******************************************************************************************
+// ******************************************************************************************
+class SimulationWidget : public SetupScreenWidget
 {
   Q_OBJECT
 
@@ -58,29 +65,7 @@ public:
   // Public Functions
   // ******************************************************************************************
 
-  /// Constructor
-  GroupEditWidget(QWidget* parent, moveit_setup_assistant::MoveItConfigDataPtr config_data);
-
-  /// Set the previous data
-  void setSelected(const std::string& group_name);
-
-  /// Populate the combo dropdown box with kinematic planners
-  void loadKinematicPlannersComboBox();
-
-  // ******************************************************************************************
-  // Qt Components
-  // ******************************************************************************************
-
-  QLabel* title_;  // specify the title from the parent widget
-  QLineEdit* group_name_field_;
-  QComboBox* kinematics_solver_field_;
-  QLineEdit* kinematics_resolution_field_;
-  QLineEdit* kinematics_timeout_field_;
-  QLineEdit* kinematics_attempts_field_;
-  QComboBox* default_planner_field_;
-  QPushButton* btn_delete_;      // this button is hidden for new groups
-  QPushButton* btn_save_;        // this button is hidden for new groups
-  QWidget* new_buttons_widget_;  // for showing/hiding the new group buttons
+  SimulationWidget(QWidget* parent, moveit_setup_assistant::MoveItConfigDataPtr config_data);
 
 private Q_SLOTS:
 
@@ -88,45 +73,25 @@ private Q_SLOTS:
   // Slot Event Functions
   // ******************************************************************************************
 
-Q_SIGNALS:
+  // Called the copy to clipboard button is clicked
+  void copyURDF(const QString& link);
 
-  // ******************************************************************************************
-  // Emitted Signals
-  // ******************************************************************************************
-
-  /// Button event for new groups, progressing to adding joints
-  void saveJoints();
-
-  /// Button event for new groups, progressing to adding links
-  void saveLinks();
-
-  /// Button event for new groups, progressing to adding a chain
-  void saveChain();
-
-  /// Button event for new groups, progressing to adding subgroups
-  void saveSubgroups();
-
-  /// Button event for just saving, when in edit mode
-  void save();
-
-  /// Event sent when user presses cancel button
-  void cancelEditing();
-
-  /// Event sent when delete is being requested for group
-  void deleteGroup();
+  /// Generate URDF button clicked
+  void generateURDFClick();
 
 private:
   // ******************************************************************************************
-  // Variables
+  // Qt Components
   // ******************************************************************************************
+
+  QTextEdit* simulation_text_;
+  QLabel* no_changes_label_;
+  QLabel* copy_urdf_;
 
   /// Contains all the configuration data for the setup assistant
   moveit_setup_assistant::MoveItConfigDataPtr config_data_;
-
-  // ******************************************************************************************
-  // Private Functions
-  // ******************************************************************************************
 };
-}
+
+}  // namespace moveit_setup_assistant
 
 #endif
