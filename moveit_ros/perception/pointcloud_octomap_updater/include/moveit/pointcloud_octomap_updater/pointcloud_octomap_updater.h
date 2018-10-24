@@ -45,6 +45,8 @@
 #include <moveit/occupancy_map_monitor/occupancy_map_updater.h>
 #include <moveit/point_containment_filter/shape_mask.h>
 
+#include <memory>
+
 namespace occupancy_map_monitor
 {
 class PointCloudOctomapUpdater : public OccupancyMapUpdater
@@ -74,12 +76,15 @@ private:
   ros::NodeHandle private_nh_;
   boost::shared_ptr<tf::Transformer> tf_;
 
+  ros::Time last_update_time_;
+
   /* params */
   std::string point_cloud_topic_;
   double scale_;
   double padding_;
   double max_range_;
   unsigned int point_subsample_;
+  double max_update_rate_;
   std::string filtered_cloud_topic_;
   ros::Publisher filtered_cloud_publisher_;
 
@@ -90,7 +95,7 @@ private:
      we cache this here because it dynamically pre-allocates a lot of memory in its contsructor */
   octomap::KeyRay key_ray_;
 
-  boost::scoped_ptr<point_containment_filter::ShapeMask> shape_mask_;
+  std::unique_ptr<point_containment_filter::ShapeMask> shape_mask_;
   std::vector<int> mask_;
 };
 }

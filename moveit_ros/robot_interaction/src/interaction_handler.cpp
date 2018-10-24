@@ -213,13 +213,13 @@ void InteractionHandler::clearLastMarkerPoses()
   pose_map_.clear();
 }
 
-void InteractionHandler::setMenuHandler(const boost::shared_ptr<interactive_markers::MenuHandler>& mh)
+void InteractionHandler::setMenuHandler(const std::shared_ptr<interactive_markers::MenuHandler>& mh)
 {
   boost::mutex::scoped_lock lock(state_lock_);
   menu_handler_ = mh;
 }
 
-const boost::shared_ptr<interactive_markers::MenuHandler>& InteractionHandler::getMenuHandler()
+const std::shared_ptr<interactive_markers::MenuHandler>& InteractionHandler::getMenuHandler()
 {
   boost::mutex::scoped_lock lock(state_lock_);
   return menu_handler_;
@@ -338,35 +338,13 @@ void InteractionHandler::updateStateEndEffector(robot_state::RobotState* state, 
 void InteractionHandler::updateStateJoint(robot_state::RobotState* state, const JointInteraction* vj,
                                           const geometry_msgs::Pose* feedback_pose, StateChangeCallbackFn* callback)
 {
-  geometry_msgs::Pose rel_pose = *feedback_pose;
-  if (!vj->parent_frame.empty() && !robot_state::Transforms::sameFrame(vj->parent_frame, planning_frame_))
-  {
-    Eigen::Affine3d p;
-    tf::poseMsgToEigen(rel_pose, p);
-    tf::poseEigenToMsg(state->getGlobalLinkTransform(vj->parent_frame).inverse() * p, rel_pose);
-  }
+  Eigen::Affine3d pose;
+  tf::poseMsgToEigen(*feedback_pose, pose);
 
-  Eigen::Quaterniond q;
-  tf::quaternionMsgToEigen(rel_pose.orientation, q);
-  std::map<std::string, double> vals;
-  if (vj->dof == 3)
-  {
-    vals[vj->joint_name + "/x"] = rel_pose.position.x;
-    vals[vj->joint_name + "/y"] = rel_pose.position.y;
-    Eigen::Vector3d xyz = q.matrix().eulerAngles(0, 1, 2);
-    vals[vj->joint_name + "/theta"] = xyz[2];
-  }
-  else if (vj->dof == 6)
-  {
-    vals[vj->joint_name + "/trans_x"] = rel_pose.position.x;
-    vals[vj->joint_name + "/trans_y"] = rel_pose.position.y;
-    vals[vj->joint_name + "/trans_z"] = rel_pose.position.z;
-    vals[vj->joint_name + "/rot_x"] = q.x();
-    vals[vj->joint_name + "/rot_y"] = q.y();
-    vals[vj->joint_name + "/rot_z"] = q.z();
-    vals[vj->joint_name + "/rot_w"] = q.w();
-  }
-  state->setVariablePositions(vals);
+  if (!vj->parent_frame.empty() && !robot_state::Transforms::sameFrame(vj->parent_frame, planning_frame_))
+    pose = state->getGlobalLinkTransform(vj->parent_frame).inverse() * pose;
+
+  state->setJointPositions(vj->joint_name, pose);
   state->update();
 
   if (update_callback_)
@@ -547,7 +525,7 @@ void InteractionHandler::setGroupStateValidityCallback(const robot_state::GroupS
   kinematic_options_map_->setOptions(KinematicOptionsMap::ALL, delta, KinematicOptions::STATE_VALIDITY_CALLBACK);
 }
 
-const kinematics::KinematicsQueryOptions& InteractionHandler::getKinematicsQueryOptions() const
+kinematics::KinematicsQueryOptions InteractionHandler::getKinematicsQueryOptions() const
 {
   boost::mutex::scoped_lock lock(state_lock_);
   return kinematic_options_map_->getOptions(KinematicOptionsMap::DEFAULT).options_;

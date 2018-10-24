@@ -40,8 +40,7 @@
 
 #include <moveit/macros/class_forward.h>
 #include <moveit/exceptions/exceptions.h>
-#include <console_bridge/console.h>
-#include <urdf_model/model.h>
+#include <urdf/model.h>
 #include <srdfdom/model.h>
 
 // joint types
@@ -69,8 +68,7 @@ class RobotModel
 {
 public:
   /** \brief Construct a kinematic model from a parsed description and a list of planning groups */
-  RobotModel(const boost::shared_ptr<const urdf::ModelInterface>& urdf_model,
-             const boost::shared_ptr<const srdf::Model>& srdf_model);
+  RobotModel(const urdf::ModelInterfaceSharedPtr& urdf_model, const srdf::ModelConstSharedPtr& srdf_model);
 
   /** \brief Destructor. Clear all memory. */
   ~RobotModel();
@@ -97,13 +95,13 @@ public:
   }
 
   /** \brief Get the parsed URDF model */
-  const boost::shared_ptr<const urdf::ModelInterface>& getURDF() const
+  const urdf::ModelInterfaceSharedPtr& getURDF() const
   {
     return urdf_;
   }
 
   /** \brief Get the parsed SRDF model */
-  const boost::shared_ptr<const srdf::Model>& getSRDF() const
+  const srdf::ModelConstSharedPtr& getSRDF() const
   {
     return srdf_;
   }
@@ -239,6 +237,19 @@ public:
 
   /** \brief Get a link by its name. Output error and return NULL when the link is missing. */
   LinkModel* getLinkModel(const std::string& link);
+
+  /** \brief Get the latest link upwards the kinematic tree, which is only connected via fixed joints
+   *
+   * This is useful, if the link should be warped to a specific pose using updateStateWithLinkAt().
+   * As updateStateWithLinkAt() warps only the specified link and its descendants, you might not
+   * achieve what you expect, if link is an abstract frame name. Considering the following example:
+   * root -> arm0 -> ... -> armN -> wrist -- grasp_frame
+   *                                      -- palm -> end effector ...
+   * Calling updateStateWithLinkAt(grasp_frame), will not warp the end effector, which is probably
+   * what you went for. Instead, updateStateWithLinkAt(getRigidlyConnectedParentLinkModel(grasp_frame), ...)
+   * will actually warp wrist (and all its descendants).
+   */
+  static const moveit::core::LinkModel* getRigidlyConnectedParentLinkModel(const LinkModel* link);
 
   /** \brief Get the array of links  */
   const std::vector<const LinkModel*>& getLinkModels() const
@@ -425,6 +436,7 @@ public:
   void setKinematicsAllocators(const std::map<std::string, SolverAllocatorFn>& allocators);
 
 protected:
+  /** \brief Get the transforms between link and all its rigidly attached descendants */
   void computeFixedTransforms(const LinkModel* link, const Eigen::Affine3d& transform,
                               LinkTransformMap& associated_transforms);
 
@@ -442,9 +454,9 @@ protected:
   /** \brief The reference frame for this model */
   std::string model_frame_;
 
-  boost::shared_ptr<const srdf::Model> srdf_;
+  srdf::ModelConstSharedPtr srdf_;
 
-  boost::shared_ptr<const urdf::ModelInterface> urdf_;
+  urdf::ModelInterfaceSharedPtr urdf_;
 
   // LINKS
 

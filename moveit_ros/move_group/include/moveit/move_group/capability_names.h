@@ -41,30 +41,17 @@
 
 namespace move_group
 {
-// These capabilities are loaded unless listed in disable_capabilities
-// clang-format off
-static const char* DEFAULT_CAPABILITIES[] = {
-   "move_group/MoveGroupCartesianPathService",
-   "move_group/MoveGroupKinematicsService",
-   "move_group/MoveGroupExecuteTrajectoryAction",
-   "move_group/MoveGroupMoveAction",
-   "move_group/MoveGroupPickPlaceAction",
-   "move_group/MoveGroupPlanService",
-   "move_group/MoveGroupQueryPlannersService",
-   "move_group/MoveGroupStateValidationService",
-   "move_group/MoveGroupGetPlanningSceneService",
-   "move_group/ApplyPlanningSceneService",
-   "move_group/ClearOctomapService",
-};
-// clang-format on
-
 static const std::string PLANNER_SERVICE_NAME =
     "plan_kinematic_path";  // name of the advertised service (within the ~ namespace)
 static const std::string EXECUTE_SERVICE_NAME =
     "execute_kinematic_path";  // name of the advertised service (within the ~ namespace)
 static const std::string EXECUTE_ACTION_NAME = "execute_trajectory";  // name of 'execute' action
 static const std::string QUERY_PLANNERS_SERVICE_NAME =
-    "query_planner_interface";                            // name of the advertised query planners service
+    "query_planner_interface";  // name of the advertised query planners service
+static const std::string GET_PLANNER_PARAMS_SERVICE_NAME =
+    "get_planner_params";  // service name to retrieve planner parameters
+static const std::string SET_PLANNER_PARAMS_SERVICE_NAME =
+    "set_planner_params";                                 // service name to set planner parameters
 static const std::string MOVE_ACTION = "move_group";      // name of 'move' action
 static const std::string IK_SERVICE_NAME = "compute_ik";  // name of ik service
 static const std::string FK_SERVICE_NAME = "compute_fk";  // name of fk service

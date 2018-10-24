@@ -77,8 +77,8 @@ protected:
 
 protected:
   robot_model::RobotModelPtr robot_model_;
-  boost::shared_ptr<urdf::ModelInterface> urdf_model_;
-  boost::shared_ptr<srdf::Model> srdf_model_;
+  urdf::ModelInterfaceSharedPtr urdf_model_;
+  srdf::ModelSharedPtr srdf_model_;
   bool urdf_ok_;
   bool srdf_ok_;
 };
@@ -99,7 +99,7 @@ TEST_F(LoadPlanningModelsPr2, StateSpace)
   }
   catch (ompl::Exception& ex)
   {
-    logError("Sanity checks did not pass: %s", ex.what());
+    ROS_ERROR("Sanity checks did not pass: %s", ex.what());
   }
   EXPECT_TRUE(passed);
 }
@@ -142,7 +142,7 @@ TEST_F(LoadPlanningModelsPr2, StateSpaceCopy)
   }
   catch (ompl::Exception& ex)
   {
-    logError("Sanity checks did not pass: %s", ex.what());
+    ROS_ERROR("Sanity checks did not pass: %s", ex.what());
   }
   EXPECT_TRUE(passed);
 

@@ -41,7 +41,7 @@
 #include <string>
 #include <ros/ros.h>
 #include <tf/tf.h>
-#include <pluginlib/class_loader.h>
+#include <pluginlib/class_loader.hpp>
 
 #include <moveit_msgs/SaveMap.h>
 #include <moveit_msgs/LoadMap.h>
@@ -49,6 +49,8 @@
 #include <moveit/occupancy_map_monitor/occupancy_map_updater.h>
 
 #include <boost/thread/mutex.hpp>
+
+#include <memory>
 
 namespace occupancy_map_monitor
 {
@@ -142,7 +144,7 @@ private:
   OccMapTreePtr tree_;
   OccMapTreeConstPtr tree_const_;
 
-  boost::scoped_ptr<pluginlib::ClassLoader<OccupancyMapUpdater> > updater_plugin_loader_;
+  std::unique_ptr<pluginlib::ClassLoader<OccupancyMapUpdater> > updater_plugin_loader_;
   std::vector<OccupancyMapUpdaterPtr> map_updaters_;
   std::vector<std::map<ShapeHandle, ShapeHandle> > mesh_handles_;
   TransformCacheProvider transform_cache_callback_;

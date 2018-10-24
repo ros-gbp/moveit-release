@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(moveit_controller_manager_example)
 
+add_compile_options(-std=c++11)
+
 if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
@@ -28,7 +30,7 @@ catkin_package(
 include_directories(include)
 
 add_library(${PROJECT_NAME} src/moveit_controller_manager_example.cpp)
-set_target_properties(${PROJECT_NAME} PROPERTIES VERSION 0.7.3)
+set_target_properties(${PROJECT_NAME} PROPERTIES VERSION ${${PROJECT_NAME}_VERSION})
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 
 install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})

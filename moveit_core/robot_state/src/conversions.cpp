@@ -44,6 +44,8 @@ namespace moveit
 {
 namespace core
 {
+const std::string LOGNAME = "robot_state";
+
 // ********************************************
 // * Internal (hidden) functions
 // ********************************************
@@ -54,8 +56,8 @@ static bool _jointStateToRobotState(const sensor_msgs::JointState& joint_state, 
 {
   if (joint_state.name.size() != joint_state.position.size())
   {
-    logError("Different number of names and positions in JointState message: %u, %u",
-             (unsigned int)joint_state.name.size(), (unsigned int)joint_state.position.size());
+    ROS_ERROR_NAMED(LOGNAME, "Different number of names and positions in JointState message: %zu, %zu",
+                    joint_state.name.size(), joint_state.position.size());
     return false;
   }
 
@@ -70,7 +72,7 @@ static bool _multiDOFJointsToRobotState(const sensor_msgs::MultiDOFJointState& m
   std::size_t nj = mjs.joint_names.size();
   if (nj != mjs.transforms.size())
   {
-    logError("Different number of names, values or frames in MultiDOFJointState message.");
+    ROS_ERROR_NAMED(LOGNAME, "Different number of names, values or frames in MultiDOFJointState message.");
     return false;
   }
 
@@ -90,17 +92,18 @@ static bool _multiDOFJointsToRobotState(const sensor_msgs::MultiDOFJointState& m
         inv_t = t2fixed_frame.inverse();
         use_inv_t = true;
       }
-      catch (std::runtime_error&)
+      catch (std::exception& ex)
       {
+        ROS_ERROR_NAMED(LOGNAME, "Caught %s", ex.what());
         error = true;
       }
     else
       error = true;
 
     if (error)
-      logWarn("The transform for multi-dof joints was specified in frame '%s' but it was not possible to transform "
-              "that to frame '%s'",
-              mjs.header.frame_id.c_str(), state.getRobotModel()->getModelFrame().c_str());
+      ROS_WARN_NAMED(LOGNAME, "The transform for multi-dof joints was specified in frame '%s' "
+                              "but it was not possible to transform that to frame '%s'",
+                     mjs.header.frame_id.c_str(), state.getRobotModel()->getModelFrame().c_str());
   }
 
   for (std::size_t i = 0; i < nj; ++i)
@@ -108,7 +111,7 @@ static bool _multiDOFJointsToRobotState(const sensor_msgs::MultiDOFJointState& m
     const std::string& joint_name = mjs.joint_names[i];
     if (!state.getRobotModel()->hasJointModel(joint_name))
     {
-      logWarn("No joint matching multi-dof joint '%s'", joint_name.c_str());
+      ROS_WARN_NAMED(LOGNAME, "No joint matching multi-dof joint '%s'", joint_name.c_str());
       error = true;
       continue;
     }
@@ -224,19 +227,20 @@ static void _msgToAttachedBody(const Transforms* tf, const moveit_msgs::Attached
     {
       if (aco.object.primitives.size() != aco.object.primitive_poses.size())
       {
-        logError("Number of primitive shapes does not match number of poses in collision object message");
+        ROS_ERROR_NAMED(LOGNAME, "Number of primitive shapes does not match "
+                                 "number of poses in collision object message");
         return;
       }
 
       if (aco.object.meshes.size() != aco.object.mesh_poses.size())
       {
-        logError("Number of meshes does not match number of poses in collision object message");
+        ROS_ERROR_NAMED(LOGNAME, "Number of meshes does not match number of poses in collision object message");
         return;
       }
 
       if (aco.object.planes.size() != aco.object.plane_poses.size())
       {
-        logError("Number of planes does not match number of poses in collision object message");
+        ROS_ERROR_NAMED(LOGNAME, "Number of planes does not match number of poses in collision object message");
         return;
       }
 
@@ -292,8 +296,9 @@ static void _msgToAttachedBody(const Transforms* tf, const moveit_msgs::Attached
           else
           {
             t0.setIdentity();
-            logError("Cannot properly transform from frame '%s'. The pose of the attached body may be incorrect",
-                     aco.object.header.frame_id.c_str());
+            ROS_ERROR_NAMED(LOGNAME, "Cannot properly transform from frame '%s'. "
+                                     "The pose of the attached body may be incorrect",
+                            aco.object.header.frame_id.c_str());
           }
           Eigen::Affine3d t = state.getGlobalLinkTransform(lm).inverse() * t0;
           for (std::size_t i = 0; i < poses.size(); ++i)
@@ -301,28 +306,30 @@ static void _msgToAttachedBody(const Transforms* tf, const moveit_msgs::Attached
         }
 
         if (shapes.empty())
-          logError("There is no geometry to attach to link '%s' as part of attached body '%s'", aco.link_name.c_str(),
-                   aco.object.id.c_str());
+          ROS_ERROR_NAMED(LOGNAME, "There is no geometry to attach to link '%s' as part of attached body '%s'",
+                          aco.link_name.c_str(), aco.object.id.c_str());
         else
         {
           if (state.clearAttachedBody(aco.object.id))
-            logDebug("The robot state already had an object named '%s' attached to link '%s'. The object was replaced.",
-                     aco.object.id.c_str(), aco.link_name.c_str());
+            ROS_DEBUG_NAMED(LOGNAME, "The robot state already had an object named '%s' attached to link '%s'. "
+                                     "The object was replaced.",
+                            aco.object.id.c_str(), aco.link_name.c_str());
           state.attachBody(aco.object.id, shapes, poses, aco.touch_links, aco.link_name, aco.detach_posture);
-          logDebug("Attached object '%s' to link '%s'", aco.object.id.c_str(), aco.link_name.c_str());
+          ROS_DEBUG_NAMED(LOGNAME, "Attached object '%s' to link '%s'", aco.object.id.c_str(), aco.link_name.c_str());
         }
       }
     }
     else
-      logError("The attached body for link '%s' has no geometry", aco.link_name.c_str());
+      ROS_ERROR_NAMED(LOGNAME, "The attached body for link '%s' has no geometry", aco.link_name.c_str());
   }
   else if (aco.object.operation == moveit_msgs::CollisionObject::REMOVE)
   {
     if (!state.clearAttachedBody(aco.object.id))
-      logError("The attached body '%s' can not be removed because it does not exist", aco.link_name.c_str());
+      ROS_ERROR_NAMED(LOGNAME, "The attached body '%s' can not be removed because it does not exist",
+                      aco.link_name.c_str());
   }
   else
-    logError("Unknown collision object operation: %d", aco.object.operation);
+    ROS_ERROR_NAMED(LOGNAME, "Unknown collision object operation: %d", aco.object.operation);
 }
 
 static bool _robotStateMsgToRobotStateHelper(const Transforms* tf, const moveit_msgs::RobotState& robot_state,
@@ -333,7 +340,7 @@ static bool _robotStateMsgToRobotStateHelper(const Transforms* tf, const moveit_
 
   if (!rs.is_diff && rs.joint_state.name.empty() && rs.multi_dof_joint_state.joint_names.empty())
   {
-    logError("Found empty JointState message");
+    ROS_ERROR_NAMED(LOGNAME, "Found empty JointState message");
     return false;
   }
 
@@ -352,8 +359,6 @@ static bool _robotStateMsgToRobotStateHelper(const Transforms* tf, const moveit_
   return valid;
 }
 }
-}
-}
 
 // ********************************************
 
@@ -361,32 +366,31 @@ static bool _robotStateMsgToRobotStateHelper(const Transforms* tf, const moveit_
 // * Exposed functions
 // ********************************************
 
-bool moveit::core::jointStateToRobotState(const sensor_msgs::JointState& joint_state, RobotState& state)
+bool jointStateToRobotState(const sensor_msgs::JointState& joint_state, RobotState& state)
 {
   bool result = _jointStateToRobotState(joint_state, state);
   state.update();
   return result;
 }
 
-bool moveit::core::robotStateMsgToRobotState(const moveit_msgs::RobotState& robot_state, RobotState& state,
-                                             bool copy_attached_bodies)
+bool robotStateMsgToRobotState(const moveit_msgs::RobotState& robot_state, RobotState& state, bool copy_attached_bodies)
 {
-  bool result = _robotStateMsgToRobotStateHelper(NULL, robot_state, state, copy_attached_bodies);
+  bool result = _robotStateMsgToRobotStateHelper(nullptr, robot_state, state, copy_attached_bodies);
   state.update();
   return result;
 }
 
-bool moveit::core::robotStateMsgToRobotState(const Transforms& tf, const moveit_msgs::RobotState& robot_state,
-                                             RobotState& state, bool copy_attached_bodies)
+bool robotStateMsgToRobotState(const Transforms& tf, const moveit_msgs::RobotState& robot_state, RobotState& state,
+                               bool copy_attached_bodies)
 {
   bool result = _robotStateMsgToRobotStateHelper(&tf, robot_state, state, copy_attached_bodies);
   state.update();
   return result;
 }
 
-void moveit::core::robotStateToRobotStateMsg(const RobotState& state, moveit_msgs::RobotState& robot_state,
-                                             bool copy_attached_bodies)
+void robotStateToRobotStateMsg(const RobotState& state, moveit_msgs::RobotState& robot_state, bool copy_attached_bodies)
 {
+  robot_state.is_diff = false;
   robotStateToJointStateMsg(state, robot_state.joint_state);
   _robotStateToMultiDOFJointState(state, robot_state.multi_dof_joint_state);
 
@@ -394,13 +398,20 @@ void moveit::core::robotStateToRobotStateMsg(const RobotState& state, moveit_msg
   {
     std::vector<const AttachedBody*> attached_bodies;
     state.getAttachedBodies(attached_bodies);
-    robot_state.attached_collision_objects.resize(attached_bodies.size());
-    for (std::size_t i = 0; i < attached_bodies.size(); ++i)
-      _attachedBodyToMsg(*attached_bodies[i], robot_state.attached_collision_objects[i]);
+    attachedBodiesToAttachedCollisionObjectMsgs(attached_bodies, robot_state.attached_collision_objects);
   }
 }
 
-void moveit::core::robotStateToJointStateMsg(const RobotState& state, sensor_msgs::JointState& joint_state)
+void attachedBodiesToAttachedCollisionObjectMsgs(
+    const std::vector<const AttachedBody*>& attached_bodies,
+    std::vector<moveit_msgs::AttachedCollisionObject>& attached_collision_objs)
+{
+  attached_collision_objs.resize(attached_bodies.size());
+  for (std::size_t i = 0; i < attached_bodies.size(); ++i)
+    _attachedBodyToMsg(*attached_bodies[i], attached_collision_objs[i]);
+}
+
+void robotStateToJointStateMsg(const RobotState& state, sensor_msgs::JointState& joint_state)
 {
   const std::vector<const JointModel*>& js = state.getRobotModel()->getSingleDOFJointModels();
   joint_state = sensor_msgs::JointState();
@@ -420,17 +431,17 @@ void moveit::core::robotStateToJointStateMsg(const RobotState& state, sensor_msg
   joint_state.header.frame_id = state.getRobotModel()->getModelFrame();
 }
 
-bool moveit::core::jointTrajPointToRobotState(const trajectory_msgs::JointTrajectory& trajectory, std::size_t point_id,
-                                              RobotState& state)
+bool jointTrajPointToRobotState(const trajectory_msgs::JointTrajectory& trajectory, std::size_t point_id,
+                                RobotState& state)
 {
   if (trajectory.points.empty() || point_id > trajectory.points.size() - 1)
   {
-    logError("Invalid point_id");
+    ROS_ERROR_NAMED(LOGNAME, "Invalid point_id");
     return false;
   }
   if (trajectory.joint_names.empty())
   {
-    logError("No joint names specified");
+    ROS_ERROR_NAMED(LOGNAME, "No joint names specified");
     return false;
   }
 
@@ -445,8 +456,7 @@ bool moveit::core::jointTrajPointToRobotState(const trajectory_msgs::JointTrajec
   return true;
 }
 
-void moveit::core::robotStateToStream(const RobotState& state, std::ostream& out, bool include_header,
-                                      const std::string& separator)
+void robotStateToStream(const RobotState& state, std::ostream& out, bool include_header, const std::string& separator)
 {
   // Output name of variables
   if (include_header)
@@ -474,9 +484,9 @@ void moveit::core::robotStateToStream(const RobotState& state, std::ostream& out
   out << std::endl;
 }
 
-void moveit::core::robotStateToStream(const RobotState& state, std::ostream& out,
-                                      const std::vector<std::string>& joint_groups_ordering, bool include_header,
-                                      const std::string& separator)
+void robotStateToStream(const RobotState& state, std::ostream& out,
+                        const std::vector<std::string>& joint_groups_ordering, bool include_header,
+                        const std::string& separator)
 {
   std::stringstream headers;
   std::stringstream joints;
@@ -511,7 +521,7 @@ void moveit::core::robotStateToStream(const RobotState& state, std::ostream& out
   out << joints.str() << std::endl;
 }
 
-void moveit::core::streamToRobotState(RobotState& state, const std::string& line, const std::string& separator)
+void streamToRobotState(RobotState& state, const std::string& line, const std::string& separator)
 {
   std::stringstream lineStream(line);
   std::string cell;
@@ -521,8 +531,11 @@ void moveit::core::streamToRobotState(RobotState& state, const std::string& line
   {
     // Get a variable
     if (!std::getline(lineStream, cell, separator[0]))
-      logError("Missing variable %i", i);
+      ROS_ERROR_STREAM_NAMED(LOGNAME, "Missing variable " << state.getVariableNames()[i]);
 
     state.getVariablePositions()[i] = boost::lexical_cast<double>(cell.c_str());
   }
 }
+
+}  // end of namespace core
+}  // end of namespace moveit

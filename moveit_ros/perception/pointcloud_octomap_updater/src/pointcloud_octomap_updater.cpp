@@ -41,6 +41,8 @@
 #include <sensor_msgs/point_cloud2_iterator.h>
 #include <XmlRpcException.h>
 
+#include <memory>
+
 namespace occupancy_map_monitor
 {
 PointCloudOctomapUpdater::PointCloudOctomapUpdater()
@@ -50,6 +52,7 @@ PointCloudOctomapUpdater::PointCloudOctomapUpdater()
   , padding_(0.0)
   , max_range_(std::numeric_limits<double>::infinity())
   , point_subsample_(1)
+  , max_update_rate_(0)
   , point_cloud_subscriber_(NULL)
   , point_cloud_filter_(NULL)
 {
@@ -72,6 +75,8 @@ bool PointCloudOctomapUpdater::setParams(XmlRpc::XmlRpcValue& params)
     readXmlParam(params, "padding_offset", &padding_);
     readXmlParam(params, "padding_scale", &scale_);
     readXmlParam(params, "point_subsample", &point_subsample_);
+    if (params.hasMember("max_update_rate"))
+      readXmlParam(params, "max_update_rate", &max_update_rate_);
     if (params.hasMember("filtered_cloud_topic"))
       filtered_cloud_topic_ = static_cast<const std::string&>(params["filtered_cloud_topic"]);
   }
@@ -149,7 +154,6 @@ bool PointCloudOctomapUpdater::getShapeTransform(ShapeHandle h, Eigen::Affine3d&
   ShapeTransformCache::const_iterator it = transform_cache_.find(h);
   if (it == transform_cache_.end())
   {
-    ROS_ERROR("Internal error. Shape filter handle %u not found", h);
     return false;
   }
   transform = it->second;
@@ -165,6 +169,14 @@ void PointCloudOctomapUpdater::cloudMsgCallback(const sensor_msgs::PointCloud2::
 {
   ROS_DEBUG("Received a new point cloud message");
   ros::WallTime start = ros::WallTime::now();
+
+  if (max_update_rate_ > 0)
+  {
+    // ensure we are not updating the octomap representation too often
+    if (ros::Time::now() - last_update_time_ <= ros::Duration(1.0 / max_update_rate_))
+      return;
+    last_update_time_ = ros::Time::now();
+  }
 
   if (monitor_->getMapFrame().empty())
     monitor_->setMapFrame(cloud_msg->header.frame_id);
@@ -208,14 +220,14 @@ void PointCloudOctomapUpdater::cloudMsgCallback(const sensor_msgs::PointCloud2::
   updateMask(*cloud_msg, sensor_origin_eigen, mask_);
 
   octomap::KeySet free_cells, occupied_cells, model_cells, clip_cells;
-  boost::scoped_ptr<sensor_msgs::PointCloud2> filtered_cloud;
+  std::unique_ptr<sensor_msgs::PointCloud2> filtered_cloud;
 
   // We only use these iterators if we are creating a filtered_cloud for
-  // publishing. We cannot default construct these, so we use scoped_ptr's
+  // publishing. We cannot default construct these, so we use unique_ptr's
   // to defer construction
-  boost::scoped_ptr<sensor_msgs::PointCloud2Iterator<float> > iter_filtered_x;
-  boost::scoped_ptr<sensor_msgs::PointCloud2Iterator<float> > iter_filtered_y;
-  boost::scoped_ptr<sensor_msgs::PointCloud2Iterator<float> > iter_filtered_z;
+  std::unique_ptr<sensor_msgs::PointCloud2Iterator<float> > iter_filtered_x;
+  std::unique_ptr<sensor_msgs::PointCloud2Iterator<float> > iter_filtered_y;
+  std::unique_ptr<sensor_msgs::PointCloud2Iterator<float> > iter_filtered_z;
 
   if (!filtered_cloud_topic_.empty())
   {
@@ -251,7 +263,7 @@ void PointCloudOctomapUpdater::cloudMsgCallback(const sensor_msgs::PointCloud2::
         //  continue;
 
         /* check for NaN */
-        if (!isnan(pt_iter[0]) && !isnan(pt_iter[1]) && !isnan(pt_iter[2]))
+        if (!std::isnan(pt_iter[0]) && !std::isnan(pt_iter[1]) && !std::isnan(pt_iter[2]))
         {
           /* transform to map frame */
           tf::Vector3 point_tf = map_H_sensor * tf::Vector3(pt_iter[0], pt_iter[1], pt_iter[2]);

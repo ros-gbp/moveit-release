@@ -46,6 +46,7 @@
 #include <moveit/move_group/move_group_capability.h>
 #include <actionlib/server/simple_action_server.h>
 #include <moveit_msgs/ExecuteTrajectoryAction.h>
+#include <memory>
 
 namespace move_group
 {
@@ -58,12 +59,12 @@ public:
 
 private:
   void executePathCallback(const moveit_msgs::ExecuteTrajectoryGoalConstPtr& goal);
-  void executePathCallback_Execute(const moveit_msgs::ExecuteTrajectoryGoalConstPtr& goal,
-                                   moveit_msgs::ExecuteTrajectoryResult& action_res);
+  void executePath(const moveit_msgs::ExecuteTrajectoryGoalConstPtr& goal,
+                   moveit_msgs::ExecuteTrajectoryResult& action_res);
   void preemptExecuteTrajectoryCallback();
   void setExecuteTrajectoryState(MoveGroupState state);
 
-  boost::scoped_ptr<actionlib::SimpleActionServer<moveit_msgs::ExecuteTrajectoryAction> > execute_action_server_;
+  std::unique_ptr<actionlib::SimpleActionServer<moveit_msgs::ExecuteTrajectoryAction> > execute_action_server_;
 };
 
 }  // namespace move_group
