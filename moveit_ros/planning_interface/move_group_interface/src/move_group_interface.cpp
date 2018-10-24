@@ -160,9 +160,7 @@ public:
 
     execute_action_client_.reset(new actionlib::SimpleActionClient<moveit_msgs::ExecuteTrajectoryAction>(
         node_handle_, move_group::EXECUTE_ACTION_NAME, false));
-    // TODO: after deprecation period, i.e. for L-turtle, switch back to standard waitForAction function
-    // waitForAction(execute_action_client_, move_group::EXECUTE_ACTION_NAME, timeout_for_servers, allotted_time);
-    waitForExecuteAction(timeout_for_servers);
+    waitForAction(execute_action_client_, move_group::EXECUTE_ACTION_NAME, timeout_for_servers, allotted_time);
 
     query_service_ =
         node_handle_.serviceClient<moveit_msgs::QueryPlannerInterfaces>(move_group::QUERY_PLANNERS_SERVICE_NAME);
@@ -233,59 +231,6 @@ public:
     else
     {
       ROS_DEBUG_NAMED("move_group_interface", "Connected to '%s'", name.c_str());
-    }
-  }
-
-  void waitForExecuteAction(ros::WallTime timeout)
-  {
-    ROS_DEBUG("Waiting for move_group action server (%s)...", move_group::EXECUTE_ACTION_NAME.c_str());
-
-    // wait for action
-    if (timeout == ros::WallTime())  // wait forever
-    {
-      while (!execute_action_client_->isServerConnected())
-      {
-        ros::WallDuration(0.001).sleep();
-        // explicit ros::spinOnce on the callback queue used by NodeHandle that manages the action client
-        ros::CallbackQueue* queue = dynamic_cast<ros::CallbackQueue*>(node_handle_.getCallbackQueue());
-        if (queue)
-        {
-          queue->callAvailable();
-        }
-        else  // in case of nodelets and specific callback queue implementations
-        {
-          ROS_WARN_ONCE_NAMED("move_group_interface", "Non-default CallbackQueue: Waiting for external queue "
-                                                      "handling.");
-        }
-      }
-    }
-    else  // wait with timeout
-    {
-      while (!execute_action_client_->isServerConnected() && timeout > ros::WallTime::now())
-      {
-        ros::WallDuration(0.001).sleep();
-        // explicit ros::spinOnce on the callback queue used by NodeHandle that manages the action client
-        ros::CallbackQueue* queue = dynamic_cast<ros::CallbackQueue*>(node_handle_.getCallbackQueue());
-        if (queue)
-        {
-          queue->callAvailable();
-        }
-        else  // in case of nodelets and specific callback queue implementations
-        {
-          ROS_WARN_ONCE_NAMED("move_group_interface", "Non-default CallbackQueue: Waiting for external queue "
-                                                      "handling.");
-        }
-      }
-    }
-
-    // issue warning
-    if (!execute_action_client_->isServerConnected())
-    {
-      ROS_ERROR_STREAM_NAMED("move_group_interface",
-                             "Unable to find execution action on topic: " << node_handle_.getNamespace() +
-                                                                                 move_group::EXECUTE_ACTION_NAME);
-      throw std::runtime_error("No Trajectory execution capability available.");
-      execute_action_client_.reset();
     }
   }
 
@@ -629,7 +574,8 @@ public:
   }
 
   /** \brief Place an object at one of the specified possible locations */
-  MoveItErrorCode place(const std::string& object, const std::vector<geometry_msgs::PoseStamped>& poses)
+  MoveItErrorCode place(const std::string& object, const std::vector<geometry_msgs::PoseStamped>& poses,
+                        bool plan_only = false)
   {
     std::vector<moveit_msgs::PlaceLocation> locations;
     for (std::size_t i = 0; i < poses.size(); ++i)
@@ -651,10 +597,11 @@ public:
     }
     ROS_DEBUG_NAMED("move_group_interface", "Move group interface has %u place locations",
                     (unsigned int)locations.size());
-    return place(object, locations);
+    return place(object, locations, plan_only);
   }
 
-  MoveItErrorCode place(const std::string& object, const std::vector<moveit_msgs::PlaceLocation>& locations)
+  MoveItErrorCode place(const std::string& object, const std::vector<moveit_msgs::PlaceLocation>& locations,
+                        bool plan_only = false)
   {
     if (!place_action_client_)
     {
@@ -669,7 +616,7 @@ public:
     moveit_msgs::PlaceGoal goal;
     constructGoal(goal, object);
     goal.place_locations = locations;
-    goal.planning_options.plan_only = false;
+    goal.planning_options.plan_only = plan_only;
     goal.planning_options.look_around = can_look_;
     goal.planning_options.replan = can_replan_;
     goal.planning_options.replan_delay = replan_delay_;
@@ -694,7 +641,7 @@ public:
     }
   }
 
-  MoveItErrorCode pick(const std::string& object, const std::vector<moveit_msgs::Grasp>& grasps)
+  MoveItErrorCode pick(const std::string& object, const std::vector<moveit_msgs::Grasp>& grasps, bool plan_only = false)
   {
     if (!pick_action_client_)
     {
@@ -709,7 +656,7 @@ public:
     moveit_msgs::PickupGoal goal;
     constructGoal(goal, object);
     goal.possible_grasps = grasps;
-    goal.planning_options.plan_only = false;
+    goal.planning_options.plan_only = plan_only;
     goal.planning_options.look_around = can_look_;
     goal.planning_options.replan = can_replan_;
     goal.planning_options.replan_delay = replan_delay_;
@@ -733,7 +680,7 @@ public:
     }
   }
 
-  MoveItErrorCode planGraspsAndPick(const std::string& object)
+  MoveItErrorCode planGraspsAndPick(const std::string& object, bool plan_only = false)
   {
     if (object.empty())
     {
@@ -750,10 +697,10 @@ public:
       return MoveItErrorCode(moveit_msgs::MoveItErrorCodes::INVALID_OBJECT_NAME);
     }
 
-    return planGraspsAndPick(objects[object]);
+    return planGraspsAndPick(objects[object], plan_only);
   }
 
-  MoveItErrorCode planGraspsAndPick(const moveit_msgs::CollisionObject& object)
+  MoveItErrorCode planGraspsAndPick(const moveit_msgs::CollisionObject& object, bool plan_only = false)
   {
     if (!plan_grasps_service_)
     {
@@ -779,7 +726,7 @@ public:
       return MoveItErrorCode(moveit_msgs::MoveItErrorCodes::FAILURE);
     }
 
-    return pick(object.id, response.grasps);
+    return pick(object.id, response.grasps, plan_only);
   }
 
   MoveItErrorCode plan(Plan& plan)
@@ -1488,57 +1435,57 @@ moveit::planning_interface::MoveItErrorCode moveit::planning_interface::MoveGrou
 }
 
 moveit::planning_interface::MoveItErrorCode
-moveit::planning_interface::MoveGroupInterface::pick(const std::string& object)
+moveit::planning_interface::MoveGroupInterface::pick(const std::string& object, bool plan_only)
 {
-  return impl_->pick(object, std::vector<moveit_msgs::Grasp>());
-}
-
-moveit::planning_interface::MoveItErrorCode
-moveit::planning_interface::MoveGroupInterface::pick(const std::string& object, const moveit_msgs::Grasp& grasp)
-{
-  return impl_->pick(object, std::vector<moveit_msgs::Grasp>(1, grasp));
+  return impl_->pick(object, std::vector<moveit_msgs::Grasp>(), plan_only);
 }
 
 moveit::planning_interface::MoveItErrorCode moveit::planning_interface::MoveGroupInterface::pick(
-    const std::string& object, const std::vector<moveit_msgs::Grasp>& grasps)
+    const std::string& object, const moveit_msgs::Grasp& grasp, bool plan_only)
 {
-  return impl_->pick(object, grasps);
+  return impl_->pick(object, std::vector<moveit_msgs::Grasp>(1, grasp), plan_only);
+}
+
+moveit::planning_interface::MoveItErrorCode moveit::planning_interface::MoveGroupInterface::pick(
+    const std::string& object, const std::vector<moveit_msgs::Grasp>& grasps, bool plan_only)
+{
+  return impl_->pick(object, grasps, plan_only);
 }
 
 moveit::planning_interface::MoveItErrorCode
-moveit::planning_interface::MoveGroupInterface::planGraspsAndPick(const std::string& object)
+moveit::planning_interface::MoveGroupInterface::planGraspsAndPick(const std::string& object, bool plan_only)
 {
-  return impl_->planGraspsAndPick(object);
+  return impl_->planGraspsAndPick(object, plan_only);
+}
+
+moveit::planning_interface::MoveItErrorCode moveit::planning_interface::MoveGroupInterface::planGraspsAndPick(
+    const moveit_msgs::CollisionObject& object, bool plan_only)
+{
+  return impl_->planGraspsAndPick(object, plan_only);
 }
 
 moveit::planning_interface::MoveItErrorCode
-moveit::planning_interface::MoveGroupInterface::planGraspsAndPick(const moveit_msgs::CollisionObject& object)
+moveit::planning_interface::MoveGroupInterface::place(const std::string& object, bool plan_only)
 {
-  return impl_->planGraspsAndPick(object);
-}
-
-moveit::planning_interface::MoveItErrorCode
-moveit::planning_interface::MoveGroupInterface::place(const std::string& object)
-{
-  return impl_->place(object, std::vector<moveit_msgs::PlaceLocation>());
+  return impl_->place(object, std::vector<moveit_msgs::PlaceLocation>(), plan_only);
 }
 
 moveit::planning_interface::MoveItErrorCode moveit::planning_interface::MoveGroupInterface::place(
-    const std::string& object, const std::vector<moveit_msgs::PlaceLocation>& locations)
+    const std::string& object, const std::vector<moveit_msgs::PlaceLocation>& locations, bool plan_only)
 {
-  return impl_->place(object, locations);
+  return impl_->place(object, locations, plan_only);
 }
 
 moveit::planning_interface::MoveItErrorCode moveit::planning_interface::MoveGroupInterface::place(
-    const std::string& object, const std::vector<geometry_msgs::PoseStamped>& poses)
+    const std::string& object, const std::vector<geometry_msgs::PoseStamped>& poses, bool plan_only)
 {
-  return impl_->place(object, poses);
+  return impl_->place(object, poses, plan_only);
 }
 
-moveit::planning_interface::MoveItErrorCode
-moveit::planning_interface::MoveGroupInterface::place(const std::string& object, const geometry_msgs::PoseStamped& pose)
+moveit::planning_interface::MoveItErrorCode moveit::planning_interface::MoveGroupInterface::place(
+    const std::string& object, const geometry_msgs::PoseStamped& pose, bool plan_only)
 {
-  return impl_->place(object, std::vector<geometry_msgs::PoseStamped>(1, pose));
+  return impl_->place(object, std::vector<geometry_msgs::PoseStamped>(1, pose), plan_only);
 }
 
 double moveit::planning_interface::MoveGroupInterface::computeCartesianPath(
