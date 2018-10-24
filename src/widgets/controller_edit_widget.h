@@ -1,7 +1,7 @@
 /*********************************************************************
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2012, Willow Garage, Inc.
+ *  Copyright (c) 2018, Mohamad Ayman.
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -14,8 +14,7 @@
  *     copyright notice, this list of conditions and the following
  *     disclaimer in the documentation and/or other materials provided
  *     with the distribution.
- *   * Neither the name of Willow Garage nor the names of its
- *     contributors may be used to endorse or promote products derived
+ *   * The name of Mohamad Ayman may be used to endorse or promote products derived
  *     from this software without specific prior written permission.
  *
  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
@@ -32,10 +31,10 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-/* Author: Dave Coleman */
+/* Author: Mohamad Ayman */
 
-#ifndef MOVEIT_ROS_MOVEIT_SETUP_ASSISTANT_WIDGETS_GROUP_EDIT_WIDGET_
-#define MOVEIT_ROS_MOVEIT_SETUP_ASSISTANT_WIDGETS_GROUP_EDIT_WIDGET_
+#ifndef MOVEIT_ROS_MOVEIT_SETUP_ASSISTANT_WIDGETS_CONTROLLER_EDIT_WIDGET_H
+#define MOVEIT_ROS_MOVEIT_SETUP_ASSISTANT_WIDGETS_CONTROLLER_EDIT_WIDGET_H
 
 #include <QWidget>
 #include <QLabel>
@@ -47,9 +46,9 @@
 #include <moveit/setup_assistant/tools/moveit_config_data.h>
 #endif
 
-namespace moveit_setup_assistant
+namespace moveit_ros_control
 {
-class GroupEditWidget : public QWidget
+class ControllerEditWidget : public QWidget
 {
   Q_OBJECT
 
@@ -59,28 +58,40 @@ public:
   // ******************************************************************************************
 
   /// Constructor
-  GroupEditWidget(QWidget* parent, moveit_setup_assistant::MoveItConfigDataPtr config_data);
+  ControllerEditWidget(QWidget* parent, moveit_setup_assistant::MoveItConfigDataPtr config_data);
 
   /// Set the previous data
-  void setSelected(const std::string& group_name);
+  void setSelected(const std::string& controller_name);
 
-  /// Populate the combo dropdown box with kinematic planners
-  void loadKinematicPlannersComboBox();
+  /// Populate the combo dropdown box with controllers types
+  void loadControllersTypesComboBox();
 
-  // ******************************************************************************************
-  // Qt Components
-  // ******************************************************************************************
+  /// Hide delete controller button
+  void hideDelete();
 
-  QLabel* title_;  // specify the title from the parent widget
-  QLineEdit* group_name_field_;
-  QComboBox* kinematics_solver_field_;
-  QLineEdit* kinematics_resolution_field_;
-  QLineEdit* kinematics_timeout_field_;
-  QLineEdit* kinematics_attempts_field_;
-  QComboBox* default_planner_field_;
-  QPushButton* btn_delete_;      // this button is hidden for new groups
-  QPushButton* btn_save_;        // this button is hidden for new groups
-  QWidget* new_buttons_widget_;  // for showing/hiding the new group buttons
+  /// Hide save controller button
+  void hideSave();
+
+  /// Hide new buttons widget
+  void hideNewButtonsWidget();
+
+  /// Show delete controller button
+  void showDelete();
+
+  /// Show save controller button
+  void showSave();
+
+  /// Show new buttons widget
+  void showNewButtonsWidget();
+
+  /// Set widget title
+  void setTitle(const QString& title);
+
+  /// Get controller name
+  std::string getControllerName();
+
+  /// Get controller type
+  std::string getControllerType();
 
 private Q_SLOTS:
 
@@ -97,14 +108,8 @@ Q_SIGNALS:
   /// Button event for new groups, progressing to adding joints
   void saveJoints();
 
-  /// Button event for new groups, progressing to adding links
-  void saveLinks();
-
-  /// Button event for new groups, progressing to adding a chain
-  void saveChain();
-
   /// Button event for new groups, progressing to adding subgroups
-  void saveSubgroups();
+  void saveJointsGroups();
 
   /// Button event for just saving, when in edit mode
   void save();
@@ -112,20 +117,29 @@ Q_SIGNALS:
   /// Event sent when user presses cancel button
   void cancelEditing();
 
-  /// Event sent when delete is being requested for group
-  void deleteGroup();
+  /// Event sent when delete is being requested for controller
+  void deleteController();
 
 private:
+  // ******************************************************************************************
+  // Qt Components
+  // ******************************************************************************************
+
+  QLabel* title_;  // specify the title from the parent widget
+  QLineEdit* controller_name_field_;
+  QComboBox* controller_type_field_;
+  QPushButton* btn_delete_;      // this button is hidden for new controllers
+  QPushButton* btn_save_;        // this button is hidden for new controllers
+  QWidget* new_buttons_widget_;  // for showing/hiding the new controllers buttons
+
   // ******************************************************************************************
   // Variables
   // ******************************************************************************************
 
+  // For loading default types combo box just once
+  bool has_loaded_ = false;
   /// Contains all the configuration data for the setup assistant
   moveit_setup_assistant::MoveItConfigDataPtr config_data_;
-
-  // ******************************************************************************************
-  // Private Functions
-  // ******************************************************************************************
 };
 }
 
