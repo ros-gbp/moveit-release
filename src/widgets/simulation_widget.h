@@ -1,7 +1,7 @@
 /*********************************************************************
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2012, Willow Garage, Inc.
+ *  Copyright (c) 2018, Mohamad Ayman.
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -14,8 +14,7 @@
  *     copyright notice, this list of conditions and the following
  *     disclaimer in the documentation and/or other materials provided
  *     with the distribution.
- *   * Neither the name of Willow Garage nor the names of its
- *     contributors may be used to endorse or promote products derived
+ *   * The name of Mohamad Ayman may not be used to endorse or promote products derived
  *     from this software without specific prior written permission.
  *
  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
@@ -32,21 +31,15 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-/* Author: Dave Coleman */
+/* Author: Mohamad Ayman */
 
-#ifndef MOVEIT_MOVEIT_SETUP_ASSISTANT_WIDGETS_PASSIVE_JOINTS_WIDGET_
-#define MOVEIT_MOVEIT_SETUP_ASSISTANT_WIDGETS_PASSIVE_JOINTS_WIDGET_
+#ifndef MOVEIT_MOVEIT_SETUP_ASSISTANT_WIDGETS_SIMULATION_WIDGET_H
+#define MOVEIT_MOVEIT_SETUP_ASSISTANT_WIDGETS_SIMULATION_WIDGET_H
 
 // Qt
-#include <QWidget>
-#include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QLabel>
-#include <QPushButton>
-#include <QTableWidget>
-#include <QStackedLayout>
+#include <QScrollArea>
+#include <QTextEdit>
 #include <QString>
-#include <QComboBox>
 
 // SA
 #ifndef Q_MOC_RUN
@@ -54,12 +47,16 @@
 #endif
 
 #include "header_widget.h"
-#include "double_list_widget.h"
 #include "setup_screen_widget.h"  // a base class for screens in the setup assistant
 
 namespace moveit_setup_assistant
 {
-class PassiveJointsWidget : public SetupScreenWidget
+// ******************************************************************************************
+// ******************************************************************************************
+// Class for showing changes needed to help user bring his robot into gazebo simulation
+// ******************************************************************************************
+// ******************************************************************************************
+class SimulationWidget : public SetupScreenWidget
 {
   Q_OBJECT
 
@@ -68,39 +65,33 @@ public:
   // Public Functions
   // ******************************************************************************************
 
-  PassiveJointsWidget(QWidget* parent, moveit_setup_assistant::MoveItConfigDataPtr config_data);
-
-  /// Received when this widget is chosen from the navigation menu
-  virtual void focusGiven();
-
-  // ******************************************************************************************
-  // Qt Components
-  // ******************************************************************************************
-
-  DoubleListWidget* joints_widget_;
+  SimulationWidget(QWidget* parent, moveit_setup_assistant::MoveItConfigDataPtr config_data);
 
 private Q_SLOTS:
 
   // ******************************************************************************************
   // Slot Event Functions
   // ******************************************************************************************
-  void selectionUpdated();
 
-  /// Called from Double List widget to highlight joints
-  void previewSelectedJoints(std::vector<std::string> joints);
+  // Called the copy to clipboard button is clicked
+  void copyURDF(const QString& link);
+
+  /// Generate URDF button clicked
+  void generateURDFClick();
 
 private:
   // ******************************************************************************************
-  // Variables
+  // Qt Components
   // ******************************************************************************************
+
+  QTextEdit* simulation_text_;
+  QLabel* no_changes_label_;
+  QLabel* copy_urdf_;
 
   /// Contains all the configuration data for the setup assistant
   moveit_setup_assistant::MoveItConfigDataPtr config_data_;
-
-  /// Orignal name of vjoint currently being edited. This is used to find the element in the vector
-  std::string current_edit_vjoint_;
 };
 
-}  // namespace
+}  // namespace moveit_setup_assistant
 
 #endif
