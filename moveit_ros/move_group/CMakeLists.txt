@@ -29,10 +29,8 @@ catkin_package(
 )
 
 include_directories(include)
-include_directories(${catkin_INCLUDE_DIRS})
-include_directories(SYSTEM
-                    ${Boost_INCLUDE_DIRS}
-                    )
+include_directories(${catkin_INCLUDE_DIRS}
+                    ${Boost_INCLUDE_DIRS})
 
 link_directories(${Boost_LIBRARY_DIRS})
 link_directories(${catkin_LIBRARY_DIRS})
@@ -83,3 +81,9 @@ install(PROGRAMS
 install(FILES
   default_capabilities_plugin_description.xml
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
+
+if(CATKIN_ENABLE_TESTING)
+  find_package(rostest REQUIRED)
+  # this test is flaky
+  # add_rostest(test/test_cancel_before_plan_execution.test)
+endif()

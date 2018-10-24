@@ -49,14 +49,12 @@
 
 namespace pick_place
 {
-
 MOVEIT_CLASS_FORWARD(PickPlace);
 
 class PickPlacePlanBase
 {
 public:
-
-  PickPlacePlanBase(const PickPlaceConstPtr &pick_place, const std::string &name);
+  PickPlacePlanBase(const PickPlaceConstPtr& pick_place, const std::string& name);
   ~PickPlacePlanBase();
 
   const std::vector<ManipulationPlanPtr>& getSuccessfulManipulationPlans() const
@@ -74,9 +72,8 @@ public:
   }
 
 protected:
-
   void initialize();
-  void waitForPipeline(const ros::WallTime &endtime);
+  void waitForPipeline(const ros::WallTime& endtime);
   void foundSolution();
   void emptyQueue();
 
@@ -96,9 +93,8 @@ MOVEIT_CLASS_FORWARD(PickPlan);
 class PickPlan : public PickPlacePlanBase
 {
 public:
-
-  PickPlan(const PickPlaceConstPtr &pick_place);
-  bool plan(const planning_scene::PlanningSceneConstPtr &planning_scene, const moveit_msgs::PickupGoal &goal);
+  PickPlan(const PickPlaceConstPtr& pick_place);
+  bool plan(const planning_scene::PlanningSceneConstPtr& planning_scene, const moveit_msgs::PickupGoal& goal);
 };
 
 MOVEIT_CLASS_FORWARD(PlacePlan);
@@ -106,23 +102,20 @@ MOVEIT_CLASS_FORWARD(PlacePlan);
 class PlacePlan : public PickPlacePlanBase
 {
 public:
-
-  PlacePlan(const PickPlaceConstPtr &pick_place);
-  bool plan(const planning_scene::PlanningSceneConstPtr &planning_scene, const moveit_msgs::PlaceGoal &goal);
+  PlacePlan(const PickPlaceConstPtr& pick_place);
+  bool plan(const planning_scene::PlanningSceneConstPtr& planning_scene, const moveit_msgs::PlaceGoal& goal);
 };
 
-class PickPlace : private boost::noncopyable,
-                  public std::enable_shared_from_this<PickPlace>
+class PickPlace : private boost::noncopyable, public std::enable_shared_from_this<PickPlace>
 {
 public:
-
   static const std::string DISPLAY_PATH_TOPIC;
   static const std::string DISPLAY_GRASP_TOPIC;
 
   // the amount of time (maximum) to wait for achieving a grasp posture
-  static const double DEFAULT_GRASP_POSTURE_COMPLETION_DURATION; // seconds
+  static const double DEFAULT_GRASP_POSTURE_COMPLETION_DURATION;  // seconds
 
-  PickPlace(const planning_pipeline::PlanningPipelinePtr &planning_pipeline);
+  PickPlace(const planning_pipeline::PlanningPipelinePtr& planning_pipeline);
 
   const constraint_samplers::ConstraintSamplerManagerPtr& getConstraintsSamplerManager() const
   {
@@ -140,22 +133,23 @@ public:
   }
 
   /** \brief Plan the sequence of motions that perform a pickup action */
-  PickPlanPtr planPick(const planning_scene::PlanningSceneConstPtr &planning_scene, const moveit_msgs::PickupGoal &goal) const;
+  PickPlanPtr planPick(const planning_scene::PlanningSceneConstPtr& planning_scene,
+                       const moveit_msgs::PickupGoal& goal) const;
 
   /** \brief Plan the sequence of motions that perform a placement action */
-  PlacePlanPtr planPlace(const planning_scene::PlanningSceneConstPtr &planning_scene, const moveit_msgs::PlaceGoal &goal) const;
+  PlacePlanPtr planPlace(const planning_scene::PlanningSceneConstPtr& planning_scene,
+                         const moveit_msgs::PlaceGoal& goal) const;
 
   void displayComputedMotionPlans(bool flag);
   void displayProcessedGrasps(bool flag);
 
-  void visualizePlan(const ManipulationPlanPtr &plan) const;
+  void visualizePlan(const ManipulationPlanPtr& plan) const;
 
-  void visualizeGrasp(const ManipulationPlanPtr &plan) const;
+  void visualizeGrasp(const ManipulationPlanPtr& plan) const;
 
   void visualizeGrasps(const std::vector<ManipulationPlanPtr>& plans) const;
 
 private:
-
   ros::NodeHandle nh_;
   planning_pipeline::PlanningPipelinePtr planning_pipeline_;
   bool display_computed_motion_plans_;
@@ -165,7 +159,6 @@ private:
 
   constraint_sampler_manager_loader::ConstraintSamplerManagerLoaderPtr constraint_sampler_manager_loader_;
 };
-
 }
 
 #endif

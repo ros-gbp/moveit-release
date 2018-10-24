@@ -50,7 +50,6 @@
 /** \brief This namespace includes the dynamics_solver library */
 namespace dynamics_solver
 {
-
 MOVEIT_CLASS_FORWARD(DynamicsSolver);
 
 /**
@@ -61,7 +60,6 @@ MOVEIT_CLASS_FORWARD(DynamicsSolver);
 class DynamicsSolver
 {
 public:
-
   /**
    * @brief Initialize the dynamics solver
    * @param urdf_model The urdf model for the robot
@@ -69,9 +67,8 @@ public:
    * @param group_name The name of the group to compute stuff for
    * @return False if initialization failed
    */
-  DynamicsSolver(const robot_model::RobotModelConstPtr &robot_model,
-                 const std::string &group_name,
-                 const geometry_msgs::Vector3 &gravity_vector);
+  DynamicsSolver(const robot_model::RobotModelConstPtr& robot_model, const std::string& group_name,
+                 const geometry_msgs::Vector3& gravity_vector);
 
   /**
    * @brief Get the torques (the order of all input and output is the same
@@ -88,11 +85,9 @@ public:
    * this must have size = number of joints in the group
    * @return False if any of the input vectors are of the wrong size
    */
-  bool getTorques(const std::vector<double> &joint_angles,
-                  const std::vector<double> &joint_velocities,
-                  const std::vector<double> &joint_accelerations,
-                  const std::vector<geometry_msgs::Wrench> &wrenches,
-                  std::vector<double> &torques) const;
+  bool getTorques(const std::vector<double>& joint_angles, const std::vector<double>& joint_velocities,
+                  const std::vector<double>& joint_accelerations, const std::vector<geometry_msgs::Wrench>& wrenches,
+                  std::vector<double>& torques) const;
 
   /**
    * @brief Get the maximum payload for this group (in kg). Payload is
@@ -105,9 +100,7 @@ public:
    * @param joint_saturated The first saturated joint and the maximum payload
    * @return False if the input set of joint angles is of the wrong size
    */
-  bool getMaxPayload(const std::vector<double> &joint_angles,
-                     double &payload,
-                     unsigned int &joint_saturated) const;
+  bool getMaxPayload(const std::vector<double>& joint_angles, double& payload, unsigned int& joint_saturated) const;
 
   /**
    * @brief Get torques corresponding to a particular payload value.  Payload is
@@ -119,9 +112,8 @@ public:
    * @param joint_torques The resulting joint torques
    * @return False if the input vectors are of the wrong size
    */
-  bool getPayloadTorques(const std::vector<double> &joint_angles,
-                         double payload,
-                         std::vector<double> &joint_torques) const;
+  bool getPayloadTorques(const std::vector<double>& joint_angles, double payload,
+                         std::vector<double>& joint_torques) const;
 
   /**
    * @brief Get maximum torques for this group
@@ -144,22 +136,19 @@ public:
   }
 
 private:
-
-  std::shared_ptr<KDL::ChainIdSolver_RNE> chain_id_solver_; // KDL chain inverse dynamics
-  KDL::Chain kdl_chain_; // KDL chain
+  std::shared_ptr<KDL::ChainIdSolver_RNE> chain_id_solver_;  // KDL chain inverse dynamics
+  KDL::Chain kdl_chain_;                                     // KDL chain
 
   robot_model::RobotModelConstPtr robot_model_;
   const robot_model::JointModelGroup* joint_model_group_;
 
-  robot_state::RobotStatePtr state_; //robot state
+  robot_state::RobotStatePtr state_;  // robot state
 
-  std::string base_name_, tip_name_; // base name, tip name
-  unsigned int num_joints_, num_segments_; // number of joints in group, number of segments in group
-  std::vector<double> max_torques_; // vector of max torques
+  std::string base_name_, tip_name_;        // base name, tip name
+  unsigned int num_joints_, num_segments_;  // number of joints in group, number of segments in group
+  std::vector<double> max_torques_;         // vector of max torques
 
-  double gravity_; //Norm of the gravity vector passed in initialize()
-
+  double gravity_;  // Norm of the gravity vector passed in initialize()
 };
-
 }
 #endif

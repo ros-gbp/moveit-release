@@ -37,7 +37,7 @@
 #include <moveit/planning_interface/planning_response.h>
 #include <moveit/robot_state/conversions.h>
 
-void planning_interface::MotionPlanResponse::getMessage(moveit_msgs::MotionPlanResponse &msg) const
+void planning_interface::MotionPlanResponse::getMessage(moveit_msgs::MotionPlanResponse& msg) const
 {
   msg.error_code = error_code_;
   msg.planning_time = planning_time_;
@@ -49,7 +49,7 @@ void planning_interface::MotionPlanResponse::getMessage(moveit_msgs::MotionPlanR
   }
 }
 
-void planning_interface::MotionPlanDetailedResponse::getMessage(moveit_msgs::MotionPlanDetailedResponse &msg) const
+void planning_interface::MotionPlanDetailedResponse::getMessage(moveit_msgs::MotionPlanDetailedResponse& msg) const
 {
   msg.error_code = error_code_;
 
@@ -59,7 +59,7 @@ void planning_interface::MotionPlanDetailedResponse::getMessage(moveit_msgs::Mot
 
   bool first = true;
 
-  for (std::size_t i = 0 ; i < trajectory_.size() ; ++i)
+  for (std::size_t i = 0; i < trajectory_.size(); ++i)
   {
     if (trajectory_[i]->empty())
       continue;

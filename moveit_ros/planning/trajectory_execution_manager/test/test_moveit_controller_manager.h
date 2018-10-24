@@ -41,16 +41,14 @@
 
 namespace test_moveit_controller_manager
 {
-
 class TestMoveItControllerHandle : public moveit_controller_manager::MoveItControllerHandle
 {
 public:
-
-  TestMoveItControllerHandle(const std::string &name) : MoveItControllerHandle(name)
+  TestMoveItControllerHandle(const std::string& name) : MoveItControllerHandle(name)
   {
   }
 
-  virtual bool sendTrajectory(const moveit_msgs::RobotTrajectory &trajectory)
+  virtual bool sendTrajectory(const moveit_msgs::RobotTrajectory& trajectory)
   {
     return true;
   }
@@ -60,7 +58,7 @@ public:
     return true;
   }
 
-  virtual bool waitForExecution(const ros::Duration &timeout = ros::Duration(0))
+  virtual bool waitForExecution(const ros::Duration& timeout = ros::Duration(0))
   {
     return false;
   }
@@ -69,7 +67,6 @@ public:
   {
     return moveit_controller_manager::ExecutionStatus::SUCCEEDED;
   }
-
 };
 
 class TestMoveItControllerManager : public moveit_controller_manager::MoveItControllerManager
@@ -94,42 +91,48 @@ public:
     controller_joints_["left_arm"].push_back("lj2");
     controller_joints_["left_arm"].push_back("lj3");
 
-    controller_joints_["arms"].insert(controller_joints_["arms"].end(), controller_joints_["left_arm"].begin(), controller_joints_["left_arm"].end());
-    controller_joints_["arms"].insert(controller_joints_["arms"].end(), controller_joints_["right_arm"].begin(), controller_joints_["right_arm"].end());
+    controller_joints_["arms"].insert(controller_joints_["arms"].end(), controller_joints_["left_arm"].begin(),
+                                      controller_joints_["left_arm"].end());
+    controller_joints_["arms"].insert(controller_joints_["arms"].end(), controller_joints_["right_arm"].begin(),
+                                      controller_joints_["right_arm"].end());
 
     controller_joints_["base"].push_back("basej");
     controller_joints_["head"].push_back("headj");
 
-    controller_joints_["left_arm_head"].insert(controller_joints_["left_arm_head"].end(), controller_joints_["left_arm"].begin(), controller_joints_["left_arm"].end());
-    controller_joints_["left_arm_head"].insert(controller_joints_["left_arm_head"].end(), controller_joints_["head"].begin(), controller_joints_["head"].end());
+    controller_joints_["left_arm_head"].insert(controller_joints_["left_arm_head"].end(),
+                                               controller_joints_["left_arm"].begin(),
+                                               controller_joints_["left_arm"].end());
+    controller_joints_["left_arm_head"].insert(controller_joints_["left_arm_head"].end(),
+                                               controller_joints_["head"].begin(), controller_joints_["head"].end());
   }
 
-  virtual moveit_controller_manager::MoveItControllerHandlePtr getControllerHandle(const std::string &name)
+  virtual moveit_controller_manager::MoveItControllerHandlePtr getControllerHandle(const std::string& name)
   {
     return moveit_controller_manager::MoveItControllerHandlePtr(new TestMoveItControllerHandle(name));
   }
 
-  virtual void getControllersList(std::vector<std::string> &names)
+  virtual void getControllersList(std::vector<std::string>& names)
   {
     names.clear();
-    for (std::map<std::string, int>::const_iterator it = controllers_.begin() ; it != controllers_.end() ; ++it)
+    for (std::map<std::string, int>::const_iterator it = controllers_.begin(); it != controllers_.end(); ++it)
       names.push_back(it->first);
   }
 
-  virtual void getActiveControllers(std::vector<std::string> &names)
+  virtual void getActiveControllers(std::vector<std::string>& names)
   {
     names.clear();
-    for (std::map<std::string, int>::const_iterator it = controllers_.begin() ; it != controllers_.end() ; ++it)
+    for (std::map<std::string, int>::const_iterator it = controllers_.begin(); it != controllers_.end(); ++it)
       if (it->second & ACTIVE)
         names.push_back(it->first);
   }
 
-  virtual void getControllerJoints(const std::string &name, std::vector<std::string> &joints)
+  virtual void getControllerJoints(const std::string& name, std::vector<std::string>& joints)
   {
     joints = controller_joints_[name];
   }
 
-  virtual moveit_controller_manager::MoveItControllerManager::ControllerState getControllerState(const std::string &name)
+  virtual moveit_controller_manager::MoveItControllerManager::ControllerState
+  getControllerState(const std::string& name)
   {
     moveit_controller_manager::MoveItControllerManager::ControllerState state;
     state.active_ = controllers_[name] & ACTIVE;
@@ -137,15 +140,14 @@ public:
     return state;
   }
 
-
-  virtual bool switchControllers(const std::vector<std::string> &activate, const std::vector<std::string> &deactivate)
+  virtual bool switchControllers(const std::vector<std::string>& activate, const std::vector<std::string>& deactivate)
   {
-    for (std::size_t i = 0 ; i < deactivate.size() ; ++i)
+    for (std::size_t i = 0; i < deactivate.size(); ++i)
     {
       controllers_[deactivate[i]] &= ~ACTIVE;
       std::cout << "Deactivated controller " << deactivate[i] << std::endl;
     }
-    for (std::size_t i = 0 ; i < activate.size() ; ++i)
+    for (std::size_t i = 0; i < activate.size(); ++i)
     {
       controllers_[activate[i]] |= ACTIVE;
       std::cout << "Activated controller " << activate[i] << std::endl;
@@ -154,12 +156,8 @@ public:
   }
 
 protected:
-
   std::map<std::string, int> controllers_;
   std::map<std::string, std::vector<std::string> > controller_joints_;
-
 };
-
-
 }
 #endif

@@ -42,8 +42,7 @@
 
 namespace pick_place
 {
-
-PickPlan::PickPlan(const PickPlaceConstPtr &pick_place) : PickPlacePlanBase(pick_place, "pick")
+PickPlan::PickPlan(const PickPlaceConstPtr& pick_place) : PickPlacePlanBase(pick_place, "pick")
 {
 }
 
@@ -51,7 +50,7 @@ namespace
 {
 struct OrderGraspQuality
 {
-  OrderGraspQuality(const std::vector<moveit_msgs::Grasp> &grasps) : grasps_(grasps)
+  OrderGraspQuality(const std::vector<moveit_msgs::Grasp>& grasps) : grasps_(grasps)
   {
   }
 
@@ -60,11 +59,11 @@ struct OrderGraspQuality
     return grasps_[a].grasp_quality > grasps_[b].grasp_quality;
   }
 
-  const std::vector<moveit_msgs::Grasp> &grasps_;
+  const std::vector<moveit_msgs::Grasp>& grasps_;
 };
 }
 
-bool PickPlan::plan(const planning_scene::PlanningSceneConstPtr &planning_scene, const moveit_msgs::PickupGoal &goal)
+bool PickPlan::plan(const planning_scene::PlanningSceneConstPtr& planning_scene, const moveit_msgs::PickupGoal& goal)
 {
   double timeout = goal.allowed_planning_time;
   ros::WallTime endtime = ros::WallTime::now() + ros::WallDuration(timeout);
@@ -73,47 +72,51 @@ bool PickPlan::plan(const planning_scene::PlanningSceneConstPtr &planning_scene,
   std::string end_effector = goal.end_effector;
   if (end_effector.empty() && !planning_group.empty())
   {
-    const robot_model::JointModelGroup *jmg = planning_scene->getRobotModel()->getJointModelGroup(planning_group);
+    const robot_model::JointModelGroup* jmg = planning_scene->getRobotModel()->getJointModelGroup(planning_group);
     if (!jmg)
     {
       error_code_.val = moveit_msgs::MoveItErrorCodes::INVALID_GROUP_NAME;
       return false;
     }
-    const std::vector<std::string> &eefs = jmg->getAttachedEndEffectorNames();
+    const std::vector<std::string>& eefs = jmg->getAttachedEndEffectorNames();
     if (!eefs.empty())
     {
       end_effector = eefs.front();
       if (eefs.size() > 1)
-        ROS_WARN_STREAM_NAMED("manipulation", "Choice of end-effector for group '" << planning_group << "' is ambiguous. Assuming '" << end_effector << "'");
+        ROS_WARN_STREAM_NAMED("manipulation", "Choice of end-effector for group '"
+                                                  << planning_group << "' is ambiguous. Assuming '" << end_effector
+                                                  << "'");
     }
   }
-  else
-    if (!end_effector.empty() && planning_group.empty())
+  else if (!end_effector.empty() && planning_group.empty())
+  {
+    const robot_model::JointModelGroup* jmg = planning_scene->getRobotModel()->getEndEffector(end_effector);
+    if (!jmg)
     {
-      const robot_model::JointModelGroup *jmg = planning_scene->getRobotModel()->getEndEffector(end_effector);
-      if (!jmg)
-      {
-        error_code_.val = moveit_msgs::MoveItErrorCodes::INVALID_GROUP_NAME;
-        return false;
-      }
-      planning_group = jmg->getEndEffectorParentGroup().first;
-      if (planning_group.empty())
-      {
-        ROS_ERROR_STREAM_NAMED("manipulation", "No parent group to plan in was identified based on end-effector '" << end_effector << "'. Please define a parent group in the SRDF.");
-        error_code_.val = moveit_msgs::MoveItErrorCodes::INVALID_GROUP_NAME;
-        return false;
-      }
-      else
-        ROS_INFO_STREAM_NAMED("manipulation", "Assuming the planning group for end effector '" << end_effector << "' is '" << planning_group << "'");
+      error_code_.val = moveit_msgs::MoveItErrorCodes::INVALID_GROUP_NAME;
+      return false;
     }
-  const robot_model::JointModelGroup *eef = end_effector.empty() ? NULL : planning_scene->getRobotModel()->getEndEffector(end_effector);
+    planning_group = jmg->getEndEffectorParentGroup().first;
+    if (planning_group.empty())
+    {
+      ROS_ERROR_STREAM_NAMED("manipulation", "No parent group to plan in was identified based on end-effector '"
+                                                 << end_effector << "'. Please define a parent group in the SRDF.");
+      error_code_.val = moveit_msgs::MoveItErrorCodes::INVALID_GROUP_NAME;
+      return false;
+    }
+    else
+      ROS_INFO_STREAM_NAMED("manipulation", "Assuming the planning group for end effector '" << end_effector << "' is '"
+                                                                                             << planning_group << "'");
+  }
+  const robot_model::JointModelGroup* eef =
+      end_effector.empty() ? NULL : planning_scene->getRobotModel()->getEndEffector(end_effector);
   if (!eef)
   {
     ROS_ERROR_NAMED("manipulation", "No end-effector specified for pick action");
     error_code_.val = moveit_msgs::MoveItErrorCodes::INVALID_GROUP_NAME;
     return false;
   }
-  const std::string &ik_link = eef->getEndEffectorParentGroup().second;
+  const std::string& ik_link = eef->getEndEffectorParentGroup().second;
 
   ros::WallTime start_time = ros::WallTime::now();
 
@@ -128,14 +131,16 @@ bool PickPlan::plan(const planning_scene::PlanningSceneConstPtr &planning_scene,
   plan_data->planner_id_ = goal.planner_id;
   plan_data->minimize_object_distance_ = goal.minimize_object_distance;
   plan_data->max_goal_sampling_attempts_ = std::max(2u, plan_data->planning_group_->getDefaultIKAttempts());
-  moveit_msgs::AttachedCollisionObject &attach_object_msg = plan_data->diff_attached_object_;
+  moveit_msgs::AttachedCollisionObject& attach_object_msg = plan_data->diff_attached_object_;
 
   // construct the attached object message that will change the world to what it would become after a pick
   attach_object_msg.link_name = ik_link;
   attach_object_msg.object.id = goal.target_name;
   attach_object_msg.object.operation = moveit_msgs::CollisionObject::ADD;
-  attach_object_msg.touch_links = goal.attached_object_touch_links.empty() ? eef->getLinkModelNames() : goal.attached_object_touch_links;
-  collision_detection::AllowedCollisionMatrixPtr approach_grasp_acm(new collision_detection::AllowedCollisionMatrix(planning_scene->getAllowedCollisionMatrix()));
+  attach_object_msg.touch_links =
+      goal.attached_object_touch_links.empty() ? eef->getLinkModelNames() : goal.attached_object_touch_links;
+  collision_detection::AllowedCollisionMatrixPtr approach_grasp_acm(
+      new collision_detection::AllowedCollisionMatrix(planning_scene->getAllowedCollisionMatrix()));
 
   // we are allowed to touch the target object
   approach_grasp_acm->setEntry(goal.target_name, attach_object_msg.touch_links, true);
@@ -153,7 +158,8 @@ bool PickPlan::plan(const planning_scene::PlanningSceneConstPtr &planning_scene,
 
   // configure the manipulation pipeline
   pipeline_.reset();
-  ManipulationStagePtr stage1(new ReachableAndValidPoseFilter(planning_scene, approach_grasp_acm, pick_place_->getConstraintsSamplerManager()));
+  ManipulationStagePtr stage1(
+      new ReachableAndValidPoseFilter(planning_scene, approach_grasp_acm, pick_place_->getConstraintsSamplerManager()));
   ManipulationStagePtr stage2(new ApproachAndTranslateStage(planning_scene, approach_grasp_acm));
   ManipulationStagePtr stage3(new PlanStage(planning_scene, pick_place_->getPlanningPipeline()));
   pipeline_.addStage(stage1).addStage(stage2).addStage(stage3);
@@ -163,16 +169,16 @@ bool PickPlan::plan(const planning_scene::PlanningSceneConstPtr &planning_scene,
 
   // order the grasps by quality
   std::vector<std::size_t> grasp_order(goal.possible_grasps.size());
-  for (std::size_t i = 0 ; i < goal.possible_grasps.size() ; ++i)
+  for (std::size_t i = 0; i < goal.possible_grasps.size(); ++i)
     grasp_order[i] = i;
   OrderGraspQuality oq(goal.possible_grasps);
   std::sort(grasp_order.begin(), grasp_order.end(), oq);
 
   // feed the available grasps to the stages we set up
-  for (std::size_t i = 0 ; i < goal.possible_grasps.size() ; ++i)
+  for (std::size_t i = 0; i < goal.possible_grasps.size(); ++i)
   {
     ManipulationPlanPtr p(new ManipulationPlan(const_plan_data));
-    const moveit_msgs::Grasp &g = goal.possible_grasps[grasp_order[i]];
+    const moveit_msgs::Grasp& g = goal.possible_grasps[grasp_order[i]];
     p->approach_ = g.pre_grasp_approach;
     p->retreat_ = g.post_grasp_retreat;
     p->goal_pose_ = g.grasp_pose;
@@ -219,7 +225,8 @@ bool PickPlan::plan(const planning_scene::PlanningSceneConstPtr &planning_scene,
   return error_code_.val == moveit_msgs::MoveItErrorCodes::SUCCESS;
 }
 
-PickPlanPtr PickPlace::planPick(const planning_scene::PlanningSceneConstPtr &planning_scene, const moveit_msgs::PickupGoal &goal) const
+PickPlanPtr PickPlace::planPick(const planning_scene::PlanningSceneConstPtr& planning_scene,
+                                const moveit_msgs::PickupGoal& goal) const
 {
   PickPlanPtr p(new PickPlan(shared_from_this()));
 
@@ -230,20 +237,19 @@ PickPlanPtr PickPlace::planPick(const planning_scene::PlanningSceneConstPtr &pla
 
   if (display_computed_motion_plans_)
   {
-    const std::vector<pick_place::ManipulationPlanPtr> &success = p->getSuccessfulManipulationPlans();
+    const std::vector<pick_place::ManipulationPlanPtr>& success = p->getSuccessfulManipulationPlans();
     if (!success.empty())
       visualizePlan(success.back());
   }
 
   if (display_grasps_)
   {
-    const std::vector<pick_place::ManipulationPlanPtr> &success = p->getSuccessfulManipulationPlans();
+    const std::vector<pick_place::ManipulationPlanPtr>& success = p->getSuccessfulManipulationPlans();
     visualizeGrasps(success);
-    const std::vector<pick_place::ManipulationPlanPtr> &failed = p->getFailedManipulationPlans();
+    const std::vector<pick_place::ManipulationPlanPtr>& failed = p->getFailedManipulationPlans();
     visualizeGrasps(failed);
   }
 
   return p;
 }
-
 }

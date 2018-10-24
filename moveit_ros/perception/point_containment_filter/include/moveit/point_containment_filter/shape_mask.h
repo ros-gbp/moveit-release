@@ -49,24 +49,21 @@
 
 namespace point_containment_filter
 {
-
 typedef unsigned int ShapeHandle;
 
 /** \brief Computing a mask for a pointcloud that states which points are inside the robot */
 class ShapeMask
 {
-
 public:
-
   /** \brief The possible values of a mask computed for a point */
   enum
-    {
-      INSIDE = 0,
-      OUTSIDE = 1,
-      CLIP = 2
-    };
+  {
+    INSIDE = 0,
+    OUTSIDE = 1,
+    CLIP = 2
+  };
 
-  typedef boost::function<bool (ShapeHandle, Eigen::Affine3d&)> TransformCallback;
+  typedef boost::function<bool(ShapeHandle, Eigen::Affine3d&)> TransformCallback;
 
   /** \brief Construct the filter */
   ShapeMask(const TransformCallback& transform_callback = TransformCallback());
@@ -74,28 +71,27 @@ public:
   /** \brief Destructor to clean up */
   ~ShapeMask();
 
-  ShapeHandle addShape(const shapes::ShapeConstPtr &shape, double scale = 1.0, double padding = 0.0);
+  ShapeHandle addShape(const shapes::ShapeConstPtr& shape, double scale = 1.0, double padding = 0.0);
   void removeShape(ShapeHandle handle);
 
-  void setTransformCallback (const TransformCallback& transform_callback);
+  void setTransformCallback(const TransformCallback& transform_callback);
 
-  /** \brief Compute the containment mask (INSIDE or OUTSIDE) for a given pointcloud. If a mask element is INSIDE, the point
+  /** \brief Compute the containment mask (INSIDE or OUTSIDE) for a given pointcloud. If a mask element is INSIDE, the
+     point
       is inside the robot. The point is outside if the mask element is OUTSIDE.
   */
-  void maskContainment(const sensor_msgs::PointCloud2& data_in,  const Eigen::Vector3d &sensor_pos,
-                       const double min_sensor_dist, const double max_sensor_dist, std::vector<int> &mask);
+  void maskContainment(const sensor_msgs::PointCloud2& data_in, const Eigen::Vector3d& sensor_pos,
+                       const double min_sensor_dist, const double max_sensor_dist, std::vector<int>& mask);
 
   /** \brief Get the containment mask (INSIDE or OUTSIDE) value for an individual point.
       It is assumed the point is in the frame corresponding to the TransformCallback */
   int getMaskContainment(double x, double y, double z) const;
 
-
   /** \brief Get the containment mask (INSIDE or OUTSIDE) value for an individual point.
       It is assumed the point is in the frame corresponding to the TransformCallback */
-  int getMaskContainment(const Eigen::Vector3d &pt) const;
+  int getMaskContainment(const Eigen::Vector3d& pt) const;
 
 private:
-
   struct SeeShape
   {
     SeeShape()
@@ -103,14 +99,14 @@ private:
       body = NULL;
     }
 
-    bodies::Body *body;
+    bodies::Body* body;
     ShapeHandle handle;
     double volume;
   };
 
   struct SortBodies
   {
-    bool operator()(const SeeShape &b1, const SeeShape &b2)
+    bool operator()(const SeeShape& b1, const SeeShape& b2)
     {
       if (b1.volume > b2.volume)
         return true;
@@ -132,7 +128,6 @@ private:
   std::map<ShapeHandle, std::set<SeeShape, SortBodies>::iterator> used_handles_;
   std::vector<bodies::BoundingSphere> bspheres_;
 };
-
 }
 
 #endif

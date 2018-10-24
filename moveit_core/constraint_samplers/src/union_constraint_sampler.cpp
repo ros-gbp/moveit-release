@@ -42,39 +42,37 @@ namespace constraint_samplers
 {
 struct OrderSamplers
 {
-  bool operator()(const ConstraintSamplerPtr &a, const ConstraintSamplerPtr &b) const
+  bool operator()(const ConstraintSamplerPtr& a, const ConstraintSamplerPtr& b) const
   {
-    const std::vector<std::string> &alinks = a->getJointModelGroup()->getUpdatedLinkModelNames();
-    const std::vector<std::string> &blinks = b->getJointModelGroup()->getUpdatedLinkModelNames();
+    const std::vector<std::string>& alinks = a->getJointModelGroup()->getUpdatedLinkModelNames();
+    const std::vector<std::string>& blinks = b->getJointModelGroup()->getUpdatedLinkModelNames();
     std::set<std::string> a_updates(alinks.begin(), alinks.end());
     std::set<std::string> b_updates(blinks.begin(), blinks.end());
 
-    bool a_contains_b = std::includes(a_updates.begin(), a_updates.end(),
-                                      b_updates.begin(), b_updates.end());
+    bool a_contains_b = std::includes(a_updates.begin(), a_updates.end(), b_updates.begin(), b_updates.end());
 
-    bool b_contains_a = std::includes(b_updates.begin(), b_updates.end(),
-                                      a_updates.begin(), a_updates.end());
+    bool b_contains_a = std::includes(b_updates.begin(), b_updates.end(), a_updates.begin(), a_updates.end());
 
-    //a contains b and sets are not equal
+    // a contains b and sets are not equal
     if (a_contains_b && !b_contains_a)
       return true;
     if (b_contains_a && !a_contains_b)
       return false;
 
-    //sets are equal or disjoint
+    // sets are equal or disjoint
     bool a_depends_on_b = false;
     bool b_depends_on_a = false;
-    const std::vector<std::string> &fda = a->getFrameDependency();
-    const std::vector<std::string> &fdb = b->getFrameDependency();
-    for (std::size_t i = 0 ; i < fda.size() && !a_depends_on_b ; ++i)
-      for (std::size_t j = 0 ; j < blinks.size() ; ++j)
+    const std::vector<std::string>& fda = a->getFrameDependency();
+    const std::vector<std::string>& fdb = b->getFrameDependency();
+    for (std::size_t i = 0; i < fda.size() && !a_depends_on_b; ++i)
+      for (std::size_t j = 0; j < blinks.size(); ++j)
         if (blinks[j] == fda[i])
         {
           a_depends_on_b = true;
           break;
         }
-    for (std::size_t i = 0 ; i < fdb.size() && !b_depends_on_a ; ++i)
-      for (std::size_t j = 0 ; j < alinks.size() ; ++j)
+    for (std::size_t i = 0; i < fdb.size() && !b_depends_on_a; ++i)
+      for (std::size_t j = 0; j < alinks.size(); ++j)
         if (alinks[j] == fdb[i])
         {
           b_depends_on_a = true;
@@ -82,61 +80,65 @@ struct OrderSamplers
         }
     if (b_depends_on_a && a_depends_on_b)
     {
-      logWarn("Circular frame dependency! Sampling will likely produce invalid results (sampling for groups '%s' and '%s')",
-              a->getJointModelGroup()->getName().c_str(), b->getJointModelGroup()->getName().c_str());
+      ROS_WARN_NAMED("constraint_samplers",
+                     "Circular frame dependency! "
+                     "Sampling will likely produce invalid results (sampling for groups '%s' and '%s')",
+                     a->getJointModelGroup()->getName().c_str(), b->getJointModelGroup()->getName().c_str());
       return true;
     }
     if (b_depends_on_a && !a_depends_on_b)
       return true;
-    if(a_depends_on_b && !b_depends_on_a)
+    if (a_depends_on_b && !b_depends_on_a)
       return false;
 
     // prefer sampling JointConstraints first
-    JointConstraintSampler *ja = dynamic_cast<JointConstraintSampler*>(a.get());
-    JointConstraintSampler *jb = dynamic_cast<JointConstraintSampler*>(b.get());
-    if (ja && jb == NULL)
+    JointConstraintSampler* ja = dynamic_cast<JointConstraintSampler*>(a.get());
+    JointConstraintSampler* jb = dynamic_cast<JointConstraintSampler*>(b.get());
+    if (ja && jb == nullptr)
       return true;
-    if (jb && ja == NULL)
+    if (jb && ja == nullptr)
       return false;
 
     // neither depends on either, so break ties based on group name
     return (a->getJointModelGroup()->getName() < b->getJointModelGroup()->getName());
   }
 };
-}
 
-constraint_samplers::UnionConstraintSampler::UnionConstraintSampler(const planning_scene::PlanningSceneConstPtr &scene, const std::string &group_name,
-                                                                    const std::vector<ConstraintSamplerPtr> &samplers) :
-  ConstraintSampler(scene, group_name), samplers_(samplers)
+UnionConstraintSampler::UnionConstraintSampler(const planning_scene::PlanningSceneConstPtr& scene,
+                                               const std::string& group_name,
+                                               const std::vector<ConstraintSamplerPtr>& samplers)
+  : ConstraintSampler(scene, group_name), samplers_(samplers)
 {
   // using stable sort to preserve order of equivalents
   std::stable_sort(samplers_.begin(), samplers_.end(), OrderSamplers());
 
-  for (std::size_t i = 0 ; i < samplers_.size() ; ++i)
+  for (std::size_t i = 0; i < samplers_.size(); ++i)
   {
-    const std::vector<std::string> &fd = samplers_[i]->getFrameDependency();
-    for (std::size_t j = 0 ; j < fd.size() ; ++j)
+    const std::vector<std::string>& fd = samplers_[i]->getFrameDependency();
+    for (std::size_t j = 0; j < fd.size(); ++j)
       frame_depends_.push_back(fd[j]);
 
-    logDebug("Union sampler for group '%s' includes sampler for group '%s'", jmg_->getName().c_str(), samplers_[i]->getJointModelGroup()->getName().c_str());
+    ROS_DEBUG_NAMED("constraint_samplers", "Union sampler for group '%s' includes sampler for group '%s'",
+                    jmg_->getName().c_str(), samplers_[i]->getJointModelGroup()->getName().c_str());
   }
 }
 
-bool constraint_samplers::UnionConstraintSampler::sample(robot_state::RobotState &state, const robot_state::RobotState &reference_state, unsigned int max_attempts)
+bool UnionConstraintSampler::sample(robot_state::RobotState& state, const robot_state::RobotState& reference_state,
+                                    unsigned int max_attempts)
 {
   state = reference_state;
   state.setToRandomPositions(jmg_);
 
-  if (samplers_.size() >= 1)
+  if (!samplers_.empty())
   {
     if (!samplers_[0]->sample(state, reference_state, max_attempts))
       return false;
   }
 
-  for (std::size_t i = 1 ; i < samplers_.size() ; ++i)
+  for (std::size_t i = 1; i < samplers_.size(); ++i)
   {
     // ConstraintSampler::sample returns states with dirty link transforms (because it only writes values)
-    // but requires a state with clean link transforms as input. This means that we need to clean the link 
+    // but requires a state with clean link transforms as input. This means that we need to clean the link
     // transforms between calls to ConstraintSampler::sample.
     state.updateLinkTransforms();
     if (!samplers_[i]->sample(state, state, max_attempts))
@@ -145,11 +147,18 @@ bool constraint_samplers::UnionConstraintSampler::sample(robot_state::RobotState
   return true;
 }
 
-bool constraint_samplers::UnionConstraintSampler::project(robot_state::RobotState &state, unsigned int max_attempts)
+bool UnionConstraintSampler::project(robot_state::RobotState& state, unsigned int max_attempts)
 {
-  for (std::size_t i = 0 ; i < samplers_.size() ; ++i)
+  for (std::size_t i = 0; i < samplers_.size(); ++i)
+  {
+    // ConstraintSampler::project returns states with dirty link transforms (because it only writes values)
+    // but requires a state with clean link transforms as input. This means that we need to clean the link
+    // transforms between calls to ConstraintSampler::sample.
+    state.updateLinkTransforms();
     if (!samplers_[i]->project(state, max_attempts))
       return false;
+  }
   return true;
 }
 
+}  // end of namespace constraint_samplers

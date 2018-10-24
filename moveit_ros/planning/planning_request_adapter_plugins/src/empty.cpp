@@ -35,27 +35,26 @@
 /* Author: Ioan Sucan */
 
 #include <moveit/planning_request_adapter/planning_request_adapter.h>
-#include <class_loader/class_loader.h>
+#include <class_loader/class_loader.hpp>
 
 namespace default_planner_request_adapters
 {
-
 class Empty : public planning_request_adapter::PlanningRequestAdapter
 {
 public:
-  virtual std::string getDescription() const { return "No Op"; }
+  virtual std::string getDescription() const
+  {
+    return "No Op";
+  }
 
-  virtual bool adaptAndPlan(const PlannerFn &planner,
-                            const planning_scene::PlanningSceneConstPtr& planning_scene,
-                            const planning_interface::MotionPlanRequest &req,
-                            planning_interface::MotionPlanResponse &res,
-                            std::vector<std::size_t> &added_path_index) const
+  virtual bool adaptAndPlan(const PlannerFn& planner, const planning_scene::PlanningSceneConstPtr& planning_scene,
+                            const planning_interface::MotionPlanRequest& req,
+                            planning_interface::MotionPlanResponse& res,
+                            std::vector<std::size_t>& added_path_index) const
   {
     return planner(planning_scene, req, res);
   }
 };
-
 }
 
-CLASS_LOADER_REGISTER_CLASS(default_planner_request_adapters::Empty,
-                            planning_request_adapter::PlanningRequestAdapter);
+CLASS_LOADER_REGISTER_CLASS(default_planner_request_adapters::Empty, planning_request_adapter::PlanningRequestAdapter);

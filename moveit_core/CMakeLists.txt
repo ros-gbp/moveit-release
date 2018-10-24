@@ -3,14 +3,19 @@ project(moveit_core)
 
 add_compile_options(-std=c++11)
 
+# Warnings
+add_definitions(-Wall -Wextra
+  -Wwrite-strings -Wunreachable-code -Wpointer-arith -Wredundant-decls -Wcast-qual
+  -Wno-unused-parameter -Wno-unused-function -Wno-maybe-uninitialized)
+
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
   message("${PROJECT_NAME}: You did not request a specific build type: Choosing 'Release' for maximum performance")
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
 find_package(Boost REQUIRED system filesystem date_time thread iostreams)
-
-find_package(console_bridge REQUIRED)
 
 find_package(Eigen3 REQUIRED)
 
@@ -28,7 +33,7 @@ set(LIBFCL_LIBRARIES "${LIBFCL_LIBRARIES_FULL}")
 find_package(octomap REQUIRED)
 
 find_package(urdfdom REQUIRED)
-find_package(urdfdom_headers 0.4 REQUIRED)
+find_package(urdfdom_headers REQUIRED)
 
 find_package(catkin REQUIRED
 COMPONENTS
@@ -42,6 +47,7 @@ COMPONENTS
   random_numbers
   roslib
   rostime
+  rosconsole
   sensor_msgs
   shape_msgs
   srdfdom
@@ -126,21 +132,20 @@ catkin_package(
   DEPENDS
     Boost
     EIGEN3
+    LIBFCL
     OCTOMAP
-    console_bridge
     urdfdom
     urdfdom_headers
     )
 
-include_directories(SYSTEM ${EIGEN3_INCLUDE_DIR}
-                           ${Boost_INCLUDE_DIR}
+include_directories(SYSTEM ${EIGEN3_INCLUDE_DIRS}
                            ${LIBFCL_INCLUDE_DIRS}
                            )
 
 include_directories(${THIS_PACKAGE_INCLUDE_DIRS}
                     ${VERSION_FILE_PATH}
+                    ${Boost_INCLUDE_DIRS}
                     ${catkin_INCLUDE_DIRS}
-                    ${console_bridge_INCLUDE_DIRS}
                     ${urdfdom_INCLUDE_DIRS}
                     ${urdfdom_headers_INCLUDE_DIRS}
                     ${OCTOMAP_INCLUDE_DIRS}

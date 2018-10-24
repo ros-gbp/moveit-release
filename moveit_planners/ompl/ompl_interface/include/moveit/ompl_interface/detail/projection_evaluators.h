@@ -37,12 +37,18 @@
 #ifndef MOVEIT_OMPL_INTERFACE_DETAIL_PROJECTION_EVALUATORS_
 #define MOVEIT_OMPL_INTERFACE_DETAIL_PROJECTION_EVALUATORS_
 
+#include <ompl/config.h>
 #include <ompl/base/ProjectionEvaluator.h>
 #include <moveit/ompl_interface/detail/threadsafe_state_storage.h>
 
+#if OMPL_VERSION_VALUE >= 1004000  // Version greater than 1.4.0
+typedef Eigen::Ref<Eigen::VectorXd> OMPLProjection;
+#else  // All other versions
+typedef ompl::base::EuclideanProjection& OMPLProjection;
+#endif
+
 namespace ompl_interface
 {
-
 class ModelBasedPlanningContext;
 
 /** @class ProjectionEvaluatorLinkPose
@@ -50,18 +56,16 @@ class ModelBasedPlanningContext;
 class ProjectionEvaluatorLinkPose : public ompl::base::ProjectionEvaluator
 {
 public:
-
-  ProjectionEvaluatorLinkPose(const ModelBasedPlanningContext *pc, const std::string &link);
+  ProjectionEvaluatorLinkPose(const ModelBasedPlanningContext* pc, const std::string& link);
 
   virtual unsigned int getDimension() const;
   virtual void defaultCellSizes();
-  virtual void project(const ompl::base::State *state, ompl::base::EuclideanProjection &projection) const;
+  virtual void project(const ompl::base::State* state, OMPLProjection projection) const override;
 
 private:
-
-  const ModelBasedPlanningContext *planning_context_;
-  const robot_model::LinkModel    *link_;
-  TSStateStorage                   tss_;
+  const ModelBasedPlanningContext* planning_context_;
+  const robot_model::LinkModel* link_;
+  TSStateStorage tss_;
 };
 
 /** @class ProjectionEvaluatorJointValue
@@ -69,16 +73,15 @@ private:
 class ProjectionEvaluatorJointValue : public ompl::base::ProjectionEvaluator
 {
 public:
-  ProjectionEvaluatorJointValue(const ModelBasedPlanningContext *pc, const std::vector<unsigned int> &variables);
+  ProjectionEvaluatorJointValue(const ModelBasedPlanningContext* pc, const std::vector<unsigned int>& variables);
 
   virtual unsigned int getDimension() const;
   virtual void defaultCellSizes();
-  virtual void project(const ompl::base::State *state, ompl::base::EuclideanProjection &projection) const;
+  virtual void project(const ompl::base::State* state, OMPLProjection projection) const;
 
 private:
-
-  const ModelBasedPlanningContext *planning_context_;
-  std::vector<unsigned int>        variables_;
+  const ModelBasedPlanningContext* planning_context_;
+  std::vector<unsigned int> variables_;
 };
 }
 

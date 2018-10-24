@@ -47,35 +47,34 @@ static void siginthandler(int param)
   QApplication::quit();
 }
 
-void usage(boost::program_options::options_description &desc, int exit_code)
+void usage(boost::program_options::options_description& desc, int exit_code)
 {
   std::cout << desc << std::endl;
   exit(exit_code);
 }
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
   // Parse parameters
   namespace po = boost::program_options;
 
   // Declare the supported options
   po::options_description desc("Allowed options");
-  desc.add_options()
-    ("help,h", "Show help message")
-    ("debug,g", "Run in debug/test mode")
-    ("urdf_path,u", po::value<std::string>(), "Optional, path to URDF file in ROS package")
-    ("config_pkg,c", po::value<std::string>(), "Optional, pass in existing config package to load");
+  desc.add_options()("help,h", "Show help message")("debug,g", "Run in debug/test mode")(
+      "urdf_path,u", po::value<std::string>(), "Optional, path to URDF file in ROS package")(
+      "config_pkg,c", po::value<std::string>(), "Optional, pass in existing config package to load");
 
   // Process options
   po::variables_map vm;
-  try {
+  try
+  {
     po::store(po::parse_command_line(argc, argv, desc), vm);
     po::notify(vm);
 
     if (vm.count("help"))
       usage(desc, 0);
   }
-  catch (const std::exception &e)
+  catch (const std::exception& e)
   {
     std::cerr << e.what() << std::endl;
     usage(desc, 1);
@@ -95,7 +94,7 @@ int main(int argc, char **argv)
   setlocale(LC_NUMERIC, "C");
 
   // Load Qt Widget
-  moveit_setup_assistant::SetupAssistantWidget saw( NULL, vm );
+  moveit_setup_assistant::SetupAssistantWidget saw(NULL, vm);
   saw.setMinimumWidth(980);
   saw.setMinimumHeight(550);
   //  saw.setWindowState( Qt::WindowMaximized );

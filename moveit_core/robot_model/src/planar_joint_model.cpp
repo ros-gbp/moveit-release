@@ -40,16 +40,18 @@
 #include <limits>
 #include <cmath>
 
-moveit::core::PlanarJointModel::PlanarJointModel(const std::string& name)
-  : JointModel(name)
-  , angular_distance_weight_(1.0)
+namespace moveit
+{
+namespace core
+{
+PlanarJointModel::PlanarJointModel(const std::string& name) : JointModel(name), angular_distance_weight_(1.0)
 {
   type_ = PLANAR;
 
   local_variable_names_.push_back("x");
   local_variable_names_.push_back("y");
   local_variable_names_.push_back("theta");
-  for (int i = 0 ; i < 3 ; ++i)
+  for (int i = 0; i < 3; ++i)
   {
     variable_names_.push_back(name_ + "/" + local_variable_names_[i]);
     variable_index_map_[variable_names_.back()] = i;
@@ -70,21 +72,21 @@ moveit::core::PlanarJointModel::PlanarJointModel(const std::string& name)
   computeVariableBoundsMsg();
 }
 
-unsigned int moveit::core::PlanarJointModel::getStateSpaceDimension() const
+unsigned int PlanarJointModel::getStateSpaceDimension() const
 {
   return 3;
 }
 
-double moveit::core::PlanarJointModel::getMaximumExtent(const Bounds &other_bounds) const
+double PlanarJointModel::getMaximumExtent(const Bounds& other_bounds) const
 {
   double dx = other_bounds[0].max_position_ - other_bounds[0].min_position_;
   double dy = other_bounds[1].max_position_ - other_bounds[1].min_position_;
-  return sqrt(dx*dx + dy*dy) + boost::math::constants::pi<double>() * angular_distance_weight_;
+  return sqrt(dx * dx + dy * dy) + boost::math::constants::pi<double>() * angular_distance_weight_;
 }
 
-void moveit::core::PlanarJointModel::getVariableDefaultPositions(double *values, const Bounds &bounds) const
+void PlanarJointModel::getVariableDefaultPositions(double* values, const Bounds& bounds) const
 {
-  for (unsigned int i = 0 ; i < 2 ; ++i)
+  for (unsigned int i = 0; i < 2; ++i)
   {
     // if zero is a valid value
     if (bounds[i].min_position_ <= 0.0 && bounds[i].max_position_ >= 0.0)
@@ -95,39 +97,48 @@ void moveit::core::PlanarJointModel::getVariableDefaultPositions(double *values,
   values[2] = 0.0;
 }
 
-void moveit::core::PlanarJointModel::getVariableRandomPositions(random_numbers::RandomNumberGenerator &rng, double *values, const Bounds &bounds) const
+void PlanarJointModel::getVariableRandomPositions(random_numbers::RandomNumberGenerator& rng, double* values,
+                                                  const Bounds& bounds) const
 {
-  if (bounds[0].max_position_ >= std::numeric_limits<double>::infinity() || bounds[0].min_position_ <= -std::numeric_limits<double>::infinity())
+  if (bounds[0].max_position_ >= std::numeric_limits<double>::infinity() ||
+      bounds[0].min_position_ <= -std::numeric_limits<double>::infinity())
     values[0] = 0.0;
   else
     values[0] = rng.uniformReal(bounds[0].min_position_, bounds[0].max_position_);
-  if (bounds[1].max_position_ >= std::numeric_limits<double>::infinity() || bounds[1].min_position_ <= -std::numeric_limits<double>::infinity())
+  if (bounds[1].max_position_ >= std::numeric_limits<double>::infinity() ||
+      bounds[1].min_position_ <= -std::numeric_limits<double>::infinity())
     values[1] = 0.0;
   else
     values[1] = rng.uniformReal(bounds[1].min_position_, bounds[1].max_position_);
   values[2] = rng.uniformReal(bounds[2].min_position_, bounds[2].max_position_);
 }
 
-void moveit::core::PlanarJointModel::getVariableRandomPositionsNearBy(random_numbers::RandomNumberGenerator &rng, double *values, const Bounds &bounds,
-                                                                      const double *near, const double distance) const
+void PlanarJointModel::getVariableRandomPositionsNearBy(random_numbers::RandomNumberGenerator& rng, double* values,
+                                                        const Bounds& bounds, const double* near,
+                                                        const double distance) const
 {
-  if (bounds[0].max_position_ >= std::numeric_limits<double>::infinity() || bounds[0].min_position_ <= -std::numeric_limits<double>::infinity())
+  if (bounds[0].max_position_ >= std::numeric_limits<double>::infinity() ||
+      bounds[0].min_position_ <= -std::numeric_limits<double>::infinity())
     values[0] = 0.0;
   else
     values[0] = rng.uniformReal(std::max(bounds[0].min_position_, near[0] - distance),
                                 std::min(bounds[0].max_position_, near[0] + distance));
-  if (bounds[1].max_position_ >= std::numeric_limits<double>::infinity() || bounds[1].min_position_ <= -std::numeric_limits<double>::infinity())
+  if (bounds[1].max_position_ >= std::numeric_limits<double>::infinity() ||
+      bounds[1].min_position_ <= -std::numeric_limits<double>::infinity())
     values[1] = 0.0;
   else
     values[1] = rng.uniformReal(std::max(bounds[1].min_position_, near[1] - distance),
                                 std::min(bounds[1].max_position_, near[1] + distance));
 
   double da = angular_distance_weight_ * distance;
+  // limit the sampling range to 2pi to work correctly even if the distance is very large
+  if (da > boost::math::constants::pi<double>())
+    da = boost::math::constants::pi<double>();
   values[2] = rng.uniformReal(near[2] - da, near[2] + da);
   normalizeRotation(values);
 }
 
-void moveit::core::PlanarJointModel::interpolate(const double *from, const double *to, const double t, double *state) const
+void PlanarJointModel::interpolate(const double* from, const double* to, const double t, double* state) const
 {
   // interpolate position
   state[0] = from[0] + (to[0] - from[0]) * t;
@@ -147,82 +158,83 @@ void moveit::core::PlanarJointModel::interpolate(const double *from, const doubl
     // input states are within bounds, so the following check is sufficient
     if (state[2] > boost::math::constants::pi<double>())
       state[2] -= 2.0 * boost::math::constants::pi<double>();
-    else
-      if (state[2] < -boost::math::constants::pi<double>())
-        state[2] += 2.0 * boost::math::constants::pi<double>();
+    else if (state[2] < -boost::math::constants::pi<double>())
+      state[2] += 2.0 * boost::math::constants::pi<double>();
   }
 }
 
-double moveit::core::PlanarJointModel::distance(const double *values1, const double *values2) const
+double PlanarJointModel::distance(const double* values1, const double* values2) const
 {
   double dx = values1[0] - values2[0];
   double dy = values1[1] - values2[1];
 
   double d = fabs(values1[2] - values2[2]);
   d = (d > boost::math::constants::pi<double>()) ? 2.0 * boost::math::constants::pi<double>() - d : d;
-  return sqrt(dx*dx + dy*dy) + angular_distance_weight_ * d;
+  return sqrt(dx * dx + dy * dy) + angular_distance_weight_ * d;
 }
 
-bool moveit::core::PlanarJointModel::satisfiesPositionBounds(const double *values, const Bounds &bounds, double margin) const
+bool PlanarJointModel::satisfiesPositionBounds(const double* values, const Bounds& bounds, double margin) const
 {
-  for (unsigned int i = 0 ; i < 3 ; ++i)
+  for (unsigned int i = 0; i < 3; ++i)
     if (values[0] < bounds[0].min_position_ - margin || values[0] > bounds[0].max_position_ + margin)
       return false;
   return true;
 }
 
-bool moveit::core::PlanarJointModel::normalizeRotation(double *values) const
+bool PlanarJointModel::normalizeRotation(double* values) const
 {
-  double &v = values[2];
+  double& v = values[2];
   if (v >= -boost::math::constants::pi<double>() && v <= boost::math::constants::pi<double>())
     return false;
   v = fmod(v, 2.0 * boost::math::constants::pi<double>());
   if (v < -boost::math::constants::pi<double>())
     v += 2.0 * boost::math::constants::pi<double>();
-  else
-    if (v > boost::math::constants::pi<double>())
-      v -= 2.0 * boost::math::constants::pi<double>();
+  else if (v > boost::math::constants::pi<double>())
+    v -= 2.0 * boost::math::constants::pi<double>();
   return true;
 }
 
-bool moveit::core::PlanarJointModel::enforcePositionBounds(double *values, const Bounds &bounds) const
+bool PlanarJointModel::enforcePositionBounds(double* values, const Bounds& bounds) const
 {
   bool result = normalizeRotation(values);
-  for (unsigned int i = 0 ; i < 2 ; ++i)
+  for (unsigned int i = 0; i < 2; ++i)
   {
     if (values[i] < bounds[i].min_position_)
     {
       values[i] = bounds[i].min_position_;
       result = true;
     }
-    else
-      if (values[i] > bounds[i].max_position_)
-      {
-        values[i] = bounds[i].max_position_;
-        result = true;
-      }
+    else if (values[i] > bounds[i].max_position_)
+    {
+      values[i] = bounds[i].max_position_;
+      result = true;
+    }
   }
   return result;
 }
 
-void moveit::core::PlanarJointModel::computeTransform(const double *joint_values, Eigen::Affine3d &transf) const
+void PlanarJointModel::computeTransform(const double* joint_values, Eigen::Affine3d& transf) const
 {
-  transf = Eigen::Affine3d(Eigen::Translation3d(joint_values[0], joint_values[1], 0.0) * Eigen::AngleAxisd(joint_values[2], Eigen::Vector3d::UnitZ()));
+  transf = Eigen::Affine3d(Eigen::Translation3d(joint_values[0], joint_values[1], 0.0) *
+                           Eigen::AngleAxisd(joint_values[2], Eigen::Vector3d::UnitZ()));
 }
 
-void moveit::core::PlanarJointModel::computeVariablePositions(const Eigen::Affine3d& transf, double *joint_values) const
+void PlanarJointModel::computeVariablePositions(const Eigen::Affine3d& transf, double* joint_values) const
 {
   joint_values[0] = transf.translation().x();
   joint_values[1] = transf.translation().y();
 
   Eigen::Quaterniond q(transf.rotation());
-  //taken from Bullet
-  double s_squared = 1.0-(q.w()*q.w());
+  // taken from Bullet
+  double s_squared = 1.0 - (q.w() * q.w());
   if (s_squared < 10.0 * std::numeric_limits<double>::epsilon())
     joint_values[2] = 0.0;
   else
   {
-    double s = 1.0/sqrt(s_squared);
-    joint_values[2] = (acos(q.w())*2.0f)*(q.z()*s);
+    double s = 1.0 / sqrt(s_squared);
+    joint_values[2] = (acos(q.w()) * 2.0f) * (q.z() * s);
   }
 }
+
+}  // end of namespace core
+}  // end of namespace moveit

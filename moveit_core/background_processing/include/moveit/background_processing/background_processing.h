@@ -46,32 +46,30 @@
 
 namespace moveit
 {
-
 /** \brief This namespace includes classes and functions that are
-    helpful in the implementation of other MoveIt components. This is
+    helpful in the implementation of other MoveIt! components. This is
     not code specific to the functionality provided by MoveIt. */
 namespace tools
 {
-
 /** \brief This class provides simple API for executing background
     jobs. A queue of jobs is created and the specified jobs are
     executed in order, one at a time. */
 class BackgroundProcessing : private boost::noncopyable
 {
 public:
-
   /** \brief Events for jobs */
   enum JobEvent
-    {
-      /// Called when a job is added to the queue
-      ADD,
-      /// Called when a job is removed from the queue without execution
-      REMOVE,
-      /// Called when a job is completed (and removed from the queue)
-      COMPLETE
-    };
+  {
+    /// Called when a job is added to the queue
+    ADD,
+    /// Called when a job is removed from the queue without execution
+    REMOVE,
+    /// Called when a job is completed (and removed from the queue)
+    COMPLETE
+  };
 
-  /** \brief The signature for callback triggered when job events take place: the event that took place and the name of the job */
+  /** \brief The signature for callback triggered when job events take place: the event that took place and the name of
+   * the job */
   typedef boost::function<void(JobEvent, const std::string&)> JobUpdateCallback;
 
   /** \brief The signature for job callbacks */
@@ -84,7 +82,7 @@ public:
   ~BackgroundProcessing();
 
   /** \brief Add a job to the queue of jobs to execute. A name is also specifies for the job */
-  void addJob(const JobCallback &job, const std::string &name);
+  void addJob(const JobCallback& job, const std::string& name);
 
   /** \brief Get the size of the queue of jobs (includes currently processed job). */
   std::size_t getJobCount() const;
@@ -93,13 +91,12 @@ public:
   void clear();
 
   /** \brief Set the callback to be triggered when events in JobEvent take place */
-  void setJobUpdateEvent(const JobUpdateCallback &event);
+  void setJobUpdateEvent(const JobUpdateCallback& event);
 
   /** \brief Clear the callback to be triggered when events in JobEvent take place */
   void clearJobUpdateEvent();
 
 private:
-
   std::unique_ptr<boost::thread> processing_thread_;
   bool run_processing_thread_;
 
@@ -114,7 +111,6 @@ private:
 
   void processingThread();
 };
-
 }
 }
 

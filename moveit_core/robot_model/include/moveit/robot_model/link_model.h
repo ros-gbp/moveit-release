@@ -52,13 +52,10 @@ MOVEIT_CLASS_FORWARD(Shape);
 
 namespace moveit
 {
-
 namespace core
 {
-
 class JointModel;
 class LinkModel;
-
 
 /** \brief Map of names to instances for LinkModel */
 typedef std::map<std::string, LinkModel*> LinkModelMap;
@@ -68,17 +65,16 @@ typedef std::map<std::string, const LinkModel*> LinkModelMapConst;
 
 /** \brief Map from link model instances to Eigen transforms */
 typedef std::map<const LinkModel*, Eigen::Affine3d, std::less<const LinkModel*>,
-                 Eigen::aligned_allocator<std::pair<const LinkModel*, Eigen::Affine3d> > > LinkTransformMap;
-
+                 Eigen::aligned_allocator<std::pair<const LinkModel* const, Eigen::Affine3d> > >
+    LinkTransformMap;
 
 /** \brief A link from the robot. Contains the constant transform applied to the link and its geometry */
 class LinkModel
 {
 public:
-
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-  LinkModel(const std::string &name);
+  LinkModel(const std::string& name);
   ~LinkModel();
 
   /** \brief The name of this link */
@@ -114,15 +110,16 @@ public:
     return parent_joint_model_;
   }
 
-  void setParentJointModel(const JointModel *joint);
+  void setParentJointModel(const JointModel* joint);
 
-  /** \brief Get the link model whose child this link is (through some joint). There may not always be a parent link (NULL is returned for the root link) */
+  /** \brief Get the link model whose child this link is (through some joint). There may not always be a parent link
+   * (NULL is returned for the root link) */
   const LinkModel* getParentLinkModel() const
   {
     return parent_link_model_;
   }
 
-  void setParentLinkModel(const LinkModel *link)
+  void setParentLinkModel(const LinkModel* link)
   {
     parent_link_model_ = link;
   }
@@ -133,7 +130,7 @@ public:
     return child_joint_models_;
   }
 
-  void addChildJointModel(const JointModel *joint)
+  void addChildJointModel(const JointModel* joint)
   {
     child_joint_models_.push_back(joint);
   }
@@ -157,7 +154,7 @@ public:
     return is_parent_joint_fixed_;
   }
 
-  void setJointOriginTransform(const Eigen::Affine3d &transform);
+  void setJointOriginTransform(const Eigen::Affine3d& transform);
 
   /** \brief In addition to the link transform, the geometry
       of a link that is used for collision checking may have
@@ -179,13 +176,20 @@ public:
     return shapes_;
   }
 
-  void setGeometry(const std::vector<shapes::ShapeConstPtr> &shapes, const EigenSTL::vector_Affine3d &origins);
+  void setGeometry(const std::vector<shapes::ShapeConstPtr>& shapes, const EigenSTL::vector_Affine3d& origins);
 
-  /** \brief Get the extents of the link's geometry (dimensions of axis-aligned bounding box around all shapes that make up the
+  /** \brief Get the extents of the link's geometry (dimensions of axis-aligned bounding box around all shapes that make
+     up the
       link, when the link is positioned at origin -- only collision origin transforms are considered) */
   const Eigen::Vector3d& getShapeExtentsAtOrigin() const
   {
     return shape_extents_;
+  }
+
+  /** \brief Get the offset of the center of the bounding box of this link when the link is positioned at origin. */
+  const Eigen::Vector3d& getCenteredBoundingBoxOffset() const
+  {
+    return centered_bounding_box_offset_;
   }
 
   /** \brief Get the set of links that are attached to this one via fixed transforms */
@@ -195,7 +199,7 @@ public:
   }
 
   /** \brief Remember that \e link_model is attached to this link using a fixed transform */
-  void addAssociatedFixedTransform(const LinkModel *link_model, const Eigen::Affine3d &transform)
+  void addAssociatedFixedTransform(const LinkModel* link_model, const Eigen::Affine3d& transform)
   {
     associated_fixed_transforms_[link_model] = transform;
   }
@@ -218,61 +222,64 @@ public:
     return visual_mesh_origin_;
   }
 
-  void setVisualMesh(const std::string &visual_mesh, const Eigen::Affine3d &origin, const Eigen::Vector3d &scale);
+  void setVisualMesh(const std::string& visual_mesh, const Eigen::Affine3d& origin, const Eigen::Vector3d& scale);
 
 private:
-
   /** \brief Name of the link */
-  std::string                        name_;
+  std::string name_;
 
   /** \brief JointModel that connects this link to the parent link */
-  const JointModel                  *parent_joint_model_;
+  const JointModel* parent_joint_model_;
 
   /** \brief The parent link model (NULL for the root link) */
-  const LinkModel                   *parent_link_model_;
+  const LinkModel* parent_link_model_;
 
   /** \brief List of directly descending joints (each connects to a child link) */
-  std::vector<const JointModel*>     child_joint_models_;
+  std::vector<const JointModel*> child_joint_models_;
 
   /** \brief True if the parent joint of this link is fixed */
-  bool                               is_parent_joint_fixed_;
+  bool is_parent_joint_fixed_;
 
   /** \brief True of the joint origin transform is identity */
-  bool                               joint_origin_transform_is_identity_;
+  bool joint_origin_transform_is_identity_;
 
   /** \brief The constant transform applied to the link (local) */
-  Eigen::Affine3d                    joint_origin_transform_;
+  Eigen::Affine3d joint_origin_transform_;
 
   /** \brief The constant transform applied to the collision geometry of the link (local) */
-  EigenSTL::vector_Affine3d          collision_origin_transform_;
+  EigenSTL::vector_Affine3d collision_origin_transform_;
 
-  /** \brief Flag indicating if the constant transform applied to the collision geometry of the link (local) is identity; use int instead of bool to avoid bit operations */
-  std::vector<int>                   collision_origin_transform_is_identity_;
+  /** \brief Flag indicating if the constant transform applied to the collision geometry of the link (local) is
+   * identity; use int instead of bool to avoid bit operations */
+  std::vector<int> collision_origin_transform_is_identity_;
 
   /** \brief The set of links that are attached to this one via fixed transforms */
-  LinkTransformMap                   associated_fixed_transforms_;
+  LinkTransformMap associated_fixed_transforms_;
 
   /** \brief The collision geometry of the link */
   std::vector<shapes::ShapeConstPtr> shapes_;
 
-  /** \brief The extents if shape (dimensions of axis aligned bounding box when shape is at origin */
-  Eigen::Vector3d                    shape_extents_;
+  /** \brief The extents of shape (dimensions of axis aligned bounding box when shape is at origin). */
+  Eigen::Vector3d shape_extents_;
+
+  /** \brief Center of the axis aligned bounding box with size shape_extents_ (zero if symmetric along all axes). */
+  Eigen::Vector3d centered_bounding_box_offset_;
 
   /** \brief Filename associated with the visual geometry mesh of this link. If empty, no mesh was used. */
-  std::string                        visual_mesh_filename_;
+  std::string visual_mesh_filename_;
 
   /** \brief The additional origin transform for the mesh */
-  Eigen::Affine3d                    visual_mesh_origin_;
+  Eigen::Affine3d visual_mesh_origin_;
 
   /** \brief Scale factor associated with the visual geometry mesh of this link. */
-  Eigen::Vector3d                    visual_mesh_scale_;
+  Eigen::Vector3d visual_mesh_scale_;
 
-  /** \brief Index of the transform for the first shape that makes up the geometry of this link in the full robot state */
-  int                                first_collision_body_transform_index_;
+  /** \brief Index of the transform for the first shape that makes up the geometry of this link in the full robot state
+   */
+  int first_collision_body_transform_index_;
 
   /** \brief Index of the transform for this link in the full robot frame */
-  int                                link_index_;
-
+  int link_index_;
 };
 }
 }

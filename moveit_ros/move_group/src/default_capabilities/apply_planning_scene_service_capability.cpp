@@ -37,17 +37,18 @@
 #include "apply_planning_scene_service_capability.h"
 #include <moveit/move_group/capability_names.h>
 
-move_group::ApplyPlanningSceneService::ApplyPlanningSceneService():
-  MoveGroupCapability("ApplyPlanningSceneService")
+move_group::ApplyPlanningSceneService::ApplyPlanningSceneService() : MoveGroupCapability("ApplyPlanningSceneService")
 {
 }
 
 void move_group::ApplyPlanningSceneService::initialize()
 {
-  service_ = root_node_handle_.advertiseService(APPLY_PLANNING_SCENE_SERVICE_NAME, &ApplyPlanningSceneService::applyScene, this);
+  service_ = root_node_handle_.advertiseService(APPLY_PLANNING_SCENE_SERVICE_NAME,
+                                                &ApplyPlanningSceneService::applyScene, this);
 }
 
-bool move_group::ApplyPlanningSceneService::applyScene(moveit_msgs::ApplyPlanningScene::Request &req, moveit_msgs::ApplyPlanningScene::Response &res)
+bool move_group::ApplyPlanningSceneService::applyScene(moveit_msgs::ApplyPlanningScene::Request& req,
+                                                       moveit_msgs::ApplyPlanningScene::Response& res)
 {
   if (!context_->planning_scene_monitor_)
   {
@@ -59,5 +60,5 @@ bool move_group::ApplyPlanningSceneService::applyScene(moveit_msgs::ApplyPlannin
   return true;
 }
 
-#include <class_loader/class_loader.h>
+#include <class_loader/class_loader.hpp>
 CLASS_LOADER_REGISTER_CLASS(move_group::ApplyPlanningSceneService, move_group::MoveGroupCapability)

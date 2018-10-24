@@ -39,9 +39,9 @@
 
 #include <rviz/display.h>
 #include <rviz/selection/selection_manager.h>
+#include <rviz/panel_dock_widget.h>
 #include <moveit/planning_scene_rviz_plugin/planning_scene_display.h>
 #include <moveit/rviz_plugin_render_tools/trajectory_visualization.h>
-#include <std_msgs/String.h>
 
 #ifndef Q_MOC_RUN
 #include <moveit/motion_planning_rviz_plugin/motion_planning_frame.h>
@@ -51,11 +51,12 @@
 #include <moveit/planning_scene_monitor/planning_scene_monitor.h>
 #include <moveit/kinematics_metrics/kinematics_metrics.h>
 #include <moveit/dynamics_solver/dynamics_solver.h>
-#include <ros/ros.h>
-#endif
 
+#include <ros/ros.h>
+
+#include <std_msgs/String.h>
 #include <moveit_msgs/DisplayTrajectory.h>
-#include <QDockWidget>
+#endif
 
 #include <memory>
 
@@ -80,22 +81,22 @@ class MovableText;
 
 namespace moveit_rviz_plugin
 {
-
 class MotionPlanningDisplay : public PlanningSceneDisplay
 {
   Q_OBJECT
 
-  public:
-
+public:
   MotionPlanningDisplay();
 
   virtual ~MotionPlanningDisplay();
 
-  virtual void load( const rviz::Config& config );
-  virtual void save( rviz::Config config ) const;
+  virtual void load(const rviz::Config& config);
+  virtual void save(rviz::Config config) const;
 
   virtual void update(float wall_dt, float ros_dt);
   virtual void reset();
+
+  void setName(const QString& name);
 
   robot_state::RobotStateConstPtr getQueryStartState() const
   {
@@ -122,8 +123,13 @@ class MotionPlanningDisplay : public PlanningSceneDisplay
     return query_goal_state_;
   }
 
-  void setQueryStartState(const robot_state::RobotState &start);
-  void setQueryGoalState(const robot_state::RobotState &goal);
+  void dropVisualizedTrajectory()
+  {
+    trajectory_visual_->dropTrajectory();
+  }
+
+  void setQueryStartState(const robot_state::RobotState& start);
+  void setQueryGoalState(const robot_state::RobotState& goal);
 
   void updateQueryStartState();
   void updateQueryGoalState();
@@ -132,16 +138,16 @@ class MotionPlanningDisplay : public PlanningSceneDisplay
 
   // Pick Place
   void clearPlaceLocationsDisplay();
-  void visualizePlaceLocations(const std::vector<geometry_msgs::PoseStamped> &place_poses);
+  void visualizePlaceLocations(const std::vector<geometry_msgs::PoseStamped>& place_poses);
   std::vector<std::shared_ptr<rviz::Shape> > place_locations_display_;
 
   std::string getCurrentPlanningGroup() const;
 
   void changePlanningGroup(const std::string& group);
 
-  void addStatusText(const std::string &text);
-  void addStatusText(const std::vector<std::string> &text);
-  void setStatusTextColor(const QColor &color);
+  void addStatusText(const std::string& text);
+  void addStatusText(const std::vector<std::string>& text);
+  void setStatusTextColor(const QColor& color);
   void resetStatusTextColor();
 
   void toggleSelectPlanningGroupSubscription(bool enable);
@@ -170,9 +176,9 @@ private Q_SLOTS:
   void changedMetricsTextHeight();
   void changedWorkspace();
   void resetInteractiveMarkers();
+  void motionPanelVisibilityChange(bool enable);
 
 protected:
-
   enum LinkDisplayStatus
   {
     COLLISION_LINK,
@@ -186,9 +192,8 @@ protected:
   void renderWorkspaceBox();
   void updateLinkColors();
 
-  void displayTable(const std::map<std::string, double> &values,
-                    const Ogre::ColourValue &color,
-                    const Ogre::Vector3 &pos, const Ogre::Quaternion &orient);
+  void displayTable(const std::map<std::string, double>& values, const Ogre::ColourValue& color,
+                    const Ogre::Vector3& pos, const Ogre::Quaternion& orient);
   void displayMetrics(bool start);
 
   void executeMainLoopJobs();
@@ -198,20 +203,23 @@ protected:
   void recomputeQueryGoalStateMetrics();
   void drawQueryStartState();
   void drawQueryGoalState();
-  void scheduleDrawQueryStartState(robot_interaction::RobotInteraction::InteractionHandler *handler, bool error_state_changed);
-  void scheduleDrawQueryGoalState(robot_interaction::RobotInteraction::InteractionHandler *handler, bool error_state_changed);
+  void scheduleDrawQueryStartState(robot_interaction::RobotInteraction::InteractionHandler* handler,
+                                   bool error_state_changed);
+  void scheduleDrawQueryGoalState(robot_interaction::RobotInteraction::InteractionHandler* handler,
+                                  bool error_state_changed);
 
-  bool isIKSolutionCollisionFree(robot_state::RobotState *state, const robot_state::JointModelGroup *group, const double *ik_solution) const;
+  bool isIKSolutionCollisionFree(robot_state::RobotState* state, const robot_state::JointModelGroup* group,
+                                 const double* ik_solution) const;
 
-  void computeMetrics(bool start, const std::string &group, double payload);
-  void computeMetricsInternal(std::map<std::string, double> &metrics,
-                              const robot_interaction::RobotInteraction::EndEffector &eef,
-                              const robot_state::RobotState &state, double payload);
-  void updateStateExceptModified(robot_state::RobotState &dest, const robot_state::RobotState &src);
+  void computeMetrics(bool start, const std::string& group, double payload);
+  void computeMetricsInternal(std::map<std::string, double>& metrics,
+                              const robot_interaction::RobotInteraction::EndEffector& eef,
+                              const robot_state::RobotState& state, double payload);
+  void updateStateExceptModified(robot_state::RobotState& dest, const robot_state::RobotState& src);
   void updateBackgroundJobProgressBar();
-  void backgroundJobUpdate(moveit::tools::BackgroundProcessing::JobEvent event, const std::string &jobname);
+  void backgroundJobUpdate(moveit::tools::BackgroundProcessing::JobEvent event, const std::string& jobname);
 
-  void setQueryStateHelper(bool use_start_state, const std::string &v);
+  void setQueryStateHelper(bool use_start_state, const std::string& v);
   void populateMenuHandler(std::shared_ptr<interactive_markers::MenuHandler>& mh);
 
   void selectPlanningGroupCallback(const std_msgs::StringConstPtr& msg);
@@ -222,13 +230,12 @@ protected:
   virtual void onDisable();
   virtual void fixedFrameChanged();
 
+  RobotStateVisualizationPtr query_robot_start_;  ///< Handles drawing the robot at the start configuration
+  RobotStateVisualizationPtr query_robot_goal_;   ///< Handles drawing the robot at the goal configuration
 
-  RobotStateVisualizationPtr query_robot_start_;                  ///< Handles drawing the robot at the start configuration
-  RobotStateVisualizationPtr query_robot_goal_;                   ///< Handles drawing the robot at the goal configuration
-
-  Ogre::SceneNode* text_display_scene_node_;        ///< displays texts
-  bool text_display_for_start_;                     ///< indicates whether the text display is for the start state or not
-  rviz::MovableText *text_to_display_;
+  Ogre::SceneNode* text_display_scene_node_;  ///< displays texts
+  bool text_display_for_start_;               ///< indicates whether the text display is for the start state or not
+  rviz::MovableText* text_to_display_;
 
   ros::Subscriber planning_group_sub_;
   ros::NodeHandle private_handle_, node_handle_;
@@ -237,8 +244,8 @@ protected:
   std::unique_ptr<rviz::Shape> workspace_box_;
 
   // the planning frame
-  MotionPlanningFrame *frame_;
-  QDockWidget *frame_dock_;
+  MotionPlanningFrame* frame_;
+  rviz::PanelDockWidget* frame_dock_;
 
   // robot interaction
   robot_interaction::RobotInteractionPtr robot_interaction_;
@@ -249,7 +256,8 @@ protected:
   std::map<std::string, LinkDisplayStatus> status_links_start_;
   std::map<std::string, LinkDisplayStatus> status_links_goal_;
 
-  /// Hold the names of the groups for which the query states have been updated (and should not be altered when new info is received from the planning scene)
+  /// Hold the names of the groups for which the query states have been updated (and should not be altered when new info
+  /// is received from the planning scene)
   std::set<std::string> modified_groups_;
 
   /// The metrics are pairs of name-value for each of the active end effectors, for both start & goal states.
@@ -258,7 +266,7 @@ protected:
   /// Some groups use position only ik, calls to the metrics have to be modified appropriately
   std::map<std::string, bool> position_only_ik_;
 
-  //Metric calculations
+  // Metric calculations
   kinematics_metrics::KinematicsMetricsPtr kinematics_metrics_;
   std::map<std::string, dynamics_solver::DynamicsSolverPtr> dynamics_solver_;
   boost::mutex update_metrics_lock_;
@@ -290,9 +298,9 @@ protected:
   rviz::FloatProperty* metrics_text_height_property_;
   rviz::BoolProperty* show_workspace_property_;
 
-  rviz::Display *int_marker_display_;
+  rviz::Display* int_marker_display_;
 };
 
-} // namespace moveit_rviz_plugin
+}  // namespace moveit_rviz_plugin
 
 #endif

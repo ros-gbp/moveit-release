@@ -51,7 +51,6 @@
 
 namespace pick_place
 {
-
 MOVEIT_CLASS_FORWARD(ManipulationPlanSharedData);
 
 struct ManipulationPlanSharedData
@@ -65,9 +64,9 @@ struct ManipulationPlanSharedData
   {
   }
 
-  const robot_model::JointModelGroup *planning_group_;
-  const robot_model::JointModelGroup *end_effector_group_;
-  const robot_model::LinkModel *ik_link_;
+  const robot_model::JointModelGroup* planning_group_;
+  const robot_model::JointModelGroup* end_effector_group_;
+  const robot_model::LinkModel* ik_link_;
 
   unsigned int max_goal_sampling_attempts_;
 
@@ -86,9 +85,10 @@ MOVEIT_CLASS_FORWARD(ManipulationPlan);
 
 struct ManipulationPlan
 {
-  ManipulationPlan(const ManipulationPlanSharedDataConstPtr &shared_data) :
-    shared_data_(shared_data),
-    processing_stage_(0)
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+  ManipulationPlan(const ManipulationPlanSharedDataConstPtr& shared_data)
+    : shared_data_(shared_data), processing_stage_(0)
   {
   }
 
@@ -141,9 +141,7 @@ struct ManipulationPlan
 
   // An id for this plan; this is usually the index of the Grasp / PlaceLocation in the input request
   std::size_t id_;
-
 };
-
 }
 
 #endif

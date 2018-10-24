@@ -43,7 +43,6 @@
 
 namespace constraint_samplers
 {
-
 MOVEIT_CLASS_FORWARD(JointConstraintSampler);
 
 /**
@@ -58,7 +57,6 @@ MOVEIT_CLASS_FORWARD(JointConstraintSampler);
 class JointConstraintSampler : public ConstraintSampler
 {
 public:
-
   /**
    * Constructor
    *
@@ -69,9 +67,8 @@ public:
    * joint model group cannot be found in the kinematic model
    *
    */
-  JointConstraintSampler(const planning_scene::PlanningSceneConstPtr &scene,
-                         const std::string &group_name) :
-    ConstraintSampler(scene, group_name)
+  JointConstraintSampler(const planning_scene::PlanningSceneConstPtr& scene, const std::string& group_name)
+    : ConstraintSampler(scene, group_name)
   {
   }
   /**
@@ -91,7 +88,7 @@ public:
    *
    * @return True if the conditions are met, otherwise false
    */
-  virtual bool configure(const moveit_msgs::Constraints &constr);
+  virtual bool configure(const moveit_msgs::Constraints& constr);
 
   /**
    * \brief Configures a joint constraint given a vector of constraints.
@@ -118,14 +115,11 @@ public:
    *
    * @return True if the conditions are met, otherwise false
    */
-  bool configure(const std::vector<kinematic_constraints::JointConstraint> &jc);
+  bool configure(const std::vector<kinematic_constraints::JointConstraint>& jc);
 
-  virtual bool sample(robot_state::RobotState &state,
-                      const robot_state::RobotState &ks,
-                      unsigned int max_attempts);
+  virtual bool sample(robot_state::RobotState& state, const robot_state::RobotState& ks, unsigned int max_attempts);
 
-  virtual bool project(robot_state::RobotState &state,
-                       unsigned int max_attempts);
+  virtual bool project(robot_state::RobotState& state, unsigned int max_attempts);
 
   /**
    * \brief Gets the number of constrained joints - joints that have an
@@ -162,7 +156,6 @@ public:
   }
 
 protected:
-
   /// \brief An internal structure used for maintaining constraints on a particular joint
   struct JointInfo
   {
@@ -192,19 +185,21 @@ protected:
       max_bound_ = std::min(max, max_bound_);
     }
 
-    double min_bound_;          /**< The most restrictive min value of those set */
-    double max_bound_;          /**< The most restrictive max value of those set */
-    std::size_t index_;         /**< The index within the joint state vector for this joint */
+    double min_bound_;  /**< The most restrictive min value of those set */
+    double max_bound_;  /**< The most restrictive max value of those set */
+    std::size_t index_; /**< The index within the joint state vector for this joint */
   };
 
   virtual void clear();
 
-  random_numbers::RandomNumberGenerator           random_number_generator_; /**< \brief Random number generator used to sample */
-  std::vector<JointInfo>                          bounds_; /**< \brief The bounds for any joint with bounds that are more restrictive than the joint limits */
+  random_numbers::RandomNumberGenerator random_number_generator_; /**< \brief Random number generator used to sample */
+  std::vector<JointInfo> bounds_; /**< \brief The bounds for any joint with bounds that are more restrictive than the
+                                     joint limits */
 
-  std::vector<const robot_model::JointModel*> unbounded_; /**< \brief The joints that are not bounded except by joint limits */
-  std::vector<unsigned int>                       uindex_; /**< \brief The index of the unbounded joints in the joint state vector */
-  std::vector<double>                             values_; /**< \brief Values associated with this group to avoid continuously reallocating */
+  std::vector<const robot_model::JointModel*> unbounded_; /**< \brief The joints that are not bounded except by joint
+                                                             limits */
+  std::vector<unsigned int> uindex_; /**< \brief The index of the unbounded joints in the joint state vector */
+  std::vector<double> values_;       /**< \brief Values associated with this group to avoid continuously reallocating */
 };
 
 /**
@@ -227,7 +222,7 @@ struct IKSamplingPose
    * @param pc The pose constraint that will be copied into the internal variable
    *
    */
-  IKSamplingPose(const kinematic_constraints::PositionConstraint &pc);
+  IKSamplingPose(const kinematic_constraints::PositionConstraint& pc);
 
   /**
    * \brief Constructor that takes a single orientation constraint, doing a copy
@@ -236,7 +231,7 @@ struct IKSamplingPose
    *
    * @return
    */
-  IKSamplingPose(const kinematic_constraints::OrientationConstraint &oc);
+  IKSamplingPose(const kinematic_constraints::OrientationConstraint& oc);
 
   /**
    * \brief Constructor that takes both a position and an orientation
@@ -247,8 +242,8 @@ struct IKSamplingPose
    *
    * @return
    */
-  IKSamplingPose(const kinematic_constraints::PositionConstraint &pc,
-                 const kinematic_constraints::OrientationConstraint &oc);
+  IKSamplingPose(const kinematic_constraints::PositionConstraint& pc,
+                 const kinematic_constraints::OrientationConstraint& oc);
 
   /**
    * \brief Constructor that takes a pointer to a position constraint.
@@ -257,7 +252,7 @@ struct IKSamplingPose
    *
    * @return
    */
-  IKSamplingPose(const kinematic_constraints::PositionConstraintPtr &pc);
+  IKSamplingPose(const kinematic_constraints::PositionConstraintPtr& pc);
 
   /**
    * \brief Constructor that takes a pointer to a orientation constraint.
@@ -266,8 +261,7 @@ struct IKSamplingPose
    *
    * @return
    */
-  IKSamplingPose(const kinematic_constraints::OrientationConstraintPtr &oc);
-
+  IKSamplingPose(const kinematic_constraints::OrientationConstraintPtr& oc);
 
   /**
    * \brief Constructor that takes a pointer to both position and orientation constraints.
@@ -277,11 +271,13 @@ struct IKSamplingPose
    *
    * @return
    */
-  IKSamplingPose(const kinematic_constraints::PositionConstraintPtr &pc,
-                 const kinematic_constraints::OrientationConstraintPtr &oc);
+  IKSamplingPose(const kinematic_constraints::PositionConstraintPtr& pc,
+                 const kinematic_constraints::OrientationConstraintPtr& oc);
 
-  kinematic_constraints::PositionConstraintPtr    position_constraint_; /**< \brief Holds the position constraint for sampling */
-  kinematic_constraints::OrientationConstraintPtr orientation_constraint_; /**< \brief Holds the orientation constraint for sampling */
+  kinematic_constraints::PositionConstraintPtr position_constraint_; /**< \brief Holds the position constraint for
+                                                                        sampling */
+  kinematic_constraints::OrientationConstraintPtr
+      orientation_constraint_; /**< \brief Holds the orientation constraint for sampling */
 };
 
 MOVEIT_CLASS_FORWARD(IKConstraintSampler);
@@ -297,7 +293,6 @@ MOVEIT_CLASS_FORWARD(IKConstraintSampler);
 class IKConstraintSampler : public ConstraintSampler
 {
 public:
-
   /**
    * \brief Constructor
    *
@@ -308,9 +303,8 @@ public:
    * joint model group cannot be found in the kinematic model
    *
    */
-  IKConstraintSampler(const planning_scene::PlanningSceneConstPtr &scene,
-                      const std::string &group_name) :
-    ConstraintSampler(scene, group_name)
+  IKConstraintSampler(const planning_scene::PlanningSceneConstPtr& scene, const std::string& group_name)
+    : ConstraintSampler(scene, group_name)
   {
   }
 
@@ -338,7 +332,7 @@ public:
    * exist and the overloaded configuration function returns true.
    * Otherwise, returns false.
    */
-  virtual bool configure(const moveit_msgs::Constraints &constr);
+  virtual bool configure(const moveit_msgs::Constraints& constr);
 
   /**
    * \brief Configures the Constraint given a IKSamplingPose.
@@ -364,7 +358,7 @@ public:
    * @return True if all conditions are met and the group specified in
    * the constructor is valid.  Otherwise, false.
    */
-  bool configure(const IKSamplingPose &sp);
+  bool configure(const IKSamplingPose& sp);
 
   /**
    * \brief Gets the timeout argument passed to the IK solver
@@ -452,12 +446,10 @@ public:
    *
    * @return True if a valid sample pose was produced and valid IK found for that pose.  Otherwise false.
    */
-  virtual bool sample(robot_state::RobotState &state,
-                      const robot_state::RobotState &reference_state,
+  virtual bool sample(robot_state::RobotState& state, const robot_state::RobotState& reference_state,
                       unsigned int max_attempts);
 
-  virtual bool project(robot_state::RobotState &state,
-                       unsigned int max_attempts);
+  virtual bool project(robot_state::RobotState& state, unsigned int max_attempts);
   /**
    * \brief Returns a pose that falls within the constraint regions.
    *
@@ -480,7 +472,8 @@ public:
    *
    * @return True if a sample was successfully produced, otherwise false
    */
-  bool samplePose(Eigen::Vector3d &pos, Eigen::Quaterniond &quat, const robot_state::RobotState &ks, unsigned int max_attempts);
+  bool samplePose(Eigen::Vector3d& pos, Eigen::Quaterniond& quat, const robot_state::RobotState& ks,
+                  unsigned int max_attempts);
 
   /**
    * \brief Get the name of the constraint sampler, for debugging purposes
@@ -494,13 +487,13 @@ public:
   }
 
 protected:
-
   virtual void clear();
 
   /**
    * \brief Performs checks and sets various internal values associated with the IK solver
    *
-   * @return True if the IK solver exists and if it associated with the expected base frame and tip frames.  Otherwise false.
+   * @return True if the IK solver exists and if it associated with the expected base frame and tip frames.  Otherwise
+   *false.
    */
   bool loadIKSolver();
 
@@ -514,21 +507,24 @@ protected:
    *
    * @return True if IK returns successfully with the timeout, and otherwise false.
    */
-  bool callIK(const geometry_msgs::Pose &ik_query, const kinematics::KinematicsBase::IKCallbackFn &adapted_ik_validity_callback,
-              double timeout, robot_state::RobotState &state, bool use_as_seed);
-  bool sampleHelper(robot_state::RobotState &state, const robot_state::RobotState &reference_state, unsigned int max_attempts, bool project);
-  bool validate(robot_state::RobotState &state) const;
+  bool callIK(const geometry_msgs::Pose& ik_query,
+              const kinematics::KinematicsBase::IKCallbackFn& adapted_ik_validity_callback, double timeout,
+              robot_state::RobotState& state, bool use_as_seed);
+  bool sampleHelper(robot_state::RobotState& state, const robot_state::RobotState& reference_state,
+                    unsigned int max_attempts, bool project);
+  bool validate(robot_state::RobotState& state) const;
 
   random_numbers::RandomNumberGenerator random_number_generator_; /**< \brief Random generator used by the sampler */
-  IKSamplingPose                        sampling_pose_; /**< \brief Holder for the pose used for sampling */
-  kinematics::KinematicsBaseConstPtr    kb_; /**< \brief Holds the kinematics solver */
-  double                                ik_timeout_; /**< \brief Holds the timeout associated with IK */
-  std::string                           ik_frame_; /**< \brief Holds the base from of the IK solver */
-  bool                                  transform_ik_; /**< \brief True if the frame associated with the kinematic model is different than the base frame of the IK solver */
+  IKSamplingPose sampling_pose_;                                  /**< \brief Holder for the pose used for sampling */
+  kinematics::KinematicsBaseConstPtr kb_;                         /**< \brief Holds the kinematics solver */
+  double ik_timeout_;                                             /**< \brief Holds the timeout associated with IK */
+  std::string ik_frame_;                                          /**< \brief Holds the base from of the IK solver */
+  bool transform_ik_; /**< \brief True if the frame associated with the kinematic model is different than the base frame
+                         of the IK solver */
+  bool need_eef_to_ik_tip_transform_; /**< \brief True if the tip frame of the inverse kinematic is different than the
+                                        frame of the end effector */
+  Eigen::Affine3d eef_to_ik_tip_transform_; /**< \brief Holds the transformation from end effector to IK tip frame */
 };
-
-
 }
-
 
 #endif

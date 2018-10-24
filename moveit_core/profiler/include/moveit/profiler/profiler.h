@@ -44,11 +44,11 @@
 /** The ENABLE_PROFILING macro can be set externally. If it is not,
     profiling is enabled by default, unless NDEBUG is defined. */
 
-#  ifdef NDEBUG
-#    define MOVEIT_ENABLE_PROFILING 0
-#  else
-#    define MOVEIT_ENABLE_PROFILING 1
-#  endif
+#ifdef NDEBUG
+#define MOVEIT_ENABLE_PROFILING 0
+#else
+#define MOVEIT_ENABLE_PROFILING 1
+#endif
 
 #endif
 
@@ -63,10 +63,8 @@
 
 namespace moveit
 {
-
 namespace tools
 {
-
 /** This is a simple thread-safe tool for counting time
     spent in various chunks of code. This is different from
     external profiling tools in that it allows the user to count
@@ -75,13 +73,13 @@ namespace tools
 class Profiler : private boost::noncopyable
 {
 public:
-
-  /** \brief This instance will call Profiler::begin() when constructed and Profiler::end() when it goes out of scope. */
+  /** \brief This instance will call Profiler::begin() when constructed and Profiler::end() when it goes out of scope.
+   */
   class ScopedBlock
   {
   public:
     /** \brief Start counting time for the block named \e name of the profiler \e prof */
-    ScopedBlock(const std::string &name, Profiler &prof = Profiler::Instance()) : name_(name), prof_(prof)
+    ScopedBlock(const std::string& name, Profiler& prof = Profiler::Instance()) : name_(name), prof_(prof)
     {
       prof_.begin(name);
     }
@@ -92,9 +90,8 @@ public:
     }
 
   private:
-
-    std::string  name_;
-    Profiler    &prof_;
+    std::string name_;
+    Profiler& prof_;
   };
 
   /** \brief This instance will call Profiler::start() when constructed and Profiler::stop() when it goes out of scope.
@@ -102,9 +99,8 @@ public:
   class ScopedStart
   {
   public:
-
     /** \brief Take as argument the profiler instance to operate on (\e prof) */
-    ScopedStart(Profiler &prof = Profiler::Instance()) : prof_(prof), wasRunning_(prof_.running())
+    ScopedStart(Profiler& prof = Profiler::Instance()) : prof_(prof), wasRunning_(prof_.running())
     {
       if (!wasRunning_)
         prof_.start();
@@ -117,9 +113,8 @@ public:
     }
 
   private:
-
-    Profiler &prof_;
-    bool      wasRunning_;
+    Profiler& prof_;
+    bool wasRunning_;
   };
 
   /** \brief Return an instance of the class */
@@ -174,7 +169,7 @@ public:
   }
 
   /** \brief Count a specific event for a number of times */
-  void event(const std::string &name, const unsigned int times = 1);
+  void event(const std::string& name, const unsigned int times = 1);
 
   /** \brief Maintain the average of a specific value */
   static void Average(const std::string& name, const double value)
@@ -183,30 +178,30 @@ public:
   }
 
   /** \brief Maintain the average of a specific value */
-  void average(const std::string &name, const double value);
+  void average(const std::string& name, const double value);
 
   /** \brief Begin counting time for a specific chunk of code */
-  static void Begin(const std::string &name)
+  static void Begin(const std::string& name)
   {
     Instance().begin(name);
   }
 
   /** \brief Stop counting time for a specific chunk of code */
-  static void End(const std::string &name)
+  static void End(const std::string& name)
   {
     Instance().end(name);
   }
 
   /** \brief Begin counting time for a specific chunk of code */
-  void begin(const std::string &name);
+  void begin(const std::string& name);
 
   /** \brief Stop counting time for a specific chunk of code */
-  void end(const std::string &name);
+  void end(const std::string& name);
 
   /** \brief Print the status of the profiled code chunks and
       events. Optionally, computation done by different threads
       can be printed separately. */
-  static void Status(std::ostream &out = std::cout, bool merge = true)
+  static void Status(std::ostream& out = std::cout, bool merge = true)
   {
     Instance().status(out, merge);
   }
@@ -214,7 +209,7 @@ public:
   /** \brief Print the status of the profiled code chunks and
       events. Optionally, computation done by different threads
       can be printed separately. */
-  void status(std::ostream &out = std::cout, bool merge = true);
+  void status(std::ostream& out = std::cout, bool merge = true);
 
   /** \brief Print the status of the profiled code chunks and
       events to the console (using msg::Console) */
@@ -240,11 +235,11 @@ public:
   }
 
 private:
-
   /** \brief Information about time spent in a section of the code */
   struct TimeInfo
   {
-    TimeInfo(void) : total(0, 0, 0, 0), shortest(boost::posix_time::pos_infin), longest(boost::posix_time::neg_infin), parts(0)
+    TimeInfo(void)
+      : total(0, 0, 0, 0), shortest(boost::posix_time::pos_infin), longest(boost::posix_time::neg_infin), parts(0)
     {
     }
 
@@ -272,7 +267,7 @@ private:
     /** \brief Add the counted time to the total time */
     void update(void)
     {
-      const boost::posix_time::time_duration &dt = boost::posix_time::microsec_clock::universal_time() - start;
+      const boost::posix_time::time_duration& dt = boost::posix_time::microsec_clock::universal_time() - start;
       if (dt > longest)
         longest = dt;
       if (dt < shortest)
@@ -286,10 +281,10 @@ private:
   struct AvgInfo
   {
     /** \brief The sum of the values to average */
-    double            total;
+    double total;
 
     /** \brief The sub of squares of the values to average */
-    double            totalSqr;
+    double totalSqr;
 
     /** \brief Number of times a value was added to this structure */
     unsigned long int parts;
@@ -302,20 +297,19 @@ private:
     std::map<std::string, unsigned long int> events;
 
     /** \brief The stored averages */
-    std::map<std::string, AvgInfo>           avg;
+    std::map<std::string, AvgInfo> avg;
 
     /** \brief The amount of time spent in various places */
-    std::map<std::string, TimeInfo>          time;
+    std::map<std::string, TimeInfo> time;
   };
 
-  void printThreadInfo(std::ostream &out, const PerThread &data);
+  void printThreadInfo(std::ostream& out, const PerThread& data);
 
-  boost::mutex                           lock_;
+  boost::mutex lock_;
   std::map<boost::thread::id, PerThread> data_;
-  TimeInfo                               tinfo_;
-  bool                                   running_;
-  bool                                   printOnDestroy_;
-
+  TimeInfo tinfo_;
+  bool running_;
+  bool printOnDestroy_;
 };
 }
 }
@@ -331,16 +325,13 @@ namespace moveit
 {
 namespace tools
 {
-
 class Profiler
 {
 public:
-
   class ScopedBlock
   {
   public:
-
-    ScopedBlock(const std::string &, Profiler & = Profiler::Instance())
+    ScopedBlock(const std::string&, Profiler& = Profiler::Instance())
     {
     }
 
@@ -352,8 +343,7 @@ public:
   class ScopedStart
   {
   public:
-
-    ScopedStart(Profiler & = Profiler::Instance())
+    ScopedStart(Profiler& = Profiler::Instance())
     {
     }
 
@@ -400,7 +390,7 @@ public:
   {
   }
 
-  void event(const std::string &, const unsigned int = 1)
+  void event(const std::string&, const unsigned int = 1)
   {
   }
 
@@ -408,31 +398,31 @@ public:
   {
   }
 
-  void average(const std::string &, const double)
+  void average(const std::string&, const double)
   {
   }
 
-  static void Begin(const std::string &)
+  static void Begin(const std::string&)
   {
   }
 
-  static void End(const std::string &)
+  static void End(const std::string&)
   {
   }
 
-  void begin(const std::string &)
+  void begin(const std::string&)
   {
   }
 
-  void end(const std::string &)
+  void end(const std::string&)
   {
   }
 
-  static void Status(std::ostream & = std::cout, bool = true)
+  static void Status(std::ostream& = std::cout, bool = true)
   {
   }
 
-  void status(std::ostream & = std::cout, bool = true)
+  void status(std::ostream& = std::cout, bool = true)
   {
   }
 
@@ -454,10 +444,8 @@ public:
     return false;
   }
 };
-
 }
 }
-
 
 #endif
 
