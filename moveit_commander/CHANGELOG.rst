@@ -2,6 +2,15 @@
 Changelog for package moveit_commander
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.9.14 (2018-10-24)
+-------------------
+
+0.9.13 (2018-10-24)
+-------------------
+* [capability] Added plan_only flags to pick and place (`#862 <https://github.com/ros-planning/moveit/issues/862>`_)
+* [maintenance] Python3 support (`#1103 <https://github.com/ros-planning/moveit/issues/1103>`_, `#1054 <https://github.com/ros-planning/moveit/issues/1054>`_)
+* Contributors: David Watkins, Michael Görner, d-walsh, mike lautman
+
 0.9.12 (2018-05-29)
 -------------------
 * Get robot markers from state (`#836 <https://github.com/ros-planning/moveit/issues/836>`_)
@@ -36,7 +45,7 @@ Changelog for package moveit_commander
 0.9.5 (2017-03-08)
 ------------------
 * [fix] Regression on Ubuntu Xenial; numpy.ndarray indices bug (from `#86 <https://github.com/ros-planning/moveit/issues/86>`_) (`#450 <https://github.com/ros-planning/moveit/issues/450>`_).
-* [doc][moveit_commander] added description for set_start_state (`#447 <https://github.com/ros-planning/moveit/issues/447>`_) 
+* [doc][moveit_commander] added description for set_start_state (`#447 <https://github.com/ros-planning/moveit/issues/447>`_)
 * Contributors: Adam Allevato, Ravi Prakash Joshi
 
 0.9.4 (2017-02-06)
@@ -92,7 +101,7 @@ Changelog for package moveit_commander
 
 0.5.6 (2014-03-24)
 ------------------
-* Added the calls necessary to manage path constraints. 
+* Added the calls necessary to manage path constraints.
 * fix joint and link acces on __getattr__  when trying to acces a joint and its paramaters throught
 * Contributors: Acorn, Emili Boronat, Sachin Chitta
 
