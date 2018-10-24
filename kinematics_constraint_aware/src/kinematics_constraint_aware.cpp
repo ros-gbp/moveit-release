@@ -45,12 +45,12 @@
 
 namespace kinematics_constraint_aware
 {
-KinematicsConstraintAware::KinematicsConstraintAware(const robot_model::RobotModelConstPtr &kinematic_model,
-                                                     const std::string &group_name)
+KinematicsConstraintAware::KinematicsConstraintAware(const robot_model::RobotModelConstPtr& kinematic_model,
+                                                     const std::string& group_name)
 {
   if (!kinematic_model->hasJointModelGroup(group_name))
   {
-    logError("The group %s does not exist", group_name.c_str());
+    ROS_ERROR_NAMED("kinematics_constraint_aware", "The group %s does not exist", group_name.c_str());
     joint_model_group_ = NULL;
     return;
   }
@@ -64,7 +64,8 @@ KinematicsConstraintAware::KinematicsConstraintAware(const robot_model::RobotMod
   }
   else
   {
-    logDebug("No kinematics solver instance defined for group %s", group_name.c_str());
+    ROS_DEBUG_NAMED("kinematics_constraint_aware", "No kinematics solver instance defined for group %s",
+                    group_name.c_str());
     bool is_solvable_group = true;
     if (!(joint_model_group_->getSubgroupNames().empty()))
     {
@@ -79,7 +80,8 @@ KinematicsConstraintAware::KinematicsConstraintAware(const robot_model::RobotMod
       }
       if (is_solvable_group)
       {
-        logDebug("Group %s is a group for which we can solve IK", joint_model_group_->getName().c_str());
+        ROS_DEBUG_NAMED("kinematics_constraint_aware", "Group %s is a group for which we can solve IK",
+                        joint_model_group_->getName().c_str());
         sub_groups_names_ = sub_groups_names;
       }
       else
@@ -91,26 +93,26 @@ KinematicsConstraintAware::KinematicsConstraintAware(const robot_model::RobotMod
     else
     {
       joint_model_group_ = NULL;
-      logInform("No solver allocated for group %s", group_name.c_str());
+      ROS_INFO_NAMED("kinematics_constraint_aware", "No solver allocated for group %s", group_name.c_str());
     }
     has_sub_groups_ = true;
   }
   ik_attempts_ = 10;
 }
 
-bool KinematicsConstraintAware::getIK(const planning_scene::PlanningSceneConstPtr &planning_scene,
-                                      const kinematics_constraint_aware::KinematicsRequest &request,
-                                      kinematics_constraint_aware::KinematicsResponse &response) const
+bool KinematicsConstraintAware::getIK(const planning_scene::PlanningSceneConstPtr& planning_scene,
+                                      const kinematics_constraint_aware::KinematicsRequest& request,
+                                      kinematics_constraint_aware::KinematicsResponse& response) const
 {
   if (!joint_model_group_)
   {
-    logError("This solver has not been constructed properly");
+    ROS_ERROR_NAMED("kinematics_constraint_aware", "This solver has not been constructed properly");
     return false;
   }
 
   if (!planning_scene)
   {
-    logError("Planning scene must be allocated");
+    ROS_ERROR_NAMED("kinematics_constraint_aware", "Planning scene must be allocated");
     return false;
   }
 
@@ -148,8 +150,8 @@ bool KinematicsConstraintAware::getIK(const planning_scene::PlanningSceneConstPt
       else if (!kinematic_model_->getJointModelGroup(sub_groups_names_[i])
                     ->canSetStateFromIK(request.ik_link_names_[i]))
       {
-        logError("Could not find IK solver for link %s for group %s", request.ik_link_names_[i].c_str(),
-                 sub_groups_names_[i].c_str());
+        ROS_ERROR_NAMED("kinematics_constraint_aware", "Could not find IK solver for link %s for group %s",
+                        request.ik_link_names_[i].c_str(), sub_groups_names_[i].c_str());
         return false;
       }
     }
@@ -193,11 +195,11 @@ bool KinematicsConstraintAware::getIK(const planning_scene::PlanningSceneConstPt
   return result;
 }
 
-bool KinematicsConstraintAware::validityCallbackFn(const planning_scene::PlanningSceneConstPtr &planning_scene,
-                                                   const kinematics_constraint_aware::KinematicsRequest &request,
-                                                   kinematics_constraint_aware::KinematicsResponse &response,
-                                                   robot_state::JointStateGroup *joint_state_group,
-                                                   const std::vector<double> &joint_group_variable_values) const
+bool KinematicsConstraintAware::validityCallbackFn(const planning_scene::PlanningSceneConstPtr& planning_scene,
+                                                   const kinematics_constraint_aware::KinematicsRequest& request,
+                                                   kinematics_constraint_aware::KinematicsResponse& response,
+                                                   robot_state::JointStateGroup* joint_state_group,
+                                                   const std::vector<double>& joint_group_variable_values) const
 {
   joint_state_group->setVariableValues(joint_group_variable_values);
 
@@ -210,7 +212,7 @@ bool KinematicsConstraintAware::validityCallbackFn(const planning_scene::Plannin
     planning_scene->checkCollision(collision_request, collision_result, *joint_state_group->getRobotState());
     if (collision_result.collision)
     {
-      logDebug("IK solution is in collision");
+      ROS_DEBUG_NAMED("kinematics_constraint_aware", "IK solution is in collision");
       response.error_code_.val = response.error_code_.GOAL_IN_COLLISION;
       return false;
     }
@@ -224,7 +226,7 @@ bool KinematicsConstraintAware::validityCallbackFn(const planning_scene::Plannin
         request.constraints_->decide(*joint_state_group->getRobotState(), response.constraint_eval_results_);
     if (!constraint_result.satisfied)
     {
-      logDebug("IK solution violates constraints");
+      ROS_DEBUG_NAMED("kinematics_constraint_aware", "IK solution violates constraints");
       response.error_code_.val = response.error_code_.GOAL_VIOLATES_PATH_CONSTRAINTS;
       return false;
     }
@@ -235,7 +237,7 @@ bool KinematicsConstraintAware::validityCallbackFn(const planning_scene::Plannin
   {
     if (!request.constraint_callback_(joint_state_group, joint_group_variable_values))
     {
-      logDebug("IK solution violates user specified constraints");
+      ROS_DEBUG_NAMED("kinematics_constraint_aware", "IK solution violates user specified constraints");
       response.error_code_.val = response.error_code_.GOAL_VIOLATES_PATH_CONSTRAINTS;
       return false;
     }
@@ -244,19 +246,19 @@ bool KinematicsConstraintAware::validityCallbackFn(const planning_scene::Plannin
   return true;
 }
 
-bool KinematicsConstraintAware::getIK(const planning_scene::PlanningSceneConstPtr &planning_scene,
-                                      const moveit_msgs::GetConstraintAwarePositionIK::Request &request,
-                                      moveit_msgs::GetConstraintAwarePositionIK::Response &response) const
+bool KinematicsConstraintAware::getIK(const planning_scene::PlanningSceneConstPtr& planning_scene,
+                                      const moveit_msgs::GetConstraintAwarePositionIK::Request& request,
+                                      moveit_msgs::GetConstraintAwarePositionIK::Response& response) const
 {
   if (!joint_model_group_)
   {
-    logError("This solver has not been constructed properly");
+    ROS_ERROR_NAMED("kinematics_constraint_aware", "This solver has not been constructed properly");
     return false;
   }
 
   if (!planning_scene)
   {
-    logError("Planning scene must be allocated");
+    ROS_ERROR_NAMED("kinematics_constraint_aware", "Planning scene must be allocated");
     return false;
   }
 
@@ -276,14 +278,15 @@ bool KinematicsConstraintAware::getIK(const planning_scene::PlanningSceneConstPt
 }
 
 bool KinematicsConstraintAware::convertServiceRequest(
-    const planning_scene::PlanningSceneConstPtr &planning_scene,
-    const moveit_msgs::GetConstraintAwarePositionIK::Request &request,
-    kinematics_constraint_aware::KinematicsRequest &kinematics_request,
-    kinematics_constraint_aware::KinematicsResponse &kinematics_response) const
+    const planning_scene::PlanningSceneConstPtr& planning_scene,
+    const moveit_msgs::GetConstraintAwarePositionIK::Request& request,
+    kinematics_constraint_aware::KinematicsRequest& kinematics_request,
+    kinematics_constraint_aware::KinematicsResponse& kinematics_response) const
 {
   if (request.ik_request.group_name != group_name_)
   {
-    logError("This kinematics solver does not support requests for group: %s", request.ik_request.group_name.c_str());
+    ROS_ERROR_NAMED("kinematics_constraint_aware", "This kinematics solver does not support requests for group: %s",
+                    request.ik_request.group_name.c_str());
     kinematics_response.error_code_.val = kinematics_response.error_code_.INVALID_GROUP_NAME;
     return false;
   }
@@ -291,16 +294,19 @@ bool KinematicsConstraintAware::convertServiceRequest(
   if (!request.ik_request.pose_stamped_vector.empty() &&
       request.ik_request.pose_stamped_vector.size() != sub_groups_names_.size())
   {
-    logError("Number of poses in request: %d must match number of sub groups %d in this group",
-             request.ik_request.pose_stamped_vector.size(), sub_groups_names_.size());
+    ROS_ERROR_NAMED("kinematics_constraint_aware",
+                    "Number of poses in request: %d must match number of sub groups %d in this group",
+                    request.ik_request.pose_stamped_vector.size(), sub_groups_names_.size());
     kinematics_response.error_code_.val = kinematics_response.error_code_.INVALID_GROUP_NAME;
     return false;
   }
 
   if (!request.ik_request.ik_link_names.empty() && request.ik_request.ik_link_names.size() != sub_groups_names_.size())
   {
-    logError("Number of ik_link_names in request: %d must match number of sub groups %d in this group or must be zero",
-             request.ik_request.ik_link_names.size(), sub_groups_names_.size());
+    ROS_ERROR_NAMED("kinematics_constraint_aware",
+                    "Number of ik_link_names in request: "
+                    "%d must match number of sub groups %d in this group or must be zero",
+                    request.ik_request.ik_link_names.size(), sub_groups_names_.size());
     kinematics_response.error_code_.val = kinematics_response.error_code_.INVALID_GROUP_NAME;
     return false;
   }
@@ -330,8 +336,8 @@ bool KinematicsConstraintAware::convertServiceRequest(
 }
 
 EigenSTL::vector_Affine3d KinematicsConstraintAware::transformPoses(
-    const planning_scene::PlanningSceneConstPtr &planning_scene, const robot_state::RobotState &kinematic_state,
-    const std::vector<geometry_msgs::PoseStamped> &poses, const std::string &target_frame) const
+    const planning_scene::PlanningSceneConstPtr& planning_scene, const robot_state::RobotState& kinematic_state,
+    const std::vector<geometry_msgs::PoseStamped>& poses, const std::string& target_frame) const
 {
   Eigen::Affine3d eigen_pose, eigen_pose_2;
   EigenSTL::vector_Affine3d result(poses.size());
@@ -352,8 +358,8 @@ EigenSTL::vector_Affine3d KinematicsConstraintAware::transformPoses(
 }
 
 geometry_msgs::Pose KinematicsConstraintAware::getTipFramePose(
-    const planning_scene::PlanningSceneConstPtr &planning_scene, const robot_state::RobotState &kinematic_state,
-    const geometry_msgs::Pose &pose, const std::string &link_name, unsigned int sub_group_index) const
+    const planning_scene::PlanningSceneConstPtr& planning_scene, const robot_state::RobotState& kinematic_state,
+    const geometry_msgs::Pose& pose, const std::string& link_name, unsigned int sub_group_index) const
 {
   geometry_msgs::Pose result;
   Eigen::Affine3d eigen_pose_in, eigen_pose_link, eigen_pose_tip;
