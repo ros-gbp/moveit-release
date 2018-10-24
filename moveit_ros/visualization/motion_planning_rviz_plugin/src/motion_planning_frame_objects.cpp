@@ -47,7 +47,7 @@
 #include <rviz/frame_manager.h>
 #include <rviz/window_manager_interface.h>
 
-#include <eigen_conversions/eigen_msg.h>
+#include <tf2_eigen/tf2_eigen.h>
 #include <geometric_shapes/shape_operations.h>
 
 #include <QMessageBox>
@@ -361,7 +361,7 @@ void MotionPlanningFrame::imProcessFeedback(visualization_msgs::InteractiveMarke
   ui_->object_z->blockSignals(oldState);
 
   Eigen::Quaterniond q;
-  tf::quaternionMsgToEigen(feedback.pose.orientation, q);
+  tf2::fromMsg(feedback.pose.orientation, q);
   Eigen::Vector3d xyz = q.matrix().eulerAngles(0, 1, 2);
 
   oldState = ui_->object_rx->blockSignals(true);
@@ -933,16 +933,17 @@ void MotionPlanningFrame::computeImportFromText(const std::string& path)
   if (ps)
   {
     std::ifstream fin(path.c_str());
-    if (fin.good())
+    if (ps->loadGeometryFromStream(fin))
     {
-      ps->loadGeometryFromStream(fin);
-      fin.close();
       ROS_INFO("Loaded scene geometry from '%s'", path.c_str());
       planning_display_->addMainLoopJob(boost::bind(&MotionPlanningFrame::populateCollisionObjectsList, this));
       planning_display_->queueRenderSceneGeometry();
     }
     else
-      ROS_WARN("Unable to load scene geometry from '%s'", path.c_str());
+    {
+      QMessageBox::warning(nullptr, "Loading scene geometry", "Failed to load scene geometry.\n"
+                                                              "See console output for more details.");
+    }
   }
 }
 

@@ -52,7 +52,7 @@
 #include <rviz/properties/enum_property.h>
 #include <rviz/display_context.h>
 #include <rviz/frame_manager.h>
-#include <tf/transform_listener.h>
+#include <tf2_ros/buffer.h>
 
 #include <OgreSceneManager.h>
 #include <OgreSceneNode.h>
@@ -486,9 +486,13 @@ void PlanningSceneDisplay::unsetLinkColor(rviz::Robot* robot, const std::string&
 // ******************************************************************************************
 planning_scene_monitor::PlanningSceneMonitorPtr PlanningSceneDisplay::createPlanningSceneMonitor()
 {
+#ifdef ROS_KINETIC
+  std::shared_ptr<tf2_ros::Buffer> tf_buffer = getTF2BufferPtr();
+#else
+  std::shared_ptr<tf2_ros::Buffer> tf_buffer = context_->getFrameManager()->getTF2BufferPtr();
+#endif
   return planning_scene_monitor::PlanningSceneMonitorPtr(new planning_scene_monitor::PlanningSceneMonitor(
-      robot_description_property_->getStdString(), context_->getFrameManager()->getTFClientPtr(),
-      getNameStd() + "_planning_scene_monitor"));
+      robot_description_property_->getStdString(), tf_buffer, getNameStd() + "_planning_scene_monitor"));
 }
 
 void PlanningSceneDisplay::clearRobotModel()
@@ -660,5 +664,29 @@ void PlanningSceneDisplay::fixedFrameChanged()
   Display::fixedFrameChanged();
   calculateOffsetPosition();
 }
+
+#ifdef ROS_KINETIC
+#include <boost/thread/mutex.hpp>
+
+/* Unfortunately, in Kinetic rviz doesn't provide access to its tf2 buffer.
+   Hence, we maintain single other tf2 buffer to be use by all MoveIt rviz plugin instances */
+
+// Return (singleton) tf2 Transform Buffer shared between all MoveIt display instances
+std::shared_ptr<tf2_ros::Buffer> PlanningSceneDisplay::getTF2BufferPtr()
+{
+  static boost::mutex m;
+  static std::shared_ptr<tf2_ros::Buffer> tf_buffer;
+  static std::shared_ptr<tf2_ros::TransformListener> tf_listener;
+  static ros::NodeHandle nh;
+
+  boost::mutex::scoped_lock lock(m);
+  if (!tf_buffer)
+  {
+    tf_buffer = std::make_shared<tf2_ros::Buffer>();
+    tf_listener = std::make_shared<tf2_ros::TransformListener>(*tf_buffer, nh);
+  }
+  return tf_buffer;
+}
+#endif
 
 }  // namespace moveit_rviz_plugin

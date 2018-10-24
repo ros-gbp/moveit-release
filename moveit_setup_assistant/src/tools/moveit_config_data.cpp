@@ -767,7 +767,7 @@ bool MoveItConfigData::outputROSControllersYAML(const std::string& file_path)
   {
     emitter << YAML::Comment("MoveIt-specific simulation settings");
     emitter << YAML::Key << "moveit_sim_hw_interface" << YAML::Value << YAML::BeginMap;
-    // Moveit Simulation Controller settings for setting initial pose
+    // MoveIt! Simulation Controller settings for setting initial pose
     {
       emitter << YAML::Key << "joint_model_group";
       emitter << YAML::Value << "controllers_initial_group_";
