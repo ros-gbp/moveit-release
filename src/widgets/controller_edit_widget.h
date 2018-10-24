@@ -1,7 +1,7 @@
 /*********************************************************************
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2012, Willow Garage, Inc.
+ *  Copyright (c) 2018, Mohamad Ayman.
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -14,8 +14,7 @@
  *     copyright notice, this list of conditions and the following
  *     disclaimer in the documentation and/or other materials provided
  *     with the distribution.
- *   * Neither the name of Willow Garage nor the names of its
- *     contributors may be used to endorse or promote products derived
+ *   * The name of Mohamad Ayman may be used to endorse or promote products derived
  *     from this software without specific prior written permission.
  *
  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
@@ -32,34 +31,24 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-/* Author: Dave Coleman */
+/* Author: Mohamad Ayman */
 
-#ifndef MOVEIT_MOVEIT_SETUP_ASSISTANT_WIDGETS_PASSIVE_JOINTS_WIDGET_
-#define MOVEIT_MOVEIT_SETUP_ASSISTANT_WIDGETS_PASSIVE_JOINTS_WIDGET_
+#ifndef MOVEIT_ROS_MOVEIT_SETUP_ASSISTANT_WIDGETS_CONTROLLER_EDIT_WIDGET_H
+#define MOVEIT_ROS_MOVEIT_SETUP_ASSISTANT_WIDGETS_CONTROLLER_EDIT_WIDGET_H
 
-// Qt
 #include <QWidget>
-#include <QVBoxLayout>
-#include <QHBoxLayout>
 #include <QLabel>
-#include <QPushButton>
-#include <QTableWidget>
-#include <QStackedLayout>
-#include <QString>
+#include <QLineEdit>
 #include <QComboBox>
+#include <QPushButton>
 
-// SA
 #ifndef Q_MOC_RUN
 #include <moveit/setup_assistant/tools/moveit_config_data.h>
 #endif
 
-#include "header_widget.h"
-#include "double_list_widget.h"
-#include "setup_screen_widget.h"  // a base class for screens in the setup assistant
-
-namespace moveit_setup_assistant
+namespace moveit_ros_control
 {
-class PassiveJointsWidget : public SetupScreenWidget
+class ControllerEditWidget : public QWidget
 {
   Q_OBJECT
 
@@ -68,39 +57,90 @@ public:
   // Public Functions
   // ******************************************************************************************
 
-  PassiveJointsWidget(QWidget* parent, moveit_setup_assistant::MoveItConfigDataPtr config_data);
+  /// Constructor
+  ControllerEditWidget(QWidget* parent, moveit_setup_assistant::MoveItConfigDataPtr config_data);
 
-  /// Received when this widget is chosen from the navigation menu
-  virtual void focusGiven();
+  /// Set the previous data
+  void setSelected(const std::string& controller_name);
 
-  // ******************************************************************************************
-  // Qt Components
-  // ******************************************************************************************
+  /// Populate the combo dropdown box with controllers types
+  void loadControllersTypesComboBox();
 
-  DoubleListWidget* joints_widget_;
+  /// Hide delete controller button
+  void hideDelete();
+
+  /// Hide save controller button
+  void hideSave();
+
+  /// Hide new buttons widget
+  void hideNewButtonsWidget();
+
+  /// Show delete controller button
+  void showDelete();
+
+  /// Show save controller button
+  void showSave();
+
+  /// Show new buttons widget
+  void showNewButtonsWidget();
+
+  /// Set widget title
+  void setTitle(const QString& title);
+
+  /// Get controller name
+  std::string getControllerName();
+
+  /// Get controller type
+  std::string getControllerType();
 
 private Q_SLOTS:
 
   // ******************************************************************************************
   // Slot Event Functions
   // ******************************************************************************************
-  void selectionUpdated();
 
-  /// Called from Double List widget to highlight joints
-  void previewSelectedJoints(std::vector<std::string> joints);
+Q_SIGNALS:
+
+  // ******************************************************************************************
+  // Emitted Signals
+  // ******************************************************************************************
+
+  /// Button event for new groups, progressing to adding joints
+  void saveJoints();
+
+  /// Button event for new groups, progressing to adding subgroups
+  void saveJointsGroups();
+
+  /// Button event for just saving, when in edit mode
+  void save();
+
+  /// Event sent when user presses cancel button
+  void cancelEditing();
+
+  /// Event sent when delete is being requested for controller
+  void deleteController();
 
 private:
+  // ******************************************************************************************
+  // Qt Components
+  // ******************************************************************************************
+
+  QLabel* title_;  // specify the title from the parent widget
+  QLineEdit* controller_name_field_;
+  QComboBox* controller_type_field_;
+  QPushButton* btn_delete_;      // this button is hidden for new controllers
+  QPushButton* btn_save_;        // this button is hidden for new controllers
+  QWidget* new_buttons_widget_;  // for showing/hiding the new controllers buttons
+
   // ******************************************************************************************
   // Variables
   // ******************************************************************************************
 
+  // For loading default types combo box just once
+  bool has_loaded_ = false;
   /// Contains all the configuration data for the setup assistant
   moveit_setup_assistant::MoveItConfigDataPtr config_data_;
-
-  /// Orignal name of vjoint currently being edited. This is used to find the element in the vector
-  std::string current_edit_vjoint_;
 };
-
-}  // namespace
+}
 
 #endif

@@ -1,7 +1,7 @@
 /*********************************************************************
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2012, Willow Garage, Inc.
+ *  Copyright (c) 2018, Mohamad Ayman.
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -14,8 +14,7 @@
  *     copyright notice, this list of conditions and the following
  *     disclaimer in the documentation and/or other materials provided
  *     with the distribution.
- *   * Neither the name of Willow Garage nor the names of its
- *     contributors may be used to endorse or promote products derived
+ *   * The name of Mohamad Ayman may not be used to endorse or promote products derived
  *     from this software without specific prior written permission.
  *
  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
@@ -32,23 +31,17 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-/* Author: Dave Coleman */
+/* Author: Mohamad Ayman */
 
-#ifndef MOVEIT_ROS_MOVEIT_SETUP_ASSISTANT_WIDGETS_END_EFFECTORS_WIDGET_
-#define MOVEIT_ROS_MOVEIT_SETUP_ASSISTANT_WIDGETS_END_EFFECTORS_WIDGET_
+#ifndef MOVEIT_MOVEIT_SETUP_ASSISTANT_WIDGETS_PERCEPTION_WIDGET_
+#define MOVEIT_MOVEIT_SETUP_ASSISTANT_WIDGETS_PERCEPTION_WIDGET_
 
 // Qt
 #include <QWidget>
-#include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QScrollArea>
-#include <QGroupBox>
-#include <QLabel>
-#include <QPushButton>
-#include <QTableWidget>
-#include <QStackedLayout>
-#include <QString>
 #include <QComboBox>
+#include <QGroupBox>
+#include <QString>
+#include <QLineEdit>
 
 // SA
 #ifndef Q_MOC_RUN
@@ -60,7 +53,10 @@
 
 namespace moveit_setup_assistant
 {
-class EndEffectorsWidget : public SetupScreenWidget
+// ******************************************************************************************
+// User Interface for setting up 3D sensor config
+// ******************************************************************************************
+class PerceptionWidget : public SetupScreenWidget
 {
   Q_OBJECT
 
@@ -69,26 +65,46 @@ public:
   // Public Functions
   // ******************************************************************************************
 
-  EndEffectorsWidget(QWidget* parent, moveit_setup_assistant::MoveItConfigDataPtr config_data);
+  PerceptionWidget(QWidget* parent, moveit_setup_assistant::MoveItConfigDataPtr config_data);
 
   /// Received when this widget is chosen from the navigation menu
   virtual void focusGiven();
 
+  /// Received when another widget is chosen from the navigation menu
+  virtual bool focusLost();
+
+  /// Populate the combo dropdown box with sensor plugins
+  void loadSensorPluginsComboBox();
+
   // ******************************************************************************************
   // Qt Components
   // ******************************************************************************************
-  QTableWidget* data_table_;
-  QPushButton* btn_edit_;
-  QPushButton* btn_delete_;
-  QPushButton* btn_save_;
-  QPushButton* btn_cancel_;
-  QStackedLayout* stacked_layout_;
-  QLineEdit* effector_name_field_;
-  QComboBox* parent_name_field_;
-  QComboBox* parent_group_name_field_;
-  QComboBox* group_name_field_;
-  QWidget* effector_list_widget_;
-  QWidget* effector_edit_widget_;
+
+  QComboBox* sensor_plugin_field_;
+
+  // Group form for each plugin option
+  QGroupBox* point_cloud_group_;
+  QGroupBox* depth_map_group_;
+
+  // Point Cloud plugin feilds
+  QLineEdit* point_cloud_topic_field_;
+  QLineEdit* max_range_field_;
+  QLineEdit* point_subsample_field_;
+  QLineEdit* padding_offset_field_;
+  QLineEdit* padding_scale_field_;
+  QLineEdit* max_update_rate_field_;
+  QLineEdit* filtered_cloud_topic_field_;
+
+  // Depth Map plugin feilds
+  QLineEdit* image_topic_field_;
+  QLineEdit* queue_size_field_;
+  QLineEdit* near_clipping_field_;
+  QLineEdit* far_clipping_field_;
+  QLineEdit* shadow_threshold_field_;
+  QLineEdit* depth_padding_scale_field_;
+  QLineEdit* depth_padding_offset_field_;
+  QLineEdit* depth_filtered_cloud_topic_field_;
+  QLineEdit* depth_max_update_rate_field_;
 
 private Q_SLOTS:
 
@@ -96,29 +112,8 @@ private Q_SLOTS:
   // Slot Event Functions
   // ******************************************************************************************
 
-  /// Show edit screen
-  void showNewScreen();
-
-  /// Edit whatever element is selected
-  void editSelected();
-
-  /// Edit the double clicked element
-  void editDoubleClicked(int row, int column);
-
-  /// Preview whatever element is selected
-  void previewClicked(int row, int column);
-
-  /// Preview the planning group that is selected
-  void previewClickedString(const QString& name);
-
-  /// Delete currently editing ite
-  void deleteSelected();
-
-  /// Save editing changes
-  void doneEditing();
-
-  /// Cancel changes
-  void cancelEditing();
+  /// Called when the selected item in the sensor_plugin_field_ combobox is changed
+  void sensorPluginChanged(int index);
 
 private:
   // ******************************************************************************************
@@ -127,62 +122,8 @@ private:
 
   /// Contains all the configuration data for the setup assistant
   moveit_setup_assistant::MoveItConfigDataPtr config_data_;
-
-  /// Orignal name of effector currently being edited. This is used to find the element in the vector
-  std::string current_edit_effector_;
-
-  // ******************************************************************************************
-  // Private Functions
-  // ******************************************************************************************
-
-  /**
-   * Find the associated data by name
-   *
-   * @param name - name of data to find in datastructure
-   * @return pointer to data in datastructure
-   */
-  srdf::Model::EndEffector* findEffectorByName(const std::string& name);
-
-  /**
-   * Create the main list view of effectors for robot
-   *
-   * @return the widget
-   */
-  QWidget* createContentsWidget();
-
-  /**
-   * Create the screen for editing effectors
-   *
-   * @return the widget
-   */
-  QWidget* createEditWidget();
-
-  /**
-   * Load the robot effectors into the table
-   *
-   */
-  void loadDataTable();
-
-  /**
-   * Populate the combo dropdown box with avail group names
-   *
-   */
-  void loadGroupsComboBox();
-
-  /**
-   * Populate the combo dropdown box with avail parent links
-   *
-   */
-  void loadParentComboBox();
-
-  /**
-   * Edit the effector with the input name
-   *
-   * @param name name of effector
-   */
-  void edit(const std::string& name);
 };
 
-}  // namespace
+}  // namespace moveit_setup_assistant
 
 #endif
