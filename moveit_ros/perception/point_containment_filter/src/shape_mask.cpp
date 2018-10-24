@@ -39,7 +39,7 @@
 #include <ros/console.h>
 #include <sensor_msgs/point_cloud2_iterator.h>
 
-point_containment_filter::ShapeMask::ShapeMask(const TransformCallback &transform_callback)
+point_containment_filter::ShapeMask::ShapeMask(const TransformCallback& transform_callback)
   : transform_callback_(transform_callback), next_handle_(1), min_handle_(1)
 {
 }
@@ -56,13 +56,13 @@ void point_containment_filter::ShapeMask::freeMemory()
   bodies_.clear();
 }
 
-void point_containment_filter::ShapeMask::setTransformCallback(const TransformCallback &transform_callback)
+void point_containment_filter::ShapeMask::setTransformCallback(const TransformCallback& transform_callback)
 {
   boost::mutex::scoped_lock _(shapes_lock_);
   transform_callback_ = transform_callback;
 }
 
-point_containment_filter::ShapeHandle point_containment_filter::ShapeMask::addShape(const shapes::ShapeConstPtr &shape,
+point_containment_filter::ShapeHandle point_containment_filter::ShapeMask::addShape(const shapes::ShapeConstPtr& shape,
                                                                                     double scale, double padding)
 {
   boost::mutex::scoped_lock _(shapes_lock_);
@@ -110,10 +110,10 @@ void point_containment_filter::ShapeMask::removeShape(ShapeHandle handle)
     ROS_ERROR("Unable to remove shape handle %u", handle);
 }
 
-void point_containment_filter::ShapeMask::maskContainment(const sensor_msgs::PointCloud2 &data_in,
-                                                          const Eigen::Vector3d &sensor_origin,
+void point_containment_filter::ShapeMask::maskContainment(const sensor_msgs::PointCloud2& data_in,
+                                                          const Eigen::Vector3d& sensor_origin,
                                                           const double min_sensor_dist, const double max_sensor_dist,
-                                                          std::vector<int> &mask)
+                                                          std::vector<int>& mask)
 {
   boost::mutex::scoped_lock _(shapes_lock_);
   const unsigned int np = data_in.data.size() / data_in.point_step;
@@ -128,7 +128,16 @@ void point_containment_filter::ShapeMask::maskContainment(const sensor_msgs::Poi
     std::size_t j = 0;
     for (std::set<SeeShape>::const_iterator it = bodies_.begin(); it != bodies_.end(); ++it)
     {
-      if (transform_callback_(it->handle, tmp))
+      if (!transform_callback_(it->handle, tmp))
+      {
+        if (!it->body)
+          ROS_ERROR_STREAM_NAMED("shape_mask", "Missing transform for shape with handle " << it->handle << " without a "
+                                                                                                           "body");
+        else
+          ROS_ERROR_STREAM_NAMED("shape_mask", "Missing transform for shape " << it->body->getType() << " with handle "
+                                                                              << it->handle);
+      }
+      else
       {
         it->body->setPose(tmp);
         it->body->computeBoundingSphere(bspheres_[j++]);
@@ -164,7 +173,7 @@ void point_containment_filter::ShapeMask::maskContainment(const sensor_msgs::Poi
   }
 }
 
-int point_containment_filter::ShapeMask::getMaskContainment(const Eigen::Vector3d &pt) const
+int point_containment_filter::ShapeMask::getMaskContainment(const Eigen::Vector3d& pt) const
 {
   boost::mutex::scoped_lock _(shapes_lock_);
 

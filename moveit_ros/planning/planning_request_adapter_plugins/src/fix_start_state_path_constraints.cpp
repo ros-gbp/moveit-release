@@ -37,7 +37,7 @@
 
 #include <moveit/planning_request_adapter/planning_request_adapter.h>
 #include <moveit/robot_state/conversions.h>
-#include <class_loader/class_loader.h>
+#include <class_loader/class_loader.hpp>
 #include <moveit/trajectory_processing/trajectory_tools.h>
 #include <ros/ros.h>
 
@@ -55,10 +55,10 @@ public:
     return "Fix Start State Path Constraints";
   }
 
-  virtual bool adaptAndPlan(const PlannerFn &planner, const planning_scene::PlanningSceneConstPtr &planning_scene,
-                            const planning_interface::MotionPlanRequest &req,
-                            planning_interface::MotionPlanResponse &res,
-                            std::vector<std::size_t> &added_path_index) const
+  virtual bool adaptAndPlan(const PlannerFn& planner, const planning_scene::PlanningSceneConstPtr& planning_scene,
+                            const planning_interface::MotionPlanRequest& req,
+                            planning_interface::MotionPlanResponse& res,
+                            std::vector<std::size_t>& added_path_index) const
   {
     ROS_DEBUG("Running '%s'", getDescription().c_str());
 

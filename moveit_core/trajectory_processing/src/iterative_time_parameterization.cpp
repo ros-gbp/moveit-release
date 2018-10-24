@@ -36,7 +36,6 @@
 
 #include <moveit/trajectory_processing/iterative_time_parameterization.h>
 #include <moveit_msgs/JointLimits.h>
-#include <console_bridge/console.h>
 #include <moveit/robot_state/conversions.h>
 
 namespace trajectory_processing
@@ -51,44 +50,47 @@ IterativeParabolicTimeParameterization::IterativeParabolicTimeParameterization(u
 {
 }
 
-IterativeParabolicTimeParameterization::~IterativeParabolicTimeParameterization()
-{
-}
+IterativeParabolicTimeParameterization::~IterativeParabolicTimeParameterization() = default;
 
 namespace
 {
-void printPoint(const trajectory_msgs::JointTrajectoryPoint &point, std::size_t i)
+void printPoint(const trajectory_msgs::JointTrajectoryPoint& point, std::size_t i)
 {
-  logDebug(" time   [%i]= %f", i, point.time_from_start.toSec());
+  ROS_DEBUG_NAMED("trajectory_processing.iterative_time_parameterization", " time   [%zu]= %f", i,
+                  point.time_from_start.toSec());
   if (point.positions.size() >= 7)
   {
-    logDebug(" pos_   [%i]= %f %f %f %f %f %f %f", i, point.positions[0], point.positions[1], point.positions[2],
-             point.positions[3], point.positions[4], point.positions[5], point.positions[6]);
+    ROS_DEBUG_NAMED("trajectory_processing.iterative_time_parameterization", " pos_   [%zu]= %f %f %f %f %f %f %f", i,
+                    point.positions[0], point.positions[1], point.positions[2], point.positions[3], point.positions[4],
+                    point.positions[5], point.positions[6]);
   }
   if (point.velocities.size() >= 7)
   {
-    logDebug("  vel_  [%i]= %f %f %f %f %f %f %f", i, point.velocities[0], point.velocities[1], point.velocities[2],
-             point.velocities[3], point.velocities[4], point.velocities[5], point.velocities[6]);
+    ROS_DEBUG_NAMED("trajectory_processing.iterative_time_parameterization", "  vel_  [%zu]= %f %f %f %f %f %f %f", i,
+                    point.velocities[0], point.velocities[1], point.velocities[2], point.velocities[3],
+                    point.velocities[4], point.velocities[5], point.velocities[6]);
   }
   if (point.accelerations.size() >= 7)
   {
-    logDebug("   acc_ [%i]= %f %f %f %f %f %f %f", i, point.accelerations[0], point.accelerations[1],
-             point.accelerations[2], point.accelerations[3], point.accelerations[4], point.accelerations[5],
-             point.accelerations[6]);
+    ROS_DEBUG_NAMED("trajectory_processing.iterative_time_parameterization", "   acc_ [%zu]= %f %f %f %f %f %f %f", i,
+                    point.accelerations[0], point.accelerations[1], point.accelerations[2], point.accelerations[3],
+                    point.accelerations[4], point.accelerations[5], point.accelerations[6]);
   }
 }
 
-void printStats(const trajectory_msgs::JointTrajectory &trajectory, const std::vector<moveit_msgs::JointLimits> &limits)
+void printStats(const trajectory_msgs::JointTrajectory& trajectory, const std::vector<moveit_msgs::JointLimits>& limits)
 {
-  logDebug("jointNames= %s %s %s %s %s %s %s", limits[0].joint_name.c_str(), limits[1].joint_name.c_str(),
-           limits[2].joint_name.c_str(), limits[3].joint_name.c_str(), limits[4].joint_name.c_str(),
-           limits[5].joint_name.c_str(), limits[6].joint_name.c_str());
-  logDebug("maxVelocities= %f %f %f %f %f %f %f", limits[0].max_velocity, limits[1].max_velocity,
-           limits[2].max_velocity, limits[3].max_velocity, limits[4].max_velocity, limits[5].max_velocity,
-           limits[6].max_velocity);
-  logDebug("maxAccelerations= %f %f %f %f %f %f %f", limits[0].max_acceleration, limits[1].max_acceleration,
-           limits[2].max_acceleration, limits[3].max_acceleration, limits[4].max_acceleration,
-           limits[5].max_acceleration, limits[6].max_acceleration);
+  ROS_DEBUG_NAMED("trajectory_processing.iterative_time_parameterization", "jointNames= %s %s %s %s %s %s %s",
+                  limits[0].joint_name.c_str(), limits[1].joint_name.c_str(), limits[2].joint_name.c_str(),
+                  limits[3].joint_name.c_str(), limits[4].joint_name.c_str(), limits[5].joint_name.c_str(),
+                  limits[6].joint_name.c_str());
+  ROS_DEBUG_NAMED("trajectory_processing.iterative_time_parameterization", "maxVelocities= %f %f %f %f %f %f %f",
+                  limits[0].max_velocity, limits[1].max_velocity, limits[2].max_velocity, limits[3].max_velocity,
+                  limits[4].max_velocity, limits[5].max_velocity, limits[6].max_velocity);
+  ROS_DEBUG_NAMED("trajectory_processing.iterative_time_parameterization", "maxAccelerations= %f %f %f %f %f %f %f",
+                  limits[0].max_acceleration, limits[1].max_acceleration, limits[2].max_acceleration,
+                  limits[3].max_acceleration, limits[4].max_acceleration, limits[5].max_acceleration,
+                  limits[6].max_acceleration);
   // for every point in time:
   for (std::size_t i = 0; i < trajectory.points.size(); ++i)
     printPoint(trajectory.points[i], i);
@@ -96,14 +98,14 @@ void printStats(const trajectory_msgs::JointTrajectory &trajectory, const std::v
 }
 
 // Applies velocity
-void IterativeParabolicTimeParameterization::applyVelocityConstraints(robot_trajectory::RobotTrajectory &rob_trajectory,
-                                                                      std::vector<double> &time_diff,
+void IterativeParabolicTimeParameterization::applyVelocityConstraints(robot_trajectory::RobotTrajectory& rob_trajectory,
+                                                                      std::vector<double>& time_diff,
                                                                       const double max_velocity_scaling_factor) const
 {
-  const robot_model::JointModelGroup *group = rob_trajectory.getGroup();
-  const std::vector<std::string> &vars = group->getVariableNames();
-  const std::vector<int> &idx = group->getVariableIndexList();
-  const robot_model::RobotModel &rmodel = group->getParentModel();
+  const robot_model::JointModelGroup* group = rob_trajectory.getGroup();
+  const std::vector<std::string>& vars = group->getVariableNames();
+  const std::vector<int>& idx = group->getVariableIndexList();
+  const robot_model::RobotModel& rmodel = group->getParentModel();
   const int num_points = rob_trajectory.getWayPointCount();
 
   double velocity_scaling_factor = 1.0;
@@ -111,20 +113,23 @@ void IterativeParabolicTimeParameterization::applyVelocityConstraints(robot_traj
   if (max_velocity_scaling_factor > 0.0 && max_velocity_scaling_factor <= 1.0)
     velocity_scaling_factor = max_velocity_scaling_factor;
   else if (max_velocity_scaling_factor == 0.0)
-    logDebug("A max_velocity_scaling_factor of 0.0 was specified, defaulting to %f instead.", velocity_scaling_factor);
+    ROS_DEBUG_NAMED("trajectory_processing.iterative_time_parameterization",
+                    "A max_velocity_scaling_factor of 0.0 was specified, defaulting to %f instead.",
+                    velocity_scaling_factor);
   else
-    logWarn("Invalid max_velocity_scaling_factor %f specified, defaulting to %f instead.", max_velocity_scaling_factor,
-            velocity_scaling_factor);
+    ROS_WARN_NAMED("trajectory_processing.iterative_time_parameterization",
+                   "Invalid max_velocity_scaling_factor %f specified, defaulting to %f instead.",
+                   max_velocity_scaling_factor, velocity_scaling_factor);
 
   for (int i = 0; i < num_points - 1; ++i)
   {
-    const robot_state::RobotStatePtr &curr_waypoint = rob_trajectory.getWayPointPtr(i);
-    const robot_state::RobotStatePtr &next_waypoint = rob_trajectory.getWayPointPtr(i + 1);
+    const robot_state::RobotStatePtr& curr_waypoint = rob_trajectory.getWayPointPtr(i);
+    const robot_state::RobotStatePtr& next_waypoint = rob_trajectory.getWayPointPtr(i + 1);
 
     for (std::size_t j = 0; j < vars.size(); ++j)
     {
-      double v_max = 1.0;
-      const robot_model::VariableBounds &b = rmodel.getVariableBounds(vars[j]);
+      double v_max = DEFAULT_VEL_MAX;
+      const robot_model::VariableBounds& b = rmodel.getVariableBounds(vars[j]);
       if (b.velocity_bounded_)
         v_max =
             std::min(fabs(b.max_velocity_ * velocity_scaling_factor), fabs(b.min_velocity_ * velocity_scaling_factor));
@@ -182,7 +187,7 @@ namespace
 {
 // Takes the time differences, and updates the timestamps, velocities and accelerations
 // in the trajectory.
-void updateTrajectory(robot_trajectory::RobotTrajectory &rob_trajectory, const std::vector<double> &time_diff)
+void updateTrajectory(robot_trajectory::RobotTrajectory& rob_trajectory, const std::vector<double>& time_diff)
 {
   // Error check
   if (time_diff.empty())
@@ -194,9 +199,9 @@ void updateTrajectory(robot_trajectory::RobotTrajectory &rob_trajectory, const s
   robot_state::RobotStatePtr curr_waypoint;
   robot_state::RobotStatePtr next_waypoint;
 
-  const robot_model::JointModelGroup *group = rob_trajectory.getGroup();
-  const std::vector<std::string> &vars = group->getVariableNames();
-  const std::vector<int> &idx = group->getVariableIndexList();
+  const robot_model::JointModelGroup* group = rob_trajectory.getGroup();
+  const std::vector<std::string>& vars = group->getVariableNames();
+  const std::vector<int>& idx = group->getVariableIndexList();
 
   int num_points = rob_trajectory.getWayPointCount();
 
@@ -293,17 +298,17 @@ void updateTrajectory(robot_trajectory::RobotTrajectory &rob_trajectory, const s
 
 // Applies Acceleration constraints
 void IterativeParabolicTimeParameterization::applyAccelerationConstraints(
-    robot_trajectory::RobotTrajectory &rob_trajectory, std::vector<double> &time_diff,
+    robot_trajectory::RobotTrajectory& rob_trajectory, std::vector<double>& time_diff,
     const double max_acceleration_scaling_factor) const
 {
   robot_state::RobotStatePtr prev_waypoint;
   robot_state::RobotStatePtr curr_waypoint;
   robot_state::RobotStatePtr next_waypoint;
 
-  const robot_model::JointModelGroup *group = rob_trajectory.getGroup();
-  const std::vector<std::string> &vars = group->getVariableNames();
-  const std::vector<int> &idx = group->getVariableIndexList();
-  const robot_model::RobotModel &rmodel = group->getParentModel();
+  const robot_model::JointModelGroup* group = rob_trajectory.getGroup();
+  const std::vector<std::string>& vars = group->getVariableNames();
+  const std::vector<int>& idx = group->getVariableIndexList();
+  const robot_model::RobotModel& rmodel = group->getParentModel();
 
   const int num_points = rob_trajectory.getWayPointCount();
   const unsigned int num_joints = group->getVariableCount();
@@ -324,11 +329,13 @@ void IterativeParabolicTimeParameterization::applyAccelerationConstraints(
   if (max_acceleration_scaling_factor > 0.0 && max_acceleration_scaling_factor <= 1.0)
     acceleration_scaling_factor = max_acceleration_scaling_factor;
   else if (max_acceleration_scaling_factor == 0.0)
-    logDebug("A max_acceleration_scaling_factor of 0.0 was specified, defaulting to %f instead.",
-             acceleration_scaling_factor);
+    ROS_DEBUG_NAMED("trajectory_processing.iterative_time_parameterization",
+                    "A max_acceleration_scaling_factor of 0.0 was specified, defaulting to %f instead.",
+                    acceleration_scaling_factor);
   else
-    logWarn("Invalid max_acceleration_scaling_factor %f specified, defaulting to %f instead.",
-            max_acceleration_scaling_factor, acceleration_scaling_factor);
+    ROS_WARN_NAMED("trajectory_processing.iterative_time_parameterization",
+                   "Invalid max_acceleration_scaling_factor %f specified, defaulting to %f instead.",
+                   max_acceleration_scaling_factor, acceleration_scaling_factor);
 
   do
   {
@@ -355,8 +362,8 @@ void IterativeParabolicTimeParameterization::applyAccelerationConstraints(
             next_waypoint = rob_trajectory.getWayPointPtr(index + 1);
 
           // Get acceleration limits
-          double a_max = 1.0;
-          const robot_model::VariableBounds &b = rmodel.getVariableBounds(vars[j]);
+          double a_max = DEFAULT_ACCEL_MAX;
+          const robot_model::VariableBounds& b = rmodel.getVariableBounds(vars[j]);
           if (b.acceleration_bounded_)
             a_max = std::min(fabs(b.max_acceleration_ * acceleration_scaling_factor),
                              fabs(b.min_acceleration_ * acceleration_scaling_factor));
@@ -445,21 +452,23 @@ void IterativeParabolicTimeParameterization::applyAccelerationConstraints(
         backwards = !backwards;
       }
     }
-    // logDebug("applyAcceleration: num_updates=%i", num_updates);
+    // ROS_DEBUG_NAMED("trajectory_processing.iterative_time_parameterization", "applyAcceleration: num_updates=%i",
+    // num_updates);
   } while (num_updates > 0 && iteration < static_cast<int>(max_iterations_));
 }
 
-bool IterativeParabolicTimeParameterization::computeTimeStamps(robot_trajectory::RobotTrajectory &trajectory,
+bool IterativeParabolicTimeParameterization::computeTimeStamps(robot_trajectory::RobotTrajectory& trajectory,
                                                                const double max_velocity_scaling_factor,
                                                                const double max_acceleration_scaling_factor) const
 {
   if (trajectory.empty())
     return true;
 
-  const robot_model::JointModelGroup *group = trajectory.getGroup();
+  const robot_model::JointModelGroup* group = trajectory.getGroup();
   if (!group)
   {
-    logError("It looks like the planner did not set the group the plan was computed for");
+    ROS_ERROR_NAMED("trajectory_processing.iterative_time_parameterization", "It looks like the planner did not set "
+                                                                             "the group the plan was computed for");
     return false;
   }
 

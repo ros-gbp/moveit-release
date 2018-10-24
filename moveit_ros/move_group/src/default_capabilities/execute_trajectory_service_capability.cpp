@@ -64,8 +64,8 @@ void move_group::MoveGroupExecuteService::initialize()
   spinner_.start();
 }
 
-bool move_group::MoveGroupExecuteService::executeTrajectoryService(moveit_msgs::ExecuteKnownTrajectory::Request &req,
-                                                                   moveit_msgs::ExecuteKnownTrajectory::Response &res)
+bool move_group::MoveGroupExecuteService::executeTrajectoryService(moveit_msgs::ExecuteKnownTrajectory::Request& req,
+                                                                   moveit_msgs::ExecuteKnownTrajectory::Response& res)
 {
   ROS_INFO("Received new trajectory execution service request...");
   if (!context_->trajectory_execution_manager_)
@@ -108,5 +108,5 @@ bool move_group::MoveGroupExecuteService::executeTrajectoryService(moveit_msgs::
   return true;
 }
 
-#include <class_loader/class_loader.h>
+#include <class_loader/class_loader.hpp>
 CLASS_LOADER_REGISTER_CLASS(move_group::MoveGroupExecuteService, move_group::MoveGroupCapability)

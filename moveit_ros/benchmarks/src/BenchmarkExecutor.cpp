@@ -119,8 +119,7 @@ void BenchmarkExecutor::initialize(const std::vector<std::string>& plugin_classe
       planning_interface::PlannerManagerPtr p = planner_plugin_loader_->createUniqueInstance(plugin_classes[i]);
       p->initialize(planning_scene_->getRobotModel(), "");
 
-      const planning_interface::PlannerConfigurationMap& config_map = p->getPlannerConfigurations();
-
+      p->getPlannerConfigurations();
       planner_interfaces_[plugin_classes[i]] = p;
     }
     catch (pluginlib::PluginlibException& ex)
@@ -305,7 +304,7 @@ bool BenchmarkExecutor::initializeBenchmarks(const BenchmarkOptions& opts, movei
       return false;
     }
   }
-  catch (std::runtime_error& e)
+  catch (std::exception& e)
   {
     ROS_ERROR("Failed to initialize benchmark server: '%s'", e.what());
     return false;
@@ -316,8 +315,6 @@ bool BenchmarkExecutor::initializeBenchmarks(const BenchmarkOptions& opts, movei
   std::vector<PathConstraints> goal_constraints;
   std::vector<TrajectoryConstraints> traj_constraints;
   std::vector<BenchmarkRequest> queries;
-
-  const std::string& group_name = opts.getGroupName();
 
   bool ok = loadPlanningScene(opts.getSceneName(), scene_msg) && loadStates(opts.getStartStateRegex(), start_states) &&
             loadPathConstraints(opts.getGoalConstraintRegex(), goal_constraints) &&
@@ -532,6 +529,12 @@ bool BenchmarkExecutor::plannerConfigurationsExist(const std::map<std::string, s
     planning_interface::PlannerManagerPtr pm = planner_interfaces_[it->first];
     const planning_interface::PlannerConfigurationMap& config_map = pm->getPlannerConfigurations();
 
+    // if the planner is chomp or stomp skip this function and return true for checking planner configurations for the
+    // planning group otherwise an error occurs, because for OMPL a specific planning algorithm needs to be defined for
+    // a planning group, whereas with STOMP and CHOMP this is not necessary
+    if (pm->getDescription().compare("stomp") || pm->getDescription().compare("chomp"))
+      continue;
+
     for (std::size_t i = 0; i < it->second.size(); ++i)
     {
       bool planner_exists = false;
@@ -586,7 +589,7 @@ bool BenchmarkExecutor::loadPlanningScene(const std::string& scene_name, moveit_
     else
       ROS_ERROR("Failed to find planning scene '%s'", scene_name.c_str());
   }
-  catch (std::runtime_error& ex)
+  catch (std::exception& ex)
   {
     ROS_ERROR("Error loading planning scene: %s", ex.what());
   }
@@ -605,7 +608,7 @@ bool BenchmarkExecutor::loadQueries(const std::string& regex, const std::string&
   {
     pss_->getPlanningQueriesNames(regex, query_names, scene_name);
   }
-  catch (std::runtime_error& ex)
+  catch (std::exception& ex)
   {
     ROS_ERROR("Error loading motion planning queries: %s", ex.what());
     return false;
@@ -624,7 +627,7 @@ bool BenchmarkExecutor::loadQueries(const std::string& regex, const std::string&
     {
       pss_->getPlanningQuery(planning_query, scene_name, query_names[i]);
     }
-    catch (std::runtime_error& ex)
+    catch (std::exception& ex)
     {
       ROS_ERROR("Error loading motion planning query '%s': %s", query_names[i].c_str(), ex.what());
       continue;
@@ -662,7 +665,7 @@ bool BenchmarkExecutor::loadStates(const std::string& regex, std::vector<StartSt
             start_states.push_back(start_state);
           }
         }
-        catch (std::runtime_error& ex)
+        catch (std::exception& ex)
         {
           ROS_ERROR("Runtime error when loading state '%s': %s", state_names[i].c_str(), ex.what());
           continue;
@@ -697,7 +700,7 @@ bool BenchmarkExecutor::loadPathConstraints(const std::string& regex, std::vecto
           constraints.push_back(constraint);
         }
       }
-      catch (std::runtime_error& ex)
+      catch (std::exception& ex)
       {
         ROS_ERROR("Runtime error when loading path constraint '%s': %s", cnames[i].c_str(), ex.what());
         continue;
@@ -733,7 +736,7 @@ bool BenchmarkExecutor::loadTrajectoryConstraints(const std::string& regex,
           constraints.push_back(constraint);
         }
       }
-      catch (std::runtime_error& ex)
+      catch (std::exception& ex)
       {
         ROS_ERROR("Runtime error when loading trajectory constraint '%s': %s", cnames[i].c_str(), ex.what());
         continue;
@@ -941,11 +944,8 @@ void BenchmarkExecutor::writeOutput(const BenchmarkRequest& brequest, const std:
   moveit_msgs::PlanningScene scene_msg;
   planning_scene_->getPlanningSceneMsg(scene_msg);
   out << "<<<|" << std::endl;
-  out << "Motion plan request:" << std::endl
-      << brequest.request << std::endl;
-  out << "Planning scene: " << std::endl
-      << scene_msg << std::endl
-      << "|>>>" << std::endl;
+  out << "Motion plan request:" << std::endl << brequest.request << std::endl;
+  out << "Planning scene: " << std::endl << scene_msg << std::endl << "|>>>" << std::endl;
 
   // Not writing optional cpu information
 

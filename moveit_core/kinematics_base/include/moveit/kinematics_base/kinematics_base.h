@@ -40,8 +40,9 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <moveit_msgs/MoveItErrorCodes.h>
 #include <moveit/macros/class_forward.h>
+#include <ros/node_handle.h>
+
 #include <boost/function.hpp>
-#include <console_bridge/console.h>
 #include <string>
 
 namespace moveit
@@ -147,8 +148,9 @@ public:
   static const double DEFAULT_TIMEOUT;               /* = 1.0 */
 
   /** @brief The signature for a callback that can compute IK */
-  typedef boost::function<void(const geometry_msgs::Pose &ik_pose, const std::vector<double> &ik_solution,
-                               moveit_msgs::MoveItErrorCodes &error_code)> IKCallbackFn;
+  typedef boost::function<void(const geometry_msgs::Pose& ik_pose, const std::vector<double>& ik_solution,
+                               moveit_msgs::MoveItErrorCodes& error_code)>
+      IKCallbackFn;
 
   /**
    * @brief Given a desired pose of the end-effector, compute the joint angles to reach it
@@ -161,9 +163,9 @@ public:
    * @return True if a valid solution was found, false otherwise
    */
   virtual bool
-  getPositionIK(const geometry_msgs::Pose &ik_pose, const std::vector<double> &ik_seed_state,
-                std::vector<double> &solution, moveit_msgs::MoveItErrorCodes &error_code,
-                const kinematics::KinematicsQueryOptions &options = kinematics::KinematicsQueryOptions()) const = 0;
+  getPositionIK(const geometry_msgs::Pose& ik_pose, const std::vector<double>& ik_seed_state,
+                std::vector<double>& solution, moveit_msgs::MoveItErrorCodes& error_code,
+                const kinematics::KinematicsQueryOptions& options = kinematics::KinematicsQueryOptions()) const = 0;
 
   /**
    * @brief Given a desired pose of the end-effector, compute the set joint angles solutions that are able to reach it.
@@ -180,9 +182,9 @@ public:
    *                other will result in failure.
    * @return True if a valid set of solutions was found, false otherwise.
    */
-  virtual bool getPositionIK(const std::vector<geometry_msgs::Pose> &ik_poses, const std::vector<double> &ik_seed_state,
-                             std::vector<std::vector<double> > &solutions, KinematicsResult &result,
-                             const kinematics::KinematicsQueryOptions &options) const;
+  virtual bool getPositionIK(const std::vector<geometry_msgs::Pose>& ik_poses, const std::vector<double>& ik_seed_state,
+                             std::vector<std::vector<double> >& solutions, KinematicsResult& result,
+                             const kinematics::KinematicsQueryOptions& options) const;
 
   /**
    * @brief Given a desired pose of the end-effector, search for the joint angles required to reach it.
@@ -198,9 +200,9 @@ public:
    * @return True if a valid solution was found, false otherwise
    */
   virtual bool
-  searchPositionIK(const geometry_msgs::Pose &ik_pose, const std::vector<double> &ik_seed_state, double timeout,
-                   std::vector<double> &solution, moveit_msgs::MoveItErrorCodes &error_code,
-                   const kinematics::KinematicsQueryOptions &options = kinematics::KinematicsQueryOptions()) const = 0;
+  searchPositionIK(const geometry_msgs::Pose& ik_pose, const std::vector<double>& ik_seed_state, double timeout,
+                   std::vector<double>& solution, moveit_msgs::MoveItErrorCodes& error_code,
+                   const kinematics::KinematicsQueryOptions& options = kinematics::KinematicsQueryOptions()) const = 0;
 
   /**
    * @brief Given a desired pose of the end-effector, search for the joint angles required to reach it.
@@ -218,10 +220,10 @@ public:
    * @return True if a valid solution was found, false otherwise
    */
   virtual bool
-  searchPositionIK(const geometry_msgs::Pose &ik_pose, const std::vector<double> &ik_seed_state, double timeout,
-                   const std::vector<double> &consistency_limits, std::vector<double> &solution,
-                   moveit_msgs::MoveItErrorCodes &error_code,
-                   const kinematics::KinematicsQueryOptions &options = kinematics::KinematicsQueryOptions()) const = 0;
+  searchPositionIK(const geometry_msgs::Pose& ik_pose, const std::vector<double>& ik_seed_state, double timeout,
+                   const std::vector<double>& consistency_limits, std::vector<double>& solution,
+                   moveit_msgs::MoveItErrorCodes& error_code,
+                   const kinematics::KinematicsQueryOptions& options = kinematics::KinematicsQueryOptions()) const = 0;
 
   /**
    * @brief Given a desired pose of the end-effector, search for the joint angles required to reach it.
@@ -238,9 +240,9 @@ public:
    * @return True if a valid solution was found, false otherwise
    */
   virtual bool searchPositionIK(
-      const geometry_msgs::Pose &ik_pose, const std::vector<double> &ik_seed_state, double timeout,
-      std::vector<double> &solution, const IKCallbackFn &solution_callback, moveit_msgs::MoveItErrorCodes &error_code,
-      const kinematics::KinematicsQueryOptions &options = kinematics::KinematicsQueryOptions()) const = 0;
+      const geometry_msgs::Pose& ik_pose, const std::vector<double>& ik_seed_state, double timeout,
+      std::vector<double>& solution, const IKCallbackFn& solution_callback, moveit_msgs::MoveItErrorCodes& error_code,
+      const kinematics::KinematicsQueryOptions& options = kinematics::KinematicsQueryOptions()) const = 0;
 
   /**
    * @brief Given a desired pose of the end-effector, search for the joint angles required to reach it.
@@ -259,10 +261,10 @@ public:
    * @return True if a valid solution was found, false otherwise
    */
   virtual bool
-  searchPositionIK(const geometry_msgs::Pose &ik_pose, const std::vector<double> &ik_seed_state, double timeout,
-                   const std::vector<double> &consistency_limits, std::vector<double> &solution,
-                   const IKCallbackFn &solution_callback, moveit_msgs::MoveItErrorCodes &error_code,
-                   const kinematics::KinematicsQueryOptions &options = kinematics::KinematicsQueryOptions()) const = 0;
+  searchPositionIK(const geometry_msgs::Pose& ik_pose, const std::vector<double>& ik_seed_state, double timeout,
+                   const std::vector<double>& consistency_limits, std::vector<double>& solution,
+                   const IKCallbackFn& solution_callback, moveit_msgs::MoveItErrorCodes& error_code,
+                   const kinematics::KinematicsQueryOptions& options = kinematics::KinematicsQueryOptions()) const = 0;
 
   /**
    * @brief Given a set of desired poses for a planning group with multiple end-effectors, search for the joint angles
@@ -290,11 +292,11 @@ public:
    * @return True if a valid solution was found, false otherwise
    */
   virtual bool
-  searchPositionIK(const std::vector<geometry_msgs::Pose> &ik_poses, const std::vector<double> &ik_seed_state,
-                   double timeout, const std::vector<double> &consistency_limits, std::vector<double> &solution,
-                   const IKCallbackFn &solution_callback, moveit_msgs::MoveItErrorCodes &error_code,
-                   const kinematics::KinematicsQueryOptions &options = kinematics::KinematicsQueryOptions(),
-                   const moveit::core::RobotState *context_state = NULL) const
+  searchPositionIK(const std::vector<geometry_msgs::Pose>& ik_poses, const std::vector<double>& ik_seed_state,
+                   double timeout, const std::vector<double>& consistency_limits, std::vector<double>& solution,
+                   const IKCallbackFn& solution_callback, moveit_msgs::MoveItErrorCodes& error_code,
+                   const kinematics::KinematicsQueryOptions& options = kinematics::KinematicsQueryOptions(),
+                   const moveit::core::RobotState* context_state = NULL) const
   {
     // For IK solvers that do not support multiple poses, fall back to single pose call
     if (ik_poses.size() == 1)
@@ -312,7 +314,7 @@ public:
     }
 
     // Otherwise throw error because this function should have been implemented
-    logError("moveit.kinematics_base: This kinematic solver does not support searchPositionIK with multiple poses");
+    ROS_ERROR_NAMED("kinematics_base", "This kinematic solver does not support searchPositionIK with multiple poses");
     return false;
   }
 
@@ -323,8 +325,8 @@ public:
    * @param poses The resultant set of poses (in the frame returned by getBaseFrame())
    * @return True if a valid solution was found, false otherwise
    */
-  virtual bool getPositionFK(const std::vector<std::string> &link_names, const std::vector<double> &joint_angles,
-                             std::vector<geometry_msgs::Pose> &poses) const = 0;
+  virtual bool getPositionFK(const std::vector<std::string>& link_names, const std::vector<double>& joint_angles,
+                             std::vector<geometry_msgs::Pose>& poses) const = 0;
 
   /**
    * @brief Set the parameters for the solver, for use with kinematic chain IK solvers
@@ -336,8 +338,8 @@ public:
    * @param tip_frame The tip of the chain
    * @param search_discretization The discretization of the search when the solver steps through the redundancy
    */
-  virtual void setValues(const std::string &robot_description, const std::string &group_name,
-                         const std::string &base_frame, const std::string &tip_frame, double search_discretization);
+  virtual void setValues(const std::string& robot_description, const std::string& group_name,
+                         const std::string& base_frame, const std::string& tip_frame, double search_discretization);
 
   /**
    * @brief Set the parameters for the solver, for use with non-chain IK solvers
@@ -349,8 +351,8 @@ public:
    * @param tip_frames A vector of tips of the kinematic tree
    * @param search_discretization The discretization of the search when the solver steps through the redundancy
    */
-  virtual void setValues(const std::string &robot_description, const std::string &group_name,
-                         const std::string &base_frame, const std::vector<std::string> &tip_frames,
+  virtual void setValues(const std::string& robot_description, const std::string& group_name,
+                         const std::string& base_frame, const std::vector<std::string>& tip_frames,
                          double search_discretization);
 
   /**
@@ -364,8 +366,8 @@ public:
    * @param search_discretization The discretization of the search when the solver steps through the redundancy
    * @return True if initialization was successful, false otherwise
    */
-  virtual bool initialize(const std::string &robot_description, const std::string &group_name,
-                          const std::string &base_frame, const std::string &tip_frame,
+  virtual bool initialize(const std::string& robot_description, const std::string& group_name,
+                          const std::string& base_frame, const std::string& tip_frame,
                           double search_discretization) = 0;
 
   /**
@@ -379,8 +381,8 @@ public:
    * @param search_discretization The discretization of the search when the solver steps through the redundancy
    * @return True if initialization was successful, false otherwise
    */
-  virtual bool initialize(const std::string &robot_description, const std::string &group_name,
-                          const std::string &base_frame, const std::vector<std::string> &tip_frames,
+  virtual bool initialize(const std::string& robot_description, const std::string& group_name,
+                          const std::string& base_frame, const std::vector<std::string>& tip_frames,
                           double search_discretization)
   {
     // For IK solvers that do not support multiple tip frames, fall back to single pose call
@@ -389,8 +391,8 @@ public:
       return initialize(robot_description, group_name, base_frame, tip_frames[0], search_discretization);
     }
 
-    logError("moveit.kinematics_base: This kinematic solver does not support initialization with more than one tip "
-             "frames");
+    ROS_ERROR_NAMED("kinematics_base", "This kinematic solver does not support initialization "
+                                       "with more than one tip frames");
     return false;
   }
 
@@ -398,7 +400,7 @@ public:
    * @brief  Return the name of the group that the solver is operating on
    * @return The string name of the group that the solver is operating on
    */
-  virtual const std::string &getGroupName() const
+  virtual const std::string& getGroupName() const
   {
     return group_name_;
   }
@@ -408,7 +410,7 @@ public:
    * No namespacing (e.g., no "/" prefix) should be used.
    * @return The string name of the frame in which the solver is operating
    */
-  virtual const std::string &getBaseFrame() const
+  virtual const std::string& getBaseFrame() const
   {
     return base_frame_;
   }
@@ -420,10 +422,11 @@ public:
    * Deprecated in favor of getTipFrames(), but will remain for foreseeable future for backwards compatibility
    * @return The string name of the tip frame of the chain on which the solver is operating
    */
-  virtual const std::string &getTipFrame() const
+  virtual const std::string& getTipFrame() const
   {
     if (tip_frames_.size() > 1)
-      logError("moveit.kinematics_base: This kinematic solver has more than one tip frame, do not call getTipFrame()");
+      ROS_ERROR_NAMED("kinematics_base", "This kinematic solver has more than one tip frame, "
+                                         "do not call getTipFrame()");
 
     return tip_frame_;  // for backwards-compatibility. should actually use tip_frames_[0]
   }
@@ -433,7 +436,7 @@ public:
    * This is usually a link name. No namespacing (e.g., no "/" prefix) should be used.
    * @return The vector of names of the tip frames of the kinematic tree on which the solver is operating
    */
-  virtual const std::vector<std::string> &getTipFrames() const
+  virtual const std::vector<std::string>& getTipFrames() const
   {
     return tip_frames_;
   }
@@ -447,7 +450,7 @@ public:
    * @return False if any of the input joint indices are invalid (exceed number of
    * joints)
    */
-  virtual bool setRedundantJoints(const std::vector<unsigned int> &redundant_joint_indices);
+  virtual bool setRedundantJoints(const std::vector<unsigned int>& redundant_joint_indices);
 
   /**
    * @brief Set a set of redundant joints for the kinematics solver to use.
@@ -456,12 +459,12 @@ public:
    * @return False if any of the input joint indices are invalid (exceed number of
    * joints)
    */
-  bool setRedundantJoints(const std::vector<std::string> &redundant_joint_names);
+  bool setRedundantJoints(const std::vector<std::string>& redundant_joint_names);
 
   /**
    * @brief Get the set of redundant joints
    */
-  virtual void getRedundantJoints(std::vector<unsigned int> &redundant_joint_indices) const
+  virtual void getRedundantJoints(std::vector<unsigned int>& redundant_joint_indices) const
   {
     redundant_joint_indices = redundant_joint_indices_;
   }
@@ -469,12 +472,12 @@ public:
   /**
    * @brief  Return all the joint names in the order they are used internally
    */
-  virtual const std::vector<std::string> &getJointNames() const = 0;
+  virtual const std::vector<std::string>& getJointNames() const = 0;
 
   /**
    * @brief  Return all the link names in the order they are represented internally
    */
-  virtual const std::vector<std::string> &getLinkNames() const = 0;
+  virtual const std::vector<std::string>& getLinkNames() const = 0;
 
   /**
    * \brief Check if this solver supports a given JointModelGroup.
@@ -492,7 +495,7 @@ public:
    *          supported.
    * \return True if the group is supported, false if not.
    */
-  virtual bool supportsGroup(const moveit::core::JointModelGroup *jmg, std::string *error_text_out = NULL) const;
+  virtual bool supportsGroup(const moveit::core::JointModelGroup* jmg, std::string* error_text_out = NULL) const;
 
   /**
    * @brief  Set the search discretization value for all the redundant joints
@@ -514,7 +517,7 @@ public:
    *
    * @param discretization a map of joint indices and discretization value pairs.
    */
-  void setSearchDiscretization(const std::map<int, double> &discretization)
+  void setSearchDiscretization(const std::map<int, double>& discretization)
   {
     redundant_joint_discretization_.clear();
     redundant_joint_indices_.clear();
@@ -597,8 +600,55 @@ protected:
   std::map<int, double> redundant_joint_discretization_;
   std::vector<DiscretizationMethod> supported_methods_;
 
+  /**
+   * @brief Enables kinematics plugins access to parameters that are defined
+   * for the private namespace and inside 'robot_description_kinematics'.
+   * Parameters are searched in the following locations and order
+   *
+   * ~/<group_name>/<param>
+   * ~/<param>
+   * robot_description_kinematics/<group_name>/<param>
+   * robot_description_kinematics/<param>
+   *
+   * This order maintains default behavior by keeping the private namespace
+   * as the predominant configuration but also allows groupwise specifications.
+   */
+  template <typename T>
+  inline bool lookupParam(const std::string& param, T& val, const T& default_val) const
+  {
+    ros::NodeHandle pnh("~");
+    if (pnh.hasParam(group_name_ + "/" + param))
+    {
+      val = pnh.param(group_name_ + "/" + param, default_val);
+      return true;
+    }
+
+    if (pnh.hasParam(param))
+    {
+      val = pnh.param(param, default_val);
+      return true;
+    }
+
+    ros::NodeHandle nh;
+    if (nh.hasParam("robot_description_kinematics/" + group_name_ + "/" + param))
+    {
+      val = nh.param("robot_description_kinematics/" + group_name_ + "/" + param, default_val);
+      return true;
+    }
+
+    if (nh.hasParam("robot_description_kinematics/" + param))
+    {
+      val = nh.param("robot_description_kinematics/" + param, default_val);
+      return true;
+    }
+
+    val = default_val;
+
+    return false;
+  }
+
 private:
-  std::string removeSlash(const std::string &str) const;
+  std::string removeSlash(const std::string& str) const;
 };
 };
 

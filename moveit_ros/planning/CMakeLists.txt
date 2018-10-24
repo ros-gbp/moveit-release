@@ -7,7 +7,7 @@ if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
-find_package(Boost REQUIRED system filesystem date_time program_options signals thread)
+find_package(Boost REQUIRED system filesystem date_time program_options signals thread chrono)
 find_package(catkin REQUIRED COMPONENTS
   moveit_core
   moveit_ros_perception
@@ -21,6 +21,8 @@ find_package(catkin REQUIRED COMPONENTS
   urdf
   tf
   tf_conversions
+  eigen_conversions
+  chomp_motion_planner
 )
 
 find_package(Eigen3 REQUIRED)
@@ -71,11 +73,11 @@ catkin_package(
 
 include_directories(${THIS_PACKAGE_INCLUDE_DIRS}
                     ${catkin_INCLUDE_DIRS}
-		    )
+                    ${Boost_INCLUDE_DIRS}
+)
 include_directories(SYSTEM
                     ${EIGEN3_INCLUDE_DIRS}
-                    ${Boost_INCLUDE_DIRS}
-                    )
+)
 
 link_directories(${Boost_LIBRARY_DIRS})
 link_directories(${catkin_LIBRARY_DIRS})

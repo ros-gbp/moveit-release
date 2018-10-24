@@ -35,10 +35,10 @@
 /* Author: Ioan Sucan */
 
 #include <moveit/move_group/move_group_capability.h>
-#include <pluginlib/class_loader.h>
+#include <pluginlib/class_loader.hpp>
 #include <boost/algorithm/string/join.hpp>
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
   try
   {
@@ -47,7 +47,7 @@ int main(int argc, char **argv)
     std::cout << "Available capabilities:\n"
               << boost::algorithm::join(capability_plugin_loader.getDeclaredClasses(), "\n") << std::endl;
   }
-  catch (pluginlib::PluginlibException &ex)
+  catch (pluginlib::PluginlibException& ex)
   {
     std::cerr << "Exception while creating plugin loader for move_group capabilities: " << ex.what() << std::endl;
   }

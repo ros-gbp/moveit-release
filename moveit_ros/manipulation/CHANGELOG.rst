@@ -2,6 +2,60 @@
 Changelog for package moveit_ros_manipulation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.9.14 (2018-10-24)
+-------------------
+
+0.9.13 (2018-10-24)
+-------------------
+* [fix] Eigen alignment issuses due to missing aligned allocation (`#1039 <https://github.com/ros-planning/moveit/issues/1039>`_)
+* [enhancement] Add info messages to pick and place routine (`#1004 <https://github.com/ros-planning/moveit/issues/1004>`_)
+* [maintenance] add minimum required pluginlib version (`#927 <https://github.com/ros-planning/moveit/issues/927>`_)
+* Contributors: Adrian Zwiener, Felix von Drigalski, Mikael Arguedas, Mohmmad Ayman, Robert Haschke, mike lautman
+
+0.9.12 (2018-05-29)
+-------------------
+
+0.9.11 (2017-12-25)
+-------------------
+
+0.9.10 (2017-12-09)
+-------------------
+* [capability][kinetic onward][moveit_ros_planning_interface] Adapt pick pipeline to function without object (`#599 <https://github.com/ros-planning/moveit/issues/599>`_)
+* Contributors: 2scholz
+
+0.9.9 (2017-08-06)
+------------------
+
+0.9.8 (2017-06-21)
+------------------
+
+0.9.7 (2017-06-05)
+------------------
+
+0.9.6 (2017-04-12)
+------------------
+* [fix] Set planning frame correctly in evaluation of reachable and valid pose filter (`#476 <https://github.com/ros-planning/moveit/issues/476>`_)
+* Contributors: Yannick Jonetzko
+
+0.9.5 (2017-03-08)
+------------------
+* [fix][moveit_ros_warehouse] gcc6 build error `#423 <https://github.com/ros-planning/moveit/pull/423>`_
+* [enhancement] Remove "catch (...)" instances, catch std::exception instead of std::runtime_error (`#445 <https://github.com/ros-planning/moveit/issues/445>`_)
+* Contributors: Bence Magyar, Dave Coleman
+
+0.9.4 (2017-02-06)
+------------------
+* [maintenance] clang-format upgraded to 3.8 (`#367 <https://github.com/ros-planning/moveit/issues/367>`_)
+* [fix] race conditions when updating PlanningScene (`#350 <https://github.com/ros-planning/moveit/issues/350>`_)
+* Contributors: Dave Coleman, Robert Haschke
+
+0.9.3 (2016-11-16)
+------------------
+* [maintenance] Updated package.xml maintainers and author emails `#330 <https://github.com/ros-planning/moveit/issues/330>`_
+* [enhancement] remove grasp service support from pick_place's fillGrasp (`#328 <https://github.com/ros-planning/moveit/issues/328>`_)
+* [maintenance] Updated package.xml maintainers and author emails `#330 <https://github.com/ros-planning/moveit/issues/330>`_
+* Contributors: Dave Coleman, Ian McMahon, Michael Goerner
+
 0.9.2 (2016-11-05)
 ------------------
 

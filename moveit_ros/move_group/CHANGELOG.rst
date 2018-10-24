@@ -2,6 +2,61 @@
 Changelog for package moveit_ros_move_group
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.9.14 (2018-10-24)
+-------------------
+
+0.9.13 (2018-10-24)
+-------------------
+* [fix] PlanningSceneMonitor lock `#1033 <https://github.com/ros-planning/moveit/issues/1033>`_: Fix `#868 <https://github.com/ros-planning/moveit/issues/868>`_ (`#1057 <https://github.com/ros-planning/moveit/issues/1057>`_)
+* [maintenance] various compiler warnings (`#1038 <https://github.com/ros-planning/moveit/issues/1038>`_)
+* [maintenance] add minimum required pluginlib version (`#927 <https://github.com/ros-planning/moveit/issues/927>`_)
+* Contributors: Mikael Arguedas, Mohmmad Ayman, Robert Haschke, mike lautman
+
+0.9.12 (2018-05-29)
+-------------------
+* disable waitForCurrentRobotState() for PlanService capability (`#923 <https://github.com/ros-planning/moveit/issues/923>`_), fixing (`#868 <https://github.com/ros-planning/moveit/issues/868>`_)
+* Add namespace capabilities to moveit_commander (`#835 <https://github.com/ros-planning/moveit/issues/835>`_)
+* [fix] MoveAction capability can drop cancel request if it is sent shortly after goal is sent (`#756 <https://github.com/ros-planning/moveit/issues/756>`_)
+* Contributors: Dave Coleman, Ian McMahon, Mikael Arguedas, Robert Haschke, Will Baker
+
+0.9.11 (2017-12-25)
+-------------------
+
+0.9.10 (2017-12-09)
+-------------------
+* [fix] always return true in MoveGroupPlanService callback `#674 <https://github.com/ros-planning/moveit/pull/674>`_
+* [improve] adding swp's to gitignore and removing redundant capabilites from capability_names.h (`#704 <https://github.com/ros-planning/moveit/issues/704>`_)
+* Contributors: Mike Lautman, Shingo Kitagawa
+
+0.9.9 (2017-08-06)
+------------------
+
+0.9.8 (2017-06-21)
+------------------
+
+0.9.7 (2017-06-05)
+------------------
+
+0.9.6 (2017-04-12)
+------------------
+
+0.9.5 (2017-03-08)
+------------------
+* [fix][moveit_ros_warehouse] gcc6 build error `#423 <https://github.com/ros-planning/moveit/pull/423>`_
+* [enhancement] Remove "catch (...)" instances, catch std::exception instead of std::runtime_error (`#445 <https://github.com/ros-planning/moveit/issues/445>`_)
+* Contributors: Bence Magyar, Dave Coleman
+
+0.9.4 (2017-02-06)
+------------------
+* [fix] race conditions when updating PlanningScene (`#350 <https://github.com/ros-planning/moveit/issues/350>`_)
+* [maintenance] clang-format upgraded to 3.8 (`#367 <https://github.com/ros-planning/moveit/issues/367>`_)
+* Contributors: Dave Coleman, Robert Haschke
+
+0.9.3 (2016-11-16)
+------------------
+* [maintenance] Updated package.xml maintainers and author emails `#330 <https://github.com/ros-planning/moveit/issues/330>`_
+* Contributors: Dave Coleman, Ian McMahon
+
 0.9.2 (2016-11-05)
 ------------------
 

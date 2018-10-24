@@ -41,8 +41,8 @@
 
 namespace pick_place
 {
-PlanStage::PlanStage(const planning_scene::PlanningSceneConstPtr &scene,
-                     const planning_pipeline::PlanningPipelinePtr &planning_pipeline)
+PlanStage::PlanStage(const planning_scene::PlanningSceneConstPtr& scene,
+                     const planning_pipeline::PlanningPipelinePtr& planning_pipeline)
   : ManipulationStage("plan"), planning_scene_(scene), planning_pipeline_(planning_pipeline)
 {
 }
@@ -54,7 +54,7 @@ void PlanStage::signalStop()
 }
 
 // Plan the arm movement to the approach location
-bool PlanStage::evaluate(const ManipulationPlanPtr &plan) const
+bool PlanStage::evaluate(const ManipulationPlanPtr& plan) const
 {
   planning_interface::MotionPlanRequest req;
   planning_interface::MotionPlanResponse res;
@@ -92,6 +92,9 @@ bool PlanStage::evaluate(const ManipulationPlanPtr &plan) const
         }
         else
         {  // Do what was done before
+          ROS_INFO_STREAM("Adding default duration of " << PickPlace::DEFAULT_GRASP_POSTURE_COMPLETION_DURATION
+                                                        << " seconds to the grasp closure time. Assign time_from_start "
+                                                        << "to your trajectory to avoid this.");
           pre_approach_traj->addPrefixWayPoint(pre_approach_state,
                                                PickPlace::DEFAULT_GRASP_POSTURE_COMPLETION_DURATION);
         }

@@ -46,7 +46,7 @@ void move_group::ClearOctomapService::initialize()
   service_ = root_node_handle_.advertiseService(CLEAR_OCTOMAP_SERVICE_NAME, &ClearOctomapService::clearOctomap, this);
 }
 
-bool move_group::ClearOctomapService::clearOctomap(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res)
+bool move_group::ClearOctomapService::clearOctomap(std_srvs::Empty::Request& req, std_srvs::Empty::Response& res)
 {
   if (!context_->planning_scene_monitor_)
   {
@@ -60,5 +60,5 @@ bool move_group::ClearOctomapService::clearOctomap(std_srvs::Empty::Request &req
   return true;
 }
 
-#include <class_loader/class_loader.h>
+#include <class_loader/class_loader.hpp>
 CLASS_LOADER_REGISTER_CLASS(move_group::ClearOctomapService, move_group::MoveGroupCapability)

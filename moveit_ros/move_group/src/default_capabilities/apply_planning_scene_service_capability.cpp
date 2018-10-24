@@ -47,8 +47,8 @@ void move_group::ApplyPlanningSceneService::initialize()
                                                 &ApplyPlanningSceneService::applyScene, this);
 }
 
-bool move_group::ApplyPlanningSceneService::applyScene(moveit_msgs::ApplyPlanningScene::Request &req,
-                                                       moveit_msgs::ApplyPlanningScene::Response &res)
+bool move_group::ApplyPlanningSceneService::applyScene(moveit_msgs::ApplyPlanningScene::Request& req,
+                                                       moveit_msgs::ApplyPlanningScene::Response& res)
 {
   if (!context_->planning_scene_monitor_)
   {
@@ -60,5 +60,5 @@ bool move_group::ApplyPlanningSceneService::applyScene(moveit_msgs::ApplyPlannin
   return true;
 }
 
-#include <class_loader/class_loader.h>
+#include <class_loader/class_loader.hpp>
 CLASS_LOADER_REGISTER_CLASS(move_group::ApplyPlanningSceneService, move_group::MoveGroupCapability)

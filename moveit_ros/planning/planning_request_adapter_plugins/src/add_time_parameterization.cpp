@@ -36,7 +36,7 @@
 
 #include <moveit/planning_request_adapter/planning_request_adapter.h>
 #include <moveit/trajectory_processing/iterative_time_parameterization.h>
-#include <class_loader/class_loader.h>
+#include <class_loader/class_loader.hpp>
 #include <ros/console.h>
 
 namespace default_planner_request_adapters
@@ -53,10 +53,10 @@ public:
     return "Add Time Parameterization";
   }
 
-  virtual bool adaptAndPlan(const PlannerFn &planner, const planning_scene::PlanningSceneConstPtr &planning_scene,
-                            const planning_interface::MotionPlanRequest &req,
-                            planning_interface::MotionPlanResponse &res,
-                            std::vector<std::size_t> &added_path_index) const
+  virtual bool adaptAndPlan(const PlannerFn& planner, const planning_scene::PlanningSceneConstPtr& planning_scene,
+                            const planning_interface::MotionPlanRequest& req,
+                            planning_interface::MotionPlanResponse& res,
+                            std::vector<std::size_t>& added_path_index) const
   {
     bool result = planner(planning_scene, req, res);
     if (result && res.trajectory_)

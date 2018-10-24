@@ -3,14 +3,19 @@ project(moveit_core)
 
 add_compile_options(-std=c++11)
 
+# Warnings
+add_definitions(-Wall -Wextra
+  -Wwrite-strings -Wunreachable-code -Wpointer-arith -Wredundant-decls -Wcast-qual
+  -Wno-unused-parameter -Wno-unused-function -Wno-maybe-uninitialized)
+
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
   message("${PROJECT_NAME}: You did not request a specific build type: Choosing 'Release' for maximum performance")
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
 find_package(Boost REQUIRED system filesystem date_time thread iostreams)
-
-find_package(console_bridge REQUIRED)
 
 find_package(Eigen3 REQUIRED)
 
@@ -30,17 +35,6 @@ find_package(octomap REQUIRED)
 find_package(urdfdom REQUIRED)
 find_package(urdfdom_headers REQUIRED)
 
-if("${urdfdom_headers_VERSION}" VERSION_LESS "1.0")
-  # for Wily: maintain compatibility between urdfdom 0.3 and 0.4 (definining SharedPtr types)
-  set(URDFDOM_DECLARE_TYPES 1)
-else()
-  # declare ModelInterface's SharedPtr
-  set(URDFDOM_DECLARE_TYPES 0)
-endif()
-set(generated_compat_header "${CATKIN_DEVEL_PREFIX}/include/moveit/urdfdom_compatibility.h")
-include_directories("${CATKIN_DEVEL_PREFIX}/include")
-configure_file(version/urdfdom_compatibility.h.in "${generated_compat_header}" @ONLY)
-
 find_package(catkin REQUIRED
 COMPONENTS
   eigen_conversions
@@ -53,6 +47,7 @@ COMPONENTS
   random_numbers
   roslib
   rostime
+  rosconsole
   sensor_msgs
   shape_msgs
   srdfdom
@@ -98,7 +93,7 @@ set(THIS_PACKAGE_INCLUDE_DIRS
 
 catkin_package(
   INCLUDE_DIRS
-    ${THIS_PACKAGE_INCLUDE_DIRS} "${CATKIN_DEVEL_PREFIX}/include"
+    ${THIS_PACKAGE_INCLUDE_DIRS}
   LIBRARIES
     moveit_exceptions
     moveit_background_processing
@@ -137,21 +132,20 @@ catkin_package(
   DEPENDS
     Boost
     EIGEN3
+    LIBFCL
     OCTOMAP
-    console_bridge
     urdfdom
     urdfdom_headers
     )
 
-include_directories(SYSTEM ${EIGEN3_INCLUDE_DIR}
-                           ${Boost_INCLUDE_DIR}
+include_directories(SYSTEM ${EIGEN3_INCLUDE_DIRS}
                            ${LIBFCL_INCLUDE_DIRS}
                            )
 
 include_directories(${THIS_PACKAGE_INCLUDE_DIRS}
                     ${VERSION_FILE_PATH}
+                    ${Boost_INCLUDE_DIRS}
                     ${catkin_INCLUDE_DIRS}
-                    ${console_bridge_INCLUDE_DIRS}
                     ${urdfdom_INCLUDE_DIRS}
                     ${urdfdom_headers_INCLUDE_DIRS}
                     ${OCTOMAP_INCLUDE_DIRS}
@@ -166,7 +160,6 @@ set(MOVEIT_VERSION "${MOVEIT_VERSION_MAJOR}.${MOVEIT_VERSION_MINOR}.${MOVEIT_VER
 message(STATUS " *** Building MoveIt! ${MOVEIT_VERSION} ***")
 configure_file("version/version.h.in" "${VERSION_FILE_PATH}/moveit/version.h")
 install(FILES "${VERSION_FILE_PATH}/moveit/version.h" DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION}/moveit)
-install(FILES ${generated_compat_header} DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION}/moveit)
 
 add_subdirectory(version)
 add_subdirectory(macros)

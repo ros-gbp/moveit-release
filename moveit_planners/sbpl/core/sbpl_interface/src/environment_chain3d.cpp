@@ -129,7 +129,7 @@ void EnvironmentChain3D::PrintState(int stateID, bool bVerbose, FILE* fOut /*=NU
 
   // if(stateID == EnvChain.goalHashEntry->stateID && bVerbose)
   // {
-  //   //ROS_DEBUG_NAMED(fOut, "the state is a goal state\n");
+  //   //ROS_DEBUG_NAMED("environment_chain3d", fOut, "the state is a goal state\n");
   //   bGoal = true;
   // }
 
@@ -886,7 +886,7 @@ int EnvironmentChain3D::getEndEffectorHeuristic(int from_stateID, int to_stateID
   //}
 }
 
-bool EnvironmentChain3D::getGridXYZInt(const Eigen::Affine3d& pose, int(&xyz)[3]) const
+bool EnvironmentChain3D::getGridXYZInt(const Eigen::Affine3d& pose, int (&xyz)[3]) const
 {
   if (!gsr_ || !gsr_->dfce_->distance_field_)
   {

@@ -1,9 +1,13 @@
 <package>
   <name>moveit_ros_benchmarks</name>
-  <version>0.9.2</version>
+  <version>0.9.14</version>
 
   <description>Enhanced tools for benchmarks in MoveIt!</description>
-  <maintainer email="rluna@rice.edu">Ryan Luna</maintainer>
+
+  <author email="rluna@rice.edu">Ryan Luna</author>
+
+  <maintainer email="dave@dav.ee">Dave Coleman</maintainer>
+  <maintainer email="moveit_releasers@googlegroups.com">MoveIt! Release Team</maintainer>
 
   <url type="website">http://moveit.ros.org</url>
   <url type="bugtracker">https://github.com/ros-planning/moveit/issues</url>

@@ -45,7 +45,7 @@
 class LoadPlanningModelsPr2 : public testing::Test
 {
 protected:
-  virtual void SetUp()
+  void SetUp() override
   {
     boost::filesystem::path res_path(MOVEIT_TEST_RESOURCES_DIR);
 
@@ -71,7 +71,7 @@ protected:
     kmodel.reset(new robot_model::RobotModel(urdf_model, srdf_model));
   };
 
-  virtual void TearDown()
+  void TearDown() override
   {
   }
 
@@ -950,7 +950,7 @@ TEST_F(LoadPlanningModelsPr2, TestKinematicConstraintSetEquality)
   EXPECT_TRUE(kcs2.equal(kcs, .1));
 }
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();

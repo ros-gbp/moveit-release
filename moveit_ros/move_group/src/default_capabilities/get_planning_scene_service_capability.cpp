@@ -48,8 +48,8 @@ void move_group::MoveGroupGetPlanningSceneService::initialize()
       GET_PLANNING_SCENE_SERVICE_NAME, &MoveGroupGetPlanningSceneService::getPlanningSceneService, this);
 }
 
-bool move_group::MoveGroupGetPlanningSceneService::getPlanningSceneService(moveit_msgs::GetPlanningScene::Request &req,
-                                                                           moveit_msgs::GetPlanningScene::Response &res)
+bool move_group::MoveGroupGetPlanningSceneService::getPlanningSceneService(moveit_msgs::GetPlanningScene::Request& req,
+                                                                           moveit_msgs::GetPlanningScene::Response& res)
 {
   if (req.components.components & moveit_msgs::PlanningSceneComponents::TRANSFORMS)
     context_->planning_scene_monitor_->updateFrameTransforms();
@@ -58,5 +58,5 @@ bool move_group::MoveGroupGetPlanningSceneService::getPlanningSceneService(movei
   return true;
 }
 
-#include <class_loader/class_loader.h>
+#include <class_loader/class_loader.hpp>
 CLASS_LOADER_REGISTER_CLASS(move_group::MoveGroupGetPlanningSceneService, move_group::MoveGroupCapability)

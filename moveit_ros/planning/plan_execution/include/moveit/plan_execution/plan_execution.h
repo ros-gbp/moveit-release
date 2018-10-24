@@ -43,7 +43,7 @@
 #include <moveit/planning_scene_monitor/planning_scene_monitor.h>
 #include <moveit/planning_scene_monitor/trajectory_monitor.h>
 #include <moveit/sensor_manager/sensor_manager.h>
-#include <pluginlib/class_loader.h>
+#include <pluginlib/class_loader.hpp>
 
 /** \brief This namespace includes functionality specific to the execution and monitoring of motion plans */
 namespace plan_execution
@@ -81,7 +81,7 @@ public:
     /// one is the index of the last trajectory being executed (from the sequence of trajectories specified in the
     /// ExecutableMotionPlan) and the second
     /// one is the index of the closest waypoint along that trajectory.
-    boost::function<bool(ExecutableMotionPlan &plan_to_update, const std::pair<int, int> &trajectory_index)>
+    boost::function<bool(ExecutableMotionPlan& plan_to_update, const std::pair<int, int>& trajectory_index)>
         repair_plan_callback_;
 
     boost::function<void()> before_plan_callback_;
@@ -89,16 +89,16 @@ public:
     boost::function<void()> done_callback_;
   };
 
-  PlanExecution(const planning_scene_monitor::PlanningSceneMonitorPtr &planning_scene_monitor,
-                const trajectory_execution_manager::TrajectoryExecutionManagerPtr &trajectory_execution);
+  PlanExecution(const planning_scene_monitor::PlanningSceneMonitorPtr& planning_scene_monitor,
+                const trajectory_execution_manager::TrajectoryExecutionManagerPtr& trajectory_execution);
   ~PlanExecution();
 
-  const planning_scene_monitor::PlanningSceneMonitorPtr &getPlanningSceneMonitor() const
+  const planning_scene_monitor::PlanningSceneMonitorPtr& getPlanningSceneMonitor() const
   {
     return planning_scene_monitor_;
   }
 
-  const trajectory_execution_manager::TrajectoryExecutionManagerPtr &getTrajectoryExecutionManager() const
+  const trajectory_execution_manager::TrajectoryExecutionManagerPtr& getTrajectoryExecutionManager() const
   {
     return trajectory_execution_manager_;
   }
@@ -127,22 +127,27 @@ public:
     return default_max_replan_attempts_;
   }
 
-  void planAndExecute(ExecutableMotionPlan &plan, const Options &opt);
-  void planAndExecute(ExecutableMotionPlan &plan, const moveit_msgs::PlanningScene &scene_diff, const Options &opt);
+  void planAndExecute(ExecutableMotionPlan& plan, const Options& opt);
+  void planAndExecute(ExecutableMotionPlan& plan, const moveit_msgs::PlanningScene& scene_diff, const Options& opt);
+
+  /** \brief Execute and monitor a previously created \e plan.
+
+      In case there is no \e planning_scene or \e planning_scene_monitor set in the \e plan they will be set at the
+      start of the method. They are then used to monitor the execution. */
+  moveit_msgs::MoveItErrorCodes executeAndMonitor(ExecutableMotionPlan& plan);
 
   void stop();
 
-  std::string getErrorCodeString(const moveit_msgs::MoveItErrorCodes &error_code);
+  std::string getErrorCodeString(const moveit_msgs::MoveItErrorCodes& error_code);
 
 private:
-  void planAndExecuteHelper(ExecutableMotionPlan &plan, const Options &opt);
-  moveit_msgs::MoveItErrorCodes executeAndMonitor(const ExecutableMotionPlan &plan);
-  bool isRemainingPathValid(const ExecutableMotionPlan &plan);
-  bool isRemainingPathValid(const ExecutableMotionPlan &plan, const std::pair<int, int> &path_segment);
+  void planAndExecuteHelper(ExecutableMotionPlan& plan, const Options& opt);
+  bool isRemainingPathValid(const ExecutableMotionPlan& plan);
+  bool isRemainingPathValid(const ExecutableMotionPlan& plan, const std::pair<int, int>& path_segment);
 
   void planningSceneUpdatedCallback(const planning_scene_monitor::PlanningSceneMonitor::SceneUpdateType update_type);
-  void doneWithTrajectoryExecution(const moveit_controller_manager::ExecutionStatus &status);
-  void successfulTrajectorySegmentExecution(const ExecutableMotionPlan *plan, std::size_t index);
+  void doneWithTrajectoryExecution(const moveit_controller_manager::ExecutionStatus& status);
+  void successfulTrajectorySegmentExecution(const ExecutableMotionPlan* plan, std::size_t index);
 
   ros::NodeHandle node_handle_;
   planning_scene_monitor::PlanningSceneMonitorPtr planning_scene_monitor_;
@@ -158,7 +163,7 @@ private:
   bool path_became_invalid_;
 
   class DynamicReconfigureImpl;
-  DynamicReconfigureImpl *reconfigure_impl_;
+  DynamicReconfigureImpl* reconfigure_impl_;
 };
 }
 #endif

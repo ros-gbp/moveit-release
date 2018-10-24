@@ -39,9 +39,9 @@
 
 #include <rviz/display.h>
 #include <rviz/selection/selection_manager.h>
+#include <rviz/panel_dock_widget.h>
 #include <moveit/planning_scene_rviz_plugin/planning_scene_display.h>
 #include <moveit/rviz_plugin_render_tools/trajectory_visualization.h>
-#include <std_msgs/String.h>
 
 #ifndef Q_MOC_RUN
 #include <moveit/motion_planning_rviz_plugin/motion_planning_frame.h>
@@ -51,11 +51,12 @@
 #include <moveit/planning_scene_monitor/planning_scene_monitor.h>
 #include <moveit/kinematics_metrics/kinematics_metrics.h>
 #include <moveit/dynamics_solver/dynamics_solver.h>
-#include <ros/ros.h>
-#endif
 
+#include <ros/ros.h>
+
+#include <std_msgs/String.h>
 #include <moveit_msgs/DisplayTrajectory.h>
-#include <QDockWidget>
+#endif
 
 #include <memory>
 
@@ -95,6 +96,8 @@ public:
   virtual void update(float wall_dt, float ros_dt);
   virtual void reset();
 
+  void setName(const QString& name);
+
   robot_state::RobotStateConstPtr getQueryStartState() const
   {
     return query_start_state_->getState();
@@ -118,6 +121,11 @@ public:
   const robot_interaction::RobotInteraction::InteractionHandlerPtr& getQueryGoalStateHandler() const
   {
     return query_goal_state_;
+  }
+
+  void dropVisualizedTrajectory()
+  {
+    trajectory_visual_->dropTrajectory();
   }
 
   void setQueryStartState(const robot_state::RobotState& start);
@@ -168,6 +176,7 @@ private Q_SLOTS:
   void changedMetricsTextHeight();
   void changedWorkspace();
   void resetInteractiveMarkers();
+  void motionPanelVisibilityChange(bool enable);
 
 protected:
   enum LinkDisplayStatus
@@ -236,7 +245,7 @@ protected:
 
   // the planning frame
   MotionPlanningFrame* frame_;
-  QDockWidget* frame_dock_;
+  rviz::PanelDockWidget* frame_dock_;
 
   // robot interaction
   robot_interaction::RobotInteractionPtr robot_interaction_;

@@ -2,8 +2,71 @@
 Changelog for package moveit_ros_planning_interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.9.14 (2018-10-24)
+-------------------
+
+0.9.13 (2018-10-24)
+-------------------
+* [capability] Added plan_only flags to pick and place (`#862 <https://github.com/ros-planning/moveit/issues/862>`_)
+* [maintenance] Python3 support (`#1103 <https://github.com/ros-planning/moveit/issues/1103>`_, `#1054 <https://github.com/ros-planning/moveit/issues/1054>`_)
+* [fix] optional namespace args (`#929 <https://github.com/ros-planning/moveit/issues/929>`_)
+* Contributors: David Watkins, Michael Görner, Mohmmad Ayman, Robert Haschke, mike lautman
+
+0.9.12 (2018-05-29)
+-------------------
+* [maintenance] switch to ROS_LOGGER from CONSOLE_BRIDGE (`#874 <https://github.com/ros-planning/moveit/issues/874>`_)
+* [capability] namespace to moveit_commander (`#835 <https://github.com/ros-planning/moveit/issues/835>`_)
+* Constrained Cartesian planning using moveit commander (`#805 <https://github.com/ros-planning/moveit/issues/805>`_)
+* Simplify adding CollisionObjects with colors (`#810 <https://github.com/ros-planning/moveit/issues/810>`_)
+* support TrajectoryConstraints in MoveGroupInterface + MoveitCommander (`#793 <https://github.com/ros-planning/moveit/issues/793>`_)
+* Add API to get planner_id (`#788 <https://github.com/ros-planning/moveit/issues/788>`_)
+* Allow wait time to be specified for getCurrentState() (`#685 <https://github.com/ros-planning/moveit/issues/685>`_)
+* Contributors: 2scholz, Akiyoshi Ochiai, Bence Magyar, Dave Coleman, Ian McMahon, Robert Haschke, Will Baker, Xiaojian Ma, srsidd
+
+0.9.11 (2017-12-25)
+-------------------
+
+0.9.10 (2017-12-09)
+-------------------
+* [fix] MoveGroupInterface: Fixed computeCartesianPath to use selected end-effector. (`#580 <https://github.com/ros-planning/moveit/issues/580>`_)
+* [capability][kinetic onward] Adapt pick pipeline to function without object (`#599 <https://github.com/ros-planning/moveit/issues/599>`_)
+* [improve] Disabled copy constructors and added a move constructor to MoveGroupInterface (`#664 <https://github.com/ros-planning/moveit/issues/664>`_)
+* Contributors: 2scholz, Dennis Hartmann, Jonathan Meyer, Simon Schmeisser
+
+0.9.9 (2017-08-06)
+------------------
+
+0.9.8 (2017-06-21)
+------------------
+
+0.9.7 (2017-06-05)
+------------------
+
+0.9.6 (2017-04-12)
+------------------
+* [improve] MoveGroupInterface: add public interface to construct the MotionPlanRequest (`#461 <https://github.com/ros-planning/moveit/issues/461>`_)
+* Contributors: Michael Goerner
+
+0.9.5 (2017-03-08)
+------------------
+* [fix][moveit_ros_warehouse] gcc6 build error `#423 <https://github.com/ros-planning/moveit/pull/423>`_
+* [enhancement] Remove "catch (...)" instances, catch std::exception instead of std::runtime_error (`#445 <https://github.com/ros-planning/moveit/issues/445>`_)
+* [enhancement][MoveGroup] Add getLinkNames function (`#440 <https://github.com/ros-planning/moveit/issues/440>`_)
+* Contributors: Bence Magyar, Dave Coleman
+
+0.9.4 (2017-02-06)
+------------------
+* [fix] move_group.cpp: seg fault bug (`#426 <https://github.com/ros-planning/moveit/issues/426>`_)
+* [fix] mgi: show correct include path in doxygen (`#419 <https://github.com/ros-planning/moveit/issues/419>`_)
+* [fix] fix race conditions when updating PlanningScene (`#350 <https://github.com/ros-planning/moveit/issues/350>`_)
+* [fix] issue `#373 <https://github.com/ros-planning/moveit/issues/373>`_ for Kinetic (`#377 <https://github.com/ros-planning/moveit/issues/377>`_) (`#385 <https://github.com/ros-planning/moveit/issues/385>`_)
+* [capability] PSI: add apply* functions that use ApplyPlanningScene.srv (`#381 <https://github.com/ros-planning/moveit/issues/381>`_)
+* [maintenance] Fix test file issues (`#415 <https://github.com/ros-planning/moveit/pull/415>`_, `#412 <https://github.com/ros-planning/moveit/issues/412>`_)
+* [maintenance] clang-format upgraded to 3.8 (`#367 <https://github.com/ros-planning/moveit/issues/367>`_)
+* Contributors: Bastian Gaspers, Dave Coleman, Isaac I.Y. Saito, Jorge Santos Simon, Michael Goerner, Robert Haschke
+
+0.9.3 (2016-11-16)
+------------------
 
 0.6.6 (2016-06-08)
 ------------------
@@ -42,7 +105,7 @@ Forthcoming
 
 0.6.3 (2014-12-03)
 ------------------
-* include correct boost::*_ptr class for boost 1.57.
+* include correct ``boost::*_ptr`` class for boost 1.57.
 * Contributors: v4hn
 
 0.6.2 (2014-10-31)

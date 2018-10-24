@@ -39,7 +39,7 @@
 
 namespace pick_place
 {
-ManipulationPipeline::ManipulationPipeline(const std::string &name, unsigned int nthreads)
+ManipulationPipeline::ManipulationPipeline(const std::string& name, unsigned int nthreads)
   : name_(name), nthreads_(nthreads), verbose_(false), stop_processing_(true)
 {
   processing_threads_.resize(nthreads, NULL);
@@ -50,14 +50,14 @@ ManipulationPipeline::~ManipulationPipeline()
   reset();
 }
 
-ManipulationPipeline &ManipulationPipeline::addStage(const ManipulationStagePtr &next)
+ManipulationPipeline& ManipulationPipeline::addStage(const ManipulationStagePtr& next)
 {
   next->setVerbose(verbose_);
   stages_.push_back(next);
   return *this;
 }
 
-const ManipulationStagePtr &ManipulationPipeline::getFirstStage() const
+const ManipulationStagePtr& ManipulationPipeline::getFirstStage() const
 {
   if (stages_.empty())
   {
@@ -68,7 +68,7 @@ const ManipulationStagePtr &ManipulationPipeline::getFirstStage() const
     return stages_.front();
 }
 
-const ManipulationStagePtr &ManipulationPipeline::getLastStage() const
+const ManipulationStagePtr& ManipulationPipeline::getLastStage() const
 {
   if (stages_.empty())
   {
@@ -196,21 +196,16 @@ void ManipulationPipeline::processingThread(unsigned int index)
             solution_callback_();
         }
       }
-      catch (std::runtime_error &ex)
+      catch (std::exception& ex)
       {
         ROS_ERROR_NAMED("manipulation", "[%s:%u] %s", name_.c_str(), index, ex.what());
-      }
-      catch (...)
-      {
-        ROS_ERROR_NAMED("manipulation", "[%s:%u] Caught unknown exception while processing manipulation stage",
-                        name_.c_str(), index);
       }
       queue_access_lock_.lock();
     }
   }
 }
 
-void ManipulationPipeline::push(const ManipulationPlanPtr &plan)
+void ManipulationPipeline::push(const ManipulationPlanPtr& plan)
 {
   boost::mutex::scoped_lock slock(queue_access_lock_);
   queue_.push_back(plan);

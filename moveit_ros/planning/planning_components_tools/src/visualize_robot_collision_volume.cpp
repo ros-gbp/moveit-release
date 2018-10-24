@@ -39,7 +39,7 @@
 
 static const std::string ROBOT_DESCRIPTION = "robot_description";
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
   ros::init(argc, argv, "visualize_robot_collision_volume");
 
@@ -93,7 +93,7 @@ int main(int argc, char **argv)
 
     Eigen::Affine3d t;
     t.setIdentity();
-    std::vector<Eigen::Vector3d> points;
+    std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d>> points;
     std::size_t published = 0;
     random_numbers::RandomNumberGenerator rng;
     collision_detection::CollisionRequest req;

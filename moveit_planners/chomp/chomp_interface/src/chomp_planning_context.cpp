@@ -9,8 +9,8 @@
 
 namespace chomp_interface
 {
-CHOMPPlanningContext::CHOMPPlanningContext(const std::string &name, const std::string &group,
-                                           const robot_model::RobotModelConstPtr &model)
+CHOMPPlanningContext::CHOMPPlanningContext(const std::string& name, const std::string& group,
+                                           const robot_model::RobotModelConstPtr& model)
   : planning_interface::PlanningContext(name, group), robot_model_(model)
 {
   chomp_interface_ = CHOMPInterfacePtr(new CHOMPInterface());
@@ -31,7 +31,7 @@ CHOMPPlanningContext::~CHOMPPlanningContext()
 {
 }
 
-bool CHOMPPlanningContext::solve(planning_interface::MotionPlanDetailedResponse &res)
+bool CHOMPPlanningContext::solve(planning_interface::MotionPlanDetailedResponse& res)
 {
   moveit_msgs::MotionPlanDetailedResponse res2;
   if (chomp_interface_->solve(planning_scene_, request_, chomp_interface_->getParams(), res2))
@@ -60,16 +60,20 @@ bool CHOMPPlanningContext::solve(planning_interface::MotionPlanDetailedResponse 
   }
 }
 
-bool CHOMPPlanningContext::solve(planning_interface::MotionPlanResponse &res)
+bool CHOMPPlanningContext::solve(planning_interface::MotionPlanResponse& res)
 {
   planning_interface::MotionPlanDetailedResponse res_detailed;
-  bool result = solve(res_detailed);
+  bool planning_success = solve(res_detailed);
 
   res.error_code_ = res_detailed.error_code_;
-  res.trajectory_ = res_detailed.trajectory_[0];
-  res.planning_time_ = res_detailed.processing_time_[0];
 
-  return result;
+  if (planning_success)
+  {
+    res.trajectory_ = res_detailed.trajectory_[0];
+    res.planning_time_ = res_detailed.processing_time_[0];
+  }
+
+  return planning_success;
 }
 
 bool CHOMPPlanningContext::terminate()
