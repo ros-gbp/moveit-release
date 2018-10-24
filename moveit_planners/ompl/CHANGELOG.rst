@@ -2,6 +2,11 @@
 Changelog for package moveit_planners_ompl
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.10.2 (2018-10-24)
+-------------------
+* [capability] adaptions for OMPL 1.4 (`#903 <https://github.com/ros-planning/moveit/issues/903>`_)
+* Contributors: Dave Coleman, Michael Görner, Mikael Arguedas, Mohmmad Ayman, Robert Haschke, mike lautman
+
 0.10.1 (2018-05-25)
 -------------------
 * migration from tf to tf2 API (`#830 <https://github.com/ros-planning/moveit/issues/830>`_)
