@@ -43,26 +43,28 @@
 
 namespace moveit_warehouse
 {
-
-/** \brief This class provides the mechanism to connect to a database and reads needed ROS parameters when appropriate. */
+/** \brief This class provides the mechanism to connect to a database and reads needed ROS parameters when appropriate.
+ */
 class MoveItMessageStorage
 {
 public:
-  /// \brief Takes a warehouse_ros DatabaseConnection.  The DatabaseConnection is expected to have already been initialized.
+  /// \brief Takes a warehouse_ros DatabaseConnection.  The DatabaseConnection is expected to have already been
+  /// initialized.
   MoveItMessageStorage(warehouse_ros::DatabaseConnection::Ptr conn);
 
-  virtual ~MoveItMessageStorage() {}
+  virtual ~MoveItMessageStorage()
+  {
+  }
 
 protected:
   /// Keep only the \e names that match \e regex
-  void filterNames(const std::string &regex, std::vector<std::string> &names) const;
+  void filterNames(const std::string& regex, std::vector<std::string>& names) const;
 
   warehouse_ros::DatabaseConnection::Ptr conn_;
 };
 
 /// \brief Load a database connection
 typename warehouse_ros::DatabaseConnection::Ptr loadDatabase();
-
 }
 
 #endif

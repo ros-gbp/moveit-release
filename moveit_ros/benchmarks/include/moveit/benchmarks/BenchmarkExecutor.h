@@ -48,7 +48,7 @@
 #include <moveit/warehouse/trajectory_constraints_storage.h>
 #include <moveit/planning_interface/planning_interface.h>
 #include <warehouse_ros/database_loader.h>
-#include <pluginlib/class_loader.h>
+#include <pluginlib/class_loader.hpp>
 
 #include <map>
 #include <vector>
@@ -92,7 +92,8 @@ public:
   /// Definition of a post-run benchmark event function.  Invoked immediately after each planner calls solve().
   typedef boost::function<void(const moveit_msgs::MotionPlanRequest& request,
                                const planning_interface::MotionPlanDetailedResponse& response,
-                               PlannerRunData& run_data)> PostRunEventFunction;
+                               PlannerRunData& run_data)>
+      PostRunEventFunction;
 
   BenchmarkExecutor(const std::string& robot_description_param = "robot_description");
   virtual ~BenchmarkExecutor();

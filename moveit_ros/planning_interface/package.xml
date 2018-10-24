@@ -1,12 +1,13 @@
 <package>
   <name>moveit_ros_planning_interface</name>
-  <version>0.9.1</version>
-  <description>Components of MoveIt that offer simpler interfaces to planning and execution</description>
+  <version>0.9.14</version>
+  <description>Components of MoveIt! that offer simpler interfaces to planning and execution</description>
 
   <author email="isucan@google.com">Ioan Sucan</author>
 
-  <maintainer email="isucan@google.com">Ioan Sucan</maintainer>
   <maintainer email="mferguson@fetchrobotics.com">Michael Ferguson</maintainer>
+  <maintainer email="me@v4hn.de">Michael Görner</maintainer>
+  <maintainer email="moveit_releasers@googlegroups.com">MoveIt! Release Team</maintainer>
 
   <license>BSD</license>
 
@@ -44,4 +45,6 @@
   <run_depend>tf_conversions</run_depend>
   <run_depend>python</run_depend>
 
+  <test_depend>moveit_resources</test_depend>
+  <test_depend>rostest</test_depend>
 </package>

@@ -47,14 +47,15 @@ class SetupScreenWidget : public QWidget
   Q_OBJECT
 
 public:
-
-  SetupScreenWidget( QWidget* parent )
-  : QWidget( parent )
+  SetupScreenWidget(QWidget* parent) : QWidget(parent)
   {
   }
 
-  /// Command to update GUI
+  /// function called when widget is activated, allows to update/initialize GUI
   virtual void focusGiven();
+
+  /// function called when widget lost focus, allows to accept/reject changes and to reject switching (returning false)
+  virtual bool focusLost();
 
   // ******************************************************************************************
   // Emitted Signal Functions
@@ -63,17 +64,16 @@ public:
 Q_SIGNALS:
 
   /// Event for when the current screen is in modal view. Essential disabled the left navigation
-  void isModal( bool isModal );
+  void isModal(bool isModal);
 
   /// Event for telling rviz to highlight a link of the robot
-  void highlightLink( const std::string& name, const QColor& );
+  void highlightLink(const std::string& name, const QColor&);
 
   /// Event for telling rviz to highlight a group of the robot
-  void highlightGroup( const std::string& name );
+  void highlightGroup(const std::string& name);
 
   /// Event for telling rviz to unhighlight all links of the robot
   void unhighlightAll();
-
 };
 
 #endif

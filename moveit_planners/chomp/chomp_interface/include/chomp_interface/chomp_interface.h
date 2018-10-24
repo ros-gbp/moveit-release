@@ -43,13 +43,12 @@
 
 namespace chomp_interface
 {
-
 MOVEIT_CLASS_FORWARD(CHOMPInterface);
 
 class CHOMPInterface : public chomp::ChompPlanner
 {
 public:
-  CHOMPInterface();
+  CHOMPInterface(const ros::NodeHandle& nh = ros::NodeHandle("~"));
 
   const chomp::ChompParameters& getParams() const
   {

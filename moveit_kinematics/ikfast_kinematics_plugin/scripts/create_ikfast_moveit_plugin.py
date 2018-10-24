@@ -52,6 +52,7 @@ from lxml import etree
 import shutil
 
 plugin_gen_pkg = 'moveit_kinematics'  # package containing this file
+plugin_sub_dir = 'ikfast_kinematics_plugin' # sub directory which contains the template directory
 # Allowed search modes, see SEARCH_MODE enum in template file
 search_modes = ['OPTIMIZE_MAX_JOINT', 'OPTIMIZE_FREE_JOINT' ]
 
@@ -181,7 +182,7 @@ if __name__ == '__main__':
 
    # Get template folder location
    try:
-      plugin_gen_dir = roslib.packages.get_pkg_dir(plugin_gen_pkg)
+      plugin_gen_dir = os.path.join(roslib.packages.get_pkg_dir(plugin_gen_pkg), plugin_sub_dir)
    except:
       print '\nERROR: can\'t find package '+plugin_gen_pkg+' \n'
       sys.exit(-1)
@@ -244,7 +245,7 @@ if __name__ == '__main__':
    def_file_base = ik_library_name + "_description.xml"
    def_file_name = plugin_pkg_dir + "/" + def_file_base
    with open(def_file_name,'w') as f:
-      etree.ElementTree(plugin_def).write(f, xml_declaration=True, pretty_print=True)
+      etree.ElementTree(plugin_def).write(f, xml_declaration=True, pretty_print=True, encoding="UTF-8")
    print '\nCreated plugin definition at: \''+def_file_name+'\''
 
 
@@ -287,15 +288,8 @@ if __name__ == '__main__':
          etree.SubElement(e_parent, req_type).text = d
       return missing_deps
 
-   # empty sets evaluate to false
-   modified_pkg  = update_deps(build_deps, "build_depend", package_xml.getroot())
-   modified_pkg |= update_deps(run_deps, "run_depend", package_xml.getroot())
-
-   if modified_pkg:
-      with open(package_file_name,"w") as f:
-         package_xml.write(f, xml_declaration=True, pretty_print=True)
-
-      print '\nModified package.xml at \''+package_file_name+'\''
+   update_deps(build_deps, "build_depend", package_xml.getroot())
+   update_deps(run_deps, "exec_depend", package_xml.getroot())
 
    # Check that plugin definition file is in the export list
    new_export = etree.Element("moveit_core", \
@@ -310,9 +304,12 @@ if __name__ == '__main__':
 
    if not found:
       export_element.append(new_export)
-      with open(package_file_name,"w") as f:
-         package_xml.write(f, xml_declaration=True, pretty_print=True)
-      print '\nModified package.xml at \''+package_file_name+'\''
+
+   # Always write the package xml file, even if there are no changes, to ensure
+   # proper encodings are used in the future (UTF-8)
+   with open(package_file_name,"w") as f:
+      package_xml.write(f, xml_declaration=True, pretty_print=True, encoding="UTF-8")
+   print '\nModified package.xml at \''+package_file_name+'\''
 
    # Modify kinematics.yaml file
    kin_yaml_file_name = plan_pkg_dir+"/config/kinematics.yaml"

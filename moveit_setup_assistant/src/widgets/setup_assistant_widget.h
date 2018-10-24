@@ -59,14 +59,17 @@
 #include "virtual_joints_widget.h"
 #include "passive_joints_widget.h"
 #include "author_information_widget.h"
+#include "simulation_widget.h"
 #include "configuration_files_widget.h"
+#include "perception_widget.h"
+#include "ros_controllers_widget.h"
 
 #ifndef Q_MOC_RUN
 #include <moveit/setup_assistant/tools/moveit_config_data.h>
 
 // Other
 #include <ros/ros.h>
-#include <boost/program_options.hpp> // for parsing input arguments
+#include <boost/program_options.hpp>  // for parsing input arguments
 #include <boost/thread/mutex.hpp>
 #endif
 
@@ -85,12 +88,11 @@ class RobotStateDisplay;
 
 namespace moveit_setup_assistant
 {
-
 class SetupAssistantWidget : public QWidget
 {
   Q_OBJECT
 
-  public:
+public:
   // ******************************************************************************************
   // Public Functions
   // ******************************************************************************************
@@ -100,7 +102,7 @@ class SetupAssistantWidget : public QWidget
    * @param parent - used by Qt for destructing all elements
    * @return
    */
-  SetupAssistantWidget( QWidget *parent, boost::program_options::variables_map args );
+  SetupAssistantWidget(QWidget* parent, boost::program_options::variables_map args);
 
   /**
    * Deconstructor
@@ -113,13 +115,13 @@ class SetupAssistantWidget : public QWidget
    * @param index screen index to switch to
    */
 
-  void moveToScreen( const int index );
+  void moveToScreen(const int index);
 
   /**
    * Qt close event function for reminding user to save
    * @param event A Qt paramenter
    */
-  void closeEvent( QCloseEvent * event );
+  void closeEvent(QCloseEvent* event);
 
   /**
    * Qt error handling function
@@ -128,18 +130,17 @@ class SetupAssistantWidget : public QWidget
    * @param ev
    * @return bool
    */
-  virtual bool notify( QObject * rec, QEvent * ev );
+  virtual bool notify(QObject* rec, QEvent* ev);
 
   /**
    * Show/hide the Rviz right panel
    * @param show bool - whether to show
    */
-  //void showRviz( bool show );
+  // void showRviz( bool show );
 
   // ******************************************************************************************
   // Qt Components
   // ******************************************************************************************
-
 
 private Q_SLOTS:
   // ******************************************************************************************
@@ -150,7 +151,7 @@ private Q_SLOTS:
    * Event for changing screens by user clicking
    * @param index screen id
    */
-  void navigationClicked( const QModelIndex& index );
+  void navigationClicked(const QModelIndex& index);
 
   /**
    * Event for spinning the ros node
@@ -173,19 +174,19 @@ private Q_SLOTS:
    *
    * @param isModal if true disable left navigation
    */
-  void setModalMode( bool isModal );
+  void setModalMode(bool isModal);
 
   /**
    * Highlight a link of the robot
    *
    * @param link_name name of link to highlight
    */
-  void highlightLink( const std::string& link_name, const QColor& color );
+  void highlightLink(const std::string& link_name, const QColor& color);
 
   /**
    * Highlight a robot group
    */
-  void highlightGroup( const std::string& group_name );
+  void highlightGroup(const std::string& group_name);
 
   /**
    * Unhighlight all links of a robot
@@ -196,18 +197,16 @@ private Q_SLOTS:
   void virtualJointReferenceFrameChanged();
 
 private:
-
-
   // ******************************************************************************************
   // Variables
   // ******************************************************************************************
   QList<QString> nav_name_list_;
-  NavigationWidget *navs_view_;
+  NavigationWidget* navs_view_;
 
-  QWidget *middle_frame_;
-  QWidget *rviz_container_;
-  QSplitter *splitter_;
-  QStackedLayout *main_content_;
+  QWidget* middle_frame_;
+  QWidget* rviz_container_;
+  QSplitter* splitter_;
+  QStackedLayout* main_content_;
   int current_index_;
   boost::mutex change_screen_lock_;
 
@@ -217,15 +216,18 @@ private:
   moveit_rviz_plugin::RobotStateDisplay* robot_state_display_;
 
   // Screen Widgets
-  StartScreenWidget *ssw_;
-  DefaultCollisionsWidget *dcw_;
-  PlanningGroupsWidget *pgw_;
-  RobotPosesWidget *rpw_;
-  EndEffectorsWidget *efw_;
-  VirtualJointsWidget *vjw_;
-  PassiveJointsWidget *pjw_;
-  AuthorInformationWidget *aiw_;
-  ConfigurationFilesWidget *cfw_;
+  StartScreenWidget* start_screen_widget_;
+  DefaultCollisionsWidget* default_collisions_widget_;
+  PlanningGroupsWidget* planning_groups_widget;
+  RobotPosesWidget* robot_poses_widget_;
+  EndEffectorsWidget* end_effectors_widget_;
+  VirtualJointsWidget* virtual_joints_widget_;
+  PassiveJointsWidget* passive_joints_widget_;
+  AuthorInformationWidget* author_information_widget_;
+  ConfigurationFilesWidget* configuration_files_widget_;
+  SimulationWidget* simulation_widget_;
+  PerceptionWidget* perception_widget_;
+  moveit_ros_control::ROSControllersWidget* controllers_widget_;
 
   /// Contains all the configuration data for the setup assistant
   moveit_setup_assistant::MoveItConfigDataPtr config_data_;
@@ -233,11 +235,7 @@ private:
   // ******************************************************************************************
   // Private Functions
   // ******************************************************************************************
-
-
 };
-
-
 }
 
 #endif

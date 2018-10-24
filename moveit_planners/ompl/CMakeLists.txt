@@ -20,7 +20,7 @@ find_package(catkin REQUIRED COMPONENTS
   eigen_conversions
   )
 
-find_package(OMPL REQUIRED)
+find_package(ompl REQUIRED)
 
 generate_dynamic_reconfigure_options("ompl_interface/cfg/OMPLDynamicReconfigure.cfg")
 
@@ -35,10 +35,8 @@ catkin_package(
     moveit_core
 )
 
-include_directories(SYSTEM
-                    ${Boost_INCLUDE_DIRS})
-
 include_directories(ompl_interface/include
+                    ${Boost_INCLUDE_DIRS}
                     ${catkin_INCLUDE_DIRS}
                     ${OMPL_INCLUDE_DIRS})
 

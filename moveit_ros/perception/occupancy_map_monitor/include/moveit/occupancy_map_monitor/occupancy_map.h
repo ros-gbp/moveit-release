@@ -44,18 +44,16 @@
 
 namespace occupancy_map_monitor
 {
-
 typedef octomap::OcTreeNode OccMapNode;
 
 class OccMapTree : public octomap::OcTree
 {
 public:
-
   OccMapTree(double resolution) : octomap::OcTree(resolution)
   {
   }
 
-  OccMapTree(const std::string &filename) : octomap::OcTree(filename)
+  OccMapTree(const std::string& filename) : octomap::OcTree(filename)
   {
   }
 
@@ -105,7 +103,7 @@ public:
   }
 
   /** @brief Set the callback to trigger when updates are received */
-  void setUpdateCallback(const boost::function<void()> &update_callback)
+  void setUpdateCallback(const boost::function<void()>& update_callback)
   {
     update_callback_ = update_callback;
   }
@@ -117,7 +115,6 @@ private:
 
 typedef std::shared_ptr<OccMapTree> OccMapTreePtr;
 typedef std::shared_ptr<const OccMapTree> OccMapTreeConstPtr;
-
 }
 
 #endif

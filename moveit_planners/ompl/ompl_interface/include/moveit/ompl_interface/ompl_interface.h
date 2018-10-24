@@ -48,28 +48,31 @@
 #include <map>
 #include <ros/ros.h>
 
-/** \brief The MoveIt interface to OMPL */
+/** \brief The MoveIt! interface to OMPL */
 namespace ompl_interface
 {
-
 /** @class OMPLInterface
  *  This class defines the interface to the motion planners in OMPL*/
 class OMPLInterface
 {
 public:
+  /** \brief Initialize OMPL-based planning for a particular robot model. ROS configuration is read from the specified
+   * NodeHandle */
+  OMPLInterface(const robot_model::RobotModelConstPtr& kmodel, const ros::NodeHandle& nh = ros::NodeHandle("~"));
 
-  /** \brief Initialize OMPL-based planning for a particular robot model. ROS configuration is read from the specified NodeHandle */
-  OMPLInterface(const robot_model::RobotModelConstPtr &kmodel, const ros::NodeHandle &nh = ros::NodeHandle("~"));
-
-  /** \brief Initialize OMPL-based planning for a particular robot model. ROS configuration is read from the specified NodeHandle. However,
-      planner configurations are used as specified in \e pconfig instead of reading them from the ROS parameter server */
-  OMPLInterface(const robot_model::RobotModelConstPtr &kmodel, const planning_interface::PlannerConfigurationMap &pconfig, const ros::NodeHandle &nh = ros::NodeHandle("~"));
+  /** \brief Initialize OMPL-based planning for a particular robot model. ROS configuration is read from the specified
+     NodeHandle. However,
+      planner configurations are used as specified in \e pconfig instead of reading them from the ROS parameter server
+     */
+  OMPLInterface(const robot_model::RobotModelConstPtr& kmodel,
+                const planning_interface::PlannerConfigurationMap& pconfig,
+                const ros::NodeHandle& nh = ros::NodeHandle("~"));
 
   virtual ~OMPLInterface();
 
   /** @brief Specify configurations for the planners.
       @param pconfig Configurations for the different planners */
-  void setPlannerConfigurations(const planning_interface::PlannerConfigurationMap &pconfig);
+  void setPlannerConfigurations(const planning_interface::PlannerConfigurationMap& pconfig);
 
   /** @brief Get the configurations for the planners that are already loaded
       @param pconfig Configurations for the different planners */
@@ -79,12 +82,13 @@ public:
   }
 
   ModelBasedPlanningContextPtr getPlanningContext(const planning_scene::PlanningSceneConstPtr& planning_scene,
-                                                  const planning_interface::MotionPlanRequest &req) const;
+                                                  const planning_interface::MotionPlanRequest& req) const;
   ModelBasedPlanningContextPtr getPlanningContext(const planning_scene::PlanningSceneConstPtr& planning_scene,
-                                                  const planning_interface::MotionPlanRequest &req,
-                                                  moveit_msgs::MoveItErrorCodes &error_code) const;
+                                                  const planning_interface::MotionPlanRequest& req,
+                                                  moveit_msgs::MoveItErrorCodes& error_code) const;
 
-  ModelBasedPlanningContextPtr getPlanningContext(const std::string &config, const std::string &factory_type = "") const;
+  ModelBasedPlanningContextPtr getPlanningContext(const std::string& config,
+                                                  const std::string& factory_type = "") const;
 
   ModelBasedPlanningContextPtr getLastPlanningContext() const
   {
@@ -131,9 +135,9 @@ public:
     return use_constraints_approximations_;
   }
 
-  void loadConstraintApproximations(const std::string &path);
+  void loadConstraintApproximations(const std::string& path);
 
-  void saveConstraintApproximations(const std::string &path);
+  void saveConstraintApproximations(const std::string& path);
 
   bool simplifySolutions() const
   {
@@ -145,16 +149,22 @@ public:
     simplify_solutions_ = flag;
   }
 
-  /** @brief Look up param server 'constraint_approximations' and use its value as the path to save constraint approximations to */
+  /** @brief Look up param server 'constraint_approximations' and use its value as the path to save constraint
+   * approximations to */
   bool saveConstraintApproximations();
 
-  /** @brief Look up param server 'constraint_approximations' and use its value as the path to load constraint approximations to */
+  /** @brief Look up param server 'constraint_approximations' and use its value as the path to load constraint
+   * approximations to */
   bool loadConstraintApproximations();
 
   /** @brief Print the status of this node*/
   void printStatus();
 
 protected:
+  /** @brief Load planner configurations for specified group into planner_config */
+  bool loadPlannerConfiguration(const std::string& group_name, const std::string& planner_id,
+                                const std::map<std::string, std::string>& group_params,
+                                planning_interface::PlannerConfigurationSettings& planner_config);
 
   /** @brief Configure the planners*/
   void loadPlannerConfigurations();
@@ -162,16 +172,15 @@ protected:
   /** @brief Load the additional plugins for sampling constraints */
   void loadConstraintSamplers();
 
-  void configureContext(const ModelBasedPlanningContextPtr &context) const;
+  void configureContext(const ModelBasedPlanningContextPtr& context) const;
 
   /** \brief Configure the OMPL planning context for a new planning request */
-  ModelBasedPlanningContextPtr prepareForSolve(const planning_interface::MotionPlanRequest &req,
+  ModelBasedPlanningContextPtr prepareForSolve(const planning_interface::MotionPlanRequest& req,
                                                const planning_scene::PlanningSceneConstPtr& planning_scene,
-                                               moveit_msgs::MoveItErrorCodes *error_code,
-                                               unsigned int *attempts, double *timeout) const;
+                                               moveit_msgs::MoveItErrorCodes* error_code, unsigned int* attempts,
+                                               double* timeout) const;
 
-
-  ros::NodeHandle nh_; /// The ROS node handle
+  ros::NodeHandle nh_;  /// The ROS node handle
 
   /** \brief The kinematic model for which motion plans are computed */
   robot_model::RobotModelConstPtr kmodel_;
@@ -186,12 +195,8 @@ protected:
   bool simplify_solutions_;
 
 private:
-
   constraint_sampler_manager_loader::ConstraintSamplerManagerLoaderPtr constraint_sampler_manager_loader_;
-
 };
-
 }
-
 
 #endif

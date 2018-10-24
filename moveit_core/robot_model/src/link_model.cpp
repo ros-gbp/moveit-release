@@ -37,11 +37,16 @@
 #include <moveit/robot_model/link_model.h>
 #include <moveit/robot_model/joint_model.h>
 #include <geometric_shapes/shape_operations.h>
+#include <moveit/robot_model/aabb.h>
 
-moveit::core::LinkModel::LinkModel(const std::string &name)
+namespace moveit
+{
+namespace core
+{
+LinkModel::LinkModel(const std::string& name)
   : name_(name)
-  , parent_joint_model_(NULL)
-  , parent_link_model_(NULL)
+  , parent_joint_model_(nullptr)
+  , parent_link_model_(nullptr)
   , is_parent_joint_fixed_(false)
   , joint_origin_transform_is_identity_(true)
   , first_collision_body_transform_index_(-1)
@@ -50,60 +55,70 @@ moveit::core::LinkModel::LinkModel(const std::string &name)
   joint_origin_transform_.setIdentity();
 }
 
-moveit::core::LinkModel::~LinkModel()
-{
-}
+LinkModel::~LinkModel() = default;
 
-void moveit::core::LinkModel::setJointOriginTransform(const Eigen::Affine3d &transform)
+void LinkModel::setJointOriginTransform(const Eigen::Affine3d& transform)
 {
   joint_origin_transform_ = transform;
-  joint_origin_transform_is_identity_ = joint_origin_transform_.rotation().isIdentity() &&
-    joint_origin_transform_.translation().norm() < std::numeric_limits<double>::epsilon();
+  joint_origin_transform_is_identity_ =
+      joint_origin_transform_.rotation().isIdentity() &&
+      joint_origin_transform_.translation().norm() < std::numeric_limits<double>::epsilon();
 }
 
-void moveit::core::LinkModel::setParentJointModel(const JointModel *joint)
+void LinkModel::setParentJointModel(const JointModel* joint)
 {
   parent_joint_model_ = joint;
   is_parent_joint_fixed_ = joint->getType() == JointModel::FIXED;
 }
 
-void moveit::core::LinkModel::setGeometry(const std::vector<shapes::ShapeConstPtr> &shapes, const EigenSTL::vector_Affine3d &origins)
+void LinkModel::setGeometry(const std::vector<shapes::ShapeConstPtr>& shapes, const EigenSTL::vector_Affine3d& origins)
 {
   shapes_ = shapes;
   collision_origin_transform_ = origins;
   collision_origin_transform_is_identity_.resize(collision_origin_transform_.size());
 
-  Eigen::Vector3d a = Eigen::Vector3d(0.0, 0.0, 0.0);
-  Eigen::Vector3d b = Eigen::Vector3d(0.0, 0.0, 0.0);
+  core::AABB aabb;
 
-  for (std::size_t i = 0 ; i < shapes_.size() ; ++i)
+  for (std::size_t i = 0; i < shapes_.size(); ++i)
   {
-    collision_origin_transform_is_identity_[i] = (collision_origin_transform_[i].rotation().isIdentity() &&
-                                                  collision_origin_transform_[i].translation().norm() < std::numeric_limits<double>::epsilon()) ? 1 : 0;
-    Eigen::Vector3d ei = shapes::computeShapeExtents(shapes_[i].get());
-    Eigen::Vector3d p1 = collision_origin_transform_[i] * (-ei / 2.0);
-    Eigen::Vector3d p2 = collision_origin_transform_[i] * (-p1);
+    collision_origin_transform_is_identity_[i] =
+        (collision_origin_transform_[i].rotation().isIdentity() &&
+         collision_origin_transform_[i].translation().norm() < std::numeric_limits<double>::epsilon()) ?
+            1 :
+            0;
+    Eigen::Affine3d transform = collision_origin_transform_[i];
 
-    if (i == 0)
+    if (shapes_[i]->type != shapes::MESH)
     {
-      a = p1;
-      b = p2;
+      Eigen::Vector3d extents = shapes::computeShapeExtents(shapes_[i].get());
+      aabb.extendWithTransformedBox(transform, extents);
     }
     else
     {
-      for (int i = 0 ; i < 3 ; ++i)
-        a[i] = std::min(a[i], p1[i]);
-      for (int i = 0 ; i < 3 ; ++i)
-        b[i] = std::max(b[i], p2[i]);
+      // we cannot use shapes::computeShapeExtents() for meshes, since that method does not provide information about
+      // the offset of the mesh origin
+      const shapes::Mesh* mesh = dynamic_cast<const shapes::Mesh*>(shapes_[i].get());
+      for (unsigned int j = 0; j < mesh->vertex_count; ++j)
+      {
+        aabb.extend(transform * Eigen::Map<Eigen::Vector3d>(&mesh->vertices[3 * j]));
+      }
     }
   }
 
-  shape_extents_ = b - a;
+  centered_bounding_box_offset_ = aabb.center();
+  if (shapes_.empty())
+    shape_extents_.setZero();
+  else
+    shape_extents_ = aabb.sizes();
 }
 
-void moveit::core::LinkModel::setVisualMesh(const std::string &visual_mesh, const Eigen::Affine3d &origin, const Eigen::Vector3d &scale)
+void LinkModel::setVisualMesh(const std::string& visual_mesh, const Eigen::Affine3d& origin,
+                              const Eigen::Vector3d& scale)
 {
   visual_mesh_filename_ = visual_mesh;
   visual_mesh_origin_ = origin;
   visual_mesh_scale_ = scale;
 }
+
+}  // end of namespace core
+}  // end of namespace moveit

@@ -45,7 +45,6 @@
 
 namespace collision_detection
 {
-
 MOVEIT_CLASS_FORWARD(GroupStateRepresentation);
 MOVEIT_CLASS_FORWARD(DistanceFieldCacheEntry);
 
@@ -60,7 +59,7 @@ struct GroupStateRepresentation
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
   GroupStateRepresentation(){};
-  GroupStateRepresentation(const GroupStateRepresentation &gsr)
+  GroupStateRepresentation(const GroupStateRepresentation& gsr)
   {
     link_body_decompositions_.resize(gsr.link_body_decompositions_.size());
     for (unsigned int i = 0; i < gsr.link_body_decompositions_.size(); i++)
@@ -135,7 +134,7 @@ struct DistanceFieldCacheEntry
   distance_field::DistanceFieldPtr distance_field_;
   /** this can be used as a starting point for creating a
    * GroupStateRepresentation needed for collision checking */
- GroupStateRepresentationPtr pregenerated_group_state_representation_;
+  GroupStateRepresentationPtr pregenerated_group_state_representation_;
   /** names of all links in the group and all links below the group (links that
    * will move if any of the joints in the group move)
    */
@@ -167,18 +166,18 @@ struct DistanceFieldCacheEntry
   std::vector<std::vector<bool>> intra_group_collision_enabled_;
 };
 
-BodyDecompositionConstPtr getBodyDecompositionCacheEntry(const shapes::ShapeConstPtr &shape, double resolution);
+BodyDecompositionConstPtr getBodyDecompositionCacheEntry(const shapes::ShapeConstPtr& shape, double resolution);
 
-PosedBodyPointDecompositionVectorPtr getCollisionObjectPointDecomposition(const collision_detection::World::Object &obj,
+PosedBodyPointDecompositionVectorPtr getCollisionObjectPointDecomposition(const collision_detection::World::Object& obj,
                                                                           double resolution);
 
-PosedBodySphereDecompositionVectorPtr getAttachedBodySphereDecomposition(const robot_state::AttachedBody *att,
+PosedBodySphereDecompositionVectorPtr getAttachedBodySphereDecomposition(const robot_state::AttachedBody* att,
                                                                          double resolution);
 
-PosedBodyPointDecompositionVectorPtr getAttachedBodyPointDecomposition(const robot_state::AttachedBody *att,
+PosedBodyPointDecompositionVectorPtr getAttachedBodyPointDecomposition(const robot_state::AttachedBody* att,
                                                                        double resolution);
 
-void getBodySphereVisualizationMarkers(GroupStateRepresentationPtr &gsr,
-                                       std::string reference_frame, visualization_msgs::MarkerArray &body_marker_array);
+void getBodySphereVisualizationMarkers(GroupStateRepresentationPtr& gsr, std::string reference_frame,
+                                       visualization_msgs::MarkerArray& body_marker_array);
 }
 #endif

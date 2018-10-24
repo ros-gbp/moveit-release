@@ -40,12 +40,16 @@
 #include <moveit/robot_model/link_model.h>
 #include <algorithm>
 
-moveit::core::JointModel::JointModel(const std::string& name)
+namespace moveit
+{
+namespace core
+{
+JointModel::JointModel(const std::string& name)
   : name_(name)
   , type_(UNKNOWN)
-  , parent_link_model_(NULL)
-  , child_link_model_(NULL)
-  , mimic_(NULL)
+  , parent_link_model_(nullptr)
+  , child_link_model_(nullptr)
+  , mimic_(nullptr)
   , mimic_factor_(1.0)
   , mimic_offset_(0.0)
   , passive_(false)
@@ -55,25 +59,30 @@ moveit::core::JointModel::JointModel(const std::string& name)
 {
 }
 
-moveit::core::JointModel::~JointModel()
-{
-}
+JointModel::~JointModel() = default;
 
-std::string moveit::core::JointModel::getTypeName() const
+std::string JointModel::getTypeName() const
 {
   switch (type_)
   {
-  case UNKNOWN: return "Unkown";
-  case REVOLUTE: return "Revolute";
-  case PRISMATIC: return "Prismatic";
-  case PLANAR: return "Planar";
-  case FLOATING: return "Floating";
-  case FIXED: return "Fixed";
-  default: return "[Unkown]";
+    case UNKNOWN:
+      return "Unkown";
+    case REVOLUTE:
+      return "Revolute";
+    case PRISMATIC:
+      return "Prismatic";
+    case PLANAR:
+      return "Planar";
+    case FLOATING:
+      return "Floating";
+    case FIXED:
+      return "Fixed";
+    default:
+      return "[Unkown]";
   }
 }
 
-int moveit::core::JointModel::getLocalVariableIndex(const std::string &variable) const
+int JointModel::getLocalVariableIndex(const std::string& variable) const
 {
   VariableIndexMap::const_iterator it = variable_index_map_.find(variable);
   if (it == variable_index_map_.end())
@@ -81,50 +90,48 @@ int moveit::core::JointModel::getLocalVariableIndex(const std::string &variable)
   return it->second;
 }
 
-bool moveit::core::JointModel::enforceVelocityBounds(double *values, const Bounds &other_bounds) const
+bool JointModel::enforceVelocityBounds(double* values, const Bounds& other_bounds) const
 {
   bool change = false;
-  for (std::size_t i = 0 ; i < other_bounds.size() ; ++i)
+  for (std::size_t i = 0; i < other_bounds.size(); ++i)
     if (other_bounds[i].max_velocity_ < values[i])
     {
       values[i] = other_bounds[i].max_velocity_;
       change = true;
     }
-    else
-      if (other_bounds[i].min_velocity_ > values[i])
-      {
-        values[i] = other_bounds[i].min_velocity_;
-        change = true;
-      }
+    else if (other_bounds[i].min_velocity_ > values[i])
+    {
+      values[i] = other_bounds[i].min_velocity_;
+      change = true;
+    }
   return change;
 }
 
-bool moveit::core::JointModel::satisfiesVelocityBounds(const double *values, const Bounds &other_bounds, double margin) const
+bool JointModel::satisfiesVelocityBounds(const double* values, const Bounds& other_bounds, double margin) const
 {
-  for (std::size_t i = 0 ; i < other_bounds.size() ; ++i)
+  for (std::size_t i = 0; i < other_bounds.size(); ++i)
     if (other_bounds[i].max_velocity_ + margin < values[i])
       return false;
-    else
-      if (other_bounds[i].min_velocity_ - margin > values[i])
-        return false;
+    else if (other_bounds[i].min_velocity_ - margin > values[i])
+      return false;
   return true;
 }
 
-const moveit::core::VariableBounds& moveit::core::JointModel::getVariableBounds(const std::string& variable) const
+const VariableBounds& JointModel::getVariableBounds(const std::string& variable) const
 {
   return variable_bounds_[getLocalVariableIndex(variable)];
 }
 
-void moveit::core::JointModel::setVariableBounds(const std::string& variable, const VariableBounds& bounds)
+void JointModel::setVariableBounds(const std::string& variable, const VariableBounds& bounds)
 {
   variable_bounds_[getLocalVariableIndex(variable)] = bounds;
   computeVariableBoundsMsg();
 }
 
-void moveit::core::JointModel::setVariableBounds(const std::vector<moveit_msgs::JointLimits>& jlim)
+void JointModel::setVariableBounds(const std::vector<moveit_msgs::JointLimits>& jlim)
 {
   for (std::size_t j = 0; j < variable_names_.size(); ++j)
-    for (std::size_t i = 0 ; i < jlim.size() ; ++i)
+    for (std::size_t i = 0; i < jlim.size(); ++i)
       if (jlim[i].joint_name == variable_names_[j])
       {
         variable_bounds_[j].position_bounded_ = jlim[i].has_position_limits;
@@ -150,7 +157,7 @@ void moveit::core::JointModel::setVariableBounds(const std::vector<moveit_msgs::
   computeVariableBoundsMsg();
 }
 
-void moveit::core::JointModel::computeVariableBoundsMsg()
+void JointModel::computeVariableBoundsMsg()
 {
   variable_bounds_msg_.clear();
   for (std::size_t i = 0; i < variable_bounds_.size(); ++i)
@@ -163,63 +170,68 @@ void moveit::core::JointModel::computeVariableBoundsMsg()
     lim.has_velocity_limits = variable_bounds_[i].velocity_bounded_;
     lim.max_velocity = std::min(fabs(variable_bounds_[i].min_velocity_), fabs(variable_bounds_[i].max_velocity_));
     lim.has_acceleration_limits = variable_bounds_[i].acceleration_bounded_;
-    lim.max_acceleration = std::min(fabs(variable_bounds_[i].min_acceleration_), fabs(variable_bounds_[i].max_acceleration_));
+    lim.max_acceleration =
+        std::min(fabs(variable_bounds_[i].min_acceleration_), fabs(variable_bounds_[i].max_acceleration_));
     variable_bounds_msg_.push_back(lim);
   }
 }
 
-void moveit::core::JointModel::setMimic(const JointModel *mimic, double factor, double offset)
+void JointModel::setMimic(const JointModel* mimic, double factor, double offset)
 {
   mimic_ = mimic;
   mimic_factor_ = factor;
   mimic_offset_ = offset;
 }
 
-void moveit::core::JointModel::addMimicRequest(const JointModel *joint)
+void JointModel::addMimicRequest(const JointModel* joint)
 {
   mimic_requests_.push_back(joint);
 }
 
-void moveit::core::JointModel::addDescendantJointModel(const JointModel *joint)
+void JointModel::addDescendantJointModel(const JointModel* joint)
 {
   descendant_joint_models_.push_back(joint);
   if (joint->getType() != FIXED)
     non_fixed_descendant_joint_models_.push_back(joint);
 }
 
-void moveit::core::JointModel::addDescendantLinkModel(const LinkModel *link)
+void JointModel::addDescendantLinkModel(const LinkModel* link)
 {
   descendant_link_models_.push_back(link);
 }
 
 namespace
 {
-inline void printBoundHelper(std::ostream &out, double v)
+inline void printBoundHelper(std::ostream& out, double v)
 {
   if (v <= -std::numeric_limits<double>::infinity())
     out << "-inf";
+  else if (v >= std::numeric_limits<double>::infinity())
+    out << "inf";
   else
-    if (v >= std::numeric_limits<double>::infinity())
-      out << "inf";
-    else
-      out << v;
+    out << v;
 }
 }
 
-std::ostream& moveit::core::operator<<(std::ostream &out, const VariableBounds &b)
+std::ostream& operator<<(std::ostream& out, const VariableBounds& b)
 {
   out << "P." << (b.position_bounded_ ? "bounded" : "unbounded") << " [";
   printBoundHelper(out, b.min_position_);
   out << ", ";
   printBoundHelper(out, b.max_position_);
-  out << "]; " << "V." << (b.velocity_bounded_ ? "bounded" : "unbounded") << " [";
+  out << "]; "
+      << "V." << (b.velocity_bounded_ ? "bounded" : "unbounded") << " [";
   printBoundHelper(out, b.min_velocity_);
   out << ", ";
   printBoundHelper(out, b.max_velocity_);
-  out << "]; " << "A." << (b.acceleration_bounded_ ? "bounded" : "unbounded") << " [";
+  out << "]; "
+      << "A." << (b.acceleration_bounded_ ? "bounded" : "unbounded") << " [";
   printBoundHelper(out, b.min_acceleration_);
   out << ", ";
   printBoundHelper(out, b.max_acceleration_);
   out << "];";
   return out;
 }
+
+}  // end of namespace core
+}  // end of namespace moveit

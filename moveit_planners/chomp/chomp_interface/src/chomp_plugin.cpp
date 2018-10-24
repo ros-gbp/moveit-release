@@ -40,7 +40,7 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
 
 namespace chomp_interface
 {
@@ -51,12 +51,12 @@ public:
   {
   }
 
-  bool initialize(const robot_model::RobotModelConstPtr &model, const std::string &ns)
+  bool initialize(const robot_model::RobotModelConstPtr& model, const std::string& ns)
   {
     // model->printModelInfo(std::cout);
     std::vector<std::string> groups = model->getJointModelGroupNames();
     ROS_INFO_STREAM("Following groups exist:");
-    for (int i = 0; i < groups.size(); i++)
+    for (std::size_t i = 0; i < groups.size(); i++)
     {
       ROS_INFO("%s", groups[i].c_str());
       planning_contexts_[groups[i]] =
@@ -65,9 +65,9 @@ public:
     return true;
   }
 
-  planning_interface::PlanningContextPtr getPlanningContext(const planning_scene::PlanningSceneConstPtr &planning_scene,
-                                                            const planning_interface::MotionPlanRequest &req,
-                                                            moveit_msgs::MoveItErrorCodes &error_code) const
+  planning_interface::PlanningContextPtr getPlanningContext(const planning_scene::PlanningSceneConstPtr& planning_scene,
+                                                            const planning_interface::MotionPlanRequest& req,
+                                                            moveit_msgs::MoveItErrorCodes& error_code) const
   {
     error_code.val = moveit_msgs::MoveItErrorCodes::SUCCESS;
 
@@ -86,11 +86,12 @@ public:
     }
 
     planning_contexts_.at(req.group_name)->setMotionPlanRequest(req);
+    planning_contexts_.at(req.group_name)->setPlanningScene(planning_scene);
     error_code.val = moveit_msgs::MoveItErrorCodes::SUCCESS;
     return planning_contexts_.at(req.group_name);
   }
 
-  bool canServiceRequest(const planning_interface::MotionPlanRequest &req) const
+  bool canServiceRequest(const planning_interface::MotionPlanRequest& req) const
   {
     // TODO: this is a dummy implementation
     //      capabilities.dummy = false;
@@ -102,7 +103,7 @@ public:
     return "CHOMP";
   }
 
-  void getPlanningAlgorithms(std::vector<std::string> &algs) const
+  void getPlanningAlgorithms(std::vector<std::string>& algs) const
   {
     algs.resize(1);
     algs[0] = "CHOMP";

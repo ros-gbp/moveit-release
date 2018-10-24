@@ -44,61 +44,55 @@
 
 namespace robot_model_loader
 {
-
 MOVEIT_CLASS_FORWARD(RobotModelLoader);
 
 /** @class RobotModelLoader */
 class RobotModelLoader
 {
 public:
-
   /** @brief Structure that encodes the options to be passed to the RobotModelLoader constructor */
   struct Options
   {
-    Options(const std::string &robot_description = "robot_description") :
-      robot_description_(robot_description),
-      urdf_doc_(NULL),
-      srdf_doc_(NULL),
-      load_kinematics_solvers_(true)
+    Options(const std::string& robot_description = "robot_description")
+      : robot_description_(robot_description), urdf_doc_(NULL), srdf_doc_(NULL), load_kinematics_solvers_(true)
     {
     }
 
-    Options(const std::string &urdf_string, const std::string &srdf_string) :
-      urdf_string_(urdf_string),
-      srdf_string_(srdf_string),
-      urdf_doc_(NULL),
-      srdf_doc_(NULL),
-      load_kinematics_solvers_(true)
+    Options(const std::string& urdf_string, const std::string& srdf_string)
+      : urdf_string_(urdf_string)
+      , srdf_string_(srdf_string)
+      , urdf_doc_(NULL)
+      , srdf_doc_(NULL)
+      , load_kinematics_solvers_(true)
     {
     }
 
-    Options(TiXmlDocument *urdf_doc, TiXmlDocument *srdf_doc) :
-      urdf_doc_(urdf_doc),
-      srdf_doc_(srdf_doc),
-      load_kinematics_solvers_(true)
+    Options(TiXmlDocument* urdf_doc, TiXmlDocument* srdf_doc)
+      : urdf_doc_(urdf_doc), srdf_doc_(srdf_doc), load_kinematics_solvers_(true)
     {
     }
 
-    /**  @brief The string name corresponding to the ROS param where the URDF is loaded; Using the same parameter name plus the "_planning" suffix, additional configuration can be specified (e.g., additional joint limits).
+    /**  @brief The string name corresponding to the ROS param where the URDF is loaded; Using the same parameter name
+       plus the "_planning" suffix, additional configuration can be specified (e.g., additional joint limits).
          Loading from the param server is attempted only if loading from string fails. */
     std::string robot_description_;
 
-    /** @brief The string content of the URDF and SRDF documents. Loading from string is attempted only if loading from XML fails */
+    /** @brief The string content of the URDF and SRDF documents. Loading from string is attempted only if loading from
+     * XML fails */
     std::string urdf_string_, srdf_string_;
 
     /** @brief The parsed XML content of the URDF and SRDF documents. */
     TiXmlDocument *urdf_doc_, *srdf_doc_;
 
-    /** @brief Flag indicating whether the kinematics solvers should be loaded as well, using specified ROS parameters */
+    /** @brief Flag indicating whether the kinematics solvers should be loaded as well, using specified ROS parameters
+     */
     bool load_kinematics_solvers_;
-
   };
 
-
   /** @brief Default constructor */
-  RobotModelLoader(const Options &opt = Options());
+  RobotModelLoader(const Options& opt = Options());
 
-  RobotModelLoader(const std::string &robot_description, bool load_kinematics_solvers = true);
+  RobotModelLoader(const std::string& robot_description, bool load_kinematics_solvers = true);
 
   ~RobotModelLoader();
 
@@ -139,18 +133,17 @@ public:
     return kinematics_loader_;
   }
 
-  /** @brief Load the kinematics solvers into the kinematic model. This is done by default, unless disabled explicitly by the options passed to the constructor */
-  void loadKinematicsSolvers(const kinematics_plugin_loader::KinematicsPluginLoaderPtr &kloader = kinematics_plugin_loader::KinematicsPluginLoaderPtr());
+  /** @brief Load the kinematics solvers into the kinematic model. This is done by default, unless disabled explicitly
+   * by the options passed to the constructor */
+  void loadKinematicsSolvers(const kinematics_plugin_loader::KinematicsPluginLoaderPtr& kloader =
+                                 kinematics_plugin_loader::KinematicsPluginLoaderPtr());
 
 private:
-
-  void configure(const Options &opt);
+  void configure(const Options& opt);
 
   robot_model::RobotModelPtr model_;
   rdf_loader::RDFLoaderPtr rdf_loader_;
   kinematics_plugin_loader::KinematicsPluginLoaderPtr kinematics_loader_;
-
 };
-
 }
 #endif

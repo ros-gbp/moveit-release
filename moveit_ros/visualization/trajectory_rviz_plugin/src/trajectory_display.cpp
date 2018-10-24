@@ -41,15 +41,13 @@
 
 namespace moveit_rviz_plugin
 {
-
-TrajectoryDisplay::TrajectoryDisplay() :
-  Display(), load_robot_model_(false)
+TrajectoryDisplay::TrajectoryDisplay() : Display(), load_robot_model_(false)
 {
-  // The robot description property is only needed when using the trajectory playback standalone (not within motion planning plugin)
-  robot_description_property_ =
-    new rviz::StringProperty( "Robot Description", "robot_description", "The name of the ROS parameter where the URDF for the robot is loaded",
-                              this,
-                              SLOT( changedRobotDescription() ), this );
+  // The robot description property is only needed when using the trajectory playback standalone (not within motion
+  // planning plugin)
+  robot_description_property_ = new rviz::StringProperty(
+      "Robot Description", "robot_description", "The name of the ROS parameter where the URDF for the robot is loaded",
+      this, SLOT(changedRobotDescription()), this);
 
   trajectory_visual_.reset(new TrajectoryVisualization(this, this));
 }
@@ -78,7 +76,8 @@ void TrajectoryDisplay::loadRobotModel()
   }
   this->setStatus(rviz::StatusProperty::Ok, "Robot Model", "Successfully loaded");
 
-  const srdf::ModelSharedPtr &srdf = rdf_loader_->getSRDF() ? rdf_loader_->getSRDF() : srdf::ModelSharedPtr(new srdf::Model());
+  const srdf::ModelSharedPtr& srdf =
+      rdf_loader_->getSRDF() ? rdf_loader_->getSRDF() : srdf::ModelSharedPtr(new srdf::Model());
   robot_model_.reset(new robot_model::RobotModel(rdf_loader_->getURDF(), srdf));
 
   // Send to child class
@@ -96,7 +95,7 @@ void TrajectoryDisplay::reset()
 void TrajectoryDisplay::onEnable()
 {
   Display::onEnable();
-  load_robot_model_ = true; // allow loading of robot model in update()
+  load_robot_model_ = true;  // allow loading of robot model in update()
 }
 
 void TrajectoryDisplay::onDisable()
@@ -115,6 +114,12 @@ void TrajectoryDisplay::update(float wall_dt, float ros_dt)
   trajectory_visual_->update(wall_dt, ros_dt);
 }
 
+void TrajectoryDisplay::setName(const QString& name)
+{
+  BoolProperty::setName(name);
+  trajectory_visual_->setName(name);
+}
+
 void TrajectoryDisplay::changedRobotDescription()
 {
   if (isEnabled())
@@ -123,4 +128,4 @@ void TrajectoryDisplay::changedRobotDescription()
     loadRobotModel();
 }
 
-} // namespace moveit_rviz_plugin
+}  // namespace moveit_rviz_plugin

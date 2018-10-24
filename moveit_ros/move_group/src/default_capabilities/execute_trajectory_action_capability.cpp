@@ -41,21 +41,20 @@
 #include <moveit/kinematic_constraints/utils.h>
 #include <moveit/move_group/capability_names.h>
 
-namespace move_group {
-
-MoveGroupExecuteTrajectoryAction::MoveGroupExecuteTrajectoryAction() :
-  MoveGroupCapability("ExecuteTrajectoryAction")
+namespace move_group
+{
+MoveGroupExecuteTrajectoryAction::MoveGroupExecuteTrajectoryAction() : MoveGroupCapability("ExecuteTrajectoryAction")
 {
 }
 
 void MoveGroupExecuteTrajectoryAction::initialize()
 {
   // start the move action server
-  execute_action_server_.reset(new actionlib::SimpleActionServer<moveit_msgs::ExecuteTrajectoryAction>
-                               (root_node_handle_, EXECUTE_ACTION_NAME,
-                                boost::bind(&MoveGroupExecuteTrajectoryAction::executePathCallback, this, _1), false));
+  execute_action_server_.reset(new actionlib::SimpleActionServer<moveit_msgs::ExecuteTrajectoryAction>(
+      root_node_handle_, EXECUTE_ACTION_NAME,
+      boost::bind(&MoveGroupExecuteTrajectoryAction::executePathCallback, this, _1), false));
   execute_action_server_->registerPreemptCallback(
-    boost::bind(&MoveGroupExecuteTrajectoryAction::preemptExecuteTrajectoryCallback, this));
+      boost::bind(&MoveGroupExecuteTrajectoryAction::preemptExecuteTrajectoryCallback, this));
   execute_action_server_->start();
 }
 
@@ -64,15 +63,15 @@ void MoveGroupExecuteTrajectoryAction::executePathCallback(const moveit_msgs::Ex
   moveit_msgs::ExecuteTrajectoryResult action_res;
   if (!context_->trajectory_execution_manager_)
   {
-    std::string response = "Cannot execute trajectory since ~allow_trajectory_execution was set to false";
+    const std::string response = "Cannot execute trajectory since ~allow_trajectory_execution was set to false";
     action_res.error_code.val = moveit_msgs::MoveItErrorCodes::CONTROL_FAILED;
     execute_action_server_->setAborted(action_res, response);
     return;
   }
 
-  executePathCallback_Execute(goal, action_res);
+  executePath(goal, action_res);
 
-  std::string response = getActionResultString(action_res.error_code, false, false);
+  const std::string response = getActionResultString(action_res.error_code, false, false);
   if (action_res.error_code.val == moveit_msgs::MoveItErrorCodes::SUCCESS)
   {
     execute_action_server_->setSucceeded(action_res, response);
@@ -89,27 +88,26 @@ void MoveGroupExecuteTrajectoryAction::executePathCallback(const moveit_msgs::Ex
   setExecuteTrajectoryState(IDLE);
 }
 
-void MoveGroupExecuteTrajectoryAction::executePathCallback_Execute(
-  const moveit_msgs::ExecuteTrajectoryGoalConstPtr& goal,
-  moveit_msgs::ExecuteTrajectoryResult &action_res)
+void MoveGroupExecuteTrajectoryAction::executePath(const moveit_msgs::ExecuteTrajectoryGoalConstPtr& goal,
+                                                   moveit_msgs::ExecuteTrajectoryResult& action_res)
 {
-  ROS_INFO_NAMED("move_group", "Execution request received for ExecuteTrajectory action.");
+  ROS_INFO_NAMED(capability_name_, "Execution request received");
 
   context_->trajectory_execution_manager_->clear();
   if (context_->trajectory_execution_manager_->push(goal->trajectory))
   {
     setExecuteTrajectoryState(MONITOR);
     context_->trajectory_execution_manager_->execute();
-    moveit_controller_manager::ExecutionStatus es = context_->trajectory_execution_manager_->waitForExecution();
-    if (es == moveit_controller_manager::ExecutionStatus::SUCCEEDED)
+    moveit_controller_manager::ExecutionStatus status = context_->trajectory_execution_manager_->waitForExecution();
+    if (status == moveit_controller_manager::ExecutionStatus::SUCCEEDED)
     {
       action_res.error_code.val = moveit_msgs::MoveItErrorCodes::SUCCESS;
     }
-    else if (es == moveit_controller_manager::ExecutionStatus::PREEMPTED)
+    else if (status == moveit_controller_manager::ExecutionStatus::PREEMPTED)
     {
       action_res.error_code.val = moveit_msgs::MoveItErrorCodes::PREEMPTED;
     }
-    else if (es == moveit_controller_manager::ExecutionStatus::TIMED_OUT)
+    else if (status == moveit_controller_manager::ExecutionStatus::TIMED_OUT)
     {
       action_res.error_code.val = moveit_msgs::MoveItErrorCodes::TIMED_OUT;
     }
@@ -117,7 +115,7 @@ void MoveGroupExecuteTrajectoryAction::executePathCallback_Execute(
     {
       action_res.error_code.val = moveit_msgs::MoveItErrorCodes::CONTROL_FAILED;
     }
-    ROS_INFO_STREAM_NAMED("move_group", "Execution completed: " << es.asString());
+    ROS_INFO_STREAM_NAMED(capability_name_, "Execution completed: " << status.asString());
   }
   else
   {
@@ -139,5 +137,5 @@ void MoveGroupExecuteTrajectoryAction::setExecuteTrajectoryState(MoveGroupState 
 
 }  // namespace move_group
 
-#include <class_loader/class_loader.h>
+#include <class_loader/class_loader.hpp>
 CLASS_LOADER_REGISTER_CLASS(move_group::MoveGroupExecuteTrajectoryAction, move_group::MoveGroupCapability)

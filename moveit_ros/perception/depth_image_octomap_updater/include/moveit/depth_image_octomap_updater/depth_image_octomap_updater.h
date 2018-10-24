@@ -51,21 +51,19 @@ namespace occupancy_map_monitor
 class DepthImageOctomapUpdater : public OccupancyMapUpdater
 {
 public:
-
   DepthImageOctomapUpdater();
   virtual ~DepthImageOctomapUpdater();
 
-  virtual bool setParams(XmlRpc::XmlRpcValue &params);
+  virtual bool setParams(XmlRpc::XmlRpcValue& params);
   virtual bool initialize();
   virtual void start();
   virtual void stop();
-  virtual ShapeHandle excludeShape(const shapes::ShapeConstPtr &shape);
+  virtual ShapeHandle excludeShape(const shapes::ShapeConstPtr& shape);
   virtual void forgetShape(ShapeHandle handle);
 
 private:
-
   void depthImageCallback(const sensor_msgs::ImageConstPtr& depth_msg, const sensor_msgs::CameraInfoConstPtr& info_msg);
-  bool getShapeTransform(mesh_filter::MeshHandle h, Eigen::Affine3d &transform) const;
+  bool getShapeTransform(mesh_filter::MeshHandle h, Eigen::Affine3d& transform) const;
   void stopHelper();
 
   ros::NodeHandle nh_;
@@ -80,6 +78,8 @@ private:
   image_transport::CameraPublisher pub_filtered_depth_image_;
   image_transport::CameraPublisher pub_filtered_label_image_;
 
+  ros::Time last_update_time_;
+
   std::string filtered_cloud_topic_;
   std::string sensor_type_;
   std::string image_topic_;
@@ -89,6 +89,7 @@ private:
   double shadow_threshold_;
   double padding_scale_;
   double padding_offset_;
+  double max_update_rate_;
   unsigned int skip_vertical_pixels_;
   unsigned int skip_horizontal_pixels_;
 
@@ -104,7 +105,6 @@ private:
   double inv_fx_, inv_fy_, K0_, K2_, K4_, K5_;
   std::vector<unsigned int> filtered_labels_;
   ros::WallTime last_depth_callback_start_;
-
 };
 }
 

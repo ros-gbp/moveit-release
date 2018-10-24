@@ -52,7 +52,6 @@
 /** \brief Representation and evaluation of kinematic constraints */
 namespace kinematic_constraints
 {
-
 /// \brief Struct for containing the results of constraint evaluation
 struct ConstraintEvaluationResult
 {
@@ -64,12 +63,13 @@ struct ConstraintEvaluationResult
    *
    * @return
    */
-  ConstraintEvaluationResult(bool result_satisfied = false, double dist = 0.0) : satisfied(result_satisfied), distance(dist)
+  ConstraintEvaluationResult(bool result_satisfied = false, double dist = 0.0)
+    : satisfied(result_satisfied), distance(dist)
   {
   }
 
-  bool   satisfied;             /**< \brief Whether or not the constraint or constraints were satisfied */
-  double distance;              /**< \brief The distance evaluation from the constraint or constraints */
+  bool satisfied;  /**< \brief Whether or not the constraint or constraints were satisfied */
+  double distance; /**< \brief The distance evaluation from the constraint or constraints */
 };
 
 MOVEIT_CLASS_FORWARD(KinematicConstraint);
@@ -78,19 +78,22 @@ MOVEIT_CLASS_FORWARD(KinematicConstraint);
 class KinematicConstraint
 {
 public:
-
   /// \brief Enum for representing a constraint
   enum ConstraintType
-    {
-      UNKNOWN_CONSTRAINT, JOINT_CONSTRAINT, POSITION_CONSTRAINT, ORIENTATION_CONSTRAINT, VISIBILITY_CONSTRAINT
-    };
+  {
+    UNKNOWN_CONSTRAINT,
+    JOINT_CONSTRAINT,
+    POSITION_CONSTRAINT,
+    ORIENTATION_CONSTRAINT,
+    VISIBILITY_CONSTRAINT
+  };
 
   /**
    * \brief Constructor
    *
    * @param [in] model The kinematic model used for constraint evaluation
    */
-  KinematicConstraint(const robot_model::RobotModelConstPtr &model);
+  KinematicConstraint(const robot_model::RobotModelConstPtr& model);
   virtual ~KinematicConstraint();
 
   /** \brief Clear the stored constraint */
@@ -104,7 +107,7 @@ public:
    *
    * @return
    */
-  virtual ConstraintEvaluationResult decide(const robot_state::RobotState &state, bool verbose = false) const = 0;
+  virtual ConstraintEvaluationResult decide(const robot_state::RobotState& state, bool verbose = false) const = 0;
 
   /** \brief This function returns true if this constraint is
       configured and able to decide whether states do meet the
@@ -124,7 +127,7 @@ public:
    *
    * @return True if equal, otherwise false
    */
-  virtual bool equal(const KinematicConstraint &other, double margin) const = 0;
+  virtual bool equal(const KinematicConstraint& other, double margin) const = 0;
 
   /**
    * \brief Get the type of constraint
@@ -142,13 +145,14 @@ public:
    *
    * @param [in] out The file descriptor for printing
    */
-  virtual void print(std::ostream &out = std::cout) const
+  virtual void print(std::ostream& = std::cout) const
   {
   }
 
   /**
    *
-   * \brief The weight of a constraint is a multiplicative factor associated to the distance computed by the decide() function
+   * \brief The weight of a constraint is a multiplicative factor associated to the distance computed by the decide()
+   *function
    *
    * @return The constraint weight
    */
@@ -169,10 +173,10 @@ public:
   }
 
 protected:
-
-  ConstraintType                  type_; /**< \brief The type of the constraint */
+  ConstraintType type_;                         /**< \brief The type of the constraint */
   robot_model::RobotModelConstPtr robot_model_; /**< \brief The kinematic model associated with this constraint */
-  double                          constraint_weight_; /**< \brief The weight of a constraint is a multiplicative factor associated to the distance computed by the decide() function  */
+  double constraint_weight_; /**< \brief The weight of a constraint is a multiplicative factor associated to the
+                                distance computed by the decide() function  */
 };
 
 MOVEIT_CLASS_FORWARD(JointConstraint);
@@ -204,8 +208,8 @@ public:
    *
    * @param [in] model The kinematic model used for constraint evaluation
    */
-  JointConstraint(const robot_model::RobotModelConstPtr &model) :
-    KinematicConstraint(model), joint_model_(NULL), joint_variable_index_(-1)
+  JointConstraint(const robot_model::RobotModelConstPtr& model)
+    : KinematicConstraint(model), joint_model_(NULL), joint_variable_index_(-1)
   {
     type_ = JOINT_CONSTRAINT;
   }
@@ -223,7 +227,7 @@ public:
    *
    * @return True if constraint can be configured from jc
    */
-  bool configure(const moveit_msgs::JointConstraint &jc);
+  bool configure(const moveit_msgs::JointConstraint& jc);
 
   /**
    * \brief Check if two joint constraints are the same.
@@ -240,12 +244,12 @@ public:
    *
    * @return True if equal, otherwise false
    */
-  virtual bool equal(const KinematicConstraint &other, double margin) const;
+  virtual bool equal(const KinematicConstraint& other, double margin) const;
 
-  virtual ConstraintEvaluationResult decide(const robot_state::RobotState &state, bool verbose = false) const;
+  virtual ConstraintEvaluationResult decide(const robot_state::RobotState& state, bool verbose = false) const;
   virtual bool enabled() const;
   virtual void clear();
-  virtual void print(std::ostream &out = std::cout) const;
+  virtual void print(std::ostream& out = std::cout) const;
 
   /**
    * \brief Get the joint model for which this constraint operates
@@ -320,13 +324,12 @@ public:
   }
 
 protected:
-
-  const robot_model::JointModel *joint_model_; /**< \brief The joint from the kinematic model for this constraint */
-  bool                                               joint_is_continuous_; /**< \brief Whether or not the joint is continuous */
-  std::string                                        local_variable_name_; /**< \brief The local variable name for a multi DOF joint, if any */
-  std::string                                        joint_variable_name_; /**< \brief The joint variable name */
-  int                                                joint_variable_index_;  /**< \brief The index of the joint variable name in the full robot state */
-  double                                             joint_position_, joint_tolerance_above_, joint_tolerance_below_; /**< \brief Position and tolerance values*/
+  const robot_model::JointModel* joint_model_; /**< \brief The joint from the kinematic model for this constraint */
+  bool joint_is_continuous_;                   /**< \brief Whether or not the joint is continuous */
+  std::string local_variable_name_;            /**< \brief The local variable name for a multi DOF joint, if any */
+  std::string joint_variable_name_;            /**< \brief The joint variable name */
+  int joint_variable_index_; /**< \brief The index of the joint variable name in the full robot state */
+  double joint_position_, joint_tolerance_above_, joint_tolerance_below_; /**< \brief Position and tolerance values*/
 };
 
 MOVEIT_CLASS_FORWARD(OrientationConstraint);
@@ -353,8 +356,7 @@ public:
    *
    * @param [in] model The kinematic model used for constraint evaluation
    */
-  OrientationConstraint(const robot_model::RobotModelConstPtr &model) :
-    KinematicConstraint(model), link_model_(NULL)
+  OrientationConstraint(const robot_model::RobotModelConstPtr& model) : KinematicConstraint(model), link_model_(NULL)
   {
     type_ = ORIENTATION_CONSTRAINT;
   }
@@ -372,7 +374,7 @@ public:
    *
    * @return True if constraint can be configured from oc
    */
-  bool configure(const moveit_msgs::OrientationConstraint &oc, const robot_state::Transforms &tf);
+  bool configure(const moveit_msgs::OrientationConstraint& oc, const robot_state::Transforms& tf);
 
   /**
    * \brief Check if two orientation constraints are the same.
@@ -390,12 +392,12 @@ public:
    *
    * @return True if equal, otherwise false
    */
-  virtual bool equal(const KinematicConstraint &other, double margin) const;
+  virtual bool equal(const KinematicConstraint& other, double margin) const;
 
   virtual void clear();
-  virtual ConstraintEvaluationResult decide(const robot_state::RobotState &state, bool verbose = false) const;
+  virtual ConstraintEvaluationResult decide(const robot_state::RobotState& state, bool verbose = false) const;
   virtual bool enabled() const;
-  virtual void print(std::ostream &out = std::cout) const;
+  virtual void print(std::ostream& out = std::cout) const;
 
   /**
    * \brief Gets the subject link model
@@ -473,20 +475,17 @@ public:
     return absolute_z_axis_tolerance_;
   }
 
-  /** \brief Change this constraint to a different link, applying a specified rotation to the constraint region.
-      This should be used for links that are associated to each other via fixed transforms */
-  void swapLinkModel(const robot_model::LinkModel *new_link, const Eigen::Matrix3d &update);
-
 protected:
-
-  const robot_model::LinkModel *link_model_; /**< \brief The target link model */
-  Eigen::Matrix3d               desired_rotation_matrix_; /**< \brief The desired rotation matrix in the tf frame */
-  Eigen::Matrix3d               desired_rotation_matrix_inv_; /**< \brief The inverse of the desired rotation matrix, precomputed for efficiency */
-  std::string                   desired_rotation_frame_id_; /**< \brief The target frame of the transform tree */
-  bool                          mobile_frame_; /**< \brief Whether or not the header frame is mobile or fixed */
-  double                        absolute_x_axis_tolerance_, absolute_y_axis_tolerance_, absolute_z_axis_tolerance_; /**< \brief Storage for the tolerances */
+  const robot_model::LinkModel* link_model_;    /**< \brief The target link model */
+  Eigen::Matrix3d desired_rotation_matrix_;     /**< \brief The desired rotation matrix in the tf frame */
+  Eigen::Matrix3d desired_rotation_matrix_inv_; /**< \brief The inverse of the desired rotation matrix, precomputed for
+                                                 * efficiency
+                                                   */
+  std::string desired_rotation_frame_id_;       /**< \brief The target frame of the transform tree */
+  bool mobile_frame_;                           /**< \brief Whether or not the header frame is mobile or fixed */
+  double absolute_x_axis_tolerance_, absolute_y_axis_tolerance_,
+      absolute_z_axis_tolerance_; /**< \brief Storage for the tolerances */
 };
-
 
 MOVEIT_CLASS_FORWARD(PositionConstraint);
 
@@ -509,14 +508,12 @@ public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 public:
-
   /**
    * \brief Constructor
    *
    * @param [in] model The kinematic model used for constraint evaluation
    */
-  PositionConstraint(const robot_model::RobotModelConstPtr &model) :
-    KinematicConstraint(model), link_model_(NULL)
+  PositionConstraint(const robot_model::RobotModelConstPtr& model) : KinematicConstraint(model), link_model_(NULL)
   {
     type_ = POSITION_CONSTRAINT;
   }
@@ -537,7 +534,7 @@ public:
    *
    * @return True if constraint can be configured from pc
    */
-  bool configure(const moveit_msgs::PositionConstraint &pc, const robot_state::Transforms &tf);
+  bool configure(const moveit_msgs::PositionConstraint& pc, const robot_state::Transforms& tf);
 
   /**
    * \brief Check if two constraints are the same.  For position
@@ -562,12 +559,12 @@ public:
    *
    * @return True if equal, otherwise false
    */
-  virtual bool equal(const KinematicConstraint &other, double margin) const;
+  virtual bool equal(const KinematicConstraint& other, double margin) const;
 
   virtual void clear();
-  virtual ConstraintEvaluationResult decide(const robot_state::RobotState &state, bool verbose = false) const;
+  virtual ConstraintEvaluationResult decide(const robot_state::RobotState& state, bool verbose = false) const;
   virtual bool enabled() const;
-  virtual void print(std::ostream &out = std::cout) const;
+  virtual void print(std::ostream& out = std::cout) const;
 
   /**
    * \brief Returns the associated link model, or NULL if not enabled
@@ -600,10 +597,10 @@ public:
    */
   bool hasLinkOffset() const
   {
-    if(!enabled()) return false;
+    if (!enabled())
+      return false;
     return has_offset_;
   }
-
 
   /**
    * \brief Returns all the constraint regions
@@ -636,23 +633,19 @@ public:
    */
   bool mobileReferenceFrame() const
   {
-    if (!enabled()) return false;
+    if (!enabled())
+      return false;
     return mobile_frame_;
   }
 
-  /** \brief Change this constraint to a different link, applying a specified transform to the constraint region.
-      This should be used for links that are associated to each other via fixed transforms */
-  void swapLinkModel(const robot_model::LinkModel *new_link, const Eigen::Affine3d &update);
-
 protected:
-
-  Eigen::Vector3d                                   offset_; /**< \brief The target offset */
-  bool                                              has_offset_; /**< \brief Whether the offset is substantially different than 0.0 */
-  std::vector<bodies::BodyPtr>                      constraint_region_; /**< \brief The constraint region vector */
-  EigenSTL::vector_Affine3d                         constraint_region_pose_; /**< \brief The constraint region pose vector */
-  bool                                              mobile_frame_; /**< \brief Whether or not a mobile frame is employed*/
-  std::string                                       constraint_frame_id_; /**< \brief The constraint frame id */
-  const robot_model::LinkModel *link_model_; /**< \brief The link model constraint subject */
+  Eigen::Vector3d offset_;                         /**< \brief The target offset */
+  bool has_offset_;                                /**< \brief Whether the offset is substantially different than 0.0 */
+  std::vector<bodies::BodyPtr> constraint_region_; /**< \brief The constraint region vector */
+  EigenSTL::vector_Affine3d constraint_region_pose_; /**< \brief The constraint region pose vector */
+  bool mobile_frame_;                                /**< \brief Whether or not a mobile frame is employed*/
+  std::string constraint_frame_id_;                  /**< \brief The constraint frame id */
+  const robot_model::LinkModel* link_model_;         /**< \brief The link model constraint subject */
 };
 
 MOVEIT_CLASS_FORWARD(VisibilityConstraint);
@@ -736,7 +729,8 @@ MOVEIT_CLASS_FORWARD(VisibilityConstraint);
  * \image html exact_opposites.png "Max view angle is evaluated at 0.0"
  * \image html fourty_five.png "Max view angle evaluates around pi/4"
  * \image html perpindicular.png "Max view angle evaluates at pi/2, the maximum"
- * \image html other_side.png "Sensor pointed at wrong side of target, will violate constraint as long as max_view_angle > 0.0"
+ * \image html other_side.png "Sensor pointed at wrong side of target, will violate constraint as long as max_view_angle
+ > 0.0"
  *
  * If constraining the target to be within the field of view of the
  * sensor is the goal, then the max_range_angle can be set.  The range
@@ -764,7 +758,7 @@ public:
    *
    * @param [in] model The kinematic model used for constraint evaluation
    */
-  VisibilityConstraint(const robot_model::RobotModelConstPtr &model);
+  VisibilityConstraint(const robot_model::RobotModelConstPtr& model);
 
   /**
    * \brief Configure the constraint based on a
@@ -778,7 +772,7 @@ public:
    *
    * @return True if constraint can be configured from vc
    */
-  bool configure(const moveit_msgs::VisibilityConstraint &vc, const robot_state::Transforms &tf);
+  bool configure(const moveit_msgs::VisibilityConstraint& vc, const robot_state::Transforms& tf);
 
   /**
    * \brief Check if two constraints are the same.
@@ -797,7 +791,7 @@ public:
    *
    * @return True if equal, otherwise false
    */
-  virtual bool equal(const KinematicConstraint &other, double margin) const;
+  virtual bool equal(const KinematicConstraint& other, double margin) const;
   virtual void clear();
 
   /**
@@ -807,7 +801,7 @@ public:
    *
    * @return The shape associated with the cone
    */
-  shapes::Mesh* getVisibilityCone(const robot_state::RobotState &state) const;
+  shapes::Mesh* getVisibilityCone(const robot_state::RobotState& state) const;
 
   /**
    * \brief Adds markers associated with the visibility cone, sensor
@@ -820,14 +814,13 @@ public:
    * @param [in] state The state from which to produce the markers
    * @param [out] markers The marker array to which the markers will be added
    */
-  void getMarkers(const robot_state::RobotState &state, visualization_msgs::MarkerArray &markers) const;
+  void getMarkers(const robot_state::RobotState& state, visualization_msgs::MarkerArray& markers) const;
 
   virtual bool enabled() const;
-  virtual ConstraintEvaluationResult decide(const robot_state::RobotState &state, bool verbose = false) const;
-  virtual void print(std::ostream &out = std::cout) const;
+  virtual ConstraintEvaluationResult decide(const robot_state::RobotState& state, bool verbose = false) const;
+  virtual void print(std::ostream& out = std::cout) const;
 
 protected:
-
   /**
    * \brief Function that gets passed into collision checking to allow some collisions.
    *
@@ -837,21 +830,22 @@ protected:
    *
    * @return True if the collision is allowed, otherwise false
    */
-  bool decideContact(const collision_detection::Contact &contact) const;
+  bool decideContact(const collision_detection::Contact& contact) const;
 
-  collision_detection::CollisionRobotPtr collision_robot_; /**< \brief A copy of the collision robot maintained for collision checking the cone against robot links */
-  bool                                   mobile_sensor_frame_; /**< \brief True if the sensor is a non-fixed frame relative to the transform frame */
-  bool                                   mobile_target_frame_; /**< \brief True if the target is a non-fixed frame relative to the transform frame */
-  std::string                            target_frame_id_; /**< \brief The target frame id */
-  std::string                            sensor_frame_id_; /**< \brief The sensor frame id */
-  Eigen::Affine3d                        sensor_pose_; /**< \brief The sensor pose transformed into the transform frame */
-  int                                    sensor_view_direction_; /**< \brief Storage for the sensor view direction */
-  Eigen::Affine3d                        target_pose_; /**< \brief The target pose transformed into the transform frame */
-  unsigned int                           cone_sides_; /**< \brief Storage for the cone sides  */
-  EigenSTL::vector_Vector3d              points_; /**< \brief A set of points along the base of the circle */
-  double                                 target_radius_; /**< \brief Storage for the target radius */
-  double                                 max_view_angle_; /**< \brief Storage for the max view angle */
-  double                                 max_range_angle_; /**< \brief Storage for the max range angle */
+  collision_detection::CollisionRobotPtr collision_robot_; /**< \brief A copy of the collision robot maintained for
+                                                              collision checking the cone against robot links */
+  bool mobile_sensor_frame_;    /**< \brief True if the sensor is a non-fixed frame relative to the transform frame */
+  bool mobile_target_frame_;    /**< \brief True if the target is a non-fixed frame relative to the transform frame */
+  std::string target_frame_id_; /**< \brief The target frame id */
+  std::string sensor_frame_id_; /**< \brief The sensor frame id */
+  Eigen::Affine3d sensor_pose_; /**< \brief The sensor pose transformed into the transform frame */
+  int sensor_view_direction_;   /**< \brief Storage for the sensor view direction */
+  Eigen::Affine3d target_pose_; /**< \brief The target pose transformed into the transform frame */
+  unsigned int cone_sides_;     /**< \brief Storage for the cone sides  */
+  EigenSTL::vector_Vector3d points_; /**< \brief A set of points along the base of the circle */
+  double target_radius_;             /**< \brief Storage for the target radius */
+  double max_view_angle_;            /**< \brief Storage for the max view angle */
+  double max_range_angle_;           /**< \brief Storage for the max range angle */
 };
 
 MOVEIT_CLASS_FORWARD(KinematicConstraintSet);
@@ -870,14 +864,12 @@ public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 public:
-
   /**
    * \brief Constructor
    *
    * @param [in] model The kinematic model used for constraint evaluation
    */
-  KinematicConstraintSet(const robot_model::RobotModelConstPtr &model) :
-    robot_model_(model)
+  KinematicConstraintSet(const robot_model::RobotModelConstPtr& model) : robot_model_(model)
   {
   }
 
@@ -899,7 +891,7 @@ public:
    * KinematicConstraintSet can still be used even if the addition
    * returns false.
    */
-  bool add(const moveit_msgs::Constraints &c, const robot_state::Transforms &tf);
+  bool add(const moveit_msgs::Constraints& c, const robot_state::Transforms& tf);
 
   /**
    * \brief Add a vector of joint constraints
@@ -908,7 +900,7 @@ public:
    *
    * @return Will return true only if all constraints are valid, and false otherwise
    */
-  bool add(const std::vector<moveit_msgs::JointConstraint> &jc);
+  bool add(const std::vector<moveit_msgs::JointConstraint>& jc);
 
   /**
    * \brief Add a vector of position constraints
@@ -917,7 +909,7 @@ public:
    *
    * @return Will return true only if all constraints are valid, and false otherwise
    */
-  bool add(const std::vector<moveit_msgs::PositionConstraint> &pc, const robot_state::Transforms &tf);
+  bool add(const std::vector<moveit_msgs::PositionConstraint>& pc, const robot_state::Transforms& tf);
 
   /**
    * \brief Add a vector of orientation constraints
@@ -926,7 +918,7 @@ public:
    *
    * @return Will return true only if all constraints are valid, and false otherwise
    */
-  bool add(const std::vector<moveit_msgs::OrientationConstraint> &oc, const robot_state::Transforms &tf);
+  bool add(const std::vector<moveit_msgs::OrientationConstraint>& oc, const robot_state::Transforms& tf);
 
   /**
    * \brief Add a vector of visibility constraints
@@ -935,7 +927,7 @@ public:
    *
    * @return Will return true only if all constraints are valid, and false otherwise
    */
-  bool add(const std::vector<moveit_msgs::VisibilityConstraint> &vc, const robot_state::Transforms &tf);
+  bool add(const std::vector<moveit_msgs::VisibilityConstraint>& vc, const robot_state::Transforms& tf);
 
   /**
    * \brief Determines whether all constraints are satisfied by state,
@@ -948,7 +940,7 @@ public:
    * report satisfied only if all constraints are satisfied, and with
    * a distance that is the sum of all individual distances.
    */
-  ConstraintEvaluationResult decide(const robot_state::RobotState &state, bool verbose = false) const;
+  ConstraintEvaluationResult decide(const robot_state::RobotState& state, bool verbose = false) const;
 
   /**
    *
@@ -968,7 +960,8 @@ public:
    * report satisfied only if all constraints are satisfied, and with
    * a distance that is the sum of all individual distances.
    */
-  ConstraintEvaluationResult decide(const robot_state::RobotState &state, std::vector<ConstraintEvaluationResult> &results, bool verbose = false) const;
+  ConstraintEvaluationResult decide(const robot_state::RobotState& state,
+                                    std::vector<ConstraintEvaluationResult>& results, bool verbose = false) const;
 
   /**
    * \brief Whether or not another KinematicConstraintSet is equal to
@@ -985,14 +978,14 @@ public:
    *
    * @return True if all constraints are matched, false otherwise
    */
-  bool equal(const KinematicConstraintSet &other, double margin) const;
+  bool equal(const KinematicConstraintSet& other, double margin) const;
 
   /**
    * \brief Print the constraint data
    *
    * @param [in] out The file stream for printing
    */
-  void print(std::ostream &out = std::cout) const;
+  void print(std::ostream& out = std::cout) const;
 
   /**
    * \brief Get all position constraints in the set
@@ -1061,19 +1054,20 @@ public:
   }
 
 protected:
+  robot_model::RobotModelConstPtr robot_model_; /**< \brief The kinematic model used for by the Set */
+  std::vector<KinematicConstraintPtr>
+      kinematic_constraints_; /**<  \brief Shared pointers to all the member constraints */
 
-  robot_model::RobotModelConstPtr                 robot_model_; /**< \brief The kinematic model used for by the Set */
-  std::vector<KinematicConstraintPtr>             kinematic_constraints_; /**<  \brief Shared pointers to all the member constraints */
-
-  std::vector<moveit_msgs::JointConstraint>       joint_constraints_; /**<  \brief Messages corresponding to all internal joint constraints */
-  std::vector<moveit_msgs::PositionConstraint>    position_constraints_;/**<  \brief Messages corresponding to all internal position constraints */
-  std::vector<moveit_msgs::OrientationConstraint> orientation_constraints_;/**<  \brief Messages corresponding to all internal orientation constraints */
-  std::vector<moveit_msgs::VisibilityConstraint>  visibility_constraints_;/**<  \brief Messages corresponding to all internal visibility constraints */
-  moveit_msgs::Constraints                        all_constraints_; /**<  \brief Messages corresponding to all internal constraints */
-
+  std::vector<moveit_msgs::JointConstraint> joint_constraints_; /**<  \brief Messages corresponding to all internal
+                                                                   joint constraints */
+  std::vector<moveit_msgs::PositionConstraint> position_constraints_;       /**<  \brief Messages corresponding to all
+                                                                               internal position constraints */
+  std::vector<moveit_msgs::OrientationConstraint> orientation_constraints_; /**<  \brief Messages corresponding to all
+                                                                               internal orientation constraints */
+  std::vector<moveit_msgs::VisibilityConstraint> visibility_constraints_;   /**<  \brief Messages corresponding to all
+                                                                               internal visibility constraints */
+  moveit_msgs::Constraints all_constraints_; /**<  \brief Messages corresponding to all internal constraints */
 };
-
 }
-
 
 #endif

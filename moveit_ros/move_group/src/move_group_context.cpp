@@ -40,18 +40,19 @@
 #include <moveit/plan_execution/plan_execution.h>
 #include <moveit/plan_execution/plan_with_sensing.h>
 
-move_group::MoveGroupContext::MoveGroupContext(const planning_scene_monitor::PlanningSceneMonitorPtr &planning_scene_monitor,
-                           bool allow_trajectory_execution, bool debug) :
-  planning_scene_monitor_(planning_scene_monitor),
-  allow_trajectory_execution_(allow_trajectory_execution),
-  debug_(debug)
+move_group::MoveGroupContext::MoveGroupContext(
+    const planning_scene_monitor::PlanningSceneMonitorPtr& planning_scene_monitor, bool allow_trajectory_execution,
+    bool debug)
+  : planning_scene_monitor_(planning_scene_monitor)
+  , allow_trajectory_execution_(allow_trajectory_execution)
+  , debug_(debug)
 {
   planning_pipeline_.reset(new planning_pipeline::PlanningPipeline(planning_scene_monitor_->getRobotModel()));
 
   if (allow_trajectory_execution_)
   {
-    trajectory_execution_manager_.reset(new trajectory_execution_manager::TrajectoryExecutionManager(planning_scene_monitor_->getRobotModel(),
-                                                                                                     planning_scene_monitor_->getStateMonitor()));
+    trajectory_execution_manager_.reset(new trajectory_execution_manager::TrajectoryExecutionManager(
+        planning_scene_monitor_->getRobotModel(), planning_scene_monitor_->getStateMonitor()));
     plan_execution_.reset(new plan_execution::PlanExecution(planning_scene_monitor_, trajectory_execution_manager_));
     plan_with_sensing_.reset(new plan_execution::PlanWithSensing(trajectory_execution_manager_));
     if (debug)
@@ -77,7 +78,7 @@ move_group::MoveGroupContext::~MoveGroupContext()
 
 bool move_group::MoveGroupContext::status() const
 {
-  const planning_interface::PlannerManagerPtr &planner_interface = planning_pipeline_->getPlannerManager();
+  const planning_interface::PlannerManagerPtr& planner_interface = planning_pipeline_->getPlannerManager();
   if (planner_interface)
   {
     ROS_INFO_STREAM("MoveGroup context using planning plugin " << planning_pipeline_->getPlannerPluginName());
