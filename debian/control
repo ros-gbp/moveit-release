@@ -1,0 +1,13 @@
+Source: ros-indigo-moveit-runtime
+Section: misc
+Priority: extra
+Maintainer: Isaac I. Y. Saito <gm130s@gmail.com>
+Build-Depends: debhelper (>= 9.0.0), ros-indigo-catkin
+Homepage: http://moveit.ros.org
+Standards-Version: 3.9.2
+
+Package: ros-indigo-moveit-runtime
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-indigo-moveit-core, ros-indigo-moveit-planners, ros-indigo-moveit-plugins, ros-indigo-moveit-ros-manipulation, ros-indigo-moveit-ros-move-group, ros-indigo-moveit-ros-perception, ros-indigo-moveit-ros-planning, ros-indigo-moveit-ros-planning-interface, ros-indigo-moveit-ros-warehouse
+Description: moveit_runtime meta package contains MoveIt! packages that are essential for its runtime (e.g.
+ running MoveIt! on robots).

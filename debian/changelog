@@ -1,0 +1,53 @@
+ros-indigo-moveit-runtime (0.7.14-1trusty) trusty; urgency=high
+
+
+
+ -- Isaac I. Y. Saito <gm130s@gmail.com>  Sat, 20 Oct 2018 07:00:00 -0000
+
+ros-indigo-moveit-runtime (0.7.13-1trusty) trusty; urgency=high
+
+
+
+ -- Isaac I. Y. Saito <gm130s@gmail.com>  Mon, 25 Dec 2017 08:00:00 -0000
+
+ros-indigo-moveit-runtime (0.7.12-1trusty) trusty; urgency=high
+
+
+
+ -- Isaac I. Y. Saito <gm130s@gmail.com>  Sun, 06 Aug 2017 07:00:00 -0000
+
+ros-indigo-moveit-runtime (0.7.11-1trusty) trusty; urgency=high
+
+
+
+ -- Isaac I. Y. Saito <gm130s@gmail.com>  Wed, 21 Jun 2017 07:00:00 -0000
+
+ros-indigo-moveit-runtime (0.7.10-1trusty) trusty; urgency=high
+
+
+
+ -- Isaac I. Y. Saito <gm130s@gmail.com>  Wed, 07 Jun 2017 07:00:00 -0000
+
+ros-indigo-moveit-runtime (0.7.9-1trusty) trusty; urgency=high
+
+
+
+ -- Isaac I. Y. Saito <gm130s@gmail.com>  Mon, 03 Apr 2017 07:00:00 -0000
+
+ros-indigo-moveit-runtime (0.7.8-1trusty) trusty; urgency=high
+
+
+
+ -- Isaac I. Y. Saito <gm130s@gmail.com>  Wed, 08 Mar 2017 08:00:00 -0000
+
+ros-indigo-moveit-runtime (0.7.7-1trusty) trusty; urgency=high
+
+  * [indigo] missing changelog.
+  * [Indigo] Move metapackages from moveit_metapackage repo.
+  * Contributors: Isaac I.Y. Saito
+  * Initial release
+  * Contributors: Isaac I.Y. Saito
+
+ -- Isaac I. Y. Saito <gm130s@gmail.com>  Mon, 06 Feb 2017 08:00:00 -0000
+
+
