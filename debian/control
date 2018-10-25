@@ -1,0 +1,12 @@
+Source: ros-indigo-moveit-ros-visualization
+Section: misc
+Priority: extra
+Maintainer: Jon Binney <jon.binney@gmail.com>
+Build-Depends: debhelper (>= 9.0.0), pkg-config, ros-indigo-catkin, ros-indigo-cmake-modules, ros-indigo-geometric-shapes, ros-indigo-interactive-markers, ros-indigo-moveit-ros-perception, ros-indigo-moveit-ros-planning-interface, ros-indigo-moveit-ros-robot-interaction, ros-indigo-moveit-ros-warehouse, ros-indigo-object-recognition-msgs, ros-indigo-pluginlib, ros-indigo-roscpp, ros-indigo-rospy, ros-indigo-rostest, ros-indigo-rviz
+Homepage: http://moveit.ros.org
+Standards-Version: 3.9.2
+
+Package: ros-indigo-moveit-ros-visualization
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-indigo-geometric-shapes, ros-indigo-interactive-markers, ros-indigo-moveit-ros-perception, ros-indigo-moveit-ros-planning-interface, ros-indigo-moveit-ros-robot-interaction, ros-indigo-moveit-ros-warehouse, ros-indigo-object-recognition-msgs, ros-indigo-pluginlib, ros-indigo-roscpp, ros-indigo-rospy, ros-indigo-rviz
+Description: Components of MoveIt that offer visualization
