@@ -1,0 +1,12 @@
+Source: ros-indigo-moveit-simple-controller-manager
+Section: misc
+Priority: extra
+Maintainer: Michael Ferguson <mferguson@fetchrobotics.com>
+Build-Depends: debhelper (>= 9.0.0), ros-indigo-actionlib, ros-indigo-catkin, ros-indigo-control-msgs, ros-indigo-moveit-core, ros-indigo-pluginlib, ros-indigo-roscpp
+Homepage: http://moveit.ros.org
+Standards-Version: 3.9.2
+
+Package: ros-indigo-moveit-simple-controller-manager
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-indigo-actionlib, ros-indigo-control-msgs, ros-indigo-moveit-core, ros-indigo-pluginlib, ros-indigo-roscpp
+Description: A generic, simple controller manager plugin for MoveIt.
