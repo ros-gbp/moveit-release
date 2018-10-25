@@ -35,7 +35,7 @@
 /* Author: Dave Coleman, Masaki Murooka */
 
 #include <moveit/srv_kinematics_plugin/srv_kinematics_plugin.h>
-#include <class_loader/class_loader.hpp>
+#include <class_loader/class_loader.h>
 
 // URDF, SRDF
 #include <urdf_model/model.h>
@@ -68,8 +68,8 @@ bool SrvKinematicsPlugin::initialize(const std::string& robot_description, const
   setValues(robot_description, group_name, base_frame, tip_frames, search_discretization);
 
   rdf_loader::RDFLoader rdf_loader(robot_description_);
-  const srdf::ModelSharedPtr& srdf = rdf_loader.getSRDF();
-  const urdf::ModelInterfaceSharedPtr& urdf_model = rdf_loader.getURDF();
+  const boost::shared_ptr<srdf::Model>& srdf = rdf_loader.getSRDF();
+  const boost::shared_ptr<urdf::ModelInterface>& urdf_model = rdf_loader.getURDF();
 
   if (!urdf_model || !srdf)
   {
@@ -106,7 +106,7 @@ bool SrvKinematicsPlugin::initialize(const std::string& robot_description, const
 
   if (debug)
   {
-    ROS_ERROR_STREAM_NAMED("srv", "tip links available:");
+    ROS_ERROR_STREAM_NAMED("temp", "tip links available:");
     std::copy(tip_frames_.begin(), tip_frames_.end(), std::ostream_iterator<std::string>(std::cout, "\n"));
   }
 
@@ -134,7 +134,7 @@ bool SrvKinematicsPlugin::initialize(const std::string& robot_description, const
 
   // Create the ROS service client
   ros::NodeHandle nonprivate_handle("");
-  ik_service_client_ = std::make_shared<ros::ServiceClient>(
+  ik_service_client_ = boost::make_shared<ros::ServiceClient>(
       nonprivate_handle.serviceClient<moveit_msgs::GetPositionIK>(ik_service_name));
   if (!ik_service_client_->waitForExistence(ros::Duration(0.1)))  // wait 0.1 seconds, blocking
     ROS_WARN_STREAM_NAMED("srv",
@@ -154,7 +154,7 @@ bool SrvKinematicsPlugin::setRedundantJoints(const std::vector<unsigned int>& re
     ROS_ERROR_NAMED("srv", "This group cannot have redundant joints");
     return false;
   }
-  if (int(redundant_joints.size()) > num_possible_redundant_joints_)
+  if (redundant_joints.size() > num_possible_redundant_joints_)
   {
     ROS_ERROR_NAMED("srv", "This group can only have %d redundant joints", num_possible_redundant_joints_);
     return false;
@@ -327,12 +327,13 @@ bool SrvKinematicsPlugin::searchPositionIK(const std::vector<geometry_msgs::Pose
     error_code.val = ik_srv.response.error_code.val;
     if (error_code.val != error_code.SUCCESS)
     {
-      ROS_DEBUG_STREAM_NAMED("srv", "An IK that satisifes the constraints and is collision free could not be found."
-                                        << "\nRequest was: \n"
-                                        << ik_srv.request.ik_request << "\nResponse was: \n"
-                                        << ik_srv.response.solution);
+      ROS_DEBUG_NAMED("srv", "An IK that satisifes the constraints and is collision free could not be found.");
       switch (error_code.val)
       {
+        // Debug mode for failure:
+        ROS_DEBUG_STREAM("Request was: \n" << ik_srv.request.ik_request);
+        ROS_DEBUG_STREAM("Response was: \n" << ik_srv.response.solution);
+
         case moveit_msgs::MoveItErrorCodes::FAILURE:
           ROS_ERROR_STREAM_NAMED("srv", "Service failed with with error code: FAILURE");
           break;
@@ -355,7 +356,7 @@ bool SrvKinematicsPlugin::searchPositionIK(const std::vector<geometry_msgs::Pose
   // Convert the robot state message to our robot_state representation
   if (!moveit::core::robotStateMsgToRobotState(ik_srv.response.solution, *robot_state_))
   {
-    ROS_ERROR_STREAM_NAMED("srv", "An error occured converting received robot state message into internal robot "
+    ROS_ERROR_STREAM_NAMED("srv", "An error occured converting recieved robot state message into internal robot "
                                   "state.");
     error_code.val = error_code.FAILURE;
     return false;
@@ -380,8 +381,7 @@ bool SrvKinematicsPlugin::searchPositionIK(const std::vector<geometry_msgs::Pose
           ROS_ERROR_STREAM_NAMED("srv", "IK solution callback failed with with error code: FAILURE");
           break;
         case moveit_msgs::MoveItErrorCodes::NO_IK_SOLUTION:
-          ROS_ERROR_STREAM_NAMED("srv", "IK solution callback failed with with error code: "
-                                        "NO IK SOLUTION");
+          ROS_ERROR_STREAM_NAMED("srv", "IK solution callback failed with with error code: NO IK SOLUTION");
           break;
         default:
           ROS_ERROR_STREAM_NAMED("srv", "IK solution callback failed with with error code: " << error_code.val);
@@ -398,6 +398,7 @@ bool SrvKinematicsPlugin::getPositionFK(const std::vector<std::string>& link_nam
                                         const std::vector<double>& joint_angles,
                                         std::vector<geometry_msgs::Pose>& poses) const
 {
+  ros::WallTime n1 = ros::WallTime::now();
   if (!active_)
   {
     ROS_ERROR_NAMED("srv", "kinematics not active");

@@ -47,7 +47,7 @@
 #include <moveit/collision_distance_field/collision_world_hybrid.h>
 
 #include <Eigen/Core>
-#include <Eigen/StdVector>
+
 #include <vector>
 
 namespace chomp
@@ -61,11 +61,7 @@ public:
 
   virtual ~ChompOptimizer();
 
-  /**
-   * Optimizes the CHOMP cost function and tries to find an optimal path
-   * @return true if an optimal collision free path is found else returns false
-   */
-  bool optimize();
+  void optimize();
 
   inline void destroy()
   {
@@ -75,11 +71,6 @@ public:
   bool isInitialized() const
   {
     return initialized_;
-  }
-
-  bool isCollisionFree() const
-  {
-    return is_collision_free_;
   }
 
 private:
@@ -140,18 +131,18 @@ private:
   const collision_detection::CollisionRobotHybrid* hy_robot_;
 
   std::vector<ChompCost> joint_costs_;
-  collision_detection::GroupStateRepresentationPtr gsr_;
+  boost::shared_ptr<collision_detection::GroupStateRepresentation> gsr_;
   bool initialized_;
 
   std::vector<std::vector<std::string> > collision_point_joint_names_;
-  std::vector<EigenSTL::vector_Vector3d> collision_point_pos_eigen_;
-  std::vector<EigenSTL::vector_Vector3d> collision_point_vel_eigen_;
-  std::vector<EigenSTL::vector_Vector3d> collision_point_acc_eigen_;
+  std::vector<std::vector<Eigen::Vector3d> > collision_point_pos_eigen_;
+  std::vector<std::vector<Eigen::Vector3d> > collision_point_vel_eigen_;
+  std::vector<std::vector<Eigen::Vector3d> > collision_point_acc_eigen_;
   std::vector<std::vector<double> > collision_point_potential_;
   std::vector<std::vector<double> > collision_point_vel_mag_;
-  std::vector<EigenSTL::vector_Vector3d> collision_point_potential_gradient_;
-  std::vector<EigenSTL::vector_Vector3d> joint_axes_;
-  std::vector<EigenSTL::vector_Vector3d> joint_positions_;
+  std::vector<std::vector<Eigen::Vector3d> > collision_point_potential_gradient_;
+  std::vector<std::vector<Eigen::Vector3d> > joint_axes_;
+  std::vector<std::vector<Eigen::Vector3d> > joint_positions_;
   Eigen::MatrixXd group_trajectory_backup_;
   Eigen::MatrixXd best_group_trajectory_;
   double best_group_trajectory_cost_;

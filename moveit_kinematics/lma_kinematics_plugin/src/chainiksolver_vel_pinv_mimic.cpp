@@ -81,12 +81,6 @@ ChainIkSolverVel_pinv_mimic::ChainIkSolverVel_pinv_mimic(const Chain& _chain, in
     mimic_joints_[i].reset(i);
 }
 
-void ChainIkSolverVel_pinv_mimic::updateInternalDataStructures()
-{
-  // TODO: move (re)allocation of any internal data structures here
-  // to react to changes in chain
-}
-
 ChainIkSolverVel_pinv_mimic::~ChainIkSolverVel_pinv_mimic()
 {
 }
@@ -185,7 +179,7 @@ int ChainIkSolverVel_pinv_mimic::CartToJntRedundant(const JntArray& q_in, const 
   // Using the svd decomposition this becomes(jac_pinv=V*S_pinv*Ut):
   // qdot_out = V*S_pinv*Ut*v_in
 
-  unsigned int rows;
+  unsigned int columns, rows;
   if (!position_ik)
     rows = jac_locked.rows();
   else
@@ -287,7 +281,7 @@ int ChainIkSolverVel_pinv_mimic::CartToJnt(const JntArray& q_in, const Twist& v_
   // Using the svd decomposition this becomes(jac_pinv=V*S_pinv*Ut):
   // qdot_out = V*S_pinv*Ut*v_in
 
-  unsigned int rows;
+  unsigned int columns, rows;
   if (!position_ik)
     rows = jac_reduced.rows();
   else

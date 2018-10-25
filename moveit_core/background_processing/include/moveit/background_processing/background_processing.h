@@ -41,13 +41,13 @@
 #include <string>
 #include <boost/thread.hpp>
 #include <boost/function.hpp>
+#include <boost/scoped_ptr.hpp>
 #include <boost/noncopyable.hpp>
-#include <memory>
 
 namespace moveit
 {
 /** \brief This namespace includes classes and functions that are
-    helpful in the implementation of other MoveIt! components. This is
+    helpful in the implementation of other MoveIt components. This is
     not code specific to the functionality provided by MoveIt. */
 namespace tools
 {
@@ -97,7 +97,7 @@ public:
   void clearJobUpdateEvent();
 
 private:
-  std::unique_ptr<boost::thread> processing_thread_;
+  boost::scoped_ptr<boost::thread> processing_thread_;
   bool run_processing_thread_;
 
   mutable boost::mutex action_lock_;

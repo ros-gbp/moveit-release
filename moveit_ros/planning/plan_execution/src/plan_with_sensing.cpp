@@ -101,7 +101,7 @@ plan_execution::PlanWithSensing::PlanWithSensing(
       if (node_handle_.getParam("moveit_sensor_manager", manager))
         try
         {
-          sensor_manager_ = sensor_manager_loader_->createUniqueInstance(manager);
+          sensor_manager_ = sensor_manager_loader_->createInstance(manager);
         }
         catch (pluginlib::PluginlibException& ex)
         {
@@ -248,7 +248,7 @@ bool plan_execution::PlanWithSensing::lookAt(const std::set<collision_detection:
 {
   if (!sensor_manager_)
   {
-    ROS_WARN("It seems looking around would be useful, but no MoveIt! Sensor Manager is loaded. Did you set "
+    ROS_WARN("It seems looking around would be useful, but no MoveIt Sensor Manager is loaded. Did you set "
              "~moveit_sensor_manager ?");
     return false;
   }

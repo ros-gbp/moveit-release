@@ -41,6 +41,7 @@
 #include <moveit_msgs/MoveItErrorCodes.h>
 #include <moveit/macros/class_forward.h>
 #include <ros/node_handle.h>
+#include <console_bridge/console.h>
 
 #include <boost/function.hpp>
 #include <string>
@@ -314,7 +315,7 @@ public:
     }
 
     // Otherwise throw error because this function should have been implemented
-    ROS_ERROR_NAMED("kinematics_base", "This kinematic solver does not support searchPositionIK with multiple poses");
+    logError("moveit.kinematics_base: This kinematic solver does not support searchPositionIK with multiple poses");
     return false;
   }
 
@@ -391,8 +392,8 @@ public:
       return initialize(robot_description, group_name, base_frame, tip_frames[0], search_discretization);
     }
 
-    ROS_ERROR_NAMED("kinematics_base", "This kinematic solver does not support initialization "
-                                       "with more than one tip frames");
+    logError("moveit.kinematics_base: This kinematic solver does not support initialization with more than one tip "
+             "frames");
     return false;
   }
 
@@ -425,8 +426,7 @@ public:
   virtual const std::string& getTipFrame() const
   {
     if (tip_frames_.size() > 1)
-      ROS_ERROR_NAMED("kinematics_base", "This kinematic solver has more than one tip frame, "
-                                         "do not call getTipFrame()");
+      logError("moveit.kinematics_base: This kinematic solver has more than one tip frame, do not call getTipFrame()");
 
     return tip_frame_;  // for backwards-compatibility. should actually use tip_frames_[0]
   }
@@ -602,14 +602,10 @@ protected:
 
   /**
    * @brief Enables kinematics plugins access to parameters that are defined
-   * for the private namespace and inside 'robot_description_kinematics'.
-   * Parameters are searched in the following locations and order
-   *
-   * ~/<group_name>/<param>
-   * ~/<param>
-   * robot_description_kinematics/<group_name>/<param>
-   * robot_description_kinematics/<param>
-   *
+   * for the 'robot_description_kinematics' namespace.
+   * Parameters are queried in order of the specified group hierarchy.
+   * That is parameters are first searched in the private namespace
+   * then in the subroup namespace and finally in the group namespace.
    * This order maintains default behavior by keeping the private namespace
    * as the predominant configuration but also allows groupwise specifications.
    */
@@ -617,12 +613,6 @@ protected:
   inline bool lookupParam(const std::string& param, T& val, const T& default_val) const
   {
     ros::NodeHandle pnh("~");
-    if (pnh.hasParam(group_name_ + "/" + param))
-    {
-      val = pnh.param(group_name_ + "/" + param, default_val);
-      return true;
-    }
-
     if (pnh.hasParam(param))
     {
       val = pnh.param(param, default_val);

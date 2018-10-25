@@ -74,7 +74,7 @@ protected:
     return file_string;
   }
 
-  void SetUp() override{};
+  virtual void SetUp(){};
 
   robot_state::RobotState loadModel(const std::string urdf, const std::string srdf)
   {
@@ -95,7 +95,7 @@ protected:
     return robot_state;
   }
 
-  void TearDown() override
+  virtual void TearDown()
   {
   }
 };

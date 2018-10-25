@@ -41,14 +41,13 @@
 #include <fstream>
 #include <gtest/gtest.h>
 #include <boost/filesystem/path.hpp>
-#include <geometric_shapes/shapes.h>
 #include <moveit/profiler/profiler.h>
 #include <moveit_resources/config.h>
 
 class LoadPlanningModelsPr2 : public testing::Test
 {
 protected:
-  void SetUp() override
+  virtual void SetUp()
   {
     boost::filesystem::path res_path(MOVEIT_TEST_RESOURCES_DIR);
 
@@ -70,13 +69,13 @@ protected:
     robot_model.reset(new moveit::core::RobotModel(urdf_model, srdf_model));
   };
 
-  void TearDown() override
+  virtual void TearDown()
   {
   }
 
 protected:
-  urdf::ModelInterfaceSharedPtr urdf_model;
-  srdf::ModelSharedPtr srdf_model;
+  boost::shared_ptr<urdf::ModelInterface> urdf_model;
+  boost::shared_ptr<srdf::Model> srdf_model;
   moveit::core::RobotModelConstPtr robot_model;
 };
 
@@ -88,7 +87,7 @@ TEST_F(LoadPlanningModelsPr2, InitOK)
 
 TEST_F(LoadPlanningModelsPr2, ModelInit)
 {
-  srdf::ModelSharedPtr srdfModel(new srdf::Model());
+  boost::shared_ptr<srdf::Model> srdfModel(new srdf::Model());
 
   // with no world multidof we should get a fixed joint
   moveit::core::RobotModel robot_model0(urdf_model, srdfModel);
@@ -102,8 +101,8 @@ TEST_F(LoadPlanningModelsPr2, ModelInit)
   srdfModel->initString(*urdf_model, SMODEL1);
 
   moveit::core::RobotModel robot_model1(urdf_model, srdfModel);
-  ASSERT_TRUE(robot_model1.getRootJoint() != nullptr);
-  EXPECT_EQ(robot_model1.getModelFrame(), "base_footprint");
+  ASSERT_TRUE(robot_model1.getRootJoint() != NULL);
+  EXPECT_EQ(robot_model1.getModelFrame(), "/base_footprint");
 
   static const std::string SMODEL2 = "<?xml version=\"1.0\" ?>"
                                      "<robot name=\"pr2\">"
@@ -113,8 +112,8 @@ TEST_F(LoadPlanningModelsPr2, ModelInit)
   srdfModel->initString(*urdf_model, SMODEL2);
 
   moveit::core::RobotModel robot_model2(urdf_model, srdfModel);
-  ASSERT_TRUE(robot_model2.getRootJoint() != nullptr);
-  EXPECT_EQ(robot_model2.getModelFrame(), "odom_combined");
+  ASSERT_TRUE(robot_model2.getRootJoint() != NULL);
+  EXPECT_EQ(robot_model2.getModelFrame(), "/odom_combined");
 }
 
 TEST_F(LoadPlanningModelsPr2, GroupInit)
@@ -132,15 +131,15 @@ TEST_F(LoadPlanningModelsPr2, GroupInit)
                                      "</group>"
                                      "</robot>";
 
-  srdf::ModelSharedPtr srdfModel(new srdf::Model());
+  boost::shared_ptr<srdf::Model> srdfModel(new srdf::Model());
   srdfModel->initString(*urdf_model, SMODEL1);
   moveit::core::RobotModel robot_model1(urdf_model, srdfModel);
 
   const moveit::core::JointModelGroup* left_arm_base_tip_group = robot_model1.getJointModelGroup("left_arm_base_tip");
-  ASSERT_TRUE(left_arm_base_tip_group == nullptr);
+  ASSERT_TRUE(left_arm_base_tip_group == NULL);
 
   const moveit::core::JointModelGroup* left_arm_joints_group = robot_model1.getJointModelGroup("left_arm_joints");
-  ASSERT_TRUE(left_arm_joints_group == nullptr);
+  ASSERT_TRUE(left_arm_joints_group == NULL);
 
   static const std::string SMODEL2 = "<?xml version=\"1.0\" ?>"
                                      "<robot name=\"pr2\">"
@@ -164,10 +163,10 @@ TEST_F(LoadPlanningModelsPr2, GroupInit)
   moveit::core::RobotModelPtr robot_model2(new moveit::core::RobotModel(urdf_model, srdfModel));
 
   left_arm_base_tip_group = robot_model2->getJointModelGroup("left_arm_base_tip");
-  ASSERT_TRUE(left_arm_base_tip_group != nullptr);
+  ASSERT_TRUE(left_arm_base_tip_group != NULL);
 
   left_arm_joints_group = robot_model2->getJointModelGroup("left_arm_joints");
-  ASSERT_TRUE(left_arm_joints_group != nullptr);
+  ASSERT_TRUE(left_arm_joints_group != NULL);
 
   EXPECT_EQ(left_arm_base_tip_group->getJointModels().size(), 9);
   EXPECT_EQ(left_arm_joints_group->getJointModels().size(), 7);
@@ -183,12 +182,12 @@ TEST_F(LoadPlanningModelsPr2, GroupInit)
   {
     if (left_arm_base_tip_group->getLinkModels()[i]->getName() == "l_shoulder_pan_link")
     {
-      EXPECT_TRUE(!found_shoulder_pan_link);
+      EXPECT_TRUE(found_shoulder_pan_link == false);
       found_shoulder_pan_link = true;
     }
     if (left_arm_base_tip_group->getLinkModels()[i]->getName() == "l_wrist_roll_link")
     {
-      EXPECT_TRUE(!found_wrist_roll_link);
+      EXPECT_TRUE(found_wrist_roll_link == false);
       found_wrist_roll_link = true;
     }
     EXPECT_TRUE(left_arm_base_tip_group->getLinkModels()[i]->getName() != "torso_lift_link");

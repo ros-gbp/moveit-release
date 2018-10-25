@@ -36,13 +36,11 @@
 
 #include <moveit/motion_planning_rviz_plugin/motion_planning_frame.h>
 #include <moveit/motion_planning_rviz_plugin/motion_planning_display.h>
-#include <moveit/robot_state/robot_state.h>
 
 #include <moveit/kinematic_constraints/utils.h>
 #include <moveit/robot_state/conversions.h>
 
 #include <std_srvs/Empty.h>
-#include <moveit_msgs/RobotState.h>
 
 #include "ui_motion_planning_rviz_plugin_frame.h"
 
@@ -117,7 +115,7 @@ void MotionPlanningFrame::computePlanButtonClicked()
   ui_->result_label->setText("Planning...");
 
   configureForPlanning();
-  current_plan_.reset(new moveit::planning_interface::MoveGroupInterface::Plan());
+  current_plan_.reset(new moveit::planning_interface::MoveGroup::Plan());
   if (move_group_->plan(*current_plan_))
   {
     ui_->execute_button->setEnabled(true);
@@ -140,7 +138,7 @@ void MotionPlanningFrame::computeExecuteButtonClicked()
   if (move_group_ && current_plan_)
   {
     ui_->stop_button->setEnabled(true);  // enable stopping
-    bool success = move_group_->execute(*current_plan_) == moveit::planning_interface::MoveItErrorCode::SUCCESS;
+    bool success = move_group_->execute(*current_plan_);
     onFinishedExecution(success);
   }
 }
@@ -154,7 +152,7 @@ void MotionPlanningFrame::computePlanAndExecuteButtonClicked()
   // to suppress a warning, we pass an empty state (which encodes "start from current state")
   move_group_->setStartStateToCurrentState();
   ui_->stop_button->setEnabled(true);
-  bool success = move_group_->move() == moveit::planning_interface::MoveItErrorCode::SUCCESS;
+  bool success = move_group_->move();
   onFinishedExecution(success);
   ui_->plan_and_execute_button->setEnabled(true);
 }
@@ -291,7 +289,6 @@ void MotionPlanningFrame::populatePlannersList(const moveit_msgs::PlannerInterfa
   bool found_group = false;
   // the name of a planner is either "GROUP[planner_id]" or "planner_id"
   if (!group.empty())
-  {
     for (std::size_t i = 0; i < desc.planner_ids.size(); ++i)
       if (desc.planner_ids[i] == group)
         found_group = true;
@@ -307,7 +304,6 @@ void MotionPlanningFrame::populatePlannersList(const moveit_msgs::PlannerInterfa
           }
         }
       }
-  }
   if (ui_->planning_algorithm_combo_box->count() == 0 && !found_group)
     for (std::size_t i = 0; i < desc.planner_ids.size(); ++i)
       ui_->planning_algorithm_combo_box->addItem(QString::fromStdString(desc.planner_ids[i]));
@@ -419,11 +415,6 @@ void MotionPlanningFrame::remoteExecuteCallback(const std_msgs::EmptyConstPtr& m
   executeButtonClicked();
 }
 
-void MotionPlanningFrame::remoteStopCallback(const std_msgs::EmptyConstPtr& msg)
-{
-  stopButtonClicked();
-}
-
 void MotionPlanningFrame::remoteUpdateStartStateCallback(const std_msgs::EmptyConstPtr& msg)
 {
   if (move_group_ && planning_display_)
@@ -448,42 +439,6 @@ void MotionPlanningFrame::remoteUpdateGoalStateCallback(const std_msgs::EmptyCon
     {
       robot_state::RobotState state = ps->getCurrentState();
       planning_display_->setQueryGoalState(state);
-    }
-  }
-}
-
-void MotionPlanningFrame::remoteUpdateCustomStartStateCallback(const moveit_msgs::RobotStateConstPtr& msg)
-{
-  moveit_msgs::RobotState msg_no_attached(*msg);
-  msg_no_attached.attached_collision_objects.clear();
-  msg_no_attached.is_diff = true;
-  if (move_group_ && planning_display_)
-  {
-    planning_display_->waitForCurrentRobotState();
-    const planning_scene_monitor::LockedPlanningSceneRO& ps = planning_display_->getPlanningSceneRO();
-    if (ps)
-    {
-      robot_state::RobotStatePtr state(new robot_state::RobotState(ps->getCurrentState()));
-      robot_state::robotStateMsgToRobotState(ps->getTransforms(), msg_no_attached, *state);
-      planning_display_->setQueryStartState(*state);
-    }
-  }
-}
-
-void MotionPlanningFrame::remoteUpdateCustomGoalStateCallback(const moveit_msgs::RobotStateConstPtr& msg)
-{
-  moveit_msgs::RobotState msg_no_attached(*msg);
-  msg_no_attached.attached_collision_objects.clear();
-  msg_no_attached.is_diff = true;
-  if (move_group_ && planning_display_)
-  {
-    planning_display_->waitForCurrentRobotState();
-    const planning_scene_monitor::LockedPlanningSceneRO& ps = planning_display_->getPlanningSceneRO();
-    if (ps)
-    {
-      robot_state::RobotStatePtr state(new robot_state::RobotState(ps->getCurrentState()));
-      robot_state::robotStateMsgToRobotState(ps->getTransforms(), msg_no_attached, *state);
-      planning_display_->setQueryGoalState(*state);
     }
   }
 }

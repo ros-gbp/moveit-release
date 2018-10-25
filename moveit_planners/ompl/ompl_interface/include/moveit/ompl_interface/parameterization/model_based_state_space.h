@@ -45,10 +45,10 @@
 
 namespace ompl_interface
 {
-typedef std::function<bool(const ompl::base::State* from, const ompl::base::State* to, const double t,
-                           ompl::base::State* state)>
+typedef boost::function<bool(const ompl::base::State* from, const ompl::base::State* to, const double t,
+                             ompl::base::State* state)>
     InterpolationFunction;
-typedef std::function<double(const ompl::base::State* state1, const ompl::base::State* state2)> DistanceFunction;
+typedef boost::function<double(const ompl::base::State* state1, const ompl::base::State* state2)> DistanceFunction;
 
 struct ModelBasedStateSpaceSpecification
 {
@@ -69,8 +69,6 @@ struct ModelBasedStateSpaceSpecification
   const robot_model::JointModelGroup* joint_model_group_;
   robot_model::JointBoundsVector joint_bounds_;
 };
-
-OMPL_CLASS_FORWARD(ModelBasedStateSpace);
 
 class ModelBasedStateSpace : public ompl::base::StateSpace
 {
@@ -167,7 +165,7 @@ public:
     double distance;
   };
 
-  ModelBasedStateSpace(ModelBasedStateSpaceSpecification spec);
+  ModelBasedStateSpace(const ModelBasedStateSpaceSpecification& spec);
   virtual ~ModelBasedStateSpace();
 
   void setInterpolationFunction(const InterpolationFunction& fun)
@@ -269,6 +267,8 @@ protected:
   double tag_snap_to_segment_;
   double tag_snap_to_segment_complement_;
 };
-}  // namespace ompl_interface
+
+typedef boost::shared_ptr<ModelBasedStateSpace> ModelBasedStateSpacePtr;
+}
 
 #endif

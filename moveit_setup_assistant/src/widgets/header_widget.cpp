@@ -57,7 +57,7 @@ HeaderWidget::HeaderWidget(const std::string& title, const std::string& instruct
   // Page Title
   QLabel* page_title = new QLabel(this);
   page_title->setText(title.c_str());
-  QFont page_title_font(QFont().defaultFamily(), 18, QFont::Bold);
+  QFont page_title_font("Arial", 18, QFont::Bold);
   page_title->setFont(page_title_font);
   page_title->setWordWrap(true);
   layout->addWidget(page_title);
@@ -88,8 +88,8 @@ HeaderWidget::HeaderWidget(const std::string& title, const std::string& instruct
 // ******************************************************************************************
 // Create the widget
 // ******************************************************************************************
-LoadPathWidget::LoadPathWidget(const QString& title, const QString& instructions, QWidget* parent, const bool dir_only,
-                               const bool load_only)
+LoadPathWidget::LoadPathWidget(const std::string& title, const std::string& instructions, const bool dir_only,
+                               const bool load_only, QWidget* parent)
   : QFrame(parent), dir_only_(dir_only), load_only_(load_only)
 {
   // Set frame graphics
@@ -106,24 +106,22 @@ LoadPathWidget::LoadPathWidget(const QString& title, const QString& instructions
 
   // Widget Title
   QLabel* widget_title = new QLabel(this);
-  widget_title->setText(title);
-  QFont widget_title_font(QFont().defaultFamily(), 12, QFont::Bold);
+  widget_title->setText(title.c_str());
+  QFont widget_title_font("Arial", 12, QFont::Bold);
   widget_title->setFont(widget_title_font);
   layout->addWidget(widget_title);
   layout->setAlignment(widget_title, Qt::AlignTop);
 
   // Widget Instructions
   QLabel* widget_instructions = new QLabel(this);
-  widget_instructions->setText(instructions);
+  widget_instructions->setText(instructions.c_str());
   widget_instructions->setWordWrap(true);
   widget_instructions->setTextFormat(Qt::RichText);
   layout->addWidget(widget_instructions);
   layout->setAlignment(widget_instructions, Qt::AlignTop);
 
-  // Line Edit for path
+  // Line Edit
   path_box_ = new QLineEdit(this);
-  connect(path_box_, SIGNAL(textChanged(QString)), this, SIGNAL(pathChanged(QString)));
-  connect(path_box_, SIGNAL(editingFinished()), this, SIGNAL(pathEditingFinished()));
   hlayout->addWidget(path_box_);
 
   // Button
@@ -173,7 +171,7 @@ void LoadPathWidget::btn_file_dialog()
 // ******************************************************************************************
 // Get the QString path
 // ******************************************************************************************
-QString LoadPathWidget::getQPath() const
+const QString LoadPathWidget::getQPath()
 {
   return path_box_->text();
 }
@@ -181,7 +179,7 @@ QString LoadPathWidget::getQPath() const
 // ******************************************************************************************
 // Get Std String path
 // ******************************************************************************************
-std::string LoadPathWidget::getPath() const
+const std::string LoadPathWidget::getPath()
 {
   return getQPath().toStdString();
 }
@@ -200,33 +198,5 @@ void LoadPathWidget::setPath(const QString& path)
 void LoadPathWidget::setPath(const std::string& path)
 {
   path_box_->setText(QString(path.c_str()));
-}
-
-LoadPathArgsWidget::LoadPathArgsWidget(const QString& title, const QString& instructions,
-                                       const QString& arg_instructions, QWidget* parent, const bool dir_only,
-                                       const bool load_only)
-  : LoadPathWidget(title, instructions, parent, dir_only, load_only)
-{
-  // Line Edit for xacro args
-  args_instructions_ = new QLabel(arg_instructions, this);
-  args_ = new QLineEdit(this);
-
-  layout()->addWidget(args_instructions_);
-  layout()->addWidget(args_);
-}
-
-QString LoadPathArgsWidget::getArgs() const
-{
-  return args_->text();
-}
-
-void LoadPathArgsWidget::setArgs(const QString& args)
-{
-  args_->setText(args);
-}
-
-void LoadPathArgsWidget::setArgsEnabled(bool enabled)
-{
-  args_->setEnabled(enabled);
 }
 }

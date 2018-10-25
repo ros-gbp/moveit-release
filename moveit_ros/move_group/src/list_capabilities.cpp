@@ -35,7 +35,7 @@
 /* Author: Ioan Sucan */
 
 #include <moveit/move_group/move_group_capability.h>
-#include <pluginlib/class_loader.hpp>
+#include <pluginlib/class_loader.h>
 #include <boost/algorithm/string/join.hpp>
 
 int main(int argc, char** argv)

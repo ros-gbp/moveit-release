@@ -2,71 +2,85 @@
 Changelog for package moveit_ros_move_group
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.10.2 (2018-10-24)
+0.7.14 (2018-10-20)
 -------------------
-* [fix] PlanningSceneMonitor lock `#1033 <https://github.com/ros-planning/moveit/issues/1033>`_: Fix `#868 <https://github.com/ros-planning/moveit/issues/868>`_ (`#1057 <https://github.com/ros-planning/moveit/issues/1057>`_)
-* [maintenance] various compiler warnings (`#1038 <https://github.com/ros-planning/moveit/issues/1038>`_)
-* [maintenance] add minimum required pluginlib version (`#927 <https://github.com/ros-planning/moveit/issues/927>`_)
-* Contributors: Mikael Arguedas, Mohmmad Ayman, Robert Haschke, mike lautman
+* [fix] race conditions when updating PlanningScene `#350 <https://github.com/ros-planning/moveit/issues/350>`_
+* Contributors: Michael Görner, Robert Haschke
 
-0.10.1 (2018-05-25)
--------------------
-* Remove deprecated ExecuteTrajectoryServiceCapability (`#833 <https://github.com/ros-planning/moveit/issues/833>`_)
-* migration from tf to tf2 API (`#830 <https://github.com/ros-planning/moveit/issues/830>`_)
-* Add namespace capabilities to moveit_commander (`#835 <https://github.com/ros-planning/moveit/issues/835>`_)
-* [fix] MoveAction capability can drop cancel request if it is sent shortly after goal is sent (`#756 <https://github.com/ros-planning/moveit/issues/756>`_)
-* Contributors: Dave Coleman, Ian McMahon, Mikael Arguedas, Robert Haschke, Will Baker
-
-0.9.11 (2017-12-25)
--------------------
-
-0.9.10 (2017-12-09)
+0.7.13 (2017-12-25)
 -------------------
 * [fix] always return true in MoveGroupPlanService callback `#674 <https://github.com/ros-planning/moveit/pull/674>`_
 * [improve] adding swp's to gitignore and removing redundant capabilites from capability_names.h (`#704 <https://github.com/ros-planning/moveit/issues/704>`_)
 * Contributors: Mike Lautman, Shingo Kitagawa
 
-0.9.9 (2017-08-06)
+0.7.12 (2017-08-06)
+-------------------
+
+0.7.11 (2017-06-21)
+-------------------
+
+0.7.10 (2017-06-07)
+-------------------
+
+0.7.9 (2017-04-03)
 ------------------
 
-0.9.8 (2017-06-21)
+0.7.8 (2017-03-08)
+------------------
+* [fix][moveit_ros_warehouse] gcc6 build error `#423 <https://github.com/ros-planning/moveit/pull/423>`_
+* Contributors: Dmitry Rozhkov
+
+0.7.7 (2017-02-06)
+------------------
+* clang-format upgraded to 3.8 (`#404 <https://github.com/ros-planning/moveit/issues/404>`_)
+* Contributors: Dave Coleman
+
+0.7.6 (2016-12-30)
 ------------------
 
-0.9.7 (2017-06-05)
+0.7.5 (2016-12-25)
 ------------------
 
-0.9.6 (2017-04-12)
+0.7.4 (2016-12-22)
 ------------------
 
-0.9.5 (2017-03-08)
-------------------
-* [fix][moveit_ros_warehouse] gcc6 build error `#423 <https://github.com/ros-planning/moveit/pull/423>`_ 
-* [enhancement] Remove "catch (...)" instances, catch std::exception instead of std::runtime_error (`#445 <https://github.com/ros-planning/moveit/issues/445>`_)
-* Contributors: Bence Magyar, Dave Coleman
-
-0.9.4 (2017-02-06)
-------------------
-* [fix] race conditions when updating PlanningScene (`#350 <https://github.com/ros-planning/moveit/issues/350>`_)
-* [maintenance] clang-format upgraded to 3.8 (`#367 <https://github.com/ros-planning/moveit/issues/367>`_)
-* Contributors: Dave Coleman, Robert Haschke
-
-0.9.3 (2016-11-16)
-------------------
-* [maintenance] Updated package.xml maintainers and author emails `#330 <https://github.com/ros-planning/moveit/issues/330>`_
-* Contributors: Dave Coleman, Ian McMahon
-
-0.9.2 (2016-11-05)
+0.7.3 (2016-12-20)
 ------------------
 
-0.6.6 (2016-06-08)
+0.7.2 (2016-06-20)
 ------------------
-* added missing validity check
-  iterator found with `configs.find()` needs to be validated before use...
+* apply planning scene: use newly exposed success value of newPlanningSceneMessage
+* add apply_planning_scene capability
+  This new capability allows to apply changes to a monitored planning
+  scene and *blocks* until the changes are applied. This is meant to
+  replace the quasi-standard pattern:
+  ```
+  planning_scene_interface.addCollisionObjects(...)
+  sleep(2.0)
+  group.pick("object")
+  ```
+  by
+  ```
+  ros::ServiceClient client = n.serviceClient<moveit_msgs::ApplyPlanningScene>("apply_planning_scene");
+  client.call(...)
+  group.pick("object")
+  ```
+  This makes it much more convenient to add&interact with objects
+  without useless and arbitrarily long sleeps to ensure planning scene
+  updates succeeded.
+* clear_octomap_service: fix runtime name (`#685 <https://github.com/ros-planning/moveit_ros/issues/685>`_)
+  Looks like the author copy&pasted from a different capability
+  and forgot to change the name.
+* Contributors: v4hn
+
+0.7.1 (2016-04-11)
+------------------
+
+0.7.0 (2016-01-30)
+------------------
 * Removed trailing whitespace from entire repository
-* moved planner params services into existing capability QueryPlannerInterfaces
-* capability plugin MoveGroupPlannerParamsService to get/set planner params
 * Fixed bug(?) in move_group::MoveGroupKinematicsService::computeIK link name selection.
-* Contributors: Dave Coleman, Mihai Pomarlan, Robert Haschke
+* Contributors: Dave Coleman, Mihai Pomarlan
 
 0.6.5 (2015-01-24)
 ------------------

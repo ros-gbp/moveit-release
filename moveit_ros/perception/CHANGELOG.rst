@@ -2,73 +2,52 @@
 Changelog for package moveit_ros_perception
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.10.2 (2018-10-24)
--------------------
-* [fix] Eigen alignment issuses due to missing aligned allocation (`#1039 <https://github.com/ros-planning/moveit/issues/1039>`_)
-* [fix] DepthImageOctomapUpdater not found error (`#954 <https://github.com/ros-planning/moveit/issues/954>`_)
-* [fix] planning scene lock when octomap updates too quickly (`#920 <https://github.com/ros-planning/moveit/issues/920>`_)
-* [enhancement] error message in shape_mask (`#828 <https://github.com/ros-planning/moveit/issues/828>`_)
-* [maintenance] various compiler warnings (`#1038 <https://github.com/ros-planning/moveit/issues/1038>`_)
-* [maintenance] disable unittests for moveit_ros_perception ... due to broken Mesa OpenGL (since version 17.x?) (`#982 <https://github.com/ros-planning/moveit/issues/982>`_)
-* [maintenance] add minimum required pluginlib version (`#927 <https://github.com/ros-planning/moveit/issues/927>`_)
-* Contributors: Adrian Zwiener, Martin Günther, Michael Görner, Mikael Arguedas, Mohmmad Ayman, Ridhwan Luthra, Robert Haschke, mike lautman
-
-0.10.1 (2018-05-25)
--------------------
-* boost::shared_ptr -> std::shared_ptr
-* migration from tf to tf2 API (`#830 <https://github.com/ros-planning/moveit/issues/830>`_)
-* [fix] make OpenGL parts optional (`#698 <https://github.com/ros-planning/moveit/issues/698>`_)
-* Contributors: Bence Magyar, Ian McMahon, Lukas Bulwahn, Michael Görner, Mikael Arguedas, Robert Haschke
-
-0.9.11 (2017-12-25)
+0.7.14 (2018-10-20)
 -------------------
 
-0.9.10 (2017-12-09)
+0.7.13 (2017-12-25)
 -------------------
 * [improve] removed deprecated pluginlib macro (`#677 <https://github.com/ros-planning/moveit/issues/677>`_)
 * Contributors: Mikael Arguedas
 
-0.9.9 (2017-08-06)
-------------------
+0.7.12 (2017-08-06)
+-------------------
 
-0.9.8 (2017-06-21)
-------------------
+0.7.11 (2017-06-21)
+-------------------
 
-0.9.7 (2017-06-05)
-------------------
+0.7.10 (2017-06-07)
+-------------------
 
-0.9.6 (2017-04-12)
+0.7.9 (2017-04-03)
 ------------------
-* [fix][moveit_ros_robot_interaction] `catkin_make -DCMAKE_ENABLE_TESTING=0` failure (`#478 <https://github.com/ros-planning/moveit/issues/478>`_)
+* [fix] gcc6 build error (`#471 <https://github.com/ros-planning/moveit/issues/471>`_, `#458 <https://github.com/ros-planning/moveit/issues/458>`_)
 * Contributors: Michael Goerner
 
-0.9.5 (2017-03-08)
+0.7.8 (2017-03-08)
 ------------------
-* [fix][moveit_ros_warehouse] gcc6 build error `#423 <https://github.com/ros-planning/moveit/pull/423>`_ 
-* [enhancement] Remove "catch (...)" instances, catch std::exception instead of std::runtime_error (`#445 <https://github.com/ros-planning/moveit/issues/445>`_)
-* Contributors: Bence Magyar, Dave Coleman
+* [fix][moveit_ros_warehouse] gcc6 build error `#423 <https://github.com/ros-planning/moveit/pull/423>`_
+* Contributors: Dmitry Rozhkov
 
-0.9.4 (2017-02-06)
+0.7.7 (2017-02-06)
 ------------------
-* [maintenance] Remove custom cmake modules (`#418 <https://github.com/ros-planning/moveit/issues/418>`_)
-* [maintenance] clang-format upgraded to 3.8 (`#367 <https://github.com/ros-planning/moveit/issues/367>`_)
-* Contributors: Dave Coleman, Jochen Sprickerhof
-
-0.9.3 (2016-11-16)
-------------------
-
-0.9.2 (2016-11-05)
-------------------
-* [Maintenace] Auto format codebase using clang-format (`#284 <https://github.com/ros-planning/moveit/issues/284>`_)
+* clang-format upgraded to 3.8 (`#404 <https://github.com/ros-planning/moveit/issues/404>`_)
 * Contributors: Dave Coleman
 
-0.6.6 (2016-06-08)
+0.7.6 (2016-12-30)
 ------------------
-* replaced cmake_modules dependency with eigen
-* [jade] eigen3 adjustment
-* remove unknown dependency sensor_msgs_generate_cpp
-  dependencies are pulled in via ${catkin_LIBRARIES}
-* Find X11 for build on OS X 10.11
+
+0.7.5 (2016-12-25)
+------------------
+
+0.7.4 (2016-12-22)
+------------------
+
+0.7.3 (2016-12-20)
+------------------
+
+0.7.2 (2016-06-20)
+------------------
 * set empty display function for glut window
   With freeglut 3.0 moveit aborts over here, printing
   > ERROR: No display callback registered for window 1
@@ -76,11 +55,18 @@ Changelog for package moveit_ros_perception
   and https://www.opengl.org/resources/libraries/glut/spec3/node46.html
   a callback *must* be registered for each window.
   With this patch moveit starts up as expected.
-* Remove OpenMP parallelization, fixes `#563 <https://github.com/ros-planning/moveit_ros/issues/563>`_
+* Contributors: v4hn
+
+0.7.1 (2016-04-11)
+------------------
+* [fix] Remove OpenMP parallelization (fixes `#563 <https://github.com/ros-planning/moveit_ros/issues/563>`_)
+* Contributors: Stefan Kohlbrecher
+
+0.7.0 (2016-01-30)
+------------------
 * Removed trailing whitespace from entire repository
-* last comment
 * Added missing dependency on moveit_msgs package
-* Contributors: Andriy Petlovanyy, Dave Coleman, Isaac I.Y. Saito, Kentaro Wada, Robert Haschke, Stefan Kohlbrecher, dg, v4hn
+* Contributors: Andriy Petlovanyy, Dave Coleman, dg
 
 0.6.5 (2015-01-24)
 ------------------
@@ -94,7 +80,7 @@ Changelog for package moveit_ros_perception
 
 0.6.3 (2014-12-03)
 ------------------
-* port `moveit_ros#445 <https://github.com/ros-planning/moveit_ros/issues/445>`_ to indigo
+* port `#445 <https://github.com/ros-planning/moveit_ros/issues/445>`_ to indigo
 * disable test that needs display when no display defined
 * GL_TYPE() is a function in newer versions of OpenGL, this fixes tests on Ubuntu 14.04
 * Contributors: Michael Ferguson

@@ -37,15 +37,8 @@
 #ifndef MOVEIT_OMPL_INTERFACE_DETAIL_PROJECTION_EVALUATORS_
 #define MOVEIT_OMPL_INTERFACE_DETAIL_PROJECTION_EVALUATORS_
 
-#include <ompl/config.h>
 #include <ompl/base/ProjectionEvaluator.h>
 #include <moveit/ompl_interface/detail/threadsafe_state_storage.h>
-
-#if OMPL_VERSION_VALUE >= 1004000  // Version greater than 1.4.0
-typedef Eigen::Ref<Eigen::VectorXd> OMPLProjection;
-#else  // All other versions
-typedef ompl::base::EuclideanProjection& OMPLProjection;
-#endif
 
 namespace ompl_interface
 {
@@ -60,7 +53,7 @@ public:
 
   virtual unsigned int getDimension() const;
   virtual void defaultCellSizes();
-  virtual void project(const ompl::base::State* state, OMPLProjection projection) const override;
+  virtual void project(const ompl::base::State* state, ompl::base::EuclideanProjection& projection) const;
 
 private:
   const ModelBasedPlanningContext* planning_context_;
@@ -73,11 +66,11 @@ private:
 class ProjectionEvaluatorJointValue : public ompl::base::ProjectionEvaluator
 {
 public:
-  ProjectionEvaluatorJointValue(const ModelBasedPlanningContext* pc, std::vector<unsigned int> variables);
+  ProjectionEvaluatorJointValue(const ModelBasedPlanningContext* pc, const std::vector<unsigned int>& variables);
 
   virtual unsigned int getDimension() const;
   virtual void defaultCellSizes();
-  virtual void project(const ompl::base::State* state, OMPLProjection projection) const;
+  virtual void project(const ompl::base::State* state, ompl::base::EuclideanProjection& projection) const;
 
 private:
   const ModelBasedPlanningContext* planning_context_;

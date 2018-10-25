@@ -39,7 +39,7 @@
 
 #include <moveit/collision_detection_fcl/collision_robot_fcl.h>
 #include <fcl/broadphase/broadphase.h>
-#include <memory>
+#include <boost/scoped_ptr.hpp>
 
 namespace collision_detection
 {
@@ -65,11 +65,11 @@ public:
   virtual void checkWorldCollision(const CollisionRequest& req, CollisionResult& res, const CollisionWorld& other_world,
                                    const AllowedCollisionMatrix& acm) const;
 
-  virtual void distanceRobot(const DistanceRequest& req, DistanceResult& res, const CollisionRobot& robot,
-                             const robot_state::RobotState& state) const override;
-
-  virtual void distanceWorld(const DistanceRequest& req, DistanceResult& res,
-                             const CollisionWorld& world) const override;
+  virtual double distanceRobot(const CollisionRobot& robot, const robot_state::RobotState& state) const;
+  virtual double distanceRobot(const CollisionRobot& robot, const robot_state::RobotState& state,
+                               const AllowedCollisionMatrix& acm) const;
+  virtual double distanceWorld(const CollisionWorld& world) const;
+  virtual double distanceWorld(const CollisionWorld& world, const AllowedCollisionMatrix& acm) const;
 
   virtual void setWorld(const WorldPtr& world);
 
@@ -78,11 +78,14 @@ protected:
                                  const AllowedCollisionMatrix* acm) const;
   void checkRobotCollisionHelper(const CollisionRequest& req, CollisionResult& res, const CollisionRobot& robot,
                                  const robot_state::RobotState& state, const AllowedCollisionMatrix* acm) const;
+  double distanceRobotHelper(const CollisionRobot& robot, const robot_state::RobotState& state,
+                             const AllowedCollisionMatrix* acm) const;
+  double distanceWorldHelper(const CollisionWorld& world, const AllowedCollisionMatrix* acm) const;
 
   void constructFCLObject(const World::Object* obj, FCLObject& fcl_obj) const;
   void updateFCLObject(const std::string& id);
 
-  std::unique_ptr<fcl::BroadPhaseCollisionManager> manager_;
+  boost::scoped_ptr<fcl::BroadPhaseCollisionManager> manager_;
   std::map<std::string, FCLObject> fcl_objs_;
 
 private:

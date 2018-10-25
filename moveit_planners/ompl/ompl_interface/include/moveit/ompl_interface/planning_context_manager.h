@@ -42,6 +42,7 @@
 #include <moveit/constraint_samplers/constraint_sampler_manager.h>
 #include <moveit/macros/class_forward.h>
 
+#include <boost/shared_ptr.hpp>
 #include <vector>
 #include <string>
 #include <map>
@@ -51,7 +52,8 @@ namespace ompl_interface
 class PlanningContextManager
 {
 public:
-  PlanningContextManager(robot_model::RobotModelConstPtr kmodel, constraint_samplers::ConstraintSamplerManagerPtr csm);
+  PlanningContextManager(const robot_model::RobotModelConstPtr& kmodel,
+                         const constraint_samplers::ConstraintSamplerManagerPtr& csm);
   ~PlanningContextManager();
 
   /** @brief Specify configurations for the planners.
@@ -172,7 +174,7 @@ public:
   ConfiguredPlannerSelector getPlannerSelector() const;
 
 protected:
-  typedef std::function<const ModelBasedStateSpaceFactoryPtr&(const std::string&)> StateSpaceFactoryTypeSelector;
+  typedef boost::function<const ModelBasedStateSpaceFactoryPtr&(const std::string&)> StateSpaceFactoryTypeSelector;
 
   ConfiguredPlannerAllocator plannerSelector(const std::string& planner) const;
 

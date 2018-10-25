@@ -74,47 +74,47 @@ DynamicsSolver::DynamicsSolver(const robot_model::RobotModelConstPtr& robot_mode
 
   if (!joint_model_group_->isChain())
   {
-    ROS_ERROR_NAMED("dynamics_solver", "Group '%s' is not a chain. Will not initialize dynamics solver",
-                    group_name.c_str());
-    joint_model_group_ = nullptr;
+    logError("moveit.dynamics_solver: Group '%s' is not a chain. Will not initialize dynamics solver",
+             group_name.c_str());
+    joint_model_group_ = NULL;
     return;
   }
 
-  if (!joint_model_group_->getMimicJointModels().empty())
+  if (joint_model_group_->getMimicJointModels().size() > 0)
   {
-    ROS_ERROR_NAMED("dynamics_solver", "Group '%s' has a mimic joint. Will not initialize dynamics solver",
-                    group_name.c_str());
-    joint_model_group_ = nullptr;
+    logError("moveit.dynamics_solver: Group '%s' has a mimic joint. Will not initialize dynamics solver",
+             group_name.c_str());
+    joint_model_group_ = NULL;
     return;
   }
 
   const robot_model::JointModel* joint = joint_model_group_->getJointRoots()[0];
   if (!joint->getParentLinkModel())
   {
-    ROS_ERROR_NAMED("dynamics_solver", "Group '%s' does not have a parent link", group_name.c_str());
-    joint_model_group_ = nullptr;
+    logError("moveit.dynamics_solver: Group '%s' does not have a parent link", group_name.c_str());
+    joint_model_group_ = NULL;
     return;
   }
 
   base_name_ = joint->getParentLinkModel()->getName();
 
   tip_name_ = joint_model_group_->getLinkModelNames().back();
-  ROS_DEBUG_NAMED("dynamics_solver", "Base name: '%s', Tip name: '%s'", base_name_.c_str(), tip_name_.c_str());
+  logDebug("moveit.dynamics_solver: Base name: '%s', Tip name: '%s'", base_name_.c_str(), tip_name_.c_str());
 
-  const urdf::ModelInterfaceSharedPtr urdf_model = robot_model_->getURDF();
-  const srdf::ModelConstSharedPtr srdf_model = robot_model_->getSRDF();
+  const boost::shared_ptr<const urdf::ModelInterface> urdf_model = robot_model_->getURDF();
+  const boost::shared_ptr<const srdf::Model> srdf_model = robot_model_->getSRDF();
   KDL::Tree tree;
 
   if (!kdl_parser::treeFromUrdfModel(*urdf_model, tree))
   {
-    ROS_ERROR_NAMED("dynamics_solver", "Could not initialize tree object");
-    joint_model_group_ = nullptr;
+    logError("moveit.dynamics_solver: Could not initialize tree object");
+    joint_model_group_ = NULL;
     return;
   }
   if (!tree.getChain(base_name_, tip_name_, kdl_chain_))
   {
-    ROS_ERROR_NAMED("dynamics_solver", "Could not initialize chain object");
-    joint_model_group_ = nullptr;
+    logError("moveit.dynamics_solver: Could not initialize chain object");
+    joint_model_group_ = NULL;
     return;
   }
   num_joints_ = kdl_chain_.getNrOfJoints();
@@ -136,7 +136,7 @@ DynamicsSolver::DynamicsSolver(const robot_model::RobotModelConstPtr& robot_mode
   KDL::Vector gravity(gravity_vector.x, gravity_vector.y,
                       gravity_vector.z);  // \todo Not sure if KDL expects the negative of this (Sachin)
   gravity_ = gravity.Norm();
-  ROS_DEBUG_NAMED("dynamics_solver", "Gravity norm set to %f", gravity_);
+  logDebug("moveit.dynamics_solver: Gravity norm set to %f", gravity_);
 
   chain_id_solver_.reset(new KDL::ChainIdSolver_RNE(kdl_chain_, gravity));
 }
@@ -147,33 +147,32 @@ bool DynamicsSolver::getTorques(const std::vector<double>& joint_angles, const s
 {
   if (!joint_model_group_)
   {
-    ROS_DEBUG_NAMED("dynamics_solver", "Did not construct DynamicsSolver object properly. "
-                                       "Check error logs.");
+    logDebug("moveit.dynamics_solver: Did not construct DynamicsSolver object properly. Check error logs.");
     return false;
   }
   if (joint_angles.size() != num_joints_)
   {
-    ROS_ERROR_NAMED("dynamics_solver", "Joint angles vector should be size %d", num_joints_);
+    logError("moveit.dynamics_solver: Joint angles vector should be size %d", num_joints_);
     return false;
   }
   if (joint_velocities.size() != num_joints_)
   {
-    ROS_ERROR_NAMED("dynamics_solver", "Joint velocities vector should be size %d", num_joints_);
+    logError("moveit.dynamics_solver: Joint velocities vector should be size %d", num_joints_);
     return false;
   }
   if (joint_accelerations.size() != num_joints_)
   {
-    ROS_ERROR_NAMED("dynamics_solver", "Joint accelerations vector should be size %d", num_joints_);
+    logError("moveit.dynamics_solver: Joint accelerations vector should be size %d", num_joints_);
     return false;
   }
   if (wrenches.size() != num_segments_)
   {
-    ROS_ERROR_NAMED("dynamics_solver", "Wrenches vector should be size %d", num_segments_);
+    logError("moveit.dynamics_solver: Wrenches vector should be size %d", num_segments_);
     return false;
   }
   if (torques.size() != num_joints_)
   {
-    ROS_ERROR_NAMED("dynamics_solver", "Torques vector should be size %d", num_joints_);
+    logError("moveit.dynamics_solver: Torques vector should be size %d", num_joints_);
     return false;
   }
 
@@ -201,7 +200,7 @@ bool DynamicsSolver::getTorques(const std::vector<double>& joint_angles, const s
 
   if (chain_id_solver_->CartToJnt(kdl_angles, kdl_velocities, kdl_accelerations, kdl_wrenches, kdl_torques) < 0)
   {
-    ROS_ERROR_NAMED("dynamics_solver", "Something went wrong computing torques");
+    logError("moveit.dynamics_solver: Something went wrong computing torques");
     return false;
   }
 
@@ -216,13 +215,12 @@ bool DynamicsSolver::getMaxPayload(const std::vector<double>& joint_angles, doub
 {
   if (!joint_model_group_)
   {
-    ROS_DEBUG_NAMED("dynamics_solver", "Did not construct DynamicsSolver object properly. "
-                                       "Check error logs.");
+    logDebug("moveit.dynamics_solver: Did not construct DynamicsSolver object properly. Check error logs.");
     return false;
   }
   if (joint_angles.size() != num_joints_)
   {
-    ROS_ERROR_NAMED("dynamics_solver", "Joint angles vector should be size %d", num_joints_);
+    logError("moveit.dynamics_solver: Joint angles vector should be size %d", num_joints_);
     return false;
   }
   std::vector<double> joint_velocities(num_joints_, 0.0), joint_accelerations(num_joints_, 0.0);
@@ -250,8 +248,8 @@ bool DynamicsSolver::getMaxPayload(const std::vector<double>& joint_angles, doub
   wrenches.back().force = transformVector(transform, wrenches.back().force);
   wrenches.back().torque = transformVector(transform, wrenches.back().torque);
 
-  ROS_DEBUG_NAMED("dynamics_solver", "New wrench (local frame): %f %f %f", wrenches.back().force.x,
-                  wrenches.back().force.y, wrenches.back().force.z);
+  logDebug("moveit.dynamics_solver: New wrench (local frame): %f %f %f", wrenches.back().force.x,
+           wrenches.back().force.y, wrenches.back().force.z);
 
   if (!getTorques(joint_angles, joint_velocities, joint_accelerations, wrenches, torques))
     return false;
@@ -262,9 +260,9 @@ bool DynamicsSolver::getMaxPayload(const std::vector<double>& joint_angles, doub
     double payload_joint = std::max<double>((max_torques_[i] - zero_torques[i]) / (torques[i] - zero_torques[i]),
                                             (-max_torques_[i] - zero_torques[i]) /
                                                 (torques[i] - zero_torques[i]));  // because we set the payload to 1.0
-    ROS_DEBUG_NAMED("dynamics_solver", "Joint: %d, Actual Torque: %f, Max Allowed: %f, Gravity: %f", i, torques[i],
-                    max_torques_[i], zero_torques[i]);
-    ROS_DEBUG_NAMED("dynamics_solver", "Joint: %d, Payload Allowed (N): %f", i, payload_joint);
+    logDebug("moveit.dynamics_solver: Joint: %d, Actual Torque: %f, Max Allowed: %f, Gravity: %f", i, torques[i],
+             max_torques_[i], zero_torques[i]);
+    logDebug("moveit.dynamics_solver: Joint: %d, Payload Allowed (N): %f", i, payload_joint);
     if (payload_joint < min_payload)
     {
       min_payload = payload_joint;
@@ -272,7 +270,7 @@ bool DynamicsSolver::getMaxPayload(const std::vector<double>& joint_angles, doub
     }
   }
   payload = min_payload / gravity_;
-  ROS_DEBUG_NAMED("dynamics_solver", "Max payload (kg): %f", payload);
+  logDebug("moveit.dynamics_solver: Max payload (kg): %f", payload);
   return true;
 }
 
@@ -281,18 +279,17 @@ bool DynamicsSolver::getPayloadTorques(const std::vector<double>& joint_angles, 
 {
   if (!joint_model_group_)
   {
-    ROS_DEBUG_NAMED("dynamics_solver", "Did not construct DynamicsSolver object properly. "
-                                       "Check error logs.");
+    logDebug("moveit.dynamics_solver: Did not construct DynamicsSolver object properly. Check error logs.");
     return false;
   }
   if (joint_angles.size() != num_joints_)
   {
-    ROS_ERROR_NAMED("dynamics_solver", "Joint angles vector should be size %d", num_joints_);
+    logError("moveit.dynamics_solver: Joint angles vector should be size %d", num_joints_);
     return false;
   }
   if (joint_torques.size() != num_joints_)
   {
-    ROS_ERROR_NAMED("dynamics_solver", "Joint torques vector should be size %d", num_joints_);
+    logError("moveit.dynamics_solver: Joint torques vector should be size %d", num_joints_);
     return false;
   }
   std::vector<double> joint_velocities(num_joints_, 0.0), joint_accelerations(num_joints_, 0.0);
@@ -306,15 +303,16 @@ bool DynamicsSolver::getPayloadTorques(const std::vector<double>& joint_angles, 
   wrenches.back().force = transformVector(transform, wrenches.back().force);
   wrenches.back().torque = transformVector(transform, wrenches.back().torque);
 
-  ROS_DEBUG_NAMED("dynamics_solver", "New wrench (local frame): %f %f %f", wrenches.back().force.x,
-                  wrenches.back().force.y, wrenches.back().force.z);
+  logDebug("moveit.dynamics_solver: New wrench (local frame): %f %f %f", wrenches.back().force.x,
+           wrenches.back().force.y, wrenches.back().force.z);
 
-  return getTorques(joint_angles, joint_velocities, joint_accelerations, wrenches, joint_torques);
+  if (!getTorques(joint_angles, joint_velocities, joint_accelerations, wrenches, joint_torques))
+    return false;
+  return true;
 }
 
 const std::vector<double>& DynamicsSolver::getMaxTorques() const
 {
   return max_torques_;
 }
-
-}  // end of namespace dynamics_solver
+}

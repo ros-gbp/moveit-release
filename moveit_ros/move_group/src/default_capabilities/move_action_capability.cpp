@@ -43,8 +43,7 @@
 #include <moveit/kinematic_constraints/utils.h>
 #include <moveit/move_group/capability_names.h>
 
-move_group::MoveGroupMoveAction::MoveGroupMoveAction()
-  : MoveGroupCapability("MoveAction"), move_state_(IDLE), preempt_requested_{ false }
+move_group::MoveGroupMoveAction::MoveGroupMoveAction() : MoveGroupCapability("MoveAction"), move_state_(IDLE)
 {
 }
 
@@ -89,8 +88,6 @@ void move_group::MoveGroupMoveAction::executeMoveCallback(const moveit_msgs::Mov
   }
 
   setMoveState(IDLE);
-
-  preempt_requested_ = false;
 }
 
 void move_group::MoveGroupMoveAction::executeMoveCallback_PlanAndExecute(const moveit_msgs::MoveGroupGoalConstPtr& goal,
@@ -142,13 +139,6 @@ void move_group::MoveGroupMoveAction::executeMoveCallback_PlanAndExecute(const m
   }
 
   plan_execution::ExecutableMotionPlan plan;
-  if (preempt_requested_)
-  {
-    ROS_INFO("Preempt requested before the goal is planned and executed.");
-    action_res.error_code.val = moveit_msgs::MoveItErrorCodes::PREEMPTED;
-    return;
-  }
-
   context_->plan_execution_->planAndExecute(plan, planning_scene_diff, opt);
 
   convertToMsg(plan.plan_components_, action_res.trajectory_start, action_res.planned_trajectory);
@@ -171,21 +161,18 @@ void move_group::MoveGroupMoveAction::executeMoveCallback_PlanOnly(const moveit_
           static_cast<const planning_scene::PlanningSceneConstPtr&>(lscene) :
           lscene->diff(goal->planning_options.planning_scene_diff);
   planning_interface::MotionPlanResponse res;
-
-  if (preempt_requested_)
-  {
-    ROS_INFO("Preempt requested before the goal is planned.");
-    action_res.error_code.val = moveit_msgs::MoveItErrorCodes::PREEMPTED;
-    return;
-  }
-
   try
   {
     context_->planning_pipeline_->generatePlan(the_scene, goal->request, res);
   }
-  catch (std::exception& ex)
+  catch (std::runtime_error& ex)
   {
     ROS_ERROR("Planning pipeline threw an exception: %s", ex.what());
+    res.error_code_.val = moveit_msgs::MoveItErrorCodes::FAILURE;
+  }
+  catch (...)
+  {
+    ROS_ERROR("Planning pipeline threw an exception");
     res.error_code_.val = moveit_msgs::MoveItErrorCodes::FAILURE;
   }
 
@@ -206,9 +193,14 @@ bool move_group::MoveGroupMoveAction::planUsingPlanningPipeline(const planning_i
   {
     solved = context_->planning_pipeline_->generatePlan(plan.planning_scene_, req, res);
   }
-  catch (std::exception& ex)
+  catch (std::runtime_error& ex)
   {
     ROS_ERROR("Planning pipeline threw an exception: %s", ex.what());
+    res.error_code_.val = moveit_msgs::MoveItErrorCodes::FAILURE;
+  }
+  catch (...)
+  {
+    ROS_ERROR("Planning pipeline threw an exception");
     res.error_code_.val = moveit_msgs::MoveItErrorCodes::FAILURE;
   }
   if (res.trajectory_)
@@ -233,7 +225,6 @@ void move_group::MoveGroupMoveAction::startMoveLookCallback()
 
 void move_group::MoveGroupMoveAction::preemptMoveCallback()
 {
-  preempt_requested_ = true;
   context_->plan_execution_->stop();
 }
 
@@ -244,5 +235,5 @@ void move_group::MoveGroupMoveAction::setMoveState(MoveGroupState state)
   move_action_server_->publishFeedback(move_feedback_);
 }
 
-#include <class_loader/class_loader.hpp>
+#include <class_loader/class_loader.h>
 CLASS_LOADER_REGISTER_CLASS(move_group::MoveGroupMoveAction, move_group::MoveGroupCapability)

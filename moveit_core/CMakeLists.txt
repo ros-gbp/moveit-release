@@ -1,14 +1,5 @@
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 2.8.3)
 project(moveit_core)
-
-add_compile_options(-std=c++11)
-
-# Warnings
-add_definitions(-Wall -Wextra
-  -Wwrite-strings -Wunreachable-code -Wpointer-arith -Wredundant-decls -Wcast-qual
-  -Wno-unused-parameter -Wno-unused-function -Wno-maybe-uninitialized)
-
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
   message("${PROJECT_NAME}: You did not request a specific build type: Choosing 'Release' for maximum performance")
@@ -17,15 +8,13 @@ endif()
 
 find_package(Boost REQUIRED system filesystem date_time thread iostreams)
 
-find_package(Eigen3 REQUIRED)
+find_package(console_bridge REQUIRED)
 
-# Eigen 3.2 (Wily) only provides EIGEN3_INCLUDE_DIR, not EIGEN3_INCLUDE_DIRS
-if(NOT EIGEN3_INCLUDE_DIRS)
-  set(EIGEN3_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
-endif()
+# required to find 'Eigen' in indigo
+find_package(cmake_modules REQUIRED)
+find_package(Eigen REQUIRED)
 
 find_package(PkgConfig REQUIRED)
-
 pkg_check_modules(LIBFCL REQUIRED fcl)
 find_library(LIBFCL_LIBRARIES_FULL ${LIBFCL_LIBRARIES} ${LIBFCL_LIBRARY_DIRS})
 set(LIBFCL_LIBRARIES "${LIBFCL_LIBRARIES_FULL}")
@@ -37,8 +26,7 @@ find_package(urdfdom_headers REQUIRED)
 
 find_package(catkin REQUIRED
 COMPONENTS
-  tf2_eigen
-  tf2_kdl
+  eigen_conversions
   eigen_stl_containers
   geometric_shapes
   geometry_msgs
@@ -48,7 +36,6 @@ COMPONENTS
   random_numbers
   roslib
   rostime
-  rosconsole
   sensor_msgs
   shape_msgs
   srdfdom
@@ -117,7 +104,7 @@ catkin_package(
     moveit_dynamics_solver
     ${OCTOMAP_LIBRARIES}
   CATKIN_DEPENDS
-    tf2_eigen
+    eigen_conversions
     eigen_stl_containers
     geometric_shapes
     geometry_msgs
@@ -132,21 +119,21 @@ catkin_package(
     visualization_msgs
   DEPENDS
     Boost
-    EIGEN3
-    LIBFCL
+    Eigen
     OCTOMAP
+    console_bridge
     urdfdom
     urdfdom_headers
     )
 
-include_directories(SYSTEM ${EIGEN3_INCLUDE_DIRS}
-                           ${LIBFCL_INCLUDE_DIRS}
+include_directories(SYSTEM ${EIGEN_INCLUDE_DIRS}
                            )
 
 include_directories(${THIS_PACKAGE_INCLUDE_DIRS}
                     ${VERSION_FILE_PATH}
                     ${Boost_INCLUDE_DIRS}
                     ${catkin_INCLUDE_DIRS}
+                    ${console_bridge_INCLUDE_DIRS}
                     ${urdfdom_INCLUDE_DIRS}
                     ${urdfdom_headers_INCLUDE_DIRS}
                     ${OCTOMAP_INCLUDE_DIRS}

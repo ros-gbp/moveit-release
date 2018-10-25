@@ -47,7 +47,7 @@
 #include <rviz/frame_manager.h>
 #include <rviz/window_manager_interface.h>
 
-#include <tf2_eigen/tf2_eigen.h>
+#include <eigen_conversions/eigen_msg.h>
 #include <geometric_shapes/shape_operations.h>
 
 #include <QMessageBox>
@@ -361,7 +361,7 @@ void MotionPlanningFrame::imProcessFeedback(visualization_msgs::InteractiveMarke
   ui_->object_z->blockSignals(oldState);
 
   Eigen::Quaterniond q;
-  tf2::fromMsg(feedback.pose.orientation, q);
+  tf::quaternionMsgToEigen(feedback.pose.orientation, q);
   Eigen::Vector3d xyz = q.matrix().eulerAngles(0, 1, 2);
 
   oldState = ui_->object_rx->blockSignals(true);
@@ -423,7 +423,7 @@ void MotionPlanningFrame::computeSaveSceneButtonClicked()
       planning_scene_storage_->removePlanningScene(msg.name);
       planning_scene_storage_->addPlanningScene(msg);
     }
-    catch (std::exception& ex)
+    catch (std::runtime_error& ex)
     {
       ROS_ERROR("%s", ex.what());
     }
@@ -444,7 +444,7 @@ void MotionPlanningFrame::computeSaveQueryButtonClicked(const std::string& scene
         planning_scene_storage_->removePlanningQuery(scene, query_name);
       planning_scene_storage_->addPlanningQuery(mreq, scene, query_name);
     }
-    catch (std::exception& ex)
+    catch (std::runtime_error& ex)
     {
       ROS_ERROR("%s", ex.what());
     }
@@ -468,7 +468,7 @@ void MotionPlanningFrame::computeDeleteSceneButtonClicked()
         {
           planning_scene_storage_->removePlanningScene(scene);
         }
-        catch (std::exception& ex)
+        catch (std::runtime_error& ex)
         {
           ROS_ERROR("%s", ex.what());
         }
@@ -481,7 +481,7 @@ void MotionPlanningFrame::computeDeleteSceneButtonClicked()
         {
           planning_scene_storage_->removePlanningScene(scene);
         }
-        catch (std::exception& ex)
+        catch (std::runtime_error& ex)
         {
           ROS_ERROR("%s", ex.what());
         }
@@ -507,7 +507,7 @@ void MotionPlanningFrame::computeDeleteQueryButtonClicked()
         {
           planning_scene_storage_->removePlanningQuery(scene, query_name);
         }
-        catch (std::exception& ex)
+        catch (std::runtime_error& ex)
         {
           ROS_ERROR("%s", ex.what());
         }
@@ -579,7 +579,7 @@ void MotionPlanningFrame::computeLoadSceneButtonClicked()
         {
           got_ps = planning_scene_storage_->getPlanningScene(scene_m, scene);
         }
-        catch (std::exception& ex)
+        catch (std::runtime_error& ex)
         {
           ROS_ERROR("%s", ex.what());
         }
@@ -633,7 +633,7 @@ void MotionPlanningFrame::computeLoadQueryButtonClicked()
         {
           got_q = planning_scene_storage_->getPlanningQuery(mp, scene, query_name);
         }
-        catch (std::exception& ex)
+        catch (std::runtime_error& ex)
         {
           ROS_ERROR("%s", ex.what());
         }
@@ -933,17 +933,16 @@ void MotionPlanningFrame::computeImportFromText(const std::string& path)
   if (ps)
   {
     std::ifstream fin(path.c_str());
-    if (ps->loadGeometryFromStream(fin))
+    if (fin.good())
     {
+      ps->loadGeometryFromStream(fin);
+      fin.close();
       ROS_INFO("Loaded scene geometry from '%s'", path.c_str());
       planning_display_->addMainLoopJob(boost::bind(&MotionPlanningFrame::populateCollisionObjectsList, this));
       planning_display_->queueRenderSceneGeometry();
     }
     else
-    {
-      QMessageBox::warning(nullptr, "Loading scene geometry", "Failed to load scene geometry.\n"
-                                                              "See console output for more details.");
-    }
+      ROS_WARN("Unable to load scene geometry from '%s'", path.c_str());
   }
 }
 

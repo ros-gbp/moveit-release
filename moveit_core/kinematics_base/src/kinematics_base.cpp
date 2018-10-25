@@ -37,14 +37,12 @@
 #include <moveit/kinematics_base/kinematics_base.h>
 #include <moveit/robot_model/joint_model_group.h>
 
-namespace kinematics
-{
-const double KinematicsBase::DEFAULT_SEARCH_DISCRETIZATION = 0.1;
-const double KinematicsBase::DEFAULT_TIMEOUT = 1.0;
+const double kinematics::KinematicsBase::DEFAULT_SEARCH_DISCRETIZATION = 0.1;
+const double kinematics::KinematicsBase::DEFAULT_TIMEOUT = 1.0;
 
-void KinematicsBase::setValues(const std::string& robot_description, const std::string& group_name,
-                               const std::string& base_frame, const std::string& tip_frame,
-                               double search_discretization)
+void kinematics::KinematicsBase::setValues(const std::string& robot_description, const std::string& group_name,
+                                           const std::string& base_frame, const std::string& tip_frame,
+                                           double search_discretization)
 {
   robot_description_ = robot_description;
   group_name_ = group_name;
@@ -55,9 +53,9 @@ void KinematicsBase::setValues(const std::string& robot_description, const std::
   setSearchDiscretization(search_discretization);
 }
 
-void KinematicsBase::setValues(const std::string& robot_description, const std::string& group_name,
-                               const std::string& base_frame, const std::vector<std::string>& tip_frames,
-                               double search_discretization)
+void kinematics::KinematicsBase::setValues(const std::string& robot_description, const std::string& group_name,
+                                           const std::string& base_frame, const std::vector<std::string>& tip_frames,
+                                           double search_discretization)
 {
   robot_description_ = robot_description;
   group_name_ = group_name;
@@ -75,7 +73,7 @@ void KinematicsBase::setValues(const std::string& robot_description, const std::
     tip_frame_ = removeSlash(tip_frames[0]);
 }
 
-bool KinematicsBase::setRedundantJoints(const std::vector<unsigned int>& redundant_joint_indices)
+bool kinematics::KinematicsBase::setRedundantJoints(const std::vector<unsigned int>& redundant_joint_indices)
 {
   for (std::size_t i = 0; i < redundant_joint_indices.size(); ++i)
   {
@@ -90,7 +88,7 @@ bool KinematicsBase::setRedundantJoints(const std::vector<unsigned int>& redunda
   return true;
 }
 
-bool KinematicsBase::setRedundantJoints(const std::vector<std::string>& redundant_joint_names)
+bool kinematics::KinematicsBase::setRedundantJoints(const std::vector<std::string>& redundant_joint_names)
 {
   const std::vector<std::string>& jnames = getJointNames();
   std::vector<unsigned int> redundant_joint_indices;
@@ -105,12 +103,13 @@ bool KinematicsBase::setRedundantJoints(const std::vector<std::string>& redundan
                                                                           false;
 }
 
-std::string KinematicsBase::removeSlash(const std::string& str) const
+std::string kinematics::KinematicsBase::removeSlash(const std::string& str) const
 {
   return (!str.empty() && str[0] == '/') ? removeSlash(str.substr(1)) : str;
 }
 
-bool KinematicsBase::supportsGroup(const moveit::core::JointModelGroup* jmg, std::string* error_text_out) const
+bool kinematics::KinematicsBase::supportsGroup(const moveit::core::JointModelGroup* jmg,
+                                               std::string* error_text_out) const
 {
   // Default implementation for legacy solvers:
   if (!jmg->isChain())
@@ -125,32 +124,34 @@ bool KinematicsBase::supportsGroup(const moveit::core::JointModelGroup* jmg, std
   return true;
 }
 
-bool KinematicsBase::getPositionIK(const std::vector<geometry_msgs::Pose>& ik_poses,
-                                   const std::vector<double>& ik_seed_state,
-                                   std::vector<std::vector<double> >& solutions, KinematicsResult& result,
-                                   const KinematicsQueryOptions& options) const
+bool kinematics::KinematicsBase::getPositionIK(const std::vector<geometry_msgs::Pose>& ik_poses,
+                                               const std::vector<double>& ik_seed_state,
+                                               std::vector<std::vector<double> >& solutions,
+                                               kinematics::KinematicsResult& result,
+                                               const kinematics::KinematicsQueryOptions& options) const
 {
   std::vector<double> solution;
   result.solution_percentage = 0.0;
 
+  bool supported = false;
   if (std::find(supported_methods_.begin(), supported_methods_.end(), options.discretization_method) ==
       supported_methods_.end())
   {
-    result.kinematic_error = KinematicErrors::UNSUPORTED_DISCRETIZATION_REQUESTED;
+    result.kinematic_error = kinematics::KinematicErrors::UNSUPORTED_DISCRETIZATION_REQUESTED;
     return false;
   }
 
   if (ik_poses.size() != 1)
   {
-    ROS_ERROR_NAMED("kinematics_base", "This kinematic solver does not support getPositionIK for multiple poses");
-    result.kinematic_error = KinematicErrors::MULTIPLE_TIPS_NOT_SUPPORTED;
+    logError("moveit.kinematics_base: This kinematic solver does not support getPositionIK for multiple poses");
+    result.kinematic_error = kinematics::KinematicErrors::MULTIPLE_TIPS_NOT_SUPPORTED;
     return false;
   }
 
-  if (ik_poses.empty())
+  if (ik_poses.size() == 0)
   {
-    ROS_ERROR_NAMED("kinematics_base", "Input ik_poses array is empty");
-    result.kinematic_error = KinematicErrors::EMPTY_TIP_POSES;
+    logError("moveit.kinematics_base: Input ik_poses array is empty");
+    result.kinematic_error = kinematics::KinematicErrors::EMPTY_TIP_POSES;
     return false;
   }
 
@@ -159,16 +160,14 @@ bool KinematicsBase::getPositionIK(const std::vector<geometry_msgs::Pose>& ik_po
   {
     solutions.resize(1);
     solutions[0] = solution;
-    result.kinematic_error = KinematicErrors::OK;
+    result.kinematic_error = kinematics::KinematicErrors::OK;
     result.solution_percentage = 1.0f;
   }
   else
   {
-    result.kinematic_error = KinematicErrors::NO_SOLUTION;
+    result.kinematic_error = kinematics::KinematicErrors::NO_SOLUTION;
     return false;
   }
 
   return true;
 }
-
-}  // end of namespace kinematics

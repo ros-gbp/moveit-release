@@ -36,7 +36,7 @@
 
 #include <ros/ros.h>
 #include <moveit/setup_assistant/tools/moveit_config_data.h>
-#include <moveit/rdf_loader/rdf_loader.h>
+#include <moveit/setup_assistant/tools/file_loader.h>
 
 #include <boost/program_options.hpp>
 
@@ -74,7 +74,7 @@ bool setup(moveit_setup_assistant::MoveItConfigData& config_data, bool keep_old,
            const std::vector<std::string>& xacro_args)
 {
   std::string urdf_string;
-  if (!rdf_loader::RDFLoader::loadXmlFileToString(urdf_string, config_data.urdf_path_, xacro_args))
+  if (!moveit_setup_assistant::loadXmlFileToString(urdf_string, config_data.urdf_path_, xacro_args))
   {
     ROS_ERROR_STREAM("Could not load URDF from '" << config_data.urdf_path_ << "'");
     return false;
@@ -86,7 +86,7 @@ bool setup(moveit_setup_assistant::MoveItConfigData& config_data, bool keep_old,
   }
 
   std::string srdf_string;
-  if (!rdf_loader::RDFLoader::loadXmlFileToString(srdf_string, config_data.srdf_path_, xacro_args))
+  if (!moveit_setup_assistant::loadXmlFileToString(srdf_string, config_data.srdf_path_, xacro_args))
   {
     ROS_ERROR_STREAM("Could not load SRDF from '" << config_data.srdf_path_ << "'");
     return false;
@@ -127,7 +127,7 @@ int main(int argc, char* argv[])
   uint32_t never_trials = 0;
 
   po::options_description desc("Allowed options");
-  desc.add_options()("help", "show help")("config-pkg", po::value(&config_pkg_path), "path to MoveIt! config package")(
+  desc.add_options()("help", "show help")("config-pkg", po::value(&config_pkg_path), "path to moveit config package")(
       "urdf", po::value(&urdf_path),
       "path to URDF ( or xacro)")("srdf", po::value(&srdf_path),
                                   "path to SRDF ( or xacro)")("output", po::value(&output_path), "output path for SRDF")
@@ -172,7 +172,7 @@ int main(int argc, char* argv[])
     ROS_ERROR_STREAM("Please provide config package or URDF and SRDF path");
     return 1;
   }
-  else if (rdf_loader::RDFLoader::isXacroFile(srdf_path) && output_path.empty())
+  else if (moveit_setup_assistant::isXacroFile(srdf_path) && output_path.empty())
   {
     ROS_ERROR_STREAM("Please provide a different output file for SRDF xacro input file");
     return 1;

@@ -2,96 +2,116 @@
 Changelog for package moveit_ros_planning_interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.10.2 (2018-10-24)
+0.7.14 (2018-10-20)
 -------------------
-* [capability] Added plan_only flags to pick and place (`#862 <https://github.com/ros-planning/moveit/issues/862>`_)
-* [maintenance] Python3 support (`#1103 <https://github.com/ros-planning/moveit/issues/1103>`_, `#1054 <https://github.com/ros-planning/moveit/issues/1054>`_)
-* [fix] optional namespace args (`#929 <https://github.com/ros-planning/moveit/issues/929>`_)
-* Contributors: David Watkins, Michael Görner, Mohmmad Ayman, Robert Haschke, mike lautman
+* [fix] fix race conditions when updating PlanningScene `#350 <https://github.com/ros-planning/moveit/issues/350>`_
+* Contributors: Michael Görner, Robert Haschke
 
-0.10.1 (2018-05-25)
--------------------
-* [maintenance] Remove deprecated ExecuteTrajectoryServiceCapability (`#833 <https://github.com/ros-planning/moveit/issues/833>`_)
-* [maintenance] migration from tf to tf2 API (`#830 <https://github.com/ros-planning/moveit/issues/830>`_)
-* [maintenance] switch to ROS_LOGGER from CONSOLE_BRIDGE (`#874 <https://github.com/ros-planning/moveit/issues/874>`_)
-* [capability] namespace to moveit_commander (`#835 <https://github.com/ros-planning/moveit/issues/835>`_)
-* Constrained Cartesian planning using moveit commander (`#805 <https://github.com/ros-planning/moveit/issues/805>`_)
-* Simplify adding CollisionObjects with colors (`#810 <https://github.com/ros-planning/moveit/issues/810>`_)
-* support TrajectoryConstraints in MoveGroupInterface + MoveitCommander (`#793 <https://github.com/ros-planning/moveit/issues/793>`_)
-* Add API to get planner_id (`#788 <https://github.com/ros-planning/moveit/issues/788>`_)
-* Allow wait time to be specified for getCurrentState() (`#685 <https://github.com/ros-planning/moveit/issues/685>`_)
-* Contributors: 2scholz, Akiyoshi Ochiai, Bence Magyar, Dave Coleman, Ian McMahon, Robert Haschke, Will Baker, Xiaojian Ma, srsidd
-
-0.9.11 (2017-12-25)
--------------------
-
-0.9.10 (2017-12-09)
+0.7.13 (2017-12-25)
 -------------------
 * [fix] MoveGroupInterface: Fixed computeCartesianPath to use selected end-effector. (`#580 <https://github.com/ros-planning/moveit/issues/580>`_)
-* [capability][kinetic onward] Adapt pick pipeline to function without object (`#599 <https://github.com/ros-planning/moveit/issues/599>`_)
 * [improve] Disabled copy constructors and added a move constructor to MoveGroupInterface (`#664 <https://github.com/ros-planning/moveit/issues/664>`_)
 * Contributors: 2scholz, Dennis Hartmann, Jonathan Meyer, Simon Schmeisser
 
-0.9.9 (2017-08-06)
+0.7.12 (2017-08-06)
+-------------------
+
+0.7.11 (2017-06-21)
+-------------------
+
+0.7.10 (2017-06-07)
+-------------------
+
+0.7.9 (2017-04-03)
 ------------------
 
-0.9.8 (2017-06-21)
+0.7.8 (2017-03-08)
 ------------------
-
-0.9.7 (2017-06-05)
-------------------
-
-0.9.6 (2017-04-12)
-------------------
-* [improve] MoveGroupInterface: add public interface to construct the MotionPlanRequest (`#461 <https://github.com/ros-planning/moveit/issues/461>`_)
-* Contributors: Michael Goerner
-
-0.9.5 (2017-03-08)
-------------------
-* [fix][moveit_ros_warehouse] gcc6 build error `#423 <https://github.com/ros-planning/moveit/pull/423>`_ 
-* [enhancement] Remove "catch (...)" instances, catch std::exception instead of std::runtime_error (`#445 <https://github.com/ros-planning/moveit/issues/445>`_)
 * [enhancement][MoveGroup] Add getLinkNames function (`#440 <https://github.com/ros-planning/moveit/issues/440>`_)
-* Contributors: Bence Magyar, Dave Coleman
+* [doc][moveit_commander] added description for set_start_state (`#447 <https://github.com/ros-planning/moveit/issues/447>`_)
+* Contributors: Dmitry Rozhkov, Isaac I.Y. Saito, henhenhen
 
-0.9.4 (2017-02-06)
+0.7.7 (2017-02-06)
 ------------------
-* [fix] move_group.cpp: seg fault bug (`#426 <https://github.com/ros-planning/moveit/issues/426>`_)
-* [fix] mgi: show correct include path in doxygen (`#419 <https://github.com/ros-planning/moveit/issues/419>`_)
-* [fix] fix race conditions when updating PlanningScene (`#350 <https://github.com/ros-planning/moveit/issues/350>`_)
-* [fix] issue `#373 <https://github.com/ros-planning/moveit/issues/373>`_ for Kinetic (`#377 <https://github.com/ros-planning/moveit/issues/377>`_) (`#385 <https://github.com/ros-planning/moveit/issues/385>`_)
-* [capability] PSI: add apply* functions that use ApplyPlanningScene.srv (`#381 <https://github.com/ros-planning/moveit/issues/381>`_)
-* [maintenance] Fix test file issues (`#415 <https://github.com/ros-planning/moveit/pull/415>`_, `#412 <https://github.com/ros-planning/moveit/issues/412>`_)
-* [maintenance] clang-format upgraded to 3.8 (`#367 <https://github.com/ros-planning/moveit/issues/367>`_)
-* Contributors: Bastian Gaspers, Dave Coleman, Isaac I.Y. Saito, Jorge Santos Simon, Michael Goerner, Robert Haschke
+* move_group.cpp: seg fault bug fix (`#426 <https://github.com/ros-planning/moveit/issues/426>`_)
+  Fixed a bug with casting CallbackQueueInterface * to ros::CallbackQueue * without a check.
+  https://github.com/ros-planning/moveit/issues/425
+* install planning_interface python test
+  This test is reference in the tutorials and should also work with installed workspaces
+  http://docs.ros.org/kinetic/api/moveit_tutorials/html/doc/tests.html#integration-test
+* [moveit_ros] Missing test_depend. (`#412 <https://github.com/ros-planning/moveit/issues/412>`_)
+* clang-format
+* PSI: make all logs _NAMED
+* PSI: point out synchronicity behavior of apply* and add/removeObjects interfaces
+* remove obsolete mutable declaration
+  This was only required for the proposal to change the behavior of the add/remove functions.
+  Now that I added the apply* interfaces, this is not relevant anymore.
+* PSI: add apply* functions that use ApplyPlanningScene.srv
+  to update move_group's PlanningScene
+* Use ApplyPlanningSceneService in planning_scene_interface
+  Added helper function to call ApplyPlanningScene service
+  with fallback to asynchronous processing via "planning_scene"
+  topic.
+* clang-format upgraded to 3.8 (`#404 <https://github.com/ros-planning/moveit/issues/404>`_)
+* Contributors: Andreas Köpf, Bastian Gaspers, Dave Coleman, Isaac I.Y. Saito, v4hn
 
-0.9.3 (2016-11-16)
+0.7.6 (2016-12-30)
 ------------------
 
-0.6.6 (2016-06-08)
+0.7.5 (2016-12-25)
 ------------------
-* replaced cmake_modules dependency with eigen
-* [jade] eigen3 adjustment
-* merge indigo-devel changes (PR `#633 <https://github.com/ros-planning/moveit_ros/issues/633>`_ trailing whitespace) into jade-devel
+
+0.7.4 (2016-12-22)
+------------------
+
+0.7.3 (2016-12-20)
+------------------
+
+0.7.2 (2016-06-20)
+------------------
+* Issue `#630 <https://github.com/ros-planning/moveit_ros/issues/630>`_: remove color information from addCollisionObjects method
+* attachment to the commit: fab50d487d86aa4011fb05e41e694b837eca92df
+  For more information see the specified commit.
+* planning_interface: Set is_diff true for empty start state
+  Executing a motion without setting the start state of the robot like
+  this:
+  ```
+  group_arm.setNamedTarget("start_grab_pose");
+  success = group_arm.move();
+  ```
+  throws the error: Execution of motions should always start at the robot's
+  current state. Ignoring the state supplied as start state in the motion
+  planning request.
+  The problem is, when considered_start_state\_ is null, every data field of the start_state
+  in the submitted MotionPlanRequest is 0 or false. But we need is_diff to be
+  true, because otherwise move_group will not consider its current state as
+  actual start state without complaining.
+* Implement issue `#630 <https://github.com/ros-planning/moveit_ros/issues/630>`_
+* Contributors: Yannick Jonetzko, corot
+
+0.7.1 (2016-04-11)
+------------------
+* [feat] Adding acceleration scaling factor
+* [fix] conflict issues
+* [doc] [move_group.cpp] Print the name of the move group action server that failed to be connected (`#640 <https://github.com/ros-planning/moveit_ros/issues/640>`_)
+* Contributors: Dave Coleman, Isaac I.Y. Saito, hemes
+
+0.7.0 (2016-01-30)
+------------------
 * Removed trailing whitespace from entire repository
-* planning_interface::MoveGroup::get/setPlannerParams
 * new method MoveGroup::getDefaultPlannerId(const std::string &group)
   ... to retrieve default planner config from param server
   moved corresponding code from rviz plugin to MoveGroup interface
   to facilitate re-use
-* fixing conflicts, renaming variable
-* Merge pull request `#589 <https://github.com/ros-planning/moveit_ros/issues/589>`_ from MichaelStevens/set_num_planning_attempts
-  adding set_num_planning_attempts to python interface
-* comments addressed
+* adding set_num_planning_attempts to python interface
 * Added python wrapper for setMaxVelocityScalingFactor
 * saves robot name to db from moveit. also robot name accessible through robot interface python wrapper
 * adding set_num_planning_attempts to python interface
-* Merge pull request `#571 <https://github.com/ros-planning/moveit_ros/issues/571>`_ from ymollard/indigo-devel
-  Added python wrapper for MoveGroup.asyncExecute()
 * Added python wrapper for MoveGroup.asyncExecute()
 * Add retime_trajectory to moveit python wrapper
 * add getHandle to move_group_interface
 * Updated documentation on move() to inform the user that an asynchronus spinner is required. Commonly new users don't do this and move() blocks permanently
-* Contributors: Dave Coleman, Dave Hershberger, Isaac I.Y. Saito, Kei Okada, Michael Stevens, Robert Haschke, Sachin Chitta, Scott, Yoan Mollard, dg, ferherranz
+* Contributors: Dave Coleman, Dave Hershberger, Kei Okada, Michael Stevens, Robert Haschke, Sachin Chitta, Scott, Yoan Mollard, dg, ferherranz
 
 0.6.5 (2015-01-24)
 ------------------
@@ -104,7 +124,7 @@ Changelog for package moveit_ros_planning_interface
 
 0.6.3 (2014-12-03)
 ------------------
-* include correct ``boost::*_ptr`` class for boost 1.57.
+* include correct boost::*_ptr class for boost 1.57.
 * Contributors: v4hn
 
 0.6.2 (2014-10-31)

@@ -61,7 +61,7 @@ public:
 
   AuthorInformationWidget(QWidget* parent, moveit_setup_assistant::MoveItConfigDataPtr config_data);
 
-  /// Received when this widget is chosen from the navigation menu
+  /// Recieved when this widget is chosen from the navigation menu
   virtual void focusGiven();
 
   // ******************************************************************************************

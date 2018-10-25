@@ -38,22 +38,19 @@
 #include <moveit/ompl_interface/model_based_planning_context.h>
 #include <moveit/profiler/profiler.h>
 
-#include <utility>
-
-ompl_interface::ValidConstrainedSampler::ValidConstrainedSampler(const ModelBasedPlanningContext* pc,
-                                                                 kinematic_constraints::KinematicConstraintSetPtr ks,
-                                                                 constraint_samplers::ConstraintSamplerPtr cs)
+ompl_interface::ValidConstrainedSampler::ValidConstrainedSampler(
+    const ModelBasedPlanningContext* pc, const kinematic_constraints::KinematicConstraintSetPtr& ks,
+    const constraint_samplers::ConstraintSamplerPtr& cs)
   : ob::ValidStateSampler(pc->getOMPLSimpleSetup()->getSpaceInformation().get())
   , planning_context_(pc)
-  , kinematic_constraint_set_(std::move(ks))
-  , constraint_sampler_(std::move(cs))
+  , kinematic_constraint_set_(ks)
+  , constraint_sampler_(cs)
   , work_state_(pc->getCompleteInitialRobotState())
 {
   if (!constraint_sampler_)
     default_sampler_ = si_->allocStateSampler();
   inv_dim_ = si_->getStateSpace()->getDimension() > 0 ? 1.0 / (double)si_->getStateSpace()->getDimension() : 1.0;
-  ROS_DEBUG_NAMED("constrained_valid_state_sampler", "Constructed a ValidConstrainedSampler instance at address %p",
-                  this);
+  logDebug("Constructed a ValidConstrainedSampler instance at address %p", this);
 }
 
 bool ompl_interface::ValidConstrainedSampler::project(ompl::base::State* state)

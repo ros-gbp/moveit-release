@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(moveit_ros_control_interface)
 
-add_compile_options(-std=c++11)
-
 find_package(catkin REQUIRED COMPONENTS
   actionlib
   controller_manager_msgs
@@ -14,24 +12,20 @@ find_package(catkin REQUIRED COMPONENTS
 ## System dependencies are found with CMake's conventions
 find_package(Boost REQUIRED COMPONENTS system thread)
 
+
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES
-  CATKIN_DEPENDS moveit_core
+  CATKIN_DEPENDS moveit_core 
   DEPENDS Boost
 )
-
-# support indigo's ros_control - This can be removed upon EOL indigo
-if("${controller_manager_msgs_VERSION}" VERSION_LESS "0.10.0")
-  add_definitions(-DMOVEIT_ROS_CONTROL_INTERFACE_OLD_ROS_CONTROL)
-endif()
 
 include_directories(include ${Boost_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS})
 
 add_library(${PROJECT_NAME}_plugin
   src/controller_manager_plugin.cpp
 )
-set_target_properties(${PROJECT_NAME}_plugin PROPERTIES VERSION ${${PROJECT_NAME}_VERSION})
+set_target_properties(${PROJECT_NAME}_plugin PROPERTIES VERSION 0.7.3)
 target_link_libraries(${PROJECT_NAME}_plugin
   ${catkin_LIBRARIES} ${Boost_LIBRARIES}
 )
@@ -39,7 +33,7 @@ target_link_libraries(${PROJECT_NAME}_plugin
 add_library(${PROJECT_NAME}_trajectory_plugin
   src/joint_trajectory_controller_plugin.cpp
 )
-set_target_properties(${PROJECT_NAME}_trajectory_plugin PROPERTIES VERSION ${${PROJECT_NAME}_VERSION})
+set_target_properties(${PROJECT_NAME}_trajectory_plugin PROPERTIES VERSION 0.7.3)
 target_link_libraries(${PROJECT_NAME}_trajectory_plugin
   ${catkin_LIBRARIES} ${Boost_LIBRARIES}
 )

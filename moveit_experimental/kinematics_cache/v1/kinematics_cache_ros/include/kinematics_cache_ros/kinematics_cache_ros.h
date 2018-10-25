@@ -40,7 +40,7 @@
 
 #include <kinematics_cache/kinematics_cache.h>
 #include <planning_models/robot_model.h>
-#include <pluginlib/class_loader.hpp>
+#include <pluginlib/class_loader.h>
 
 namespace kinematics_cache_ros
 {
@@ -63,9 +63,8 @@ public:
 private:
   kinematics::KinematicsBase* kinematics_solver_; /** An instance of a kinematics solver needed by this class */
 
-  std::shared_ptr<pluginlib::ClassLoader<kinematics::KinematicsBase> > kinematics_loader_; /** A loader needed to load
-                                                                                              the instance of a
-                                                                                              kinematics solver */
+  boost::shared_ptr<pluginlib::ClassLoader<kinematics::KinematicsBase> >
+      kinematics_loader_; /** A loader needed to load the instance of a kinematics solver */
 
   planning_models::RobotModelPtr kinematic_model_; /** A kinematics model */
 };

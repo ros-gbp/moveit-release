@@ -42,6 +42,7 @@
 #include <rviz/panel_dock_widget.h>
 #include <moveit/planning_scene_rviz_plugin/planning_scene_display.h>
 #include <moveit/rviz_plugin_render_tools/trajectory_visualization.h>
+#include <std_msgs/String.h>
 
 #ifndef Q_MOC_RUN
 #include <moveit/motion_planning_rviz_plugin/motion_planning_frame.h>
@@ -51,14 +52,10 @@
 #include <moveit/planning_scene_monitor/planning_scene_monitor.h>
 #include <moveit/kinematics_metrics/kinematics_metrics.h>
 #include <moveit/dynamics_solver/dynamics_solver.h>
-
 #include <ros/ros.h>
-
-#include <std_msgs/String.h>
-#include <moveit_msgs/DisplayTrajectory.h>
 #endif
 
-#include <memory>
+#include <moveit_msgs/DisplayTrajectory.h>
 
 namespace Ogre
 {
@@ -139,7 +136,7 @@ public:
   // Pick Place
   void clearPlaceLocationsDisplay();
   void visualizePlaceLocations(const std::vector<geometry_msgs::PoseStamped>& place_poses);
-  std::vector<std::shared_ptr<rviz::Shape> > place_locations_display_;
+  std::vector<boost::shared_ptr<rviz::Shape> > place_locations_display_;
 
   std::string getCurrentPlanningGroup() const;
 
@@ -220,7 +217,7 @@ protected:
   void backgroundJobUpdate(moveit::tools::BackgroundProcessing::JobEvent event, const std::string& jobname);
 
   void setQueryStateHelper(bool use_start_state, const std::string& v);
-  void populateMenuHandler(std::shared_ptr<interactive_markers::MenuHandler>& mh);
+  void populateMenuHandler(boost::shared_ptr<interactive_markers::MenuHandler>& mh);
 
   void selectPlanningGroupCallback(const std_msgs::StringConstPtr& msg);
 
@@ -241,7 +238,7 @@ protected:
   ros::NodeHandle private_handle_, node_handle_;
 
   // render the workspace box
-  std::unique_ptr<rviz::Shape> workspace_box_;
+  boost::scoped_ptr<rviz::Shape> workspace_box_;
 
   // the planning frame
   MotionPlanningFrame* frame_;
@@ -251,8 +248,8 @@ protected:
   robot_interaction::RobotInteractionPtr robot_interaction_;
   robot_interaction::RobotInteraction::InteractionHandlerPtr query_start_state_;
   robot_interaction::RobotInteraction::InteractionHandlerPtr query_goal_state_;
-  std::shared_ptr<interactive_markers::MenuHandler> menu_handler_start_;
-  std::shared_ptr<interactive_markers::MenuHandler> menu_handler_goal_;
+  boost::shared_ptr<interactive_markers::MenuHandler> menu_handler_start_;
+  boost::shared_ptr<interactive_markers::MenuHandler> menu_handler_goal_;
   std::map<std::string, LinkDisplayStatus> status_links_start_;
   std::map<std::string, LinkDisplayStatus> status_links_goal_;
 

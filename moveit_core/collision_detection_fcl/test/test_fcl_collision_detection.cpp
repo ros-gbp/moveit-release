@@ -57,7 +57,7 @@ typedef collision_detection::CollisionRobotFCL DefaultCRobotType;
 class FclCollisionDetectionTester : public testing::Test
 {
 protected:
-  void SetUp() override
+  virtual void SetUp()
   {
     boost::filesystem::path res_path(MOVEIT_TEST_RESOURCES_DIR);
     std::string urdf_file = (res_path / "pr2_description/urdf/robot.xml").string();
@@ -78,7 +78,7 @@ protected:
       }
       xml_file.close();
       urdf_model_ = urdf::parseURDF(xml_string);
-      urdf_ok_ = static_cast<bool>(urdf_model_);
+      urdf_ok_ = urdf_model_;
     }
     else
     {
@@ -95,7 +95,7 @@ protected:
     cworld_.reset(new DefaultCWorldType());
   }
 
-  void TearDown() override
+  virtual void TearDown()
   {
   }
 
@@ -103,8 +103,8 @@ protected:
   bool urdf_ok_;
   bool srdf_ok_;
 
-  urdf::ModelInterfaceSharedPtr urdf_model_;
-  srdf::ModelSharedPtr srdf_model_;
+  boost::shared_ptr<urdf::ModelInterface> urdf_model_;
+  boost::shared_ptr<srdf::Model> srdf_model_;
 
   robot_model::RobotModelPtr kmodel_;
 
@@ -499,7 +499,7 @@ TEST_F(FclCollisionDetectionTester, TestCollisionMapAdditionSpeed)
   EXPECT_GE(1.0, t);
   // this is not really a failure; it is just that slow;
   // looking into doing collision checking with a voxel grid.
-  ROS_INFO_NAMED("collision_detection.fcl", "Adding boxes took %g", t);
+  logInform("Adding boxes took %g", t);
 }
 
 TEST_F(FclCollisionDetectionTester, MoveMesh)

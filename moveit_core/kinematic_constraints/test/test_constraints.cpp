@@ -38,14 +38,14 @@
 #include <gtest/gtest.h>
 #include <urdf_parser/urdf_parser.h>
 #include <fstream>
-#include <tf2_eigen/tf2_eigen.h>
+#include <eigen_conversions/eigen_msg.h>
 #include <boost/filesystem/path.hpp>
 #include <moveit_resources/config.h>
 
 class LoadPlanningModelsPr2 : public testing::Test
 {
 protected:
-  void SetUp() override
+  virtual void SetUp()
   {
     boost::filesystem::path res_path(MOVEIT_TEST_RESOURCES_DIR);
 
@@ -71,13 +71,13 @@ protected:
     kmodel.reset(new robot_model::RobotModel(urdf_model, srdf_model));
   };
 
-  void TearDown() override
+  virtual void TearDown()
   {
   }
 
 protected:
-  urdf::ModelInterfaceSharedPtr urdf_model;
-  srdf::ModelSharedPtr srdf_model;
+  boost::shared_ptr<urdf::ModelInterface> urdf_model;
+  boost::shared_ptr<srdf::Model> srdf_model;
   robot_model::RobotModelPtr kmodel;
 };
 
@@ -659,7 +659,9 @@ TEST_F(LoadPlanningModelsPr2, OrientationConstraintsSimple)
 
   ASSERT_TRUE(oc.getLinkModel());
 
-  geometry_msgs::Pose p = tf2::toMsg(ks.getGlobalLinkTransform(oc.getLinkModel()->getName()));
+  geometry_msgs::Pose p;
+
+  tf::poseEigenToMsg(ks.getGlobalLinkTransform(oc.getLinkModel()->getName()), p);
 
   ocm.orientation = p.orientation;
   ocm.header.frame_id = kmodel->getModelFrame();

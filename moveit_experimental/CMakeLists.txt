@@ -8,30 +8,25 @@ if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
 endif()
 
 find_package(Boost REQUIRED system filesystem date_time thread iostreams)
-find_package(catkin REQUIRED
+find_package(catkin REQUIRED 
 COMPONENTS
   moveit_core
   moveit_msgs
   resource_retriever
   kdl_parser
   geometric_shapes
-  eigen_stl_containers
-  tf2_eigen
+  shape_tools
+  eigen_stl_containers 
+  eigen_conversions
   random_numbers
   visualization_msgs
   roslib
   rostime
-  rosconsole
   pluginlib
   cmake_modules
 )
-find_package(Eigen3 REQUIRED)
-
-# Eigen 3.2 (Wily) only provides EIGEN3_INCLUDE_DIR, not EIGEN3_INCLUDE_DIRS
-if(NOT EIGEN3_INCLUDE_DIRS)
-  set(EIGEN3_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
-endif()
-
+find_package(console_bridge REQUIRED)
+find_package(Eigen REQUIRED)
 find_package(octomap REQUIRED)
 find_package(urdfdom REQUIRED)
 find_package(urdfdom_headers REQUIRED)
@@ -48,7 +43,6 @@ catkin_package(
   INCLUDE_DIRS
     ${THIS_PACKAGE_INCLUDE_DIRS}
     ${OCTOMAP_INCLUDE_DIRS}
-    ${EIGEN3_INCLUDE_DIR}
   LIBRARIES
     moveit_collision_distance_field
     collision_detector_hybrid_plugin
@@ -56,25 +50,29 @@ catkin_package(
   CATKIN_DEPENDS
     moveit_core
     geometric_shapes
+    shape_tools
     eigen_stl_containers
+    eigen_conversions
     moveit_msgs
     kdl_parser
     pluginlib
   DEPENDS
-    EIGEN3
     Boost
+    Eigen
     urdfdom
     urdfdom_headers
-)
+    console_bridge
+    )
 
-include_directories(SYSTEM ${EIGEN3_INCLUDE_DIRS}
+include_directories(SYSTEM ${EIGEN_INCLUDE_DIRS}
                            )
 
-include_directories(${THIS_PACKAGE_INCLUDE_DIRS}
-                    ${Boost_INCLUDE_DIR}
-                    ${catkin_INCLUDE_DIRS}
-                    ${urdfdom_INCLUDE_DIRS}
-                    ${urdfdom_headers_INCLUDE_DIRS}
+include_directories(${THIS_PACKAGE_INCLUDE_DIRS} 
+                    ${Boost_INCLUDE_DIRS}
+                    ${catkin_INCLUDE_DIRS} 
+                    ${console_bridge_INCLUDE_DIRS} 
+                    ${urdfdom_INCLUDE_DIRS} 
+                    ${urdfdom_headers_INCLUDE_DIRS} 
                     ${OCTOMAP_INCLUDE_DIRS}
                     )
 

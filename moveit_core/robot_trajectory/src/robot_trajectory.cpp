@@ -36,29 +36,28 @@
 
 #include <moveit/robot_trajectory/robot_trajectory.h>
 #include <moveit/robot_state/conversions.h>
-#include <tf2_eigen/tf2_eigen.h>
+#include <eigen_conversions/eigen_msg.h>
 #include <boost/math/constants/constants.hpp>
 #include <numeric>
 
-namespace robot_trajectory
-{
-RobotTrajectory::RobotTrajectory(const robot_model::RobotModelConstPtr& robot_model, const std::string& group)
-  : robot_model_(robot_model), group_(group.empty() ? nullptr : robot_model->getJointModelGroup(group))
+robot_trajectory::RobotTrajectory::RobotTrajectory(const robot_model::RobotModelConstPtr& robot_model,
+                                                   const std::string& group)
+  : robot_model_(robot_model), group_(group.empty() ? NULL : robot_model->getJointModelGroup(group))
 {
 }
 
-RobotTrajectory::RobotTrajectory(const robot_model::RobotModelConstPtr& robot_model,
-                                 const robot_model::JointModelGroup* group)
+robot_trajectory::RobotTrajectory::RobotTrajectory(const robot_model::RobotModelConstPtr& robot_model,
+                                                   const robot_model::JointModelGroup* group)
   : robot_model_(robot_model), group_(group)
 {
 }
 
-void RobotTrajectory::setGroupName(const std::string& group_name)
+void robot_trajectory::RobotTrajectory::setGroupName(const std::string& group_name)
 {
   group_ = robot_model_->getJointModelGroup(group_name);
 }
 
-const std::string& RobotTrajectory::getGroupName() const
+const std::string& robot_trajectory::RobotTrajectory::getGroupName() const
 {
   if (group_)
     return group_->getName();
@@ -66,7 +65,7 @@ const std::string& RobotTrajectory::getGroupName() const
   return empty;
 }
 
-double RobotTrajectory::getAverageSegmentDuration() const
+double robot_trajectory::RobotTrajectory::getAverageSegmentDuration() const
 {
   if (duration_from_previous_.empty())
     return 0.0;
@@ -75,7 +74,7 @@ double RobotTrajectory::getAverageSegmentDuration() const
            (double)duration_from_previous_.size();
 }
 
-void RobotTrajectory::swap(RobotTrajectory& other)
+void robot_trajectory::RobotTrajectory::swap(robot_trajectory::RobotTrajectory& other)
 {
   robot_model_.swap(other.robot_model_);
   std::swap(group_, other.group_);
@@ -83,7 +82,7 @@ void RobotTrajectory::swap(RobotTrajectory& other)
   duration_from_previous_.swap(other.duration_from_previous_);
 }
 
-void RobotTrajectory::append(const RobotTrajectory& source, double dt)
+void robot_trajectory::RobotTrajectory::append(const RobotTrajectory& source, double dt)
 {
   waypoints_.insert(waypoints_.end(), source.waypoints_.begin(), source.waypoints_.end());
   std::size_t index = duration_from_previous_.size();
@@ -93,7 +92,7 @@ void RobotTrajectory::append(const RobotTrajectory& source, double dt)
     duration_from_previous_[index] += dt;
 }
 
-void RobotTrajectory::reverse()
+void robot_trajectory::RobotTrajectory::reverse()
 {
   std::reverse(waypoints_.begin(), waypoints_.end());
   if (!duration_from_previous_.empty())
@@ -104,7 +103,7 @@ void RobotTrajectory::reverse()
   }
 }
 
-void RobotTrajectory::unwind()
+void robot_trajectory::RobotTrajectory::unwind()
 {
   if (waypoints_.empty())
     return;
@@ -139,7 +138,7 @@ void RobotTrajectory::unwind()
     waypoints_[j]->update();
 }
 
-void RobotTrajectory::unwind(const robot_state::RobotState& state)
+void robot_trajectory::RobotTrajectory::unwind(const robot_state::RobotState& state)
 {
   if (waypoints_.empty())
     return;
@@ -185,13 +184,13 @@ void RobotTrajectory::unwind(const robot_state::RobotState& state)
     waypoints_[j]->update();
 }
 
-void RobotTrajectory::clear()
+void robot_trajectory::RobotTrajectory::clear()
 {
   waypoints_.clear();
   duration_from_previous_.clear();
 }
 
-void RobotTrajectory::getRobotTrajectoryMsg(moveit_msgs::RobotTrajectory& trajectory) const
+void robot_trajectory::RobotTrajectory::getRobotTrajectoryMsg(moveit_msgs::RobotTrajectory& trajectory) const
 {
   trajectory = moveit_msgs::RobotTrajectory();
   if (waypoints_.empty())
@@ -276,10 +275,10 @@ void RobotTrajectory::getRobotTrajectoryMsg(moveit_msgs::RobotTrajectory& trajec
       trajectory.multi_dof_joint_trajectory.points[i].transforms.resize(mdof.size());
       for (std::size_t j = 0; j < mdof.size(); ++j)
       {
-        geometry_msgs::TransformStamped ts = tf2::eigenToTransform(waypoints_[i]->getJointTransform(mdof[j]));
-        trajectory.multi_dof_joint_trajectory.points[i].transforms[j] = ts.transform;
+        tf::transformEigenToMsg(waypoints_[i]->getJointTransform(mdof[j]),
+                                trajectory.multi_dof_joint_trajectory.points[i].transforms[j]);
         // TODO: currently only checking for planar multi DOF joints / need to add check for floating
-        if (waypoints_[i]->hasVelocities() && (mdof[j]->getType() == robot_model::JointModel::JointType::PLANAR))
+        if (waypoints_[i]->hasVelocities() && (mdof[j]->getType() == robot_model::JointModel::PLANAR))
         {
           const std::vector<std::string> names = mdof[j]->getVariableNames();
           const double* velocities = waypoints_[i]->getJointVelocities(mdof[j]);
@@ -316,8 +315,8 @@ void RobotTrajectory::getRobotTrajectoryMsg(moveit_msgs::RobotTrajectory& trajec
   }
 }
 
-void RobotTrajectory::setRobotTrajectoryMsg(const robot_state::RobotState& reference_state,
-                                            const trajectory_msgs::JointTrajectory& trajectory)
+void robot_trajectory::RobotTrajectory::setRobotTrajectoryMsg(const robot_state::RobotState& reference_state,
+                                                              const trajectory_msgs::JointTrajectory& trajectory)
 {
   // make a copy just in case the next clear() removes the memory for the reference passed in
   robot_state::RobotState copy = reference_state;
@@ -342,8 +341,8 @@ void RobotTrajectory::setRobotTrajectoryMsg(const robot_state::RobotState& refer
   }
 }
 
-void RobotTrajectory::setRobotTrajectoryMsg(const robot_state::RobotState& reference_state,
-                                            const moveit_msgs::RobotTrajectory& trajectory)
+void robot_trajectory::RobotTrajectory::setRobotTrajectoryMsg(const robot_state::RobotState& reference_state,
+                                                              const moveit_msgs::RobotTrajectory& trajectory)
 {
   // make a copy just in case the next clear() removes the memory for the reference passed in
   robot_state::RobotState copy = reference_state;
@@ -378,7 +377,8 @@ void RobotTrajectory::setRobotTrajectoryMsg(const robot_state::RobotState& refer
     {
       for (std::size_t j = 0; j < trajectory.multi_dof_joint_trajectory.joint_names.size(); ++j)
       {
-        Eigen::Affine3d t = tf2::transformToEigen(trajectory.multi_dof_joint_trajectory.points[i].transforms[j]);
+        Eigen::Affine3d t;
+        tf::transformMsgToEigen(trajectory.multi_dof_joint_trajectory.points[i].transforms[j], t);
         st->setJointPositions(trajectory.multi_dof_joint_trajectory.joint_names[j], t);
       }
       this_time_stamp = trajectory.multi_dof_joint_trajectory.header.stamp +
@@ -390,17 +390,17 @@ void RobotTrajectory::setRobotTrajectoryMsg(const robot_state::RobotState& refer
   }
 }
 
-void RobotTrajectory::setRobotTrajectoryMsg(const robot_state::RobotState& reference_state,
-                                            const moveit_msgs::RobotState& state,
-                                            const moveit_msgs::RobotTrajectory& trajectory)
+void robot_trajectory::RobotTrajectory::setRobotTrajectoryMsg(const robot_state::RobotState& reference_state,
+                                                              const moveit_msgs::RobotState& state,
+                                                              const moveit_msgs::RobotTrajectory& trajectory)
 {
   robot_state::RobotState st(reference_state);
   robot_state::robotStateMsgToRobotState(state, st);
   setRobotTrajectoryMsg(st, trajectory);
 }
 
-void RobotTrajectory::findWayPointIndicesForDurationAfterStart(const double& duration, int& before, int& after,
-                                                               double& blend) const
+void robot_trajectory::RobotTrajectory::findWayPointIndicesForDurationAfterStart(const double& duration, int& before,
+                                                                                 int& after, double& blend) const
 {
   if (duration < 0.0)
   {
@@ -430,7 +430,7 @@ void RobotTrajectory::findWayPointIndicesForDurationAfterStart(const double& dur
     blend = (duration - before_time) / duration_from_previous_[index];
 }
 
-double RobotTrajectory::getWayPointDurationFromStart(std::size_t index) const
+double robot_trajectory::RobotTrajectory::getWaypointDurationFromStart(std::size_t index) const
 {
   if (duration_from_previous_.empty())
     return 0.0;
@@ -443,13 +443,8 @@ double RobotTrajectory::getWayPointDurationFromStart(std::size_t index) const
   return time;
 }
 
-double RobotTrajectory::getWaypointDurationFromStart(std::size_t index) const
-{
-  return getWayPointDurationFromStart(index);
-}
-
-bool RobotTrajectory::getStateAtDurationFromStart(const double request_duration,
-                                                  robot_state::RobotStatePtr& output_state) const
+bool robot_trajectory::RobotTrajectory::getStateAtDurationFromStart(const double request_duration,
+                                                                    robot_state::RobotStatePtr& output_state) const
 {
   // If there are no waypoints we can't do anything
   if (getWayPointCount() == 0)
@@ -458,10 +453,7 @@ bool RobotTrajectory::getStateAtDurationFromStart(const double request_duration,
   int before = 0, after = 0;
   double blend = 1.0;
   findWayPointIndicesForDurationAfterStart(request_duration, before, after, blend);
-  // ROS_DEBUG_NAMED("robot_trajectory", "Interpolating %.3f of the way between index %d and %d.", blend, before,
-  // after);
+  // logDebug("Interpolating %.3f of the way between index %d and %d.", blend, before, after);
   waypoints_[before]->interpolate(*waypoints_[after], blend, *output_state);
   return true;
 }
-
-}  // end of namespace robot_trajectory

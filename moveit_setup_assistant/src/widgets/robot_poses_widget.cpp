@@ -49,7 +49,7 @@
 namespace moveit_setup_assistant
 {
 // ******************************************************************************************
-// Outer User Interface for MoveIt! Configuration Assistant
+// Outer User Interface for MoveIt Configuration Assistant
 // ******************************************************************************************
 RobotPosesWidget::RobotPosesWidget(QWidget* parent, moveit_setup_assistant::MoveItConfigDataPtr config_data)
   : SetupScreenWidget(parent), config_data_(config_data)
@@ -62,10 +62,10 @@ RobotPosesWidget::RobotPosesWidget(QWidget* parent, moveit_setup_assistant::Move
 
   // Top Header Area ------------------------------------------------
 
-  HeaderWidget* header = new HeaderWidget(
-      "Define Robot Poses", "Create poses for the robot. Poses are defined as sets of joint values for "
-                            "particular planning groups. This is useful for things like <i>home position</i>.",
-      this);
+  HeaderWidget* header =
+      new HeaderWidget("Robot Poses", "Create poses for the robot. Poses are defined as sets of joint values for "
+                                      "particular planning groups. This is useful for things like <i>folded arms</i>.",
+                       this);
   layout->addWidget(header);
 
   // Create contents screens ---------------------------------------
@@ -93,7 +93,7 @@ RobotPosesWidget::RobotPosesWidget(QWidget* parent, moveit_setup_assistant::Move
   pub_robot_state_ = nh.advertise<moveit_msgs::DisplayRobotState>(MOVEIT_ROBOT_STATE, 1);
 
   // Set the planning scene
-  config_data_->getPlanningScene()->setName("MoveIt! Planning Scene");
+  config_data_->getPlanningScene()->setName("MoveIt Planning Scene");
 
   // Collision Detection initializtion -------------------------------
 
@@ -292,7 +292,7 @@ void RobotPosesWidget::showNewScreen()
   stacked_layout_->setCurrentIndex(1);
 
   // Remember that this is a new pose
-  current_edit_pose_ = nullptr;
+  current_edit_pose_.clear();
 
   // Manually send the load joint sliders signal
   if (!group_name_field_->currentText().isEmpty())
@@ -319,11 +319,15 @@ void RobotPosesWidget::editDoubleClicked(int row, int column)
 // ******************************************************************************************
 void RobotPosesWidget::previewClicked(int row, int column)
 {
-  const std::string& name = data_table_->item(row, 0)->text().toStdString();
-  const std::string& group = data_table_->item(row, 1)->text().toStdString();
+  // Get list of all selected items
+  QList<QTableWidgetItem*> selected = data_table_->selectedItems();
+
+  // Check that an element was selected
+  if (!selected.size())
+    return;
 
   // Find the selected in datastructure
-  srdf::Model::GroupState* pose = findPoseByName(name, group);
+  srdf::Model::GroupState* pose = findPoseByName(selected[0]->text().toStdString());
 
   showPose(pose);
 }
@@ -405,35 +409,30 @@ void RobotPosesWidget::playPoses()
 // ******************************************************************************************
 void RobotPosesWidget::editSelected()
 {
-  const auto& ranges = data_table_->selectedRanges();
-  if (!ranges.size())
+  // Get list of all selected items
+  QList<QTableWidgetItem*> selected = data_table_->selectedItems();
+
+  // Check that an element was selected
+  if (!selected.size())
     return;
-  edit(ranges[0].bottomRow());
+
+  // Get selected name and edit it
+  edit(selected[0]->text().toStdString());
 }
 
 // ******************************************************************************************
 // Edit pose
 // ******************************************************************************************
-void RobotPosesWidget::edit(int row)
+void RobotPosesWidget::edit(const std::string& name)
 {
-  const std::string& name = data_table_->item(row, 0)->text().toStdString();
-  const std::string& group = data_table_->item(row, 1)->text().toStdString();
+  // Remember what we are editing
+  current_edit_pose_ = name;
 
   // Find the selected in datastruture
-  srdf::Model::GroupState* pose = findPoseByName(name, group);
-  current_edit_pose_ = pose;
+  srdf::Model::GroupState* pose = findPoseByName(name);
 
   // Set pose name
   pose_name_field_->setText(pose->name_.c_str());
-
-  // Set group:
-  int index = group_name_field_->findText(pose->group_.c_str());
-  if (index == -1)
-  {
-    QMessageBox::critical(this, "Error Loading", "Unable to find group name in drop down box");
-    return;
-  }
-  group_name_field_->setCurrentIndex(index);
 
   // Set pose joint values by adding them to the local joint state map
   for (std::map<std::string, std::vector<double> >::const_iterator value_it = pose->joint_values_.begin();
@@ -445,6 +444,17 @@ void RobotPosesWidget::edit(int row)
 
   // Update robot model in rviz
   publishJoints();
+
+  // Set group:
+  int index = group_name_field_->findText(pose->group_.c_str());
+  if (index == -1)
+  {
+    QMessageBox::critical(this, "Error Loading", "Unable to find group name in drop down box");
+    return;
+  }
+
+  // Load joint sliders
+  group_name_field_->setCurrentIndex(index);
 
   // Switch to screen - do this before setCurrentIndex
   stacked_layout_->setCurrentIndex(1);
@@ -514,36 +524,37 @@ void RobotPosesWidget::loadJointSliders(const QString& selected)
 
   // Iterate through the joints
   int num_joints = 0;
-  for (const robot_model::JointModel* joint_model : joint_models_)
+  for (std::vector<const robot_model::JointModel*>::const_iterator joint_it = joint_models_.begin();
+       joint_it < joint_models_.end(); ++joint_it)
   {
-    if (joint_model->getVariableCount() != 1 ||  // only consider 1-variable joints
-        joint_model->isPassive() ||              // ignore passive
-        joint_model->getMimic())                 // and mimic joints
-      continue;
-
-    double init_value;
-
-    // Decide what this joint's initial value is
-    if (joint_state_map_.find(joint_model->getName()) == joint_state_map_.end())
+    // Check that this joint only represents 1 variable.
+    if ((*joint_it)->getVariableCount() == 1)
     {
-      // The joint state map does not yet have an entry for this joint
-      // Get the first joint value in its vector
-      joint_model->getVariableDefaultPositions(&init_value);
+      double init_value;
+
+      // Decide what this joint's initial value is
+      if (joint_state_map_.find((*joint_it)->getName()) == joint_state_map_.end())
+      {
+        // the joint state map does not yet have an entry for this joint
+
+        // get the first joint value in its vector
+        (*joint_it)->getVariableDefaultPositions(&init_value);
+      }
+      else  // there is already a value in the map
+      {
+        init_value = joint_state_map_[(*joint_it)->getName()];
+      }
+
+      // For each joint in group add slider
+      SliderWidget* sw = new SliderWidget(this, *joint_it, init_value);
+      joint_list_layout_->addWidget(sw);
+
+      // Connect value change event
+      connect(sw, SIGNAL(jointValueChanged(const std::string&, double)), this,
+              SLOT(updateRobotModel(const std::string&, double)));
+
+      ++num_joints;
     }
-    else  // There is already a value in the map
-    {
-      init_value = joint_state_map_[joint_model->getName()];
-    }
-
-    // For each joint in group add slider
-    SliderWidget* sw = new SliderWidget(this, joint_model, init_value);
-    joint_list_layout_->addWidget(sw);
-
-    // Connect value change event
-    connect(sw, SIGNAL(jointValueChanged(const std::string&, double)), this,
-            SLOT(updateRobotModel(const std::string&, double)));
-
-    ++num_joints;
   }
 
   // Copy the width of column 2 and manually calculate height from number of joints
@@ -560,21 +571,29 @@ void RobotPosesWidget::loadJointSliders(const QString& selected)
 // ******************************************************************************************
 // Find the associated data by name
 // ******************************************************************************************
-srdf::Model::GroupState* RobotPosesWidget::findPoseByName(const std::string& name, const std::string& group)
+srdf::Model::GroupState* RobotPosesWidget::findPoseByName(const std::string& name)
 {
   // Find the group state we are editing based on the pose name
-  srdf::Model::GroupState* searched_state = NULL;  // used for holding our search results
+  srdf::Model::GroupState* searched_group = NULL;  // used for holding our search results
 
-  for (srdf::Model::GroupState& state : config_data_->srdf_->group_states_)
+  for (std::vector<srdf::Model::GroupState>::iterator pose_it = config_data_->srdf_->group_states_.begin();
+       pose_it != config_data_->srdf_->group_states_.end(); ++pose_it)
   {
-    if (state.name_ == name && state.group_ == group)  // match
+    if (pose_it->name_ == name)  // string match
     {
-      searched_state = &state;
-      break;
+      searched_group = &(*pose_it);  // convert to pointer from iterator
+      break;                         // we are done searching
     }
   }
 
-  return searched_state;
+  // Check if pose was found
+  if (searched_group == NULL)  // not found
+  {
+    QMessageBox::critical(this, "Error Saving", "An internal error has occured while saving. Quitting.");
+    QApplication::quit();
+  }
+
+  return searched_group;
 }
 
 // ******************************************************************************************
@@ -582,18 +601,21 @@ srdf::Model::GroupState* RobotPosesWidget::findPoseByName(const std::string& nam
 // ******************************************************************************************
 void RobotPosesWidget::deleteSelected()
 {
-  const auto& ranges = data_table_->selectedRanges();
-  if (!ranges.size())
-    return;
-  int row = ranges[0].bottomRow();
+  // Get list of all selected items
+  QList<QTableWidgetItem*> selected = data_table_->selectedItems();
 
-  const std::string& name = data_table_->item(row, 0)->text().toStdString();
-  const std::string& group = data_table_->item(row, 1)->text().toStdString();
+  // Check that an element was selected
+  if (!selected.size())
+    return;
+
+  // Get selected name and edit it
+  current_edit_pose_ = selected[0]->text().toStdString();
 
   // Confirm user wants to delete group
-  if (QMessageBox::question(this, "Confirm Pose Deletion",
-                            QString("Are you sure you want to delete the pose '").append(name.c_str()).append("'?"),
-                            QMessageBox::Ok | QMessageBox::Cancel) == QMessageBox::Cancel)
+  if (QMessageBox::question(
+          this, "Confirm Pose Deletion",
+          QString("Are you sure you want to delete the pose '").append(current_edit_pose_.c_str()).append("'?"),
+          QMessageBox::Ok | QMessageBox::Cancel) == QMessageBox::Cancel)
   {
     return;
   }
@@ -603,7 +625,7 @@ void RobotPosesWidget::deleteSelected()
        pose_it != config_data_->srdf_->group_states_.end(); ++pose_it)
   {
     // check if this is the group we want to delete
-    if (pose_it->name_ == name && pose_it->group_ == group)  // match
+    if (pose_it->name_ == current_edit_pose_)  // string match
     {
       config_data_->srdf_->group_states_.erase(pose_it);
       break;
@@ -621,40 +643,46 @@ void RobotPosesWidget::deleteSelected()
 void RobotPosesWidget::doneEditing()
 {
   // Get a reference to the supplied strings
-  const std::string& name = pose_name_field_->text().toStdString();
-  const std::string& group = group_name_field_->currentText().toStdString();
+  const std::string pose_name = pose_name_field_->text().toStdString();
 
   // Used for editing existing groups
   srdf::Model::GroupState* searched_data = NULL;
 
   // Check that name field is not empty
-  if (name.empty())
+  if (pose_name.empty())
   {
     QMessageBox::warning(this, "Error Saving", "A name must be given for the pose!");
-    pose_name_field_->setFocus();
-    return;
-  }
-  // Check that a group was selected
-  if (group.empty())
-  {
-    QMessageBox::warning(this, "Error Saving", "A planning group must be chosen!");
-    group_name_field_->setFocus();
     return;
   }
 
-  // If creating a new pose, check if the (name, group) pair already exists
-  if (!current_edit_pose_)
+  // Check if this is an existing group
+  if (!current_edit_pose_.empty())
   {
-    searched_data = findPoseByName(name, group);
-    if (searched_data != current_edit_pose_)
+    // Find the group we are editing based on the goup name string
+    searched_data = findPoseByName(current_edit_pose_);
+  }
+
+  // Check that the pose name is unique
+  for (std::vector<srdf::Model::GroupState>::const_iterator data_it = config_data_->srdf_->group_states_.begin();
+       data_it != config_data_->srdf_->group_states_.end(); ++data_it)
+  {
+    if (data_it->name_.compare(pose_name) == 0)  // the names are the same
     {
-      if (QMessageBox::warning(this, "Warning Saving", "A pose already exists with that name! Overwrite?",
-                               QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::No)
+      // is this our existing pose? check if pose pointers are same
+      if (&(*data_it) != searched_data)
+      {
+        QMessageBox::warning(this, "Error Saving", "A pose already exists with that name!");
         return;
+      }
     }
   }
-  else
-    searched_data = current_edit_pose_;  // overwrite edited pose
+
+  // Check that a group was selected
+  if (group_name_field_->currentText().isEmpty())
+  {
+    QMessageBox::warning(this, "Error Saving", "A planning group must be chosen!");
+    return;
+  }
 
   config_data_->changes |= MoveItConfigData::POSES;
 
@@ -664,12 +692,13 @@ void RobotPosesWidget::doneEditing()
   if (searched_data == NULL)  // create new
   {
     isNew = true;
+
     searched_data = new srdf::Model::GroupState();
   }
 
   // Copy name data ----------------------------------------------------
-  searched_data->name_ = name;
-  searched_data->group_ = group;
+  searched_data->name_ = pose_name;
+  searched_data->group_ = group_name_field_->currentText().toStdString();
 
   // Copy joint positions ----------------------------------------
 

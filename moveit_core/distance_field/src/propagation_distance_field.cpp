@@ -36,7 +36,7 @@
 
 #include <moveit/distance_field/propagation_distance_field.h>
 #include <visualization_msgs/Marker.h>
-#include <ros/console.h>
+#include <console_bridge/console.h>
 #include <boost/iostreams/filtering_stream.hpp>
 #include <boost/iostreams/copy.hpp>
 #include <boost/iostreams/filter/zlib.hpp>
@@ -60,7 +60,6 @@ PropagationDistanceField::PropagationDistanceField(const octomap::OcTree& octree
                   octree.getResolution(), bbx_min.x(), bbx_min.y(), bbx_min.z())
   , propagate_negative_(propagate_negative_distances)
   , max_distance_(max_distance)
-  , max_distance_sq_(0)  // avoid gcc warning about uninitialized value
 {
   initialize();
   addOcTreeToField(&octree);
@@ -102,26 +101,26 @@ int PropagationDistanceField::eucDistSq(Eigen::Vector3i point1, Eigen::Vector3i 
 
 void PropagationDistanceField::print(const VoxelSet& set)
 {
-  ROS_DEBUG_NAMED("distance_field", "[");
+  logDebug("[");
   VoxelSet::const_iterator it;
   for (it = set.begin(); it != set.end(); ++it)
   {
     Eigen::Vector3i loc1 = *it;
-    ROS_DEBUG_NAMED("distance_field", "%d, %d, %d ", loc1.x(), loc1.y(), loc1.z());
+    logDebug("%d, %d, %d ", loc1.x(), loc1.y(), loc1.z());
   }
-  ROS_DEBUG_NAMED("distance_field", "] size=%u\n", (unsigned int)set.size());
+  logDebug("] size=%u\n", (unsigned int)set.size());
 }
 
 void PropagationDistanceField::print(const EigenSTL::vector_Vector3d& points)
 {
-  ROS_DEBUG_NAMED("distance_field", "[");
+  logDebug("[");
   EigenSTL::vector_Vector3d::const_iterator it;
   for (it = points.begin(); it != points.end(); ++it)
   {
     Eigen::Vector3d loc1 = *it;
-    ROS_DEBUG_NAMED("distance_field", "%g, %g, %g ", loc1.x(), loc1.y(), loc1.z());
+    logDebug("%g, %g, %g ", loc1.x(), loc1.y(), loc1.z());
   }
-  ROS_DEBUG_NAMED("distance_field", "] size=%u\n", (unsigned int)points.size());
+  logDebug("] size=%u\n", (unsigned int)points.size());
 }
 
 void PropagationDistanceField::updatePointsInField(const EigenSTL::vector_Vector3d& old_points,
@@ -152,39 +151,39 @@ void PropagationDistanceField::updatePointsInField(const EigenSTL::vector_Vector
   }
   compareEigen_Vector3i comp;
 
-  EigenSTL::vector_Vector3i old_not_new;
+  std::vector<Eigen::Vector3i> old_not_new;
   std::set_difference(old_point_set.begin(), old_point_set.end(), new_point_set.begin(), new_point_set.end(),
                       std::inserter(old_not_new, old_not_new.end()), comp);
 
-  EigenSTL::vector_Vector3i new_not_old;
+  std::vector<Eigen::Vector3i> new_not_old;
   std::set_difference(new_point_set.begin(), new_point_set.end(), old_point_set.begin(), old_point_set.end(),
                       std::inserter(new_not_old, new_not_old.end()), comp);
 
-  EigenSTL::vector_Vector3i new_not_in_current;
+  std::vector<Eigen::Vector3i> new_not_in_current;
   for (unsigned int i = 0; i < new_not_old.size(); i++)
   {
     if (voxel_grid_->getCell(new_not_old[i].x(), new_not_old[i].y(), new_not_old[i].z()).distance_square_ != 0)
     {
       new_not_in_current.push_back(new_not_old[i]);
     }
-    // ROS_INFO_NAMED("distance_field", "Adding obstacle voxel %d %d %d", (*it).x(), (*it).y(), (*it).z());
+    // logInform("Adding obstacle voxel %d %d %d", (*it).x(), (*it).y(), (*it).z());
   }
 
   removeObstacleVoxels(old_not_new);
   addNewObstacleVoxels(new_not_in_current);
 
-  // ROS_DEBUG_NAMED("distance_field",  "new=" );
+  // logDebug( "new=" );
   // print(points_added);
-  // ROS_DEBUG_NAMED("distance_field",  "removed=" );
+  // logDebug( "removed=" );
   // print(points_removed);
-  // ROS_DEBUG_NAMED("distance_field",  "obstacle_voxel_locations_=" );
+  // logDebug( "obstacle_voxel_locations_=" );
   // print(object_voxel_locations_);
-  // ROS_DEBUG_NAMED("distance_field", "");
+  // logDebug("");
 }
 
 void PropagationDistanceField::addPointsToField(const EigenSTL::vector_Vector3d& points)
 {
-  EigenSTL::vector_Vector3i voxel_points;
+  std::vector<Eigen::Vector3i> voxel_points;
 
   for (unsigned int i = 0; i < points.size(); i++)
   {
@@ -205,7 +204,7 @@ void PropagationDistanceField::addPointsToField(const EigenSTL::vector_Vector3d&
 
 void PropagationDistanceField::removePointsFromField(const EigenSTL::vector_Vector3d& points)
 {
-  EigenSTL::vector_Vector3i voxel_points;
+  std::vector<Eigen::Vector3i> voxel_points;
   // VoxelSet voxel_locs;
 
   for (unsigned int i = 0; i < points.size(); i++)
@@ -226,11 +225,11 @@ void PropagationDistanceField::removePointsFromField(const EigenSTL::vector_Vect
   removeObstacleVoxels(voxel_points);
 }
 
-void PropagationDistanceField::addNewObstacleVoxels(const EigenSTL::vector_Vector3i& voxel_points)
+void PropagationDistanceField::addNewObstacleVoxels(const std::vector<Eigen::Vector3i>& voxel_points)
 {
   int initial_update_direction = getDirectionNumber(0, 0, 0);
   bucket_queue_[0].reserve(voxel_points.size());
-  EigenSTL::vector_Vector3i negative_stack;
+  std::vector<Eigen::Vector3i> negative_stack;
   if (propagate_negative_)
   {
     negative_stack.reserve(getXNumCells() * getYNumCells() * getZNumCells());
@@ -308,11 +307,11 @@ void PropagationDistanceField::addNewObstacleVoxels(const EigenSTL::vector_Vecto
   }
 }
 
-void PropagationDistanceField::removeObstacleVoxels(const EigenSTL::vector_Vector3i& voxel_points)
+void PropagationDistanceField::removeObstacleVoxels(const std::vector<Eigen::Vector3i>& voxel_points)
 // const VoxelSet& locations )
 {
-  EigenSTL::vector_Vector3i stack;
-  EigenSTL::vector_Vector3i negative_stack;
+  std::vector<Eigen::Vector3i> stack;
+  std::vector<Eigen::Vector3i> negative_stack;
   int initial_update_direction = getDirectionNumber(0, 0, 0);
 
   stack.reserve(getXNumCells() * getYNumCells() * getZNumCells());
@@ -400,15 +399,15 @@ void PropagationDistanceField::propagatePositive()
   // now process the queue:
   for (unsigned int i = 0; i < bucket_queue_.size(); ++i)
   {
-    EigenSTL::vector_Vector3i::iterator list_it = bucket_queue_[i].begin();
-    EigenSTL::vector_Vector3i::iterator list_end = bucket_queue_[i].end();
+    std::vector<Eigen::Vector3i>::iterator list_it = bucket_queue_[i].begin();
+    std::vector<Eigen::Vector3i>::iterator list_end = bucket_queue_[i].end();
     for (; list_it != list_end; ++list_it)
     {
       const Eigen::Vector3i& loc = *list_it;
       PropDistanceFieldVoxel* vptr = &voxel_grid_->getCell(loc.x(), loc.y(), loc.z());
 
       // select the neighborhood list based on the update direction:
-      EigenSTL::vector_Vector3i* neighborhood;
+      std::vector<Eigen::Vector3i>* neighborhood;
       int D = i;
       if (D > 1)
         D = 1;
@@ -416,8 +415,7 @@ void PropagationDistanceField::propagatePositive()
       // This will never happen.  update_direction_ is always set before voxel is added to bucket queue.
       if (vptr->update_direction_ < 0 || vptr->update_direction_ > 26)
       {
-        ROS_ERROR_NAMED("distance_field", "PROGRAMMING ERROR: Invalid update direction detected: %d",
-                        vptr->update_direction_);
+        logError("PROGRAMMING ERROR: Invalid update direction detected: %d", vptr->update_direction_);
         continue;
       }
 
@@ -458,15 +456,15 @@ void PropagationDistanceField::propagateNegative()
   // now process the queue:
   for (unsigned int i = 0; i < negative_bucket_queue_.size(); ++i)
   {
-    EigenSTL::vector_Vector3i::iterator list_it = negative_bucket_queue_[i].begin();
-    EigenSTL::vector_Vector3i::iterator list_end = negative_bucket_queue_[i].end();
+    std::vector<Eigen::Vector3i>::iterator list_it = negative_bucket_queue_[i].begin();
+    std::vector<Eigen::Vector3i>::iterator list_end = negative_bucket_queue_[i].end();
     for (; list_it != list_end; ++list_it)
     {
       const Eigen::Vector3i& loc = *list_it;
       PropDistanceFieldVoxel* vptr = &voxel_grid_->getCell(loc.x(), loc.y(), loc.z());
 
       // select the neighborhood list based on the update direction:
-      EigenSTL::vector_Vector3i* neighborhood;
+      std::vector<Eigen::Vector3i>* neighborhood;
       int D = i;
       if (D > 1)
         D = 1;
@@ -475,8 +473,7 @@ void PropagationDistanceField::propagateNegative()
       // negative_bucket_queue_.
       if (vptr->negative_update_direction_ < 0 || vptr->negative_update_direction_ > 26)
       {
-        ROS_ERROR_NAMED("distance_field", "PROGRAMMING ERROR: Invalid update direction detected: %d",
-                        vptr->update_direction_);
+        logError("PROGRAMMING ERROR: Invalid update direction detected: %d", vptr->update_direction_);
         continue;
       }
 
@@ -741,7 +738,7 @@ bool PropagationDistanceField::readFromStream(std::istream& is)
 
   // std::cout << "Nums " << getXNumCells() << " " << getYNumCells() << " " << getZNumCells() << std::endl;
 
-  EigenSTL::vector_Vector3i obs_points;
+  std::vector<Eigen::Vector3i> obs_points;
   for (unsigned int x = 0; x < static_cast<unsigned int>(getXNumCells()); x++)
   {
     for (unsigned int y = 0; y < static_cast<unsigned int>(getYNumCells()); y++)

@@ -15,7 +15,7 @@ CHOMPPlanningContext::CHOMPPlanningContext(const std::string& name, const std::s
 {
   chomp_interface_ = CHOMPInterfacePtr(new CHOMPInterface());
 
-  collision_detection::CollisionDetectorAllocatorPtr hybrid_cd(
+  boost::shared_ptr<collision_detection::CollisionDetectorAllocator> hybrid_cd(
       collision_detection::CollisionDetectorAllocatorHybrid::create());
 
   if (!this->getPlanningScene())
@@ -63,17 +63,13 @@ bool CHOMPPlanningContext::solve(planning_interface::MotionPlanDetailedResponse&
 bool CHOMPPlanningContext::solve(planning_interface::MotionPlanResponse& res)
 {
   planning_interface::MotionPlanDetailedResponse res_detailed;
-  bool planning_success = solve(res_detailed);
+  bool result = solve(res_detailed);
 
   res.error_code_ = res_detailed.error_code_;
+  res.trajectory_ = res_detailed.trajectory_[0];
+  res.planning_time_ = res_detailed.processing_time_[0];
 
-  if (planning_success)
-  {
-    res.trajectory_ = res_detailed.trajectory_[0];
-    res.planning_time_ = res_detailed.processing_time_[0];
-  }
-
-  return planning_success;
+  return result;
 }
 
 bool CHOMPPlanningContext::terminate()

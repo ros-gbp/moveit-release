@@ -42,7 +42,6 @@
 
 #include <rviz/display_context.h>
 #include <rviz/frame_manager.h>
-#include <tf2_ros/buffer.h>
 
 #include <std_srvs/Empty.h>
 
@@ -85,8 +84,6 @@ MotionPlanningFrame::MotionPlanningFrame(MotionPlanningDisplay* pdisplay, rviz::
   connect(ui_->allow_looking, SIGNAL(toggled(bool)), this, SLOT(allowLookingToggled(bool)));
   connect(ui_->allow_replanning, SIGNAL(toggled(bool)), this, SLOT(allowReplanningToggled(bool)));
   connect(ui_->allow_external_program, SIGNAL(toggled(bool)), this, SLOT(allowExternalProgramCommunication(bool)));
-  connect(ui_->planning_algorithm_combo_box, SIGNAL(currentIndexChanged(int)), this,
-          SLOT(planningAlgorithmIndexChanged(int)));
   connect(ui_->planning_algorithm_combo_box, SIGNAL(currentIndexChanged(int)), this,
           SLOT(planningAlgorithmIndexChanged(int)));
   connect(ui_->import_file_button, SIGNAL(clicked()), this, SLOT(importFileButtonClicked()));
@@ -147,7 +144,7 @@ MotionPlanningFrame::MotionPlanningFrame(MotionPlanningDisplay* pdisplay, rviz::
   planning_scene_publisher_ = nh_.advertise<moveit_msgs::PlanningScene>("planning_scene", 1);
   planning_scene_world_publisher_ = nh_.advertise<moveit_msgs::PlanningSceneWorld>("planning_scene_world", 1);
 
-  // object_recognition_trigger_publisher_ = nh_.advertise<std_msgs::Bool>("recognize_objects_switch", 1);
+  //  object_recognition_trigger_publisher_ = nh_.advertise<std_msgs::Bool>("recognize_objects_switch", 1);
   object_recognition_client_.reset(new actionlib::SimpleActionClient<object_recognition_msgs::ObjectRecognitionAction>(
       OBJECT_RECOGNITION_ACTION, false));
   object_recognition_subscriber_ =
@@ -159,9 +156,9 @@ MotionPlanningFrame::MotionPlanningFrame(MotionPlanningDisplay* pdisplay, rviz::
     {
       waitForAction(object_recognition_client_, nh_, ros::Duration(3.0), OBJECT_RECOGNITION_ACTION);
     }
-    catch (std::exception& ex)
+    catch (std::runtime_error& ex)
     {
-      // ROS_ERROR("Object recognition action: %s", ex.what());
+      //      ROS_ERROR("Object recognition action: %s", ex.what());
       object_recognition_client_.reset();
     }
   }
@@ -169,7 +166,7 @@ MotionPlanningFrame::MotionPlanningFrame(MotionPlanningDisplay* pdisplay, rviz::
   {
     planning_scene_interface_.reset(new moveit::planning_interface::PlanningSceneInterface());
   }
-  catch (std::exception& ex)
+  catch (std::runtime_error& ex)
   {
     ROS_ERROR("%s", ex.what());
   }
@@ -188,7 +185,7 @@ MotionPlanningFrame::MotionPlanningFrame(MotionPlanningDisplay* pdisplay, rviz::
       semantic_world_->addTableCallback(boost::bind(&MotionPlanningFrame::updateTables, this));
     }
   }
-  catch (std::exception& ex)
+  catch (std::runtime_error& ex)
   {
     ROS_ERROR("%s", ex.what());
   }
@@ -206,17 +203,12 @@ void MotionPlanningFrame::approximateIKChanged(int state)
 void MotionPlanningFrame::setItemSelectionInList(const std::string& item_name, bool selection, QListWidget* list)
 {
   QList<QListWidgetItem*> found_items = list->findItems(QString(item_name.c_str()), Qt::MatchExactly);
-  for (int i = 0; i < found_items.size(); ++i)
+  for (std::size_t i = 0; i < found_items.size(); ++i)
     found_items[i]->setSelected(selection);
 }
 
 void MotionPlanningFrame::allowExternalProgramCommunication(bool enable)
 {
-  // This is needed to prevent UI event (resuming the options) triggered
-  // before getRobotInteraction() is loaded and ready
-  if (first_time_)
-    return;
-
   planning_display_->getRobotInteraction()->toggleMoveInteractiveMarkerTopic(enable);
   planning_display_->toggleSelectPlanningGroupSubscription(enable);
   if (enable)
@@ -224,25 +216,17 @@ void MotionPlanningFrame::allowExternalProgramCommunication(bool enable)
     ros::NodeHandle nh;
     plan_subscriber_ = nh.subscribe("/rviz/moveit/plan", 1, &MotionPlanningFrame::remotePlanCallback, this);
     execute_subscriber_ = nh.subscribe("/rviz/moveit/execute", 1, &MotionPlanningFrame::remoteExecuteCallback, this);
-    stop_subscriber_ = nh.subscribe("/rviz/moveit/stop", 1, &MotionPlanningFrame::remoteStopCallback, this);
     update_start_state_subscriber_ =
         nh.subscribe("/rviz/moveit/update_start_state", 1, &MotionPlanningFrame::remoteUpdateStartStateCallback, this);
     update_goal_state_subscriber_ =
         nh.subscribe("/rviz/moveit/update_goal_state", 1, &MotionPlanningFrame::remoteUpdateGoalStateCallback, this);
-    update_custom_start_state_subscriber_ = nh.subscribe(
-        "/rviz/moveit/update_custom_start_state", 1, &MotionPlanningFrame::remoteUpdateCustomStartStateCallback, this);
-    update_custom_goal_state_subscriber_ = nh.subscribe(
-        "/rviz/moveit/update_custom_goal_state", 1, &MotionPlanningFrame::remoteUpdateCustomGoalStateCallback, this);
   }
   else
   {  // disable
     plan_subscriber_.shutdown();
     execute_subscriber_.shutdown();
-    stop_subscriber_.shutdown();
     update_start_state_subscriber_.shutdown();
     update_goal_state_subscriber_.shutdown();
-    update_custom_start_state_subscriber_.shutdown();
-    update_custom_goal_state_subscriber_.shutdown();
   }
 }
 
@@ -298,8 +282,6 @@ void MotionPlanningFrame::changePlanningGroupHelper()
 
   const robot_model::RobotModelConstPtr& kmodel = planning_display_->getRobotModel();
   std::string group = planning_display_->getCurrentPlanningGroup();
-  planning_display_->addMainLoopJob(
-      boost::bind(&MotionPlanningParamWidget::setGroupName, ui_->planner_param_treeview, group));
 
   if (!group.empty() && kmodel)
   {
@@ -307,28 +289,21 @@ void MotionPlanningFrame::changePlanningGroupHelper()
       return;
     ROS_INFO("Constructing new MoveGroup connection for group '%s' in namespace '%s'", group.c_str(),
              planning_display_->getMoveGroupNS().c_str());
-    moveit::planning_interface::MoveGroupInterface::Options opt(group);
+    moveit::planning_interface::MoveGroup::Options opt(group);
     opt.robot_model_ = kmodel;
     opt.robot_description_.clear();
     opt.node_handle_ = ros::NodeHandle(planning_display_->getMoveGroupNS());
     try
     {
-#ifdef ROS_KINETIC
-      std::shared_ptr<tf2_ros::Buffer> tf_buffer = PlanningSceneDisplay::getTF2BufferPtr();
-#else
-      std::shared_ptr<tf2_ros::Buffer> tf_buffer = context_->getFrameManager()->getTF2BufferPtr();
-#endif
-      move_group_.reset(new moveit::planning_interface::MoveGroupInterface(opt, tf_buffer, ros::WallDuration(30, 0)));
-
+      move_group_.reset(new moveit::planning_interface::MoveGroup(opt, context_->getFrameManager()->getTFClientPtr(),
+                                                                  ros::WallDuration(30, 0)));
       if (planning_scene_storage_)
         move_group_->setConstraintsDatabase(ui_->database_host->text().toStdString(), ui_->database_port->value());
     }
-    catch (std::exception& ex)
+    catch (std::runtime_error& ex)
     {
       ROS_ERROR("%s", ex.what());
     }
-    planning_display_->addMainLoopJob(
-        boost::bind(&MotionPlanningParamWidget::setMoveGroup, ui_->planner_param_treeview, move_group_));
     if (move_group_)
     {
       move_group_->allowLooking(ui_->allow_looking->isChecked());
@@ -348,11 +323,6 @@ void MotionPlanningFrame::changePlanningGroupHelper()
           planning_display_->setQueryStartState(ps->getCurrentState());
           planning_display_->setQueryGoalState(ps->getCurrentState());
         }
-        // This ensures saved UI settings applied after planning_display_ is ready
-        planning_display_->useApproximateIK(ui_->approximate_ik->isChecked());
-        if (ui_->allow_external_program->isChecked())
-          planning_display_->addMainLoopJob(
-              boost::bind(&MotionPlanningFrame::allowExternalProgramCommunication, this, true));
       }
     }
   }
@@ -474,12 +444,14 @@ void MotionPlanningFrame::enable()
 
   // activate the frame
   parentWidget()->show();
+  show();
 }
 
 void MotionPlanningFrame::disable()
 {
   move_group_.reset();
   parentWidget()->hide();
+  hide();
 }
 
 void MotionPlanningFrame::tabChanged(int index)

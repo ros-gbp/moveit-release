@@ -120,8 +120,6 @@ public:
      */
     const Eigen::Vector3f& getPaddingCoefficients() const;
 
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
   private:
     /** \brief focal length in x-direction*/
     float fx_;

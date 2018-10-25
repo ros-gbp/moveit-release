@@ -33,8 +33,7 @@
  *********************************************************************/
 
 #include <moveit/collision_plugin_loader/collision_plugin_loader.h>
-#include <pluginlib/class_loader.hpp>
-#include <memory>
+#include <pluginlib/class_loader.h>
 
 namespace collision_detection
 {
@@ -88,7 +87,7 @@ public:
   }
 
 private:
-  std::shared_ptr<pluginlib::ClassLoader<CollisionPlugin> > loader_;
+  boost::shared_ptr<pluginlib::ClassLoader<CollisionPlugin> > loader_;
   std::map<std::string, CollisionPluginPtr> plugins_;
 };
 

@@ -60,5 +60,5 @@ bool move_group::ClearOctomapService::clearOctomap(std_srvs::Empty::Request& req
   return true;
 }
 
-#include <class_loader/class_loader.hpp>
+#include <class_loader/class_loader.h>
 CLASS_LOADER_REGISTER_CLASS(move_group::ClearOctomapService, move_group::MoveGroupCapability)

@@ -42,22 +42,22 @@ const std::string moveit_warehouse::PlanningSceneStorage::DATABASE_NAME = "movei
 const std::string moveit_warehouse::PlanningSceneStorage::PLANNING_SCENE_ID_NAME = "planning_scene_id";
 const std::string moveit_warehouse::PlanningSceneStorage::MOTION_PLAN_REQUEST_ID_NAME = "motion_request_id";
 
-using warehouse_ros::Metadata;
-using warehouse_ros::Query;
-
-moveit_warehouse::PlanningSceneStorage::PlanningSceneStorage(warehouse_ros::DatabaseConnection::Ptr conn)
-  : MoveItMessageStorage(conn)
+moveit_warehouse::PlanningSceneStorage::PlanningSceneStorage(const std::string& host, const unsigned int port,
+                                                             double wait_seconds)
+  : MoveItMessageStorage(host, port, wait_seconds)
 {
   createCollections();
+  ROS_DEBUG("Connected to MongoDB '%s' on host '%s' port '%u'.", DATABASE_NAME.c_str(), db_host_.c_str(), db_port_);
 }
 
 void moveit_warehouse::PlanningSceneStorage::createCollections()
 {
-  planning_scene_collection_ = conn_->openCollectionPtr<moveit_msgs::PlanningScene>(DATABASE_NAME, "planning_scene");
-  motion_plan_request_collection_ =
-      conn_->openCollectionPtr<moveit_msgs::MotionPlanRequest>(DATABASE_NAME, "motion_plan_request");
-  robot_trajectory_collection_ =
-      conn_->openCollectionPtr<moveit_msgs::RobotTrajectory>(DATABASE_NAME, "robot_trajectory");
+  planning_scene_collection_.reset(
+      new PlanningSceneCollection::element_type(DATABASE_NAME, "planning_scene", db_host_, db_port_, timeout_));
+  motion_plan_request_collection_.reset(new MotionPlanRequestCollection::element_type(
+      DATABASE_NAME, "motion_plan_request", db_host_, db_port_, timeout_));
+  robot_trajectory_collection_.reset(
+      new RobotTrajectoryCollection::element_type(DATABASE_NAME, "robot_trajectory", db_host_, db_port_, timeout_));
 }
 
 void moveit_warehouse::PlanningSceneStorage::reset()
@@ -65,7 +65,7 @@ void moveit_warehouse::PlanningSceneStorage::reset()
   planning_scene_collection_.reset();
   motion_plan_request_collection_.reset();
   robot_trajectory_collection_.reset();
-  conn_->dropDatabase(DATABASE_NAME);
+  MoveItMessageStorage::drop(DATABASE_NAME);
   createCollections();
 }
 
@@ -77,17 +77,15 @@ void moveit_warehouse::PlanningSceneStorage::addPlanningScene(const moveit_msgs:
     removePlanningScene(scene.name);
     replace = true;
   }
-  Metadata::Ptr metadata = planning_scene_collection_->createMetadata();
-  metadata->append(PLANNING_SCENE_ID_NAME, scene.name);
+  mongo_ros::Metadata metadata(PLANNING_SCENE_ID_NAME, scene.name);
   planning_scene_collection_->insert(scene, metadata);
   ROS_DEBUG("%s scene '%s'", replace ? "Replaced" : "Added", scene.name.c_str());
 }
 
 bool moveit_warehouse::PlanningSceneStorage::hasPlanningScene(const std::string& name) const
 {
-  Query::Ptr q = planning_scene_collection_->createQuery();
-  q->append(PLANNING_SCENE_ID_NAME, name);
-  std::vector<PlanningSceneWithMetadata> planning_scenes = planning_scene_collection_->queryList(q, true);
+  mongo_ros::Query q(PLANNING_SCENE_ID_NAME, name);
+  std::vector<PlanningSceneWithMetadata> planning_scenes = planning_scene_collection_->pullAllResults(q, true);
   return !planning_scenes.empty();
 }
 
@@ -95,9 +93,9 @@ std::string moveit_warehouse::PlanningSceneStorage::getMotionPlanRequestName(
     const moveit_msgs::MotionPlanRequest& planning_query, const std::string& scene_name) const
 {
   // get all existing motion planning requests for this planning scene
-  Query::Ptr q = motion_plan_request_collection_->createQuery();
-  q->append(PLANNING_SCENE_ID_NAME, scene_name);
-  std::vector<MotionPlanRequestWithMetadata> existing_requests = motion_plan_request_collection_->queryList(q, false);
+  mongo_ros::Query q(PLANNING_SCENE_ID_NAME, scene_name);
+  std::vector<MotionPlanRequestWithMetadata> existing_requests =
+      motion_plan_request_collection_->pullAllResults(q, false);
 
   // if there are no requests stored, we are done
   if (existing_requests.empty())
@@ -148,9 +146,9 @@ std::string moveit_warehouse::PlanningSceneStorage::addNewPlanningRequest(
   if (id.empty())
   {
     std::set<std::string> used;
-    Query::Ptr q = motion_plan_request_collection_->createQuery();
-    q->append(PLANNING_SCENE_ID_NAME, scene_name);
-    std::vector<MotionPlanRequestWithMetadata> existing_requests = motion_plan_request_collection_->queryList(q, true);
+    mongo_ros::Query q(PLANNING_SCENE_ID_NAME, scene_name);
+    std::vector<MotionPlanRequestWithMetadata> existing_requests =
+        motion_plan_request_collection_->pullAllResults(q, true);
     for (std::size_t i = 0; i < existing_requests.size(); ++i)
       used.insert(existing_requests[i]->lookupString(MOTION_PLAN_REQUEST_ID_NAME));
     std::size_t index = existing_requests.size();
@@ -160,9 +158,7 @@ std::string moveit_warehouse::PlanningSceneStorage::addNewPlanningRequest(
       index++;
     } while (used.find(id) != used.end());
   }
-  Metadata::Ptr metadata = motion_plan_request_collection_->createMetadata();
-  metadata->append(PLANNING_SCENE_ID_NAME, scene_name);
-  metadata->append(MOTION_PLAN_REQUEST_ID_NAME, id);
+  mongo_ros::Metadata metadata(PLANNING_SCENE_ID_NAME, scene_name, MOTION_PLAN_REQUEST_ID_NAME, id);
   motion_plan_request_collection_->insert(planning_query, metadata);
   ROS_DEBUG("Saved planning query '%s' for scene '%s'", id.c_str(), scene_name.c_str());
   return id;
@@ -175,20 +171,18 @@ void moveit_warehouse::PlanningSceneStorage::addPlanningResult(const moveit_msgs
   std::string id = getMotionPlanRequestName(planning_query, scene_name);
   if (id.empty())
     id = addNewPlanningRequest(planning_query, scene_name, "");
-  Metadata::Ptr metadata = robot_trajectory_collection_->createMetadata();
-  metadata->append(PLANNING_SCENE_ID_NAME, scene_name);
-  metadata->append(MOTION_PLAN_REQUEST_ID_NAME, id);
+  mongo_ros::Metadata metadata(PLANNING_SCENE_ID_NAME, scene_name, MOTION_PLAN_REQUEST_ID_NAME, id);
   robot_trajectory_collection_->insert(result, metadata);
 }
 
 void moveit_warehouse::PlanningSceneStorage::getPlanningSceneNames(std::vector<std::string>& names) const
 {
   names.clear();
-  Query::Ptr q = planning_scene_collection_->createQuery();
+  mongo_ros::Query q;
   std::vector<PlanningSceneWithMetadata> planning_scenes =
-      planning_scene_collection_->queryList(q, true, PLANNING_SCENE_ID_NAME, true);
+      planning_scene_collection_->pullAllResults(q, true, PLANNING_SCENE_ID_NAME, true);
   for (std::size_t i = 0; i < planning_scenes.size(); ++i)
-    if (planning_scenes[i]->lookupField(PLANNING_SCENE_ID_NAME))
+    if (planning_scenes[i]->metadata.hasField(PLANNING_SCENE_ID_NAME.c_str()))
       names.push_back(planning_scenes[i]->lookupString(PLANNING_SCENE_ID_NAME));
 }
 
@@ -215,9 +209,8 @@ bool moveit_warehouse::PlanningSceneStorage::getPlanningSceneWorld(moveit_msgs::
 bool moveit_warehouse::PlanningSceneStorage::getPlanningScene(PlanningSceneWithMetadata& scene_m,
                                                               const std::string& scene_name) const
 {
-  Query::Ptr q = planning_scene_collection_->createQuery();
-  q->append(PLANNING_SCENE_ID_NAME, scene_name);
-  std::vector<PlanningSceneWithMetadata> planning_scenes = planning_scene_collection_->queryList(q, false);
+  mongo_ros::Query q(PLANNING_SCENE_ID_NAME, scene_name);
+  std::vector<PlanningSceneWithMetadata> planning_scenes = planning_scene_collection_->pullAllResults(q, false);
   if (planning_scenes.empty())
   {
     ROS_WARN("Planning scene '%s' was not found in the database", scene_name.c_str());
@@ -234,10 +227,10 @@ bool moveit_warehouse::PlanningSceneStorage::getPlanningQuery(MotionPlanRequestW
                                                               const std::string& scene_name,
                                                               const std::string& query_name)
 {
-  Query::Ptr q = motion_plan_request_collection_->createQuery();
-  q->append(PLANNING_SCENE_ID_NAME, scene_name);
-  q->append(MOTION_PLAN_REQUEST_ID_NAME, query_name);
-  std::vector<MotionPlanRequestWithMetadata> planning_queries = motion_plan_request_collection_->queryList(q, false);
+  mongo_ros::Query q(PLANNING_SCENE_ID_NAME, scene_name);
+  q.append(MOTION_PLAN_REQUEST_ID_NAME, query_name);
+  std::vector<MotionPlanRequestWithMetadata> planning_queries =
+      motion_plan_request_collection_->pullAllResults(q, false);
   if (planning_queries.empty())
   {
     ROS_ERROR("Planning query '%s' not found for scene '%s'", query_name.c_str(), scene_name.c_str());
@@ -253,20 +246,19 @@ bool moveit_warehouse::PlanningSceneStorage::getPlanningQuery(MotionPlanRequestW
 void moveit_warehouse::PlanningSceneStorage::getPlanningQueries(
     std::vector<MotionPlanRequestWithMetadata>& planning_queries, const std::string& scene_name) const
 {
-  Query::Ptr q = motion_plan_request_collection_->createQuery();
-  q->append(PLANNING_SCENE_ID_NAME, scene_name);
-  planning_queries = motion_plan_request_collection_->queryList(q, false);
+  mongo_ros::Query q(PLANNING_SCENE_ID_NAME, scene_name);
+  planning_queries = motion_plan_request_collection_->pullAllResults(q, false);
 }
 
 void moveit_warehouse::PlanningSceneStorage::getPlanningQueriesNames(std::vector<std::string>& query_names,
                                                                      const std::string& scene_name) const
 {
-  Query::Ptr q = motion_plan_request_collection_->createQuery();
-  q->append(PLANNING_SCENE_ID_NAME, scene_name);
-  std::vector<MotionPlanRequestWithMetadata> planning_queries = motion_plan_request_collection_->queryList(q, true);
+  mongo_ros::Query q(PLANNING_SCENE_ID_NAME, scene_name);
+  std::vector<MotionPlanRequestWithMetadata> planning_queries =
+      motion_plan_request_collection_->pullAllResults(q, true);
   query_names.clear();
   for (std::size_t i = 0; i < planning_queries.size(); ++i)
-    if (planning_queries[i]->lookupField(MOTION_PLAN_REQUEST_ID_NAME))
+    if (planning_queries[i]->metadata.hasField(MOTION_PLAN_REQUEST_ID_NAME.c_str()))
       query_names.push_back(planning_queries[i]->lookupString(MOTION_PLAN_REQUEST_ID_NAME));
 }
 
@@ -296,12 +288,11 @@ void moveit_warehouse::PlanningSceneStorage::getPlanningQueries(
     std::vector<MotionPlanRequestWithMetadata>& planning_queries, std::vector<std::string>& query_names,
     const std::string& scene_name) const
 {
-  Query::Ptr q = motion_plan_request_collection_->createQuery();
-  q->append(PLANNING_SCENE_ID_NAME, scene_name);
-  planning_queries = motion_plan_request_collection_->queryList(q, false);
+  mongo_ros::Query q(PLANNING_SCENE_ID_NAME, scene_name);
+  planning_queries = motion_plan_request_collection_->pullAllResults(q, false);
   query_names.resize(planning_queries.size());
   for (std::size_t i = 0; i < planning_queries.size(); ++i)
-    if (planning_queries[i]->lookupField(MOTION_PLAN_REQUEST_ID_NAME))
+    if (planning_queries[i]->metadata.hasField(MOTION_PLAN_REQUEST_ID_NAME.c_str()))
       query_names[i] = planning_queries[i]->lookupString(MOTION_PLAN_REQUEST_ID_NAME);
     else
       query_names[i].clear();
@@ -322,29 +313,25 @@ void moveit_warehouse::PlanningSceneStorage::getPlanningResults(
     std::vector<RobotTrajectoryWithMetadata>& planning_results, const std::string& scene_name,
     const std::string& planning_query) const
 {
-  Query::Ptr q = robot_trajectory_collection_->createQuery();
-  q->append(PLANNING_SCENE_ID_NAME, scene_name);
-  q->append(MOTION_PLAN_REQUEST_ID_NAME, planning_query);
-  planning_results = robot_trajectory_collection_->queryList(q, false);
+  mongo_ros::Query q(PLANNING_SCENE_ID_NAME, scene_name);
+  q.append(MOTION_PLAN_REQUEST_ID_NAME, planning_query);
+  planning_results = robot_trajectory_collection_->pullAllResults(q, false);
 }
 
 bool moveit_warehouse::PlanningSceneStorage::hasPlanningQuery(const std::string& scene_name,
                                                               const std::string& query_name) const
 {
-  Query::Ptr q = motion_plan_request_collection_->createQuery();
-  q->append(PLANNING_SCENE_ID_NAME, scene_name);
-  q->append(MOTION_PLAN_REQUEST_ID_NAME, query_name);
-  std::vector<MotionPlanRequestWithMetadata> queries = motion_plan_request_collection_->queryList(q, true);
+  mongo_ros::Query q(PLANNING_SCENE_ID_NAME, scene_name);
+  q.append(MOTION_PLAN_REQUEST_ID_NAME, query_name);
+  std::vector<MotionPlanRequestWithMetadata> queries = motion_plan_request_collection_->pullAllResults(q, true);
   return !queries.empty();
 }
 
 void moveit_warehouse::PlanningSceneStorage::renamePlanningScene(const std::string& old_scene_name,
                                                                  const std::string& new_scene_name)
 {
-  Query::Ptr q = planning_scene_collection_->createQuery();
-  q->append(PLANNING_SCENE_ID_NAME, old_scene_name);
-  Metadata::Ptr m = planning_scene_collection_->createMetadata();
-  m->append(PLANNING_SCENE_ID_NAME, new_scene_name);
+  mongo_ros::Query q(PLANNING_SCENE_ID_NAME, old_scene_name);
+  mongo_ros::Metadata m(PLANNING_SCENE_ID_NAME, new_scene_name);
   planning_scene_collection_->modifyMetadata(q, m);
   ROS_DEBUG("Renamed planning scene from '%s' to '%s'", old_scene_name.c_str(), new_scene_name.c_str());
 }
@@ -353,11 +340,9 @@ void moveit_warehouse::PlanningSceneStorage::renamePlanningQuery(const std::stri
                                                                  const std::string& old_query_name,
                                                                  const std::string& new_query_name)
 {
-  Query::Ptr q = motion_plan_request_collection_->createQuery();
-  q->append(PLANNING_SCENE_ID_NAME, scene_name);
-  q->append(MOTION_PLAN_REQUEST_ID_NAME, old_query_name);
-  Metadata::Ptr m = motion_plan_request_collection_->createMetadata();
-  m->append(MOTION_PLAN_REQUEST_ID_NAME, new_query_name);
+  mongo_ros::Query q(PLANNING_SCENE_ID_NAME, scene_name);
+  q.append(MOTION_PLAN_REQUEST_ID_NAME, old_query_name);
+  mongo_ros::Metadata m(MOTION_PLAN_REQUEST_ID_NAME, new_query_name);
   motion_plan_request_collection_->modifyMetadata(q, m);
   ROS_DEBUG("Renamed planning query for scene '%s' from '%s' to '%s'", scene_name.c_str(), old_query_name.c_str(),
             new_query_name.c_str());
@@ -366,8 +351,7 @@ void moveit_warehouse::PlanningSceneStorage::renamePlanningQuery(const std::stri
 void moveit_warehouse::PlanningSceneStorage::removePlanningScene(const std::string& scene_name)
 {
   removePlanningQueries(scene_name);
-  Query::Ptr q = planning_scene_collection_->createQuery();
-  q->append(PLANNING_SCENE_ID_NAME, scene_name);
+  mongo_ros::Query q(PLANNING_SCENE_ID_NAME, scene_name);
   unsigned int rem = planning_scene_collection_->removeMessages(q);
   ROS_DEBUG("Removed %u PlanningScene messages (named '%s')", rem, scene_name.c_str());
 }
@@ -375,8 +359,7 @@ void moveit_warehouse::PlanningSceneStorage::removePlanningScene(const std::stri
 void moveit_warehouse::PlanningSceneStorage::removePlanningQueries(const std::string& scene_name)
 {
   removePlanningResults(scene_name);
-  Query::Ptr q = motion_plan_request_collection_->createQuery();
-  q->append(PLANNING_SCENE_ID_NAME, scene_name);
+  mongo_ros::Query q(PLANNING_SCENE_ID_NAME, scene_name);
   unsigned int rem = motion_plan_request_collection_->removeMessages(q);
   ROS_DEBUG("Removed %u MotionPlanRequest messages for scene '%s'", rem, scene_name.c_str());
 }
@@ -385,9 +368,8 @@ void moveit_warehouse::PlanningSceneStorage::removePlanningQuery(const std::stri
                                                                  const std::string& query_name)
 {
   removePlanningResults(scene_name, query_name);
-  Query::Ptr q = motion_plan_request_collection_->createQuery();
-  q->append(PLANNING_SCENE_ID_NAME, scene_name);
-  q->append(MOTION_PLAN_REQUEST_ID_NAME, query_name);
+  mongo_ros::Query q(PLANNING_SCENE_ID_NAME, scene_name);
+  q.append(MOTION_PLAN_REQUEST_ID_NAME, query_name);
   unsigned int rem = motion_plan_request_collection_->removeMessages(q);
   ROS_DEBUG("Removed %u MotionPlanRequest messages for scene '%s', query '%s'", rem, scene_name.c_str(),
             query_name.c_str());
@@ -395,8 +377,7 @@ void moveit_warehouse::PlanningSceneStorage::removePlanningQuery(const std::stri
 
 void moveit_warehouse::PlanningSceneStorage::removePlanningResults(const std::string& scene_name)
 {
-  Query::Ptr q = robot_trajectory_collection_->createQuery();
-  q->append(PLANNING_SCENE_ID_NAME, scene_name);
+  mongo_ros::Query q(PLANNING_SCENE_ID_NAME, scene_name);
   unsigned int rem = robot_trajectory_collection_->removeMessages(q);
   ROS_DEBUG("Removed %u RobotTrajectory messages for scene '%s'", rem, scene_name.c_str());
 }
@@ -404,9 +385,8 @@ void moveit_warehouse::PlanningSceneStorage::removePlanningResults(const std::st
 void moveit_warehouse::PlanningSceneStorage::removePlanningResults(const std::string& scene_name,
                                                                    const std::string& query_name)
 {
-  Query::Ptr q = robot_trajectory_collection_->createQuery();
-  q->append(PLANNING_SCENE_ID_NAME, scene_name);
-  q->append(MOTION_PLAN_REQUEST_ID_NAME, query_name);
+  mongo_ros::Query q(PLANNING_SCENE_ID_NAME, scene_name);
+  q.append(MOTION_PLAN_REQUEST_ID_NAME, query_name);
   unsigned int rem = robot_trajectory_collection_->removeMessages(q);
   ROS_DEBUG("Removed %u RobotTrajectory messages for scene '%s', query '%s'", rem, scene_name.c_str(),
             query_name.c_str());

@@ -38,6 +38,7 @@
 #include <moveit/robot_state/conversions.h>
 #include <moveit/kinematic_constraints/utils.h>
 #include <moveit/collision_detection/collision_tools.h>
+#include <eigen_conversions/eigen_msg.h>
 #include <moveit/move_group/capability_names.h>
 
 move_group::MoveGroupStateValidationService::MoveGroupStateValidationService()
@@ -121,5 +122,5 @@ bool move_group::MoveGroupStateValidationService::computeService(moveit_msgs::Ge
   return true;
 }
 
-#include <class_loader/class_loader.hpp>
+#include <class_loader/class_loader.h>
 CLASS_LOADER_REGISTER_CLASS(move_group::MoveGroupStateValidationService, move_group::MoveGroupCapability)

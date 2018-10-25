@@ -34,9 +34,6 @@
 
 /* Author: Dave Coleman */
 
-#include <boost/algorithm/string.hpp>
-#include <boost/algorithm/string/replace.hpp>
-
 #include <moveit/rviz_plugin_render_tools/trajectory_visualization.h>
 
 #include <moveit/rviz_plugin_render_tools/planning_link_updater.h>
@@ -59,11 +56,11 @@
 namespace moveit_rviz_plugin
 {
 TrajectoryVisualization::TrajectoryVisualization(rviz::Property* widget, rviz::Display* display)
-  : animating_path_(false)
+  : display_(display)
+  , widget_(widget)
+  , animating_path_(false)
   , drop_displaying_trajectory_(false)
   , current_state_(-1)
-  , display_(display)
-  , widget_(widget)
   , trajectory_slider_panel_(NULL)
   , trajectory_slider_dock_panel_(NULL)
 {
@@ -150,7 +147,7 @@ void TrajectoryVisualization::onInitialize(Ogre::SceneNode* scene_node, rviz::Di
   {
     trajectory_slider_panel_ = new TrajectoryPanel(window_context->getParentWindow());
     trajectory_slider_dock_panel_ =
-        window_context->addPane(display_->getName() + " - Trajectory Slider", trajectory_slider_panel_);
+        window_context->addPane(display_->getName() + " - Slider", trajectory_slider_panel_);
     trajectory_slider_dock_panel_->setIcon(display_->getIcon());
     connect(trajectory_slider_dock_panel_, SIGNAL(visibilityChanged(bool)), this,
             SLOT(trajectorySliderPanelVisibilityChange(bool)));
@@ -191,9 +188,15 @@ void TrajectoryVisualization::reset()
   displaying_trajectory_message_.reset();
   animating_path_ = false;
 
+  display_path_robot_->clear();
   display_path_robot_->setVisualVisible(display_path_visual_enabled_property_->getBool());
   display_path_robot_->setCollisionVisible(display_path_collision_enabled_property_->getBool());
   display_path_robot_->setVisible(false);
+
+  if (!robot_model_)
+    ROS_WARN_STREAM_NAMED("trajectory_visualization", "No robot model found");
+  else
+    display_path_robot_->load(*robot_model_->getURDF());
 }
 
 void TrajectoryVisualization::clearTrajectoryTrail()
@@ -360,6 +363,7 @@ void TrajectoryVisualization::update(float wall_dt, float ros_dt)
   {
     animating_path_ = false;
     displaying_trajectory_message_.reset();
+    display_path_robot_->setVisible(false);
     trajectory_slider_panel_->update(0);
     drop_displaying_trajectory_ = false;
   }
@@ -384,9 +388,11 @@ void TrajectoryVisualization::update(float wall_dt, float ros_dt)
       }
       else if (trajectory_slider_panel_ && trajectory_slider_panel_->isVisible())
       {
-        if (static_cast<unsigned int>(trajectory_slider_panel_->getSliderPosition()) >=
-            displaying_trajectory_message_->getWayPointCount() - 1)
-          return;  // nothing more to do
+        if (trajectory_slider_panel_->getSliderPosition() == displaying_trajectory_message_->getWayPointCount() - 1)
+        {  // show the last waypoint if the slider is enabled
+          display_path_robot_->update(
+              displaying_trajectory_message_->getWayPointPtr(displaying_trajectory_message_->getWayPointCount() - 1));
+        }
         else
           animating_path_ = true;
       }
@@ -395,65 +401,48 @@ void TrajectoryVisualization::update(float wall_dt, float ros_dt)
 
     if (animating_path_)
     {
-      // restart animation
       current_state_ = -1;
+      current_state_time_ = std::numeric_limits<float>::infinity();
+      display_path_robot_->update(displaying_trajectory_message_->getFirstWayPointPtr());
+      display_path_robot_->setVisible(display_->isEnabled());
+      if (trajectory_slider_panel_)
+        trajectory_slider_panel_->setSliderPosition(0);
     }
   }
 
   if (animating_path_)
   {
-    int previous_state = current_state_;
-    int waypoint_count = displaying_trajectory_message_->getWayPointCount();
-    current_state_time_ += wall_dt;
     float tm = getStateDisplayTime();
-
-    if (trajectory_slider_panel_ && trajectory_slider_panel_->isVisible() && trajectory_slider_panel_->isPaused())
-      current_state_ = trajectory_slider_panel_->getSliderPosition();
-    else if (current_state_ < 0)
-    {  // special case indicating restart of animation
-      current_state_ = 0;
-      current_state_time_ = 0.0;
-    }
-    else if (tm < 0.0)
-    {  // using realtime: skip to next waypoint based on elapsed display time
-      while (current_state_ < waypoint_count &&
-             (tm = displaying_trajectory_message_->getWayPointDurationFromPrevious(current_state_ + 1)) <
-                 current_state_time_)
-      {
-        current_state_time_ -= tm;
+    if (tm < 0.0)  // if we should use realtime
+      tm = displaying_trajectory_message_->getWayPointDurationFromPrevious(current_state_ + 1);
+    if (current_state_time_ > tm)
+    {
+      if (trajectory_slider_panel_ && trajectory_slider_panel_->isVisible() && trajectory_slider_panel_->isPaused())
+        current_state_ = trajectory_slider_panel_->getSliderPosition();
+      else
         ++current_state_;
+      int waypoint_count = displaying_trajectory_message_->getWayPointCount();
+      if ((std::size_t)current_state_ < waypoint_count)
+      {
+        if (trajectory_slider_panel_)
+          trajectory_slider_panel_->setSliderPosition(current_state_);
+        display_path_robot_->update(displaying_trajectory_message_->getWayPointPtr(current_state_));
+        for (std::size_t i = 0; i < trajectory_trail_.size(); ++i)
+          trajectory_trail_[i]->setVisible(
+              std::min(waypoint_count - 1, static_cast<int>(i) * trail_step_size_property_->getInt()) <=
+              current_state_);
       }
+      else
+      {
+        animating_path_ = false;  // animation finished
+        display_path_robot_->setVisible(loop_display_property_->getBool());
+        if (!loop_display_property_->getBool() && trajectory_slider_panel_)
+          trajectory_slider_panel_->pauseButton(true);
+      }
+      current_state_time_ = 0.0f;
     }
-    else if (current_state_time_ > tm)
-    {  // fixed display time per state
-      current_state_time_ = 0.0;
-      ++current_state_;
-    }
-
-    if (current_state_ == previous_state)
-      return;
-
-    if (current_state_ < waypoint_count)
-    {
-      if (trajectory_slider_panel_)
-        trajectory_slider_panel_->setSliderPosition(current_state_);
-      display_path_robot_->update(displaying_trajectory_message_->getWayPointPtr(current_state_));
-      for (std::size_t i = 0; i < trajectory_trail_.size(); ++i)
-        trajectory_trail_[i]->setVisible(
-            std::min(waypoint_count - 1, static_cast<int>(i) * trail_step_size_property_->getInt()) <= current_state_);
-    }
-    else
-    {
-      animating_path_ = false;  // animation finished
-      display_path_robot_->setVisible(loop_display_property_->getBool());
-      if (!loop_display_property_->getBool() && trajectory_slider_panel_)
-        trajectory_slider_panel_->pauseButton(true);
-    }
+    current_state_time_ += wall_dt;
   }
-  // set visibility
-  display_path_robot_->setVisible(display_->isEnabled() && displaying_trajectory_message_ &&
-                                  (animating_path_ || trail_display_property_->getBool() ||
-                                   (trajectory_slider_panel_ && trajectory_slider_panel_->isVisible())));
 }
 
 void TrajectoryVisualization::incomingDisplayTrajectory(const moveit_msgs::DisplayTrajectory::ConstPtr& msg)
@@ -511,14 +500,18 @@ void TrajectoryVisualization::enabledRobotColor()
 
 void TrajectoryVisualization::unsetRobotColor(rviz::Robot* robot)
 {
-  for (auto& link : robot->getLinks())
-    link.second->unsetColor();
+  typedef rviz::Robot::M_NameToLink LinksMap;
+  const LinksMap& links = robot->getLinks();
+  for (LinksMap::const_iterator it = links.begin(); it != links.end(); it++)
+    it->second->unsetColor();
 }
 
 void TrajectoryVisualization::setRobotColor(rviz::Robot* robot, const QColor& color)
 {
-  for (auto& link : robot->getLinks())
-    robot->getLink(link.first)->setColor(color.redF(), color.greenF(), color.blueF());
+  typedef rviz::Robot::M_NameToLink LinksMap;
+  const LinksMap& links = robot->getLinks();
+  for (LinksMap::const_iterator it = links.begin(); it != links.end(); it++)
+    it->second->setColor(color.redF(), color.greenF(), color.blueF());
 }
 
 void TrajectoryVisualization::trajectorySliderPanelVisibilityChange(bool enable)

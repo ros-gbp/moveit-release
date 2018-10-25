@@ -1,47 +1,40 @@
-# moveit/moveit:melodic-ci
+# moveit/moveit:indigo-ci
 # Sets up a base image to use for running Continuous Integration on Travis
 
-FROM ros:melodic-ros-base
-MAINTAINER Dave Coleman dave@picknik.ai
+FROM ros:indigo-ros-base
+MAINTAINER Dave Coleman dave@dav.ee
 
 ENV TERM xterm
 
 # Setup catkin workspace
 ENV CATKIN_WS=/root/ws_moveit
-WORKDIR $CATKIN_WS
+RUN mkdir -p $CATKIN_WS/src
+WORKDIR $CATKIN_WS/src
 
 # Commands are combined in single RUN statement with "apt/lists" folder removal to reduce image size
-# https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#minimize-the-number-of-layers
-RUN \
-    mkdir src && \
-    cd src && \
-    #
-    # Download moveit source, so that we can get necessary dependencies
-    wstool init --shallow . https://raw.githubusercontent.com/ros-planning/moveit/${ROS_DISTRO}-devel/moveit.rosinstall && \
-    #
-    # Update apt package list as previous containers clear the cache
+RUN wstool init . && \
+    # Download moveit source so that we can get necessary dependencies
+    wstool merge https://raw.githubusercontent.com/ros-planning/moveit/${ROS_DISTRO}-devel/moveit.rosinstall && \
+    wstool update && \
+    # Update apt-get because previous images clear this cache
     apt-get -qq update && \
-    apt-get -qq dist-upgrade && \
-    #
     # Install some base dependencies
     apt-get -qq install -y \
-        # Some source builds require a package.xml be downloaded via wget from an external location
-        wget \
         # Required for rosdep command
         sudo \
-        # Preferred build tools
+        # Required for installing dependencies
+        python-rosdep \
+        # Preferred build tool
         python-catkin-tools \
-        ccache && \
-    #
+        # Not sure if necessary:
+        ros-$ROS_DISTRO-rosbash \
+        ros-$ROS_DISTRO-rospack && \
     # Download all dependencies of MoveIt!
     rosdep update && \
     rosdep install -y --from-paths . --ignore-src --rosdistro ${ROS_DISTRO} --as-root=apt:false && \
-    #
-    # Remove the source code from this container
-    # TODO: in the future we may want to keep this here for further optimization of later containers
+    # Remove the source code from this container. TODO: in the future we may want to keep this here for further optimization of later containers
     cd .. && \
     rm -rf src/ && \
-    #
     # Clear apt-cache to reduce image size
     rm -rf /var/lib/apt/lists/*
 

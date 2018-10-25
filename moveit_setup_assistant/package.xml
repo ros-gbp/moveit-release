@@ -1,6 +1,6 @@
 <package>
   <name>moveit_setup_assistant</name>
-  <version>0.10.2</version>
+  <version>0.7.14</version>
 
   <description>Generates a configuration package that makes it easy to use MoveIt!</description>
 
@@ -18,9 +18,6 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <build_depend>libogre-dev</build_depend>
-  <build_depend>qtbase5-dev</build_depend>
-  <build_depend>libqt5-opengl-dev</build_depend>
   <build_depend>moveit_core</build_depend>
   <build_depend>moveit_ros_planning</build_depend>
   <build_depend>moveit_ros_visualization</build_depend>
@@ -34,5 +31,4 @@
   <run_depend>xacro</run_depend>
   <run_depend version_gt="0.3.1">srdfdom</run_depend>
 
-  <test_depend>moveit_resources</test_depend>
 </package>
