@@ -1,0 +1,272 @@
+ros-indigo-moveit-ros-benchmarks-gui (0.7.14-1trusty) trusty; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@gmail.com>  Sat, 20 Oct 2018 07:00:00 -0000
+
+ros-indigo-moveit-ros-benchmarks-gui (0.7.12-1trusty) trusty; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@gmail.com>  Sun, 06 Aug 2017 07:00:00 -0000
+
+ros-indigo-moveit-ros-benchmarks-gui (0.7.11-1trusty) trusty; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@gmail.com>  Wed, 21 Jun 2017 07:00:00 -0000
+
+ros-indigo-moveit-ros-benchmarks-gui (0.7.10-1trusty) trusty; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@gmail.com>  Wed, 07 Jun 2017 07:00:00 -0000
+
+ros-indigo-moveit-ros-benchmarks-gui (0.7.9-1trusty) trusty; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@gmail.com>  Mon, 03 Apr 2017 07:00:00 -0000
+
+ros-indigo-moveit-ros-benchmarks-gui (0.7.8-1trusty) trusty; urgency=high
+
+  * [fix][moveit_ros_warehouse] gcc6 build error #423 <https://github.com/ros-planning/moveit/pull/423>
+  * Contributors: Dmitry Rozhkov
+
+ -- Ioan Sucan <isucan@gmail.com>  Wed, 08 Mar 2017 08:00:00 -0000
+
+ros-indigo-moveit-ros-benchmarks-gui (0.7.7-1trusty) trusty; urgency=high
+
+  * clang-format upgraded to 3.8 (#404 <https://github.com/ros-planning/moveit/issues/404>)
+  * Contributors: Dave Coleman
+
+ -- Ioan Sucan <isucan@gmail.com>  Mon, 06 Feb 2017 08:00:00 -0000
+
+ros-indigo-moveit-ros-benchmarks-gui (0.7.6-1trusty) trusty; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@gmail.com>  Fri, 30 Dec 2016 08:00:00 -0000
+
+ros-indigo-moveit-ros-benchmarks-gui (0.7.5-1trusty) trusty; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@gmail.com>  Sun, 25 Dec 2016 08:00:00 -0000
+
+ros-indigo-moveit-ros-benchmarks-gui (0.7.4-1trusty) trusty; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@gmail.com>  Thu, 22 Dec 2016 08:00:00 -0000
+
+ros-indigo-moveit-ros-benchmarks-gui (0.7.3-1trusty) trusty; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@gmail.com>  Tue, 20 Dec 2016 08:00:00 -0000
+
+ros-indigo-moveit-ros-benchmarks-gui (0.7.2-1trusty) trusty; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@gmail.com>  Mon, 20 Jun 2016 07:00:00 -0000
+
+ros-indigo-moveit-ros-benchmarks-gui (0.7.1-1trusty) trusty; urgency=high
+
+  * explicitly link rviz' default_plugin library
+    The library is not exported anymore and now is provided separately from rviz_LIBRARIES.
+    See https://github.com/ros-visualization/rviz/pull/979 for details.
+  * Contributors: v4hn
+
+ -- Ioan Sucan <isucan@gmail.com>  Mon, 11 Apr 2016 07:00:00 -0000
+
+ros-indigo-moveit-ros-benchmarks-gui (0.7.0-1trusty) trusty; urgency=high
+
+  * Removed trailing whitespace from entire repository
+  * Contributors: Dave Coleman
+
+ -- Ioan Sucan <isucan@gmail.com>  Sat, 30 Jan 2016 08:00:00 -0000
+
+ros-indigo-moveit-ros-benchmarks-gui (0.6.5-1trusty) trusty; urgency=high
+
+  * update maintainers
+  * Contributors: Michael Ferguson
+
+ -- Ioan Sucan <isucan@gmail.com>  Sat, 24 Jan 2015 08:00:00 -0000
+
+ros-indigo-moveit-ros-benchmarks-gui (0.6.4-1trusty) trusty; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@gmail.com>  Sat, 20 Dec 2014 08:00:00 -0000
+
+ros-indigo-moveit-ros-benchmarks-gui (0.6.3-1trusty) trusty; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@gmail.com>  Wed, 03 Dec 2014 08:00:00 -0000
+
+ros-indigo-moveit-ros-benchmarks-gui (0.6.2-1trusty) trusty; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@gmail.com>  Fri, 31 Oct 2014 07:00:00 -0000
+
+ros-indigo-moveit-ros-benchmarks-gui (0.6.1-1trusty) trusty; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@gmail.com>  Fri, 31 Oct 2014 07:00:00 -0000
+
+ros-indigo-moveit-ros-benchmarks-gui (0.6.0-1trusty) trusty; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@gmail.com>  Mon, 27 Oct 2014 07:00:00 -0000
+
+ros-indigo-moveit-ros-benchmarks-gui (0.5.19-1trusty) trusty; urgency=high
+
+  * Fix [-Wreorder] warning.
+  * Contributors: Adolfo Rodriguez Tsouroukdissian
+
+ -- Ioan Sucan <isucan@gmail.com>  Mon, 23 Jun 2014 07:00:00 -0000
+
+ros-indigo-moveit-ros-benchmarks-gui (0.5.18-1trusty) trusty; urgency=high
+
+  * add pkg-config as dep
+  * find PkgConfig before using pkg_check_modules
+    PC specific functions mustn't be used before including PkgConfig
+  * Contributors: Ioan Sucan, v4hn
+
+ -- Ioan Sucan <isucan@gmail.com>  Sun, 23 Mar 2014 07:00:00 -0000
+
+ros-indigo-moveit-ros-benchmarks-gui (0.5.17-1trusty) trusty; urgency=high
+
+  * update build system for ROS indigo
+  * Contributors: Ioan Sucan
+
+ -- Ioan Sucan <isucan@gmail.com>  Sat, 22 Mar 2014 07:00:00 -0000
+
+ros-indigo-moveit-ros-benchmarks-gui (0.5.16-1trusty) trusty; urgency=high
+
+  * back out problematic ogre fixes
+  * robot_interaction: split InteractionHandler into its own file
+  * rviz: prepare for Ogre1.10
+  * Contributors: Acorn Pooley
+
+ -- Ioan Sucan <isucan@gmail.com>  Thu, 27 Feb 2014 08:00:00 -0000
+
+ros-indigo-moveit-ros-benchmarks-gui (0.5.14-1trusty) trusty; urgency=high
+
+  * fixing name in changelog
+  * Contributors: Sachin Chitta
+
+ -- Ioan Sucan <isucan@gmail.com>  Thu, 06 Feb 2014 08:00:00 -0000
+
+ros-indigo-moveit-ros-benchmarks-gui (0.5.13-1trusty) trusty; urgency=high
+
+  * Fix Parse error at "BOOST_JOIN" error
+    See: https://bugreports.qt-project.org/browse/QTBUG-22829
+  * Contributors: Benjamin Chre'tien
+
+ -- Ioan Sucan <isucan@gmail.com>  Thu, 06 Feb 2014 08:00:00 -0000
+
+ros-indigo-moveit-ros-benchmarks-gui (0.5.12-1trusty) trusty; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@gmail.com>  Fri, 03 Jan 2014 08:00:00 -0000
+
+ros-indigo-moveit-ros-benchmarks-gui (0.5.11-1trusty) trusty; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@gmail.com>  Fri, 03 Jan 2014 08:00:00 -0000
+
+ros-indigo-moveit-ros-benchmarks-gui (0.5.10-1trusty) trusty; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@gmail.com>  Sun, 08 Dec 2013 08:00:00 -0000
+
+ros-indigo-moveit-ros-benchmarks-gui (0.5.9-1trusty) trusty; urgency=high
+
+  * renamed collision check function to be clearer
+  * fixed bug in collision detection for goal pose queries
+  * fixed dirty transform bugs
+  * Fixed one crash bug and fixed goal-selection bug #339 <https://github.com/ros-planning/moveit_ros/issues/339>.
+  * Benchmarking GUI: removed code redundancy, added link_name and frame_id values to saved goal constraints as needed for benchmarking
+  * Changed Warehouse Connect button to match wording and color of Rviz Motion Planning Plugin equivalent
+
+ -- Ioan Sucan <isucan@gmail.com>  Tue, 03 Dec 2013 08:00:00 -0000
+
+ros-indigo-moveit-ros-benchmarks-gui (0.5.8-1trusty) trusty; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@gmail.com>  Fri, 11 Oct 2013 07:00:00 -0000
+
+ros-indigo-moveit-ros-benchmarks-gui (0.5.7-1trusty) trusty; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@gmail.com>  Tue, 01 Oct 2013 07:00:00 -0000
+
+ros-indigo-moveit-ros-benchmarks-gui (0.5.6-1trusty) trusty; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@gmail.com>  Thu, 26 Sep 2013 07:00:00 -0000
+
+ros-indigo-moveit-ros-benchmarks-gui (0.5.5-1trusty) trusty; urgency=high
+
+  * porting to new robot API
+
+ -- Ioan Sucan <isucan@gmail.com>  Mon, 23 Sep 2013 07:00:00 -0000
+
+ros-indigo-moveit-ros-benchmarks-gui (0.5.4-1trusty) trusty; urgency=high
+
+  * allow creating goals uniformly distributed in a bounding box
+  * Duplicate goals with Ctrl-D instead of Ctrl-C
+  * better error checking
+  * adding the possibility to select planners, nb of runs and timeout from the GUI
+  * allow the user to modify start and goal regex before starting benchmark
+  * Allow user to start the benchmark pipeline from the GUI
+  * make headers and author definitions aligned the same way; white space fixes
+  * move background_processing lib to core
+
+ -- Ioan Sucan <isucan@gmail.com>  Wed, 14 Aug 2013 07:00:00 -0000
+
+ros-indigo-moveit-ros-benchmarks-gui (0.5.2-1trusty) trusty; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@gmail.com>  Mon, 15 Jul 2013 07:00:00 -0000
+
+ros-indigo-moveit-ros-benchmarks-gui (0.5.1-1trusty) trusty; urgency=high
+
+
+
+ -- Ioan Sucan <isucan@gmail.com>  Sun, 14 Jul 2013 07:00:00 -0000
+
+ros-indigo-moveit-ros-benchmarks-gui (0.5.0-1trusty) trusty; urgency=high
+
+  * white space fixes (tabs are now spaces)
+
+ -- Ioan Sucan <isucan@gmail.com>  Fri, 12 Jul 2013 07:00:00 -0000
+
+ros-indigo-moveit-ros-benchmarks-gui (0.4.5-1trusty) trusty; urgency=high
+
+  * More advanced parameter sweeping implmented, workspace bounds added
+  * Added parameter sweeping to benchmarking
+
+ -- Ioan Sucan <isucan@gmail.com>  Wed, 03 Jul 2013 07:00:00 -0000
+
+ros-indigo-moveit-ros-benchmarks-gui (0.4.4-1trusty) trusty; urgency=high
+
+  * waits until the planning scene monitor has been created when loading a robot
+
+ -- Ioan Sucan <isucan@gmail.com>  Wed, 26 Jun 2013 07:00:00 -0000
+
+
