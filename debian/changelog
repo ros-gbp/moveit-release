@@ -1,0 +1,312 @@
+ros-melodic-moveit-ros-perception (0.10.3-0stretch) stretch; urgency=high
+
+  * [fix] compiler warnings (#1089 <https://github.com/ros-planning/moveit/issues/1089>)
+  * Contributors: Robert Haschke
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Mon, 29 Oct 2018 07:00:00 -0000
+
+ros-melodic-moveit-ros-perception (0.10.2-0stretch) stretch; urgency=high
+
+  * [fix] Eigen alignment issuses due to missing aligned allocation (#1039 <https://github.com/ros-planning/moveit/issues/1039>)
+  * [fix] DepthImageOctomapUpdater not found error (#954 <https://github.com/ros-planning/moveit/issues/954>)
+  * [fix] planning scene lock when octomap updates too quickly (#920 <https://github.com/ros-planning/moveit/issues/920>)
+  * [enhancement] error message in shape_mask (#828 <https://github.com/ros-planning/moveit/issues/828>)
+  * [maintenance] various compiler warnings (#1038 <https://github.com/ros-planning/moveit/issues/1038>)
+  * [maintenance] disable unittests for moveit_ros_perception ... due to broken Mesa OpenGL (since version 17.x?) (#982 <https://github.com/ros-planning/moveit/issues/982>)
+  * [maintenance] add minimum required pluginlib version (#927 <https://github.com/ros-planning/moveit/issues/927>)
+  * Contributors: Adrian Zwiener, Martin Günther, Michael Görner, Mikael Arguedas, Mohmmad Ayman, Ridhwan Luthra, Robert Haschke, mike lautman
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Wed, 24 Oct 2018 07:00:00 -0000
+
+ros-melodic-moveit-ros-perception (0.10.1-0stretch) stretch; urgency=high
+
+  * boost::shared_ptr -> std::shared_ptr
+  * migration from tf to tf2 API (#830 <https://github.com/ros-planning/moveit/issues/830>)
+  * [fix] make OpenGL parts optional (#698 <https://github.com/ros-planning/moveit/issues/698>)
+  * Contributors: Bence Magyar, Ian McMahon, Lukas Bulwahn, Michael Görner, Mikael Arguedas, Robert Haschke
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Fri, 25 May 2018 07:00:00 -0000
+
+ros-melodic-moveit-ros-perception (0.9.11-0stretch) stretch; urgency=high
+
+
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Mon, 25 Dec 2017 08:00:00 -0000
+
+ros-melodic-moveit-ros-perception (0.9.10-0stretch) stretch; urgency=high
+
+  * [improve] removed deprecated pluginlib macro (#677 <https://github.com/ros-planning/moveit/issues/677>)
+  * Contributors: Mikael Arguedas
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Sat, 09 Dec 2017 08:00:00 -0000
+
+ros-melodic-moveit-ros-perception (0.9.9-0stretch) stretch; urgency=high
+
+
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Sun, 06 Aug 2017 07:00:00 -0000
+
+ros-melodic-moveit-ros-perception (0.9.8-0stretch) stretch; urgency=high
+
+
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Wed, 21 Jun 2017 07:00:00 -0000
+
+ros-melodic-moveit-ros-perception (0.9.7-0stretch) stretch; urgency=high
+
+
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Mon, 05 Jun 2017 07:00:00 -0000
+
+ros-melodic-moveit-ros-perception (0.9.6-0stretch) stretch; urgency=high
+
+  * [fix][moveit_ros_robot_interaction] catkin_make -DCMAKE_ENABLE_TESTING=0 failure (#478 <https://github.com/ros-planning/moveit/issues/478>)
+  * Contributors: Michael Goerner
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Wed, 12 Apr 2017 07:00:00 -0000
+
+ros-melodic-moveit-ros-perception (0.9.5-0stretch) stretch; urgency=high
+
+  * [fix][moveit_ros_warehouse] gcc6 build error #423 <https://github.com/ros-planning/moveit/pull/423>
+  * [enhancement] Remove "catch (...)" instances, catch std::exception instead of std::runtime_error (#445 <https://github.com/ros-planning/moveit/issues/445>)
+  * Contributors: Bence Magyar, Dave Coleman
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Wed, 08 Mar 2017 08:00:00 -0000
+
+ros-melodic-moveit-ros-perception (0.9.4-0stretch) stretch; urgency=high
+
+  * [maintenance] Remove custom cmake modules (#418 <https://github.com/ros-planning/moveit/issues/418>)
+  * [maintenance] clang-format upgraded to 3.8 (#367 <https://github.com/ros-planning/moveit/issues/367>)
+  * Contributors: Dave Coleman, Jochen Sprickerhof
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Mon, 06 Feb 2017 08:00:00 -0000
+
+ros-melodic-moveit-ros-perception (0.9.3-0stretch) stretch; urgency=high
+
+
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Wed, 16 Nov 2016 08:00:00 -0000
+
+ros-melodic-moveit-ros-perception (0.9.2-0stretch) stretch; urgency=high
+
+  * [Maintenace] Auto format codebase using clang-format (#284 <https://github.com/ros-planning/moveit/issues/284>)
+  * Contributors: Dave Coleman
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Sat, 05 Nov 2016 07:00:00 -0000
+
+ros-melodic-moveit-ros-perception (0.6.6-0stretch) stretch; urgency=high
+
+  * replaced cmake_modules dependency with eigen
+  * [jade] eigen3 adjustment
+  * remove unknown dependency sensor_msgs_generate_cpp
+    dependencies are pulled in via ${catkin_LIBRARIES}
+  * Find X11 for build on OS X 10.11
+  * set empty display function for glut window
+    With freeglut 3.0 moveit aborts over here, printing
+    > ERROR: No display callback registered for window 1
+    According to https://sourceforge.net/p/freeglut/bugs/229/
+    and https://www.opengl.org/resources/libraries/glut/spec3/node46.html
+    a callback *must* be registered for each window.
+    With this patch moveit starts up as expected.
+  * Remove OpenMP parallelization, fixes #563 <https://github.com/ros-planning/moveit_ros/issues/563>
+  * Removed trailing whitespace from entire repository
+  * last comment
+  * Added missing dependency on moveit_msgs package
+  * Contributors: Andriy Petlovanyy, Dave Coleman, Isaac I.Y. Saito, Kentaro Wada, Robert Haschke, Stefan Kohlbrecher, dg, v4hn
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Wed, 08 Jun 2016 07:00:00 -0000
+
+ros-melodic-moveit-ros-perception (0.6.5-0stretch) stretch; urgency=high
+
+  * update maintainers
+  * adding RAII-based locking for OccMapTree
+  * moving lazy_free_space_updater into it's own library
+  * Contributors: Jonathan Bohren, Michael Ferguson
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Sat, 24 Jan 2015 08:00:00 -0000
+
+ros-melodic-moveit-ros-perception (0.6.4-0stretch) stretch; urgency=high
+
+
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Sat, 20 Dec 2014 08:00:00 -0000
+
+ros-melodic-moveit-ros-perception (0.6.3-0stretch) stretch; urgency=high
+
+  * port moveit_ros#445 <https://github.com/ros-planning/moveit_ros/issues/445> to indigo
+  * disable test that needs display when no display defined
+  * GL_TYPE() is a function in newer versions of OpenGL, this fixes tests on Ubuntu 14.04
+  * Contributors: Michael Ferguson
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Wed, 03 Dec 2014 08:00:00 -0000
+
+ros-melodic-moveit-ros-perception (0.6.2-0stretch) stretch; urgency=high
+
+
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Fri, 31 Oct 2014 07:00:00 -0000
+
+ros-melodic-moveit-ros-perception (0.6.1-0stretch) stretch; urgency=high
+
+  * fix linking error on OSX
+  * Contributors: Michael Ferguson
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Fri, 31 Oct 2014 07:00:00 -0000
+
+ros-melodic-moveit-ros-perception (0.6.0-0stretch) stretch; urgency=high
+
+  * Fixing invalid iterators if filtered_cloud_topic is not set.
+    Adding missing dependency on sensor_msgs.
+    Fixing indentation, whitespace, and tabs.
+    Incrementing PointCloud2Iterator pixel-at-a-time, not byte-at-a-time.
+  * remove PCL dependency
+  * Fixed issue with unordered_map and libc++ (LLVM, Mac OS X Mavericks)
+    libc++ doesn't have std::tr1::unordered_map, just std::unordered_map
+  * Fixing OpenGL gl.h and glu.h inclusion on Mac OS X
+  * Contributors: Jason Ziglar, Marco Esposito, Sachin Chitta, Vincent Rabaud
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Mon, 27 Oct 2014 07:00:00 -0000
+
+ros-melodic-moveit-ros-perception (0.5.19-0stretch) stretch; urgency=high
+
+  * Fix [-Wreorder] warning.
+  * Address [cppcheck: duplicateExpression] error.
+    The existing check for NaNs is in fact correct for IEEE-compliant floating
+    numbers, i.e., if (a == a) then a is not a NaN, but confuses static code
+    analyzers. This fix instead uses the isnan(a) macro from <cmath>.
+  * Prevent future conflicts between STL and Boost.
+    mesh_filter_base.cpp was doing:
+    using namespace std;
+    using namespace boost;
+    Considering that Boost is a testing ground for future standard additions,
+    bringing the two namespaces into scope in the same translation unit is not
+    the best idea. In this particular file, there's a potential conflict between
+    C++'s and Boost's shared_ptr implementation.
+  * Make creation of std::pairs future-compiler-proof.
+    Details:
+    http://stackoverflow.com/questions/14623958/breaking-change-in-c11-with-make-pair-ty1-val1-const-ty2-val2
+  * Contributors: Adolfo Rodriguez Tsouroukdissian
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Mon, 23 Jun 2014 07:00:00 -0000
+
+ros-melodic-moveit-ros-perception (0.5.18-0stretch) stretch; urgency=high
+
+
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Sun, 23 Mar 2014 07:00:00 -0000
+
+ros-melodic-moveit-ros-perception (0.5.17-0stretch) stretch; urgency=high
+
+  * update build system for ROS indigo
+  * update maintainer e-mail
+  * Contributors: Ioan Sucan
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Sat, 22 Mar 2014 07:00:00 -0000
+
+ros-melodic-moveit-ros-perception (0.5.16-0stretch) stretch; urgency=high
+
+
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Thu, 27 Feb 2014 08:00:00 -0000
+
+ros-melodic-moveit-ros-perception (0.5.14-0stretch) stretch; urgency=high
+
+
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Thu, 06 Feb 2014 08:00:00 -0000
+
+ros-melodic-moveit-ros-perception (0.5.13-0stretch) stretch; urgency=high
+
+
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Thu, 06 Feb 2014 08:00:00 -0000
+
+ros-melodic-moveit-ros-perception (0.5.12-0stretch) stretch; urgency=high
+
+
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Fri, 03 Jan 2014 08:00:00 -0000
+
+ros-melodic-moveit-ros-perception (0.5.11-0stretch) stretch; urgency=high
+
+
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Fri, 03 Jan 2014 08:00:00 -0000
+
+ros-melodic-moveit-ros-perception (0.5.10-0stretch) stretch; urgency=high
+
+  * comply to the new Table.msg
+  * Contributors: Vincent Rabaud
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Sun, 08 Dec 2013 08:00:00 -0000
+
+ros-melodic-moveit-ros-perception (0.5.9-0stretch) stretch; urgency=high
+
+  * fix cloud offset
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Tue, 03 Dec 2013 08:00:00 -0000
+
+ros-melodic-moveit-ros-perception (0.5.8-0stretch) stretch; urgency=high
+
+  * adds compliance for mesa versions <9.2
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Fri, 11 Oct 2013 07:00:00 -0000
+
+ros-melodic-moveit-ros-perception (0.5.7-0stretch) stretch; urgency=high
+
+
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Tue, 01 Oct 2013 07:00:00 -0000
+
+ros-melodic-moveit-ros-perception (0.5.6-0stretch) stretch; urgency=high
+
+  * fix #320 <https://github.com/ros-planning/moveit_ros/issues/320>.
+  * fix #318 <https://github.com/ros-planning/moveit_ros/issues/318>.
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Thu, 26 Sep 2013 07:00:00 -0000
+
+ros-melodic-moveit-ros-perception (0.5.5-0stretch) stretch; urgency=high
+
+  * remove dep on pcl (pcl_conversions is sufficient)
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Mon, 23 Sep 2013 07:00:00 -0000
+
+ros-melodic-moveit-ros-perception (0.5.4-0stretch) stretch; urgency=high
+
+  * add dependency on OpenCV2
+  * Pointcloud_octomap_updater compilation flags fixed
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Wed, 14 Aug 2013 07:00:00 -0000
+
+ros-melodic-moveit-ros-perception (0.5.2-0stretch) stretch; urgency=high
+
+
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Mon, 15 Jul 2013 07:00:00 -0000
+
+ros-melodic-moveit-ros-perception (0.5.1-0stretch) stretch; urgency=high
+
+  * find PCL separately
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Sun, 14 Jul 2013 07:00:00 -0000
+
+ros-melodic-moveit-ros-perception (0.5.0-0stretch) stretch; urgency=high
+
+  * use pcl_conversions instead of pcl_ros
+  * white space fixes (tabs are now spaces)
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Fri, 12 Jul 2013 07:00:00 -0000
+
+ros-melodic-moveit-ros-perception (0.4.5-0stretch) stretch; urgency=high
+
+
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Wed, 03 Jul 2013 07:00:00 -0000
+
+ros-melodic-moveit-ros-perception (0.4.4-0stretch) stretch; urgency=high
+
+  * Fixes linkedit error on OS X
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Wed, 26 Jun 2013 07:00:00 -0000
+
+
