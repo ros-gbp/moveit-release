@@ -1,0 +1,134 @@
+ros-melodic-moveit-plugins (0.10.3-0stretch) stretch; urgency=high
+
+
+
+ -- Michael Görner <me@v4hn.de>  Mon, 29 Oct 2018 07:00:00 -0000
+
+ros-melodic-moveit-plugins (0.10.2-0stretch) stretch; urgency=high
+
+
+
+ -- Michael Görner <me@v4hn.de>  Wed, 24 Oct 2018 07:00:00 -0000
+
+ros-melodic-moveit-plugins (0.10.1-0stretch) stretch; urgency=high
+
+
+
+ -- Michael Görner <me@v4hn.de>  Fri, 25 May 2018 07:00:00 -0000
+
+ros-melodic-moveit-plugins (0.9.11-0stretch) stretch; urgency=high
+
+
+
+ -- Michael Görner <me@v4hn.de>  Mon, 25 Dec 2017 08:00:00 -0000
+
+ros-melodic-moveit-plugins (0.9.10-0stretch) stretch; urgency=high
+
+
+
+ -- Michael Görner <me@v4hn.de>  Sat, 09 Dec 2017 08:00:00 -0000
+
+ros-melodic-moveit-plugins (0.9.9-0stretch) stretch; urgency=high
+
+
+
+ -- Michael Görner <me@v4hn.de>  Sun, 06 Aug 2017 07:00:00 -0000
+
+ros-melodic-moveit-plugins (0.9.8-0stretch) stretch; urgency=high
+
+
+
+ -- Michael Görner <me@v4hn.de>  Wed, 21 Jun 2017 07:00:00 -0000
+
+ros-melodic-moveit-plugins (0.9.7-0stretch) stretch; urgency=high
+
+
+
+ -- Michael Görner <me@v4hn.de>  Mon, 05 Jun 2017 07:00:00 -0000
+
+ros-melodic-moveit-plugins (0.9.6-0stretch) stretch; urgency=high
+
+
+
+ -- Michael Görner <me@v4hn.de>  Wed, 12 Apr 2017 07:00:00 -0000
+
+ros-melodic-moveit-plugins (0.9.5-0stretch) stretch; urgency=high
+
+
+
+ -- Michael Görner <me@v4hn.de>  Wed, 08 Mar 2017 08:00:00 -0000
+
+ros-melodic-moveit-plugins (0.9.4-0stretch) stretch; urgency=high
+
+
+
+ -- Michael Görner <me@v4hn.de>  Mon, 06 Feb 2017 08:00:00 -0000
+
+ros-melodic-moveit-plugins (0.9.3-0stretch) stretch; urgency=high
+
+
+
+ -- Michael Görner <me@v4hn.de>  Wed, 16 Nov 2016 08:00:00 -0000
+
+ros-melodic-moveit-plugins (0.5.7-0stretch) stretch; urgency=high
+
+  * added moveit_ros_control_interface to meta-package
+  * Contributors: Mathias Lüdtke
+
+ -- Michael Görner <me@v4hn.de>  Sat, 30 Jan 2016 08:00:00 -0000
+
+ros-melodic-moveit-plugins (0.5.6-0stretch) stretch; urgency=high
+
+
+
+ -- Michael Görner <me@v4hn.de>  Sun, 23 Mar 2014 07:00:00 -0000
+
+ros-melodic-moveit-plugins (0.5.5-0stretch) stretch; urgency=high
+
+
+
+ -- Michael Görner <me@v4hn.de>  Mon, 30 Sep 2013 07:00:00 -0000
+
+ros-melodic-moveit-plugins (0.5.4-0stretch) stretch; urgency=high
+
+
+
+ -- Michael Görner <me@v4hn.de>  Tue, 24 Sep 2013 07:00:00 -0000
+
+ros-melodic-moveit-plugins (0.5.3-0stretch) stretch; urgency=high
+
+  * add fake controller plugin
+
+ -- Michael Görner <me@v4hn.de>  Mon, 23 Sep 2013 07:00:00 -0000
+
+ros-melodic-moveit-plugins (0.5.1-0stretch) stretch; urgency=high
+
+
+
+ -- Michael Görner <me@v4hn.de>  Tue, 30 Jul 2013 07:00:00 -0000
+
+ros-melodic-moveit-plugins (0.5.0-0stretch) stretch; urgency=high
+
+
+
+ -- Michael Görner <me@v4hn.de>  Tue, 16 Jul 2013 07:00:00 -0000
+
+ros-melodic-moveit-plugins (0.4.1-0stretch) stretch; urgency=high
+
+  * minor updates to package.xml
+
+ -- Michael Görner <me@v4hn.de>  Wed, 03 Jul 2013 07:00:00 -0000
+
+ros-melodic-moveit-plugins (0.4.0-0stretch) stretch; urgency=high
+
+  * debs look good, bump to 0.4.0
+
+ -- Michael Görner <me@v4hn.de>  Thu, 06 Jun 2013 07:00:00 -0000
+
+ros-melodic-moveit-plugins (0.1.0-0stretch) stretch; urgency=high
+
+  * add metapackage, clean up build in controller manager
+
+ -- Michael Görner <me@v4hn.de>  Wed, 05 Jun 2013 07:00:00 -0000
+
+
