@@ -47,6 +47,8 @@
 #include <ompl/tools/multiplan/ParallelPlan.h>
 #include <ompl/base/StateStorage.h>
 
+#include <boost/thread/mutex.hpp>
+
 namespace ompl_interface
 {
 namespace ob = ompl::base;
@@ -57,10 +59,10 @@ MOVEIT_CLASS_FORWARD(ModelBasedPlanningContext);
 MOVEIT_CLASS_FORWARD(ConstraintsLibrary);
 
 struct ModelBasedPlanningContextSpecification;
-typedef std::function<ob::PlannerPtr(const ompl::base::SpaceInformationPtr& si, const std::string& name,
-                                     const ModelBasedPlanningContextSpecification& spec)>
+typedef boost::function<ob::PlannerPtr(const ompl::base::SpaceInformationPtr& si, const std::string& name,
+                                       const ModelBasedPlanningContextSpecification& spec)>
     ConfiguredPlannerAllocator;
-typedef std::function<ConfiguredPlannerAllocator(const std::string& planner_type)> ConfiguredPlannerSelector;
+typedef boost::function<ConfiguredPlannerAllocator(const std::string& planner_type)> ConfiguredPlannerSelector;
 
 struct ModelBasedPlanningContextSpecification
 {
@@ -342,7 +344,7 @@ protected:
   std::vector<kinematic_constraints::KinematicConstraintSetPtr> goal_constraints_;
 
   const ob::PlannerTerminationCondition* ptc_;
-  std::mutex ptc_lock_;
+  boost::mutex ptc_lock_;
 
   /// the time spent computing the last plan
   double last_plan_time_;
@@ -376,6 +378,6 @@ protected:
 
   bool simplify_solutions_;
 };
-}  // namespace ompl_interface
+}
 
 #endif

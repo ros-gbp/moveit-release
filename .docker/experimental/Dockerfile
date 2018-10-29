@@ -1,7 +1,7 @@
-# moveit/moveit:melodic-experimental
+# moveit/moveit:kinetic-experimental
 # Based on a moveit source install, adds the mongo driver and the warehouse packages
 
-FROM moveit/moveit:melodic-source
+FROM moveit/moveit:kinetic-source
 
 ENV CATKIN_WS=/root/ws_moveit
 RUN mkdir -p $CATKIN_WS/src

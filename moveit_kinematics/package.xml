@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>moveit_kinematics</name>
-  <version>0.10.3</version>
+  <version>0.9.15</version>
   <description>Package for all inverse kinematics solvers in MoveIt!</description>
 
   <author email="dave@dav.ee">Dave Coleman</author>
@@ -26,14 +26,11 @@
   <build_depend>actionlib</build_depend>
   <build_depend>eigen</build_depend>
   <build_depend>moveit_ros_planning</build_depend>
-  <build_depend>tf2_kdl</build_depend>
 
   <run_depend>moveit_core</run_depend>
   <run_depend version_gte="1.11.2">pluginlib</run_depend>
   <run_depend>actionlib</run_depend>
   <run_depend>moveit_ros_planning</run_depend>
-  <run_depend>tf2</run_depend>
-  <run_depend>tf2_kdl</run_depend>
 
 
   <export>

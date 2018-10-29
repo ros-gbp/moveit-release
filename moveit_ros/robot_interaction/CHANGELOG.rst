@@ -2,21 +2,23 @@
 Changelog for package moveit_ros_robot_interaction
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.10.3 (2018-10-29)
+0.9.15 (2018-10-29)
 -------------------
-* [fix] compiler warnings (`#1089 <https://github.com/ros-planning/moveit/issues/1089>`_)
+* [improvement] Exploit the fact that our transforms are isometries (instead of general affine transformations). `#1091 <https://github.com/ros-planning/moveit/issues/1091>`_
 * Contributors: Robert Haschke
 
-0.10.2 (2018-10-24)
+0.9.14 (2018-10-24)
+-------------------
+
+0.9.13 (2018-10-24)
 -------------------
 * [fix] Text refrences to MoveIt! (`#1020 <https://github.com/ros-planning/moveit/issues/1020>`_)
 * Contributors: Mohmmad Ayman, Robert Haschke, mike lautman
 
-0.10.1 (2018-05-25)
+0.9.12 (2018-05-29)
 -------------------
 * [fix] interaction with planar joints (`#767 <https://github.com/ros-planning/moveit/issues/767>`_)
 * [maintenance] boost::shared_ptr -> std::shared_ptr
-* [maintenance] migration from tf to tf2 API (`#830 <https://github.com/ros-planning/moveit/issues/830>`_)
 * [enhance] association of IK solvers to groups `#769 <https://github.com/ros-planning/moveit/issues/769>`_
 * Contributors: Bence Magyar, Ian McMahon, Michael Görner, Robert Haschke
 
@@ -43,7 +45,7 @@ Changelog for package moveit_ros_robot_interaction
 
 0.9.5 (2017-03-08)
 ------------------
-* [fix][moveit_ros_warehouse] gcc6 build error `#423 <https://github.com/ros-planning/moveit/pull/423>`_ 
+* [fix][moveit_ros_warehouse] gcc6 build error `#423 <https://github.com/ros-planning/moveit/pull/423>`_
 * [enhancement] Remove "catch (...)" instances, catch std::exception instead of std::runtime_error (`#445 <https://github.com/ros-planning/moveit/issues/445>`_)
 * Contributors: Bence Magyar, Dave Coleman
 

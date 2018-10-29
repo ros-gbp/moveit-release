@@ -38,7 +38,7 @@
 #include <moveit/robot_state/robot_state.h>
 #include <moveit/transforms/transforms.h>
 #include <geometric_shapes/shape_operations.h>
-#include <tf2_eigen/tf2_eigen.h>
+#include <eigen_conversions/eigen_msg.h>
 #include <moveit/backtrace/backtrace.h>
 #include <moveit/profiler/profiler.h>
 #include <boost/bind.hpp>
@@ -673,7 +673,7 @@ void RobotState::updateStateWithLinkAt(const LinkModel* link, const Eigen::Affin
           global_link_transforms_[child_link->getLinkIndex()] *
           (child_link->getJointOriginTransform() *
            variable_joint_transforms_[child_link->getParentJointModel()->getJointIndex()])
-              .inverse();
+              .inverse(Eigen::Isometry);
 
       // update link transforms for descendant links only (leaving the transform for the current link untouched)
       // with the exception of the child link we are coming backwards from
@@ -970,7 +970,7 @@ const Eigen::Affine3d& RobotState::getFrameTransform(const std::string& id) cons
   BOOST_VERIFY(checkLinkTransforms());
 
   static const Eigen::Affine3d identity_transform = Eigen::Affine3d::Identity();
-  if (id == robot_model_->getModelFrame())
+  if (id.size() + 1 == robot_model_->getModelFrame().size() && '/' + id == robot_model_->getModelFrame())
     return identity_transform;
   if (robot_model_->hasLinkModel(id))
   {
@@ -1050,7 +1050,7 @@ void RobotState::getRobotMarkers(visualization_msgs::MarkerArray& arr, const std
               // if the object is invisible (0 volume) we skip it
               if (fabs(att_mark.scale.x * att_mark.scale.y * att_mark.scale.z) < std::numeric_limits<float>::epsilon())
                 continue;
-              att_mark.pose = tf2::toMsg(it->second->getGlobalCollisionBodyTransforms()[j]);
+              tf::poseEigenToMsg(it->second->getGlobalCollisionBodyTransforms()[j], att_mark.pose);
               arr.markers.push_back(att_mark);
             }
           }
@@ -1074,7 +1074,7 @@ void RobotState::getRobotMarkers(visualization_msgs::MarkerArray& arr, const std
         // if the object is invisible (0 volume) we skip it
         if (fabs(mark.scale.x * mark.scale.y * mark.scale.z) < std::numeric_limits<float>::epsilon())
           continue;
-        mark.pose = tf2::toMsg(global_collision_body_transforms_[lm->getFirstCollisionBodyTransformIndex() + j]);
+        tf::poseEigenToMsg(global_collision_body_transforms_[lm->getFirstCollisionBodyTransformIndex() + j], mark.pose);
       }
       else
       {
@@ -1086,7 +1086,7 @@ void RobotState::getRobotMarkers(visualization_msgs::MarkerArray& arr, const std
         mark.scale.x = mesh_scale[0];
         mark.scale.y = mesh_scale[1];
         mark.scale.z = mesh_scale[2];
-        mark.pose = tf2::toMsg(global_link_transforms_[lm->getLinkIndex()] * lm->getVisualMeshOrigin());
+        tf::poseEigenToMsg(global_link_transforms_[lm->getLinkIndex()] * lm->getVisualMeshOrigin(), mark.pose);
       }
 
       arr.markers.push_back(mark);
@@ -1125,7 +1125,7 @@ bool RobotState::getJacobian(const JointModelGroup* group, const LinkModel* link
   const robot_model::JointModel* root_joint_model = group->getJointModels()[0];  // group->getJointRoots()[0];
   const robot_model::LinkModel* root_link_model = root_joint_model->getParentLinkModel();
   Eigen::Affine3d reference_transform =
-      root_link_model ? getGlobalLinkTransform(root_link_model).inverse() : Eigen::Affine3d::Identity();
+      root_link_model ? getGlobalLinkTransform(root_link_model).inverse(Eigen::Isometry) : Eigen::Affine3d::Identity();
   int rows = use_quaternion_representation ? 7 : 6;
   int columns = group->getVariableCount();
   jacobian = Eigen::MatrixXd::Zero(rows, columns);
@@ -1164,7 +1164,7 @@ bool RobotState::getJacobian(const JointModelGroup* group, const LinkModel* link
       if (pjm->getType() == robot_model::JointModel::REVOLUTE)
       {
         joint_transform = reference_transform * getGlobalLinkTransform(link);
-        joint_axis = joint_transform.rotation() * static_cast<const robot_model::RevoluteJointModel*>(pjm)->getAxis();
+        joint_axis = joint_transform.linear() * static_cast<const robot_model::RevoluteJointModel*>(pjm)->getAxis();
         jacobian.block<3, 1>(0, joint_index) =
             jacobian.block<3, 1>(0, joint_index) + joint_axis.cross(point_transform - joint_transform.translation());
         jacobian.block<3, 1>(3, joint_index) = jacobian.block<3, 1>(3, joint_index) + joint_axis;
@@ -1201,7 +1201,7 @@ bool RobotState::getJacobian(const JointModelGroup* group, const LinkModel* link
     //        [x]           [  w -z  y ]    [ omega_2 ]
     //        [y]           [  z  w -x ]    [ omega_3 ]
     //        [z]           [ -y  x  w ]
-    Eigen::Quaterniond q(link_transform.rotation());
+    Eigen::Quaterniond q(link_transform.linear());
     double w = q.w(), x = q.x(), y = q.y(), z = q.z();
     Eigen::MatrixXd quaternion_update_matrix(4, 3);
     quaternion_update_matrix << -x, -y, -z, w, -z, y, z, w, -x, -y, x, w;
@@ -1222,7 +1222,7 @@ bool RobotState::setFromDiffIK(const JointModelGroup* jmg, const geometry_msgs::
                                double dt, const GroupStateValidityCallbackFn& constraint)
 {
   Eigen::Matrix<double, 6, 1> t;
-  tf2::fromMsg(twist, t);
+  tf::twistMsgToEigen(twist, t);
   return setFromDiffIK(jmg, t, tip, dt, constraint);
 }
 
@@ -1235,7 +1235,7 @@ void RobotState::computeVariableVelocity(const JointModelGroup* jmg, Eigen::Vect
   getJacobian(jmg, tip, reference_point, J, false);
 
   // Rotate the jacobian to the end-effector frame
-  Eigen::Affine3d eMb = getGlobalLinkTransform(tip).inverse();
+  Eigen::Affine3d eMb = getGlobalLinkTransform(tip).inverse(Eigen::Isometry);
   Eigen::MatrixXd eWb = Eigen::ArrayXXd::Zero(6, 6);
   eWb.block(0, 0, 3, 3) = eMb.matrix().block(0, 0, 3, 3);
   eWb.block(3, 3, 3, 3) = eMb.matrix().block(0, 0, 3, 3);
@@ -1304,7 +1304,7 @@ bool RobotState::setFromIK(const JointModelGroup* jmg, const geometry_msgs::Pose
                            const kinematics::KinematicsQueryOptions& options)
 {
   Eigen::Affine3d mat;
-  tf2::fromMsg(pose, mat);
+  tf::poseMsgToEigen(pose, mat);
   static std::vector<double> consistency_limits;
   return setFromIK(jmg, mat, tip, consistency_limits, attempts, timeout, constraint, options);
 }
@@ -1362,7 +1362,7 @@ bool RobotState::setToIKSolverFrame(Eigen::Affine3d& pose, const std::string& ik
     const LinkModel* lm = getLinkModel((!ik_frame.empty() && ik_frame[0] == '/') ? ik_frame.substr(1) : ik_frame);
     if (!lm)
       return false;
-    pose = getGlobalLinkTransform(lm).inverse() * pose;
+    pose = getGlobalLinkTransform(lm).inverse(Eigen::Isometry) * pose;
   }
   return true;
 }
@@ -1509,7 +1509,7 @@ bool RobotState::setFromIK(const JointModelGroup* jmg, const EigenSTL::vector_Af
             return false;
           }
           pose_frame = ab->getAttachedLinkName();
-          pose = pose * ab_trans[0].inverse();
+          pose = pose * ab_trans[0].inverse(Eigen::Isometry);
         }
         if (pose_frame != solver_tip_frame)
         {
@@ -1554,7 +1554,7 @@ bool RobotState::setFromIK(const JointModelGroup* jmg, const EigenSTL::vector_Af
 
     // Convert Eigen pose to geometry_msgs pose
     geometry_msgs::Pose ik_query;
-    ik_query = tf2::toMsg(pose);
+    tf::poseEigenToMsg(pose, ik_query);
 
     // Save into vectors
     ik_queries[solver_tip_id] = ik_query;
@@ -1584,7 +1584,7 @@ bool RobotState::setFromIK(const JointModelGroup* jmg, const EigenSTL::vector_Af
 
     // Convert Eigen pose to geometry_msgs pose
     geometry_msgs::Pose ik_query;
-    ik_query = tf2::toMsg(current_pose);
+    tf::poseEigenToMsg(current_pose, ik_query);
 
     // Save into vectors - but this needs to be ordered in the same order as the IK solver expects its tip frames
     ik_queries[solver_tip_id] = ik_query;
@@ -1750,7 +1750,7 @@ bool RobotState::setFromIKSubgroups(const JointModelGroup* jmg, const EigenSTL::
           return false;
         }
         pose_frame = ab->getAttachedLinkName();
-        pose = pose * ab_trans[0].inverse();
+        pose = pose * ab_trans[0].inverse(Eigen::Isometry);
       }
       if (pose_frame != solver_tip_frame)
       {
@@ -1784,7 +1784,7 @@ bool RobotState::setFromIKSubgroups(const JointModelGroup* jmg, const EigenSTL::
 
   for (std::size_t i = 0; i < transformed_poses.size(); ++i)
   {
-    Eigen::Quaterniond quat(transformed_poses[i].rotation());
+    Eigen::Quaterniond quat(transformed_poses[i].linear());
     Eigen::Vector3d point(transformed_poses[i].translation());
     ik_queries[i].position.x = point.x();
     ik_queries[i].position.y = point.y();
@@ -1871,7 +1871,7 @@ double RobotState::computeCartesianPath(const JointModelGroup* group, std::vecto
   const Eigen::Affine3d& start_pose = getGlobalLinkTransform(link);
 
   // the direction can be in the local reference frame (in which case we rotate it)
-  const Eigen::Vector3d rotated_direction = global_reference_frame ? direction : start_pose.rotation() * direction;
+  const Eigen::Vector3d rotated_direction = global_reference_frame ? direction : start_pose.linear() * direction;
 
   // The target pose is built by applying a translation to the start pose for the desired direction and distance
   Eigen::Affine3d target_pose = start_pose;
@@ -1900,8 +1900,8 @@ double RobotState::computeCartesianPath(const JointModelGroup* group, std::vecto
   // the target can be in the local reference frame (in which case we rotate it)
   Eigen::Affine3d rotated_target = global_reference_frame ? target : start_pose * target;
 
-  Eigen::Quaterniond start_quaternion(start_pose.rotation());
-  Eigen::Quaterniond target_quaternion(rotated_target.rotation());
+  Eigen::Quaterniond start_quaternion(start_pose.linear());
+  Eigen::Quaterniond target_quaternion(rotated_target.linear());
 
   if (max_step.translation <= 0.0 && max_step.rotation <= 0.0)
   {
@@ -2200,7 +2200,7 @@ void RobotState::printStateInfo(std::ostream& out) const
 
 void RobotState::printTransform(const Eigen::Affine3d& transform, std::ostream& out) const
 {
-  Eigen::Quaterniond q(transform.rotation());
+  Eigen::Quaterniond q(transform.linear());
   out << "T.xyz = [" << transform.translation().x() << ", " << transform.translation().y() << ", "
       << transform.translation().z() << "], Q.xyzw = [" << q.x() << ", " << q.y() << ", " << q.z() << ", " << q.w()
       << "]" << std::endl;

@@ -35,7 +35,7 @@
 /* Author: Ioan Sucan */
 
 #include <moveit/transforms/transforms.h>
-#include <tf2_eigen/tf2_eigen.h>
+#include <eigen_conversions/eigen_msg.h>
 #include <boost/algorithm/string/trim.hpp>
 #include <ros/console.h>
 
@@ -50,6 +50,13 @@ Transforms::Transforms(const std::string& target_frame) : target_frame_(target_f
     ROS_ERROR_NAMED("transforms", "The target frame for MoveIt! Transforms cannot be empty.");
   else
   {
+    if (target_frame_[0] != '/')
+    {
+      ROS_WARN_NAMED("transforms",
+                     "Frame '%s' specified as target frame for MoveIt! Transforms. Assuming '/%s' instead.",
+                     target_frame_.c_str(), target_frame_.c_str());
+      target_frame_ = '/' + target_frame_;
+    }
     transforms_[target_frame_] = Eigen::Affine3d::Identity();
   }
 }
@@ -58,6 +65,10 @@ bool Transforms::sameFrame(const std::string& frame1, const std::string& frame2)
 {
   if (frame1.empty() || frame2.empty())
     return false;
+  if (frame1[0] != '/')
+    return sameFrame('/' + frame1, frame2);
+  if (frame2[0] != '/')
+    return sameFrame(frame1, '/' + frame2);
   return frame1 == frame2;
 }
 
@@ -83,14 +94,15 @@ bool Transforms::isFixedFrame(const std::string& frame) const
   if (frame.empty())
     return false;
   else
-    return transforms_.find(frame) != transforms_.end();
+    return (frame[0] == '/' ? transforms_.find(frame) : transforms_.find('/' + frame)) != transforms_.end();
 }
 
 const Eigen::Affine3d& Transforms::getTransform(const std::string& from_frame) const
 {
   if (!from_frame.empty())
   {
-    FixedTransformsMap::const_iterator it = transforms_.find(from_frame);
+    FixedTransformsMap::const_iterator it =
+        (from_frame[0] == '/' ? transforms_.find(from_frame) : transforms_.find('/' + from_frame));
     if (it != transforms_.end())
       return it->second;
   }
@@ -108,7 +120,8 @@ bool Transforms::canTransform(const std::string& from_frame) const
   if (from_frame.empty())
     return false;
   else
-    return transforms_.find(from_frame) != transforms_.end();
+    return (from_frame[0] == '/' ? transforms_.find(from_frame) : transforms_.find('/' + from_frame)) !=
+           transforms_.end();
 }
 
 void Transforms::setTransform(const Eigen::Affine3d& t, const std::string& from_frame)
@@ -116,14 +129,24 @@ void Transforms::setTransform(const Eigen::Affine3d& t, const std::string& from_
   if (from_frame.empty())
     ROS_ERROR_NAMED("transforms", "Cannot record transform with empty name");
   else
-    transforms_[from_frame] = t;
+  {
+    if (from_frame[0] != '/')
+    {
+      ROS_WARN_NAMED("transforms", "Transform specified for frame '%s'. Assuming '/%s' instead", from_frame.c_str(),
+                     from_frame.c_str());
+      transforms_['/' + from_frame] = t;
+    }
+    else
+      transforms_[from_frame] = t;
+  }
 }
 
 void Transforms::setTransform(const geometry_msgs::TransformStamped& transform)
 {
   if (sameFrame(transform.child_frame_id, target_frame_))
   {
-    Eigen::Affine3d t = tf2::transformToEigen(transform.transform);
+    Eigen::Affine3d t;
+    tf::transformMsgToEigen(transform.transform, t);
     setTransform(t, transform.header.frame_id);
   }
   else
@@ -145,9 +168,9 @@ void Transforms::copyTransforms(std::vector<geometry_msgs::TransformStamped>& tr
   std::size_t i = 0;
   for (FixedTransformsMap::const_iterator it = transforms_.begin(); it != transforms_.end(); ++it, ++i)
   {
-    transforms[i] = tf2::eigenToTransform(it->second);
     transforms[i].child_frame_id = target_frame_;
     transforms[i].header.frame_id = it->first;
+    tf::transformEigenToMsg(it->second, transforms[i].transform);
   }
 }
 

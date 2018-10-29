@@ -2,12 +2,13 @@
 Changelog for package moveit_setup_assistant
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.10.3 (2018-10-29)
+0.9.15 (2018-10-29)
 -------------------
-* [fix] compiler warnings (`#1089 <https://github.com/ros-planning/moveit/issues/1089>`_)
-* Contributors: Robert Haschke
 
-0.10.2 (2018-10-24)
+0.9.14 (2018-10-24)
+-------------------
+
+0.9.13 (2018-10-24)
 -------------------
 * [fix] Some bugs (`#1022 <https://github.com/ros-planning/moveit/issues/1022>`_, `#1013 <https://github.com/ros-planning/moveit/issues/1013>`_, `#1040 <https://github.com/ros-planning/moveit/issues/1040>`_)
 * [capability][chomp] Failure recovery options for CHOMP by tweaking parameters (`#987 <https://github.com/ros-planning/moveit/issues/987>`_)
@@ -25,12 +26,13 @@ Changelog for package moveit_setup_assistant
 * [capability][chomp] cleanup of unused parameters and code + addition of trajectory initialization methods (linear, cubic, quintic-spline) (`#960 <https://github.com/ros-planning/moveit/issues/960>`_)
 * Contributors: Alexander Gutenkunst, Dave Coleman, Mike Lautman, MohmadAyman, Mohmmad Ayman, Raghavender Sahdev, Robert Haschke, Sohieb Abdelrahman, mike lautman
 
-0.10.1 (2018-05-25)
+0.9.12 (2018-05-29)
 -------------------
-* [maintenance] migration from tf to tf2 API (`#830 <https://github.com/ros-planning/moveit/issues/830>`_)
+* [maintenance] trim group + link names (`#921 <https://github.com/ros-planning/moveit/issues/921>`_)
+* [feature] combo box to choose default planner (`#658 <https://github.com/ros-planning/moveit/issues/658>`_)
 * [maintenance] cleanup yaml parsing, remove yaml-cpp 0.3 support (`#795 <https://github.com/ros-planning/moveit/issues/795>`_)
 * [feature] allow editing of xacro args (`#796 <https://github.com/ros-planning/moveit/issues/796>`_)
-* Contributors: Dave Coleman, Ian McMahon, Michael Görner, Mikael Arguedas, Robert Haschke, Will Baker
+* Contributors: Mohmmad Ayman, Dave Coleman, Ian McMahon, Michael Görner, Mikael Arguedas, Robert Haschke, Will Baker
 
 0.9.11 (2017-12-25)
 -------------------
@@ -67,7 +69,7 @@ Changelog for package moveit_setup_assistant
 
 0.9.5 (2017-03-08)
 ------------------
-* [fix][moveit_ros_warehouse] gcc6 build error `#423 <https://github.com/ros-planning/moveit/pull/423>`_ 
+* [fix][moveit_ros_warehouse] gcc6 build error `#423 <https://github.com/ros-planning/moveit/pull/423>`_
 * Contributors: Dave Coleman
 
 0.9.4 (2017-02-06)
@@ -93,7 +95,7 @@ Changelog for package moveit_setup_assistant
 
 0.7.1 (2016-06-24)
 ------------------
-* [sys] Qt adjustment. 
+* [sys] Qt adjustment.
   * relax Qt-version requirement.  Minor Qt version updates are ABI-compatible with each other:  https://wiki.qt.io/Qt-Version-Compatibility
   * auto-select Qt version matching the one from rviz `#114 <https://github.com/ros-planning/moveit_setup_assistant/issues/114>`_
   * Allow to conditionally compile against Qt5 by setting -DUseQt5=On

@@ -670,10 +670,10 @@ public:
   void saveGeometryToStream(std::ostream& out) const;
 
   /** \brief Load the geometry of the planning scene from a stream */
-  bool loadGeometryFromStream(std::istream& in);
+  void loadGeometryFromStream(std::istream& in);
 
   /** \brief Load the geometry of the planning scene from a stream at a certain location using offset*/
-  bool loadGeometryFromStream(std::istream& in, const Eigen::Affine3d& offset);
+  void loadGeometryFromStream(std::istream& in, const Eigen::Affine3d& offset);
 
   /** \brief Fill the message \e scene with the differences between this instance of PlanningScene with respect to the
      parent.

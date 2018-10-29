@@ -2,12 +2,16 @@
 Changelog for package moveit_ros_planning
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.10.3 (2018-10-29)
+0.9.15 (2018-10-29)
 -------------------
-* [fix] Build regression (`#1134 <https://github.com/ros-planning/moveit/issues/1134>`_)
+* [fix] Build regression (`#1134 <https://github.com/ros-planning/moveit/issues/1134>`_) 
+* [improvement] Exploit the fact that our transforms are isometries (instead of general affine transformations). `#1091 <https://github.com/ros-planning/moveit/issues/1091>`_
 * Contributors: Robert Haschke
 
-0.10.2 (2018-10-24)
+0.9.14 (2018-10-24)
+-------------------
+
+0.9.13 (2018-10-24)
 -------------------
 * [fix] Chomp package handling issue `#1086 <https://github.com/ros-planning/moveit/issues/1086>`_ that was introduced in `ubi-agni/hotfix-#1012 <https://github.com/ubi-agni/hotfix-/issues/1012>`_
 * [fix] PlanningSceneMonitor lock `#1033 <https://github.com/ros-planning/moveit/issues/1033>`_: Fix `#868 <https://github.com/ros-planning/moveit/issues/868>`_ (`#1057 <https://github.com/ros-planning/moveit/issues/1057>`_)
@@ -22,8 +26,10 @@ Changelog for package moveit_ros_planning
 * [enhancement] avoid warning spam: "Unable to update multi-DOF joint" (`#935 <https://github.com/ros-planning/moveit/issues/935>`_)
 * Contributors: 2scholz, Adrian Zwiener, Kei Okada, Michael Görner, Mohmmad Ayman, Raghavender Sahdev, Robert Haschke, Simon Schmeisser, Xaver Kroischke, mike lautman, srsidd
 
-0.10.1 (2018-05-25)
+0.9.12 (2018-05-29)
 -------------------
+* CSM: copy dynamics to output if enabled (`#922 <https://github.com/ros-planning/moveit/issues/922>`_)
+* move PlanExecution::executeAndMonitor() into public API (`#812 <https://github.com/ros-planning/moveit/issues/812>`_)
 * [fix] explicitly enforce updateSceneWithCurrentState() in waitForCurrentRobotState() (`#824 <https://github.com/ros-planning/moveit/issues/824>`_)
 * Support static TFs for multi-DOF joints in CurrentStateMonitor (`#799 <https://github.com/ros-planning/moveit/issues/799>`_)
 * support xacro args (`#796 <https://github.com/ros-planning/moveit/issues/796>`_)
@@ -32,7 +38,7 @@ Changelog for package moveit_ros_planning
 * Iterative cubic spline interpolation (`#441 <https://github.com/ros-planning/moveit/issues/441>`_)
 * Floating Joint Support in CurrentStateMonitor (`#748 <https://github.com/ros-planning/moveit/issues/748>`_)
 * validate multi-dof trajectories before execution (`#713 <https://github.com/ros-planning/moveit/issues/713>`_)
-* Contributors: Bruno Brito, Dave Coleman, Ian McMahon, Ken Anderson, Michael Görner, Mikael Arguedas, Robert Haschke
+* Contributors: 2scholz, Bruno Brito, Dave Coleman, Ian McMahon, Ken Anderson, Michael Görner, Mikael Arguedas, Robert Haschke
 
 0.9.11 (2017-12-25)
 -------------------
@@ -47,7 +53,7 @@ Changelog for package moveit_ros_planning
 0.9.9 (2017-08-06)
 ------------------
 * [fix] Change getCurrentExpectedTrajectory index so collision detection is still performed even if the path timing is not known (`#550 <https://github.com/ros-planning/moveit/issues/550>`_)
-* [fix] Support for MultiDoF only trajectories `#553 <https://github.com/ros-planning/moveit/pull/553>`_ 
+* [fix] Support for MultiDoF only trajectories `#553 <https://github.com/ros-planning/moveit/pull/553>`_
 * [fix] ros_error macro name (`#544 <https://github.com/ros-planning/moveit/issues/544>`_)
 * [fix] check plan size for plan length=0 `#535 <https://github.com/ros-planning/moveit/issues/535>`_
 * Contributors: Cyrille Morin, Michael Görner, Mikael Arguedas, Notou, Unknown

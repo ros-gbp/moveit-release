@@ -2,22 +2,23 @@
 Changelog for package moveit_experimental
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.10.3 (2018-10-29)
+0.9.15 (2018-10-29)
 -------------------
-* [fix] Build regression (`#1134 <https://github.com/ros-planning/moveit/issues/1134>`_)
-* [fix] compiler warnings (`#1089 <https://github.com/ros-planning/moveit/issues/1089>`_)
+* [improvement] Exploit the fact that our transforms are isometries (instead of general affine transformations). `#1091 <https://github.com/ros-planning/moveit/issues/1091>`_
 * Contributors: Robert Haschke
 
-0.10.2 (2018-10-24)
+0.9.14 (2018-10-24)
+-------------------
+
+0.9.13 (2018-10-24)
 -------------------
 * [maintenance] various compiler warnings (`#1038 <https://github.com/ros-planning/moveit/issues/1038>`_)
 * [maintenance] add minimum required pluginlib version (`#927 <https://github.com/ros-planning/moveit/issues/927>`_)
 * Contributors: Mikael Arguedas, Robert Haschke, mike lautman
 
-0.10.1 (2018-05-25)
+0.9.12 (2018-05-29)
 -------------------
 * boost::shared_ptr -> std::shared_ptr
-* migration from tf to tf2 API (`#830 <https://github.com/ros-planning/moveit/issues/830>`_)
 * switch to ROS_LOGGER from CONSOLE_BRIDGE (`#874 <https://github.com/ros-planning/moveit/issues/874>`_)
 * Contributors: Bence Magyar, Ian McMahon, Levi Armstrong, Mikael Arguedas, Robert Haschke, Xiaojian Ma
 
@@ -43,7 +44,7 @@ Changelog for package moveit_experimental
 
 0.9.5 (2017-03-08)
 ------------------
-* [fix][moveit_ros_warehouse] gcc6 build error `#423 <https://github.com/ros-planning/moveit/pull/423>`_ 
+* [fix][moveit_ros_warehouse] gcc6 build error `#423 <https://github.com/ros-planning/moveit/pull/423>`_
 * Contributors: Dave Coleman
 
 0.9.4 (2017-02-06)

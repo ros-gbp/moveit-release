@@ -19,11 +19,9 @@ find_package(catkin REQUIRED COMPONENTS
   message_filters
   srdfdom
   urdf
-  tf2
-  tf2_geometry_msgs
-  tf2_eigen
-  tf2_msgs
-  tf2_ros
+  tf
+  tf_conversions
+  eigen_conversions
   chomp_motion_planner
 )
 

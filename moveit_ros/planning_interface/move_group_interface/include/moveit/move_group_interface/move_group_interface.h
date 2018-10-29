@@ -49,8 +49,8 @@
 #include <moveit_msgs/PlaceLocation.h>
 #include <moveit_msgs/MotionPlanRequest.h>
 #include <geometry_msgs/PoseStamped.h>
-#include <memory>
-#include <tf2_ros/buffer.h>
+#include <boost/shared_ptr.hpp>
+#include <tf/tf.h>
 
 namespace moveit
 {
@@ -141,27 +141,25 @@ public:
       \param opt. A MoveGroupInterface::Options structure, if you pass a ros::NodeHandle with a specific callback queue,
      it has to be of type ros::CallbackQueue
         (which is the default type of callback queues used in ROS)
-      \param tf_buffer. Specify a TF2_ROS Buffer instance to use. If not specified,
-                        one will be constructed internally along with an internal TF2_ROS TransformListener
+      \param tf. Specify a TF instance to use. If not specified, one will be constructed internally.
       \param wait_for_servers. Timeout for connecting to action servers. Zero time means unlimited waiting.
     */
   MoveGroupInterface(const Options& opt,
-                     const std::shared_ptr<tf2_ros::Buffer>& tf_buffer = std::shared_ptr<tf2_ros::Buffer>(),
+                     const boost::shared_ptr<tf::Transformer>& tf = boost::shared_ptr<tf::Transformer>(),
                      const ros::WallDuration& wait_for_servers = ros::WallDuration());
-  MOVEIT_DEPRECATED MoveGroupInterface(const Options& opt, const std::shared_ptr<tf2_ros::Buffer>& tf_buffer,
+  MOVEIT_DEPRECATED MoveGroupInterface(const Options& opt, const boost::shared_ptr<tf::Transformer>& tf,
                                        const ros::Duration& wait_for_servers);
 
   /**
       \brief Construct a client for the MoveGroup action for a particular \e group.
 
-      \param tf_buffer. Specify a TF2_ROS Buffer instance to use. If not specified,
-                        one will be constructed internally along with an internal TF2_ROS TransformListener
+      \param tf. Specify a TF instance to use. If not specified, one will be constructed internally.
       \param wait_for_servers. Timeout for connecting to action servers. Zero time means unlimited waiting.
     */
   MoveGroupInterface(const std::string& group,
-                     const std::shared_ptr<tf2_ros::Buffer>& tf_buffer = std::shared_ptr<tf2_ros::Buffer>(),
+                     const boost::shared_ptr<tf::Transformer>& tf = boost::shared_ptr<tf::Transformer>(),
                      const ros::WallDuration& wait_for_servers = ros::WallDuration());
-  MOVEIT_DEPRECATED MoveGroupInterface(const std::string& group, const std::shared_ptr<tf2_ros::Buffer>& tf_buffer,
+  MOVEIT_DEPRECATED MoveGroupInterface(const std::string& group, const boost::shared_ptr<tf::Transformer>& tf,
                                        const ros::Duration& wait_for_servers);
 
   ~MoveGroupInterface();
@@ -192,9 +190,6 @@ public:
 
   /** \brief Get the name of the frame in which the robot is planning */
   const std::string& getPlanningFrame() const;
-
-  /** \brief Get the available planning group names */
-  const std::vector<std::string>& getJointModelGroupNames() const;
 
   /** \brief Get vector of names of joints available in move group */
   const std::vector<std::string>& getJointNames();

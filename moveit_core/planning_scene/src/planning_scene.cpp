@@ -44,7 +44,7 @@
 #include <moveit/exceptions/exceptions.h>
 #include <moveit/robot_state/attached_body.h>
 #include <octomap_msgs/conversions.h>
-#include <tf2_eigen/tf2_eigen.h>
+#include <eigen_conversions/eigen_msg.h>
 #include <memory>
 #include <set>
 
@@ -824,7 +824,9 @@ bool PlanningScene::getCollisionObjectMsg(moveit_msgs::CollisionObject& collisio
     shapes::ShapeMsg sm;
     if (constructMsgFromShape(obj->shapes_[j].get(), sm))
     {
-      geometry_msgs::Pose p = tf2::toMsg(obj->shape_poses_[j]);
+      geometry_msgs::Pose p;
+      tf::poseEigenToMsg(obj->shape_poses_[j], p);
+
       sv.setPoseMessage(&p);
       boost::apply_visitor(sv, sm);
     }
@@ -886,7 +888,7 @@ bool PlanningScene::getOctomapMsg(octomap_msgs::OctomapWithPose& octomap) const
     {
       const shapes::OcTree* o = static_cast<const shapes::OcTree*>(map->shapes_[0].get());
       octomap_msgs::fullMapToMsg(*o->octree, octomap.octomap);
-      octomap.origin = tf2::toMsg(map->shape_poses_[0]);
+      tf::poseEigenToMsg(map->shape_poses_[0], octomap.origin);
       return true;
     }
     ROS_ERROR_NAMED("planning_scene",
@@ -1016,7 +1018,7 @@ void PlanningScene::saveGeometryToStream(std::ostream& out) const
           shapes::saveAsText(obj->shapes_[j].get(), out);
           out << obj->shape_poses_[j].translation().x() << " " << obj->shape_poses_[j].translation().y() << " "
               << obj->shape_poses_[j].translation().z() << std::endl;
-          Eigen::Quaterniond r(obj->shape_poses_[j].rotation());
+          Eigen::Quaterniond r(obj->shape_poses_[j].linear());
           out << r.x() << " " << r.y() << " " << r.z() << " " << r.w() << std::endl;
           if (hasObjectColor(ns[i]))
           {
@@ -1031,65 +1033,39 @@ void PlanningScene::saveGeometryToStream(std::ostream& out) const
   out << "." << std::endl;
 }
 
-bool PlanningScene::loadGeometryFromStream(std::istream& in)
+void PlanningScene::loadGeometryFromStream(std::istream& in)
 {
-  return loadGeometryFromStream(in, Eigen::Affine3d::Identity());  // Use no offset
+  loadGeometryFromStream(in, Eigen::Affine3d::Identity());  // Use no offset
 }
 
-bool PlanningScene::loadGeometryFromStream(std::istream& in, const Eigen::Affine3d& offset)
+void PlanningScene::loadGeometryFromStream(std::istream& in, const Eigen::Affine3d& offset)
 {
   if (!in.good() || in.eof())
-  {
-    ROS_ERROR_NAMED("planning_scene", "Bad input stream when loading scene geometry");
-    return false;
-  }
+    return;
   std::getline(in, name_);
   do
   {
     std::string marker;
     in >> marker;
     if (!in.good() || in.eof())
-    {
-      ROS_ERROR_NAMED("planning_scene", "Bad input stream when loading marker in scene geometry");
-      return false;
-    }
+      return;
     if (marker == "*")
     {
       std::string ns;
       std::getline(in, ns);
       if (!in.good() || in.eof())
-      {
-        ROS_ERROR_NAMED("planning_scene", "Bad input stream when loading ns in scene geometry");
-        return false;
-      }
+        return;
       boost::algorithm::trim(ns);
       unsigned int shape_count;
       in >> shape_count;
       for (std::size_t i = 0; i < shape_count && in.good() && !in.eof(); ++i)
       {
         shapes::Shape* s = shapes::constructShapeFromText(in);
-        if (!s)
-        {
-          ROS_ERROR_NAMED("planning_scene", "Failed to load shape from scene file");
-          return false;
-        }
         double x, y, z, rx, ry, rz, rw;
-        if (!(in >> x >> y >> z))
-        {
-          ROS_ERROR_NAMED("planning_scene", "Improperly formatted translation in scene geometry file");
-          return false;
-        }
-        if (!(in >> rx >> ry >> rz >> rw))
-        {
-          ROS_ERROR_NAMED("planning_scene", "Improperly formatted rotation in scene geometry file");
-          return false;
-        }
+        in >> x >> y >> z;
+        in >> rx >> ry >> rz >> rw;
         float r, g, b, a;
-        if (!(in >> r >> g >> b >> a))
-        {
-          ROS_ERROR_NAMED("planning_scene", "Improperly formatted color in scene geometry file");
-          return false;
-        }
+        in >> r >> g >> b >> a;
         if (s)
         {
           Eigen::Affine3d pose = Eigen::Translation3d(x, y, z) * Eigen::Quaterniond(rw, rx, ry, rz);
@@ -1108,16 +1084,8 @@ bool PlanningScene::loadGeometryFromStream(std::istream& in, const Eigen::Affine
         }
       }
     }
-    else if (marker == ".")
-    {
-      // Marks the end of the scene geometry;
-      return true;
-    }
     else
-    {
-      ROS_ERROR_STREAM_NAMED("planning_scene", "Unknown marker in scene geometry file: " << marker);
-      return false;
-    }
+      break;
   } while (true);
 }
 
@@ -1394,7 +1362,7 @@ void PlanningScene::processOctomapMsg(const octomap_msgs::OctomapWithPose& map)
   std::shared_ptr<octomap::OcTree> om(static_cast<octomap::OcTree*>(octomap_msgs::msgToMap(map.octomap)));
   const Eigen::Affine3d& t = getTransforms().getTransform(map.header.frame_id);
   Eigen::Affine3d p;
-  tf2::fromMsg(map.origin, p);
+  tf::poseMsgToEigen(map.origin, p);
   p = t * p;
   world_->addToObject(OCTOMAP_NS, shapes::ShapeConstPtr(new shapes::OcTree(om)), p);
 }
@@ -1502,7 +1470,7 @@ bool PlanningScene::processAttachedCollisionObjectMsg(const moveit_msgs::Attache
           world_->removeObject(object.object.id);
 
           // need to transform poses to the link frame
-          const Eigen::Affine3d& i_t = kstate_->getGlobalLinkTransform(lm).inverse();
+          const Eigen::Affine3d& i_t = kstate_->getGlobalLinkTransform(lm).inverse(Eigen::Isometry);
           for (std::size_t i = 0; i < poses.size(); ++i)
             poses[i] = i_t * poses[i];
         }
@@ -1535,7 +1503,7 @@ bool PlanningScene::processAttachedCollisionObjectMsg(const moveit_msgs::Attache
           if (s)
           {
             Eigen::Affine3d p;
-            tf2::fromMsg(object.object.primitive_poses[i], p);
+            tf::poseMsgToEigen(object.object.primitive_poses[i], p);
             shapes.push_back(shapes::ShapeConstPtr(s));
             poses.push_back(p);
           }
@@ -1546,7 +1514,7 @@ bool PlanningScene::processAttachedCollisionObjectMsg(const moveit_msgs::Attache
           if (s)
           {
             Eigen::Affine3d p;
-            tf2::fromMsg(object.object.mesh_poses[i], p);
+            tf::poseMsgToEigen(object.object.mesh_poses[i], p);
             shapes.push_back(shapes::ShapeConstPtr(s));
             poses.push_back(p);
           }
@@ -1557,7 +1525,7 @@ bool PlanningScene::processAttachedCollisionObjectMsg(const moveit_msgs::Attache
           if (s)
           {
             Eigen::Affine3d p;
-            tf2::fromMsg(object.object.plane_poses[i], p);
+            tf::poseMsgToEigen(object.object.plane_poses[i], p);
             shapes.push_back(shapes::ShapeConstPtr(s));
             poses.push_back(p);
           }
@@ -1566,7 +1534,7 @@ bool PlanningScene::processAttachedCollisionObjectMsg(const moveit_msgs::Attache
         // transform poses to link frame
         if (object.object.header.frame_id != object.link_name)
         {
-          const Eigen::Affine3d& t = kstate_->getGlobalLinkTransform(lm).inverse() *
+          const Eigen::Affine3d& t = kstate_->getGlobalLinkTransform(lm).inverse(Eigen::Isometry) *
                                      getTransforms().getTransform(object.object.header.frame_id);
           for (std::size_t i = 0; i < poses.size(); ++i)
             poses[i] = t * poses[i];
@@ -1734,7 +1702,7 @@ bool PlanningScene::processCollisionObjectMsg(const moveit_msgs::CollisionObject
       if (s)
       {
         Eigen::Affine3d p;
-        tf2::fromMsg(object.primitive_poses[i], p);
+        tf::poseMsgToEigen(object.primitive_poses[i], p);
         world_->addToObject(object.id, shapes::ShapeConstPtr(s), t * p);
       }
     }
@@ -1744,7 +1712,7 @@ bool PlanningScene::processCollisionObjectMsg(const moveit_msgs::CollisionObject
       if (s)
       {
         Eigen::Affine3d p;
-        tf2::fromMsg(object.mesh_poses[i], p);
+        tf::poseMsgToEigen(object.mesh_poses[i], p);
         world_->addToObject(object.id, shapes::ShapeConstPtr(s), t * p);
       }
     }
@@ -1754,7 +1722,7 @@ bool PlanningScene::processCollisionObjectMsg(const moveit_msgs::CollisionObject
       if (s)
       {
         Eigen::Affine3d p;
-        tf2::fromMsg(object.plane_poses[i], p);
+        tf::poseMsgToEigen(object.plane_poses[i], p);
         world_->addToObject(object.id, shapes::ShapeConstPtr(s), t * p);
       }
     }
@@ -1790,19 +1758,19 @@ bool PlanningScene::processCollisionObjectMsg(const moveit_msgs::CollisionObject
       for (std::size_t i = 0; i < object.primitive_poses.size(); ++i)
       {
         Eigen::Affine3d p;
-        tf2::fromMsg(object.primitive_poses[i], p);
+        tf::poseMsgToEigen(object.primitive_poses[i], p);
         new_poses.push_back(t * p);
       }
       for (std::size_t i = 0; i < object.mesh_poses.size(); ++i)
       {
         Eigen::Affine3d p;
-        tf2::fromMsg(object.mesh_poses[i], p);
+        tf::poseMsgToEigen(object.mesh_poses[i], p);
         new_poses.push_back(t * p);
       }
       for (std::size_t i = 0; i < object.plane_poses.size(); ++i)
       {
         Eigen::Affine3d p;
-        tf2::fromMsg(object.plane_poses[i], p);
+        tf::poseMsgToEigen(object.plane_poses[i], p);
         new_poses.push_back(t * p);
       }
 

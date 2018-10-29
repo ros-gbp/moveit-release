@@ -17,8 +17,8 @@ find_package(catkin REQUIRED COMPONENTS
   rosconsole
   srdfdom
   urdf
-  tf2
-  tf2_kdl
+  tf
+  tf_conversions
 )
 
 find_package(PkgConfig REQUIRED)

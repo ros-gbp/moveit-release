@@ -38,7 +38,7 @@
 #include <moveit/robot_state/robot_state.h>
 #include <moveit_ros_planning/TrajectoryExecutionDynamicReconfigureConfig.h>
 #include <dynamic_reconfigure/server.h>
-#include <tf2_eigen/tf2_eigen.h>
+#include <eigen_conversions/eigen_msg.h>
 
 namespace trajectory_execution_manager
 {
@@ -103,6 +103,9 @@ TrajectoryExecutionManager::~TrajectoryExecutionManager()
   delete reconfigure_impl_;
 }
 
+static const char* DEPRECATION_WARNING =
+    "\nDeprecation warning: parameter '%s' moved into namespace 'trajectory_execution'."
+    "\nPlease, adjust file trajectory_execution.launch.xml!";
 void TrajectoryExecutionManager::initialize()
 {
   reconfigure_impl_ = NULL;
@@ -116,8 +119,16 @@ void TrajectoryExecutionManager::initialize()
   execution_velocity_scaling_ = 1.0;
   allowed_start_tolerance_ = 0.01;
 
-  allowed_execution_duration_scaling_ = DEFAULT_CONTROLLER_GOAL_DURATION_SCALING;
-  allowed_goal_duration_margin_ = DEFAULT_CONTROLLER_GOAL_DURATION_MARGIN;
+  // TODO: Reading from old param location should be removed in L-turtle. Handled by DynamicReconfigure.
+  if (node_handle_.getParam("allowed_execution_duration_scaling", allowed_execution_duration_scaling_))
+    ROS_WARN_NAMED(name_, DEPRECATION_WARNING, "allowed_execution_duration_scaling");
+  else
+    allowed_execution_duration_scaling_ = DEFAULT_CONTROLLER_GOAL_DURATION_SCALING;
+
+  if (node_handle_.getParam("allowed_goal_duration_margin", allowed_goal_duration_margin_))
+    ROS_WARN_NAMED(name_, DEPRECATION_WARNING, "allowed_goal_duration_margin");
+  else
+    allowed_goal_duration_margin_ = DEFAULT_CONTROLLER_GOAL_DURATION_MARGIN;
 
   // load controller-specific values for allowed_execution_duration_scaling and allowed_goal_duration_margin
   loadControllerParams();
@@ -1008,10 +1019,10 @@ bool TrajectoryExecutionManager::validate(const TrajectoryExecutionContext& cont
         // and start transform in trajectory
         Eigen::Affine3d cur_transform, start_transform;
         jm->computeTransform(current_state->getJointPositions(jm), cur_transform);
-        start_transform = tf2::transformToEigen(transforms[i]);
+        tf::transformMsgToEigen(transforms[i], start_transform);
         Eigen::Vector3d offset = cur_transform.translation() - start_transform.translation();
         Eigen::AngleAxisd rotation;
-        rotation.fromRotationMatrix(cur_transform.rotation().inverse() * start_transform.rotation());
+        rotation.fromRotationMatrix(cur_transform.linear().transpose() * start_transform.linear());
         if ((offset.array() > allowed_start_tolerance_).any() || rotation.angle() > allowed_start_tolerance_)
         {
           ROS_ERROR_STREAM_NAMED(name_, "\nInvalid Trajectory: start point deviates from current robot state more than "

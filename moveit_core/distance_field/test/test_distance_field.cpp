@@ -40,7 +40,7 @@
 #include <moveit/distance_field/propagation_distance_field.h>
 #include <moveit/distance_field/find_internal_points.h>
 #include <geometric_shapes/body_operations.h>
-#include <tf2_eigen/tf2_eigen.h>
+#include <eigen_conversions/eigen_msg.h>
 #include <octomap/octomap.h>
 #include <ros/console.h>
 
@@ -511,7 +511,7 @@ TEST(TestSignedPropagationDistanceField, TestSignedAddRemovePoints)
   p.position.z = .5;
 
   Eigen::Affine3d p_eigen;
-  tf2::fromMsg(p, p_eigen);
+  tf::poseMsgToEigen(p, p_eigen);
 
   gradient_df.addShapeToField(&sphere, p_eigen);
   // printBoth(gradient_df, numX, numY, numZ);
@@ -853,13 +853,13 @@ TEST(TestSignedPropagationDistanceField, TestOcTree)
   tree_lowres.updateNode(point1, true);
   tree_lowres.updateNode(point2, true);
   tree_lowres.updateNode(point3, true);
-  ASSERT_EQ(countLeafNodes(tree_lowres), 3u);
+  ASSERT_EQ(countLeafNodes(tree_lowres), 3);
 
   PropagationDistanceField df_highres(PERF_WIDTH, PERF_HEIGHT, PERF_DEPTH, PERF_RESOLUTION, PERF_ORIGIN_X,
                                       PERF_ORIGIN_Y, PERF_ORIGIN_Z, PERF_MAX_DIST, false);
 
   df_highres.addOcTreeToField(&tree_lowres);
-  EXPECT_EQ(countOccupiedCells(df_highres), 3u * (4u * 4u * 4u));
+  EXPECT_EQ(countOccupiedCells(df_highres), 3 * (4 * 4 * 4));
   std::cout << "Occupied cells " << countOccupiedCells(df_highres) << std::endl;
 
   // testing adding shape that happens to be octree

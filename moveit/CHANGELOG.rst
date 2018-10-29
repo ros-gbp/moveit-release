@@ -2,16 +2,14 @@
 Changelog for package moveit
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.10.3 (2018-10-29)
+0.9.15 (2018-10-29)
 -------------------
-* [fix] Build regression (`#1134 <https://github.com/ros-planning/moveit/issues/1134>`_)
-* [fix] compiler warnings (`#1089 <https://github.com/ros-planning/moveit/issues/1089>`_)
-* [capability] Get available planning group names from MoveGroup C++ (`#1159 <https://github.com/ros-planning/moveit/issues/1159>`_)
-* [maintenance] Store more settings of rviz' PlanningFrame (`#1135 <https://github.com/ros-planning/moveit/issues/1135>`_)
-* [code] cleanup, improvements (`#1107 <https://github.com/ros-planning/moveit/issues/1107>`_, `#1099 <https://github.com/ros-planning/moveit/issues/1099>`_, `#1108 <https://github.com/ros-planning/moveit/issues/1108>`_, `#1144 <https://github.com/ros-planning/moveit/issues/1144>`_, `#1099 <https://github.com/ros-planning/moveit/issues/1099>`_)
-* Contributors: Alexander Gutenkunst, Dave Coleman, Robert Haschke, Simon Schmeisser
+* [fix] Build regression (`#1134 <https://github.com/ros-planning/moveit/issues/1134>`_) 
+* [improvement] Exploit the fact that our transforms are isometries (instead of general affine transformations). `#1091 <https://github.com/ros-planning/moveit/issues/1091>`_
+* [code] cleanup, improvements (`#1141 <https://github.com/ros-planning/moveit/issues/1141>`_, `#1099 <https://github.com/ros-planning/moveit/issues/1099>`_, `#1108 <https://github.com/ros-planning/moveit/issues/1108>`_)
+* Contributors: Alexander Gutenkunst, Jonathan Hechtbauer, Robert Haschke, Simon Schmeisser
 
-0.10.2 (2018-10-24)
+0.9.14 (2018-10-24)
 -------------------
 * [fix] Text refrences to MoveIt! (`#1020 <https://github.com/ros-planning/moveit/issues/1020>`_)
 * [fix] Eigen alignment issuses due to missing aligned allocation (`#1039 <https://github.com/ros-planning/moveit/issues/1039>`_)
@@ -27,6 +25,7 @@ Changelog for package moveit
 * [fix][moveit_fake_controller_manager] latch initial pose published by fake_controller_manager (`#1092 <https://github.com/ros-planning/moveit/issues/1092>`_)
 * [fix][moveit_setup_assistant] Some bugs (`#1022 <https://github.com/ros-planning/moveit/issues/1022>`_, `#1013 <https://github.com/ros-planning/moveit/issues/1013>`_)
 * [fix] continous joint limits are always satisfied (`#729 <https://github.com/ros-planning/moveit/issues/729>`_)
+* [capability] Include chomp packages in a list of released package suite (addressing https://github.com/ros-planning/moveit/issues/1083#issuecomment-432737000). `#1127 <https://github.com/ros-planning/moveit/issues/1127>`_
 * [capability] adaptions for OMPL 1.4 (`#903 <https://github.com/ros-planning/moveit/issues/903>`_)
 * [capability][chomp] Failure recovery options for CHOMP by tweaking parameters (`#987 <https://github.com/ros-planning/moveit/issues/987>`_)
 * [capability] New screen for automatically generating interfaces to low level controllers(`#951 <https://github.com/ros-planning/moveit/issues/951>`_, `#994 <https://github.com/ros-planning/moveit/issues/994>`_, `#908 <https://github.com/ros-planning/moveit/issues/908>`_)
@@ -51,7 +50,11 @@ Changelog for package moveit
 * [maintenance] add minimum required pluginlib version (`#927 <https://github.com/ros-planning/moveit/issues/927>`_)
 2scholz, Adrian Zwiener, Alexander Guten kunst, Andrey Troitskiy, Chris Lalancette, d-walsh, Dave Coleman, David Watkins, dcconner, dg-shadow, Felix von Drigalski, Isaac Saito, Jonathan Binney, Kei Okada, Martin Guenther, Michael Goerner, Mikael Arguedas, Mike Lautman, Mohmmad Ayman, Raghavender Sahdev, Ridhwan Luthra, Robert Haschke, Simon Schmeisser, Sohieb Abdelrahman, srsidd, Timon Engelke, Xaver Kroischke
 
-0.10.1 (2018-05-25)
+0.9.13 (2018-10-24)
+-------------------
+* All changelog items are moved over to the next, hotfix release.
+
+0.9.12 (2018-05-29)
 -------------------
 
 0.9.11 (2017-12-25)
@@ -111,7 +114,7 @@ Changelog for package moveit
   * [fix][moveit_ros_visualization] RobotStateVisualization: clear before load to avoid segfault `#572 <https://github.com/ros-planning/moveit/pull/572>`_
   * [fix][setup_assistant] Fix for lunar (`#542 <https://github.com/ros-planning/moveit/issues/542>`_) (fix `#506 <https://github.com/ros-planning/moveit/issues/506>`_)
   * [fix][moveit_core] segfault due to missing string format parameter. (`#547 <https://github.com/ros-planning/moveit/issues/547>`_)
-  * [fix][moveit_core] doc-comment for robot_state::computeAABB (`#516 <https://github.com/ros-planning/moveit/issues/516>`_) 
+  * [fix][moveit_core] doc-comment for robot_state::computeAABB (`#516 <https://github.com/ros-planning/moveit/issues/516>`_)
 * Improvement in the contained packages:
 
   * [improve][moveit_ros_planning] Chomp use PlanningScene (`#546 <https://github.com/ros-planning/moveit/issues/546>`_) to partially address `#305 <https://github.com/ros-planning/moveit/issues/305>`_
@@ -165,12 +168,12 @@ Changelog for package moveit
 
 0.9.5 (2017-03-08)
 ------------------
-* [fix] correct "simplify widget handling" `#452 <https://github.com/ros-planning/moveit/pull/452>`_ This reverts "simplify widget handling (`#442 <https://github.com/ros-planning/moveit/issues/442>`_)" 
-* [fix][moveit_ros_warehouse] gcc6 build error `#423 <https://github.com/ros-planning/moveit/pull/423>`_ 
+* [fix] correct "simplify widget handling" `#452 <https://github.com/ros-planning/moveit/pull/452>`_ This reverts "simplify widget handling (`#442 <https://github.com/ros-planning/moveit/issues/442>`_)"
+* [fix][moveit_ros_warehouse] gcc6 build error `#423 <https://github.com/ros-planning/moveit/pull/423>`_
 * [fix] Regression on Ubuntu Xenial; numpy.ndarray indices bug (from `#86 <https://github.com/ros-planning/moveit/issues/86>`_) (`#450 <https://github.com/ros-planning/moveit/issues/450>`_).
 * [enhancement] Remove "catch (...)" instances, catch std::exception instead of std::runtime_error (`#445 <https://github.com/ros-planning/moveit/issues/445>`_)
 * [enhancement][MoveGroup] Add getLinkNames function (`#440 <https://github.com/ros-planning/moveit/issues/440>`_)
-* [doc][moveit_commander] added description for set_start_state (`#447 <https://github.com/ros-planning/moveit/issues/447>`_) 
+* [doc][moveit_commander] added description for set_start_state (`#447 <https://github.com/ros-planning/moveit/issues/447>`_)
 * Contributors: Adam Allevato, Dave Coleman, Bence Magyar, Dave Coleman, Isaac I.Y. Saito, Yannick Jonetzko, Ravi Prakash Joshi
 
 0.9.4 (2017-02-06)

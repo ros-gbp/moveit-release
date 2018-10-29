@@ -42,11 +42,12 @@
 #include <kinematic_constraints/kinematic_constraint.h>
 #include <ompl/base/StateStorage.h>
 #include <visualization_msgs/MarkerArray.h>
+#include <boost/function.hpp>
 
 namespace ompl_interface
 {
 typedef ompl::base::StateStorageWithMetadata<std::vector<std::size_t> > ConstraintApproximationStateStorage;
-typedef std::function<bool(const ompl::base::State*, const ompl::base::State*)> ConstraintStateStorageOrderFn;
+typedef boost::function<bool(const ompl::base::State*, const ompl::base::State*)> ConstraintStateStorageOrderFn;
 
 struct ConstraintApproximation
 {

@@ -43,6 +43,7 @@
 #include <kdl_parser/kdl_parser.hpp>
 
 #include <angles/angles.h>
+#include <tf_conversions/tf_kdl.h>
 
 #include <moveit/macros/class_forward.h>
 #include <moveit_msgs/GetPositionFK.h>
@@ -86,8 +87,6 @@ public:
 
   ~PR2ArmIKSolver(){};
 
-  virtual void updateInternalDataStructures();
-
   /**
    * @brief The PR2 inverse kinematics solver
    */
@@ -117,7 +116,7 @@ private:
   std::string root_frame_name_;
 };
 
-Eigen::Matrix4f KDLToEigenMatrix(const KDL::Frame& p);
+Eigen::Affine3f KDLToEigenMatrix(const KDL::Frame& p);
 double computeEuclideanDistance(const std::vector<double>& array_1, const KDL::JntArray& array_2);
 void getKDLChainInfo(const KDL::Chain& chain, moveit_msgs::KinematicSolverInfo& chain_info);
 

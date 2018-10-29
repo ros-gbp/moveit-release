@@ -189,12 +189,12 @@ TEST(LoadingAndFK, SimpleRobot)
   // testing incomplete state
   std::vector<std::string> missing_states;
   state.setVariablePositions(joint_values, missing_states);
-  ASSERT_EQ(missing_states.size(), 1u);
+  ASSERT_EQ(missing_states.size(), 1);
   EXPECT_EQ(missing_states[0], std::string("base_joint/theta"));
   joint_values["base_joint/theta"] = 0.1;
 
   state.setVariablePositions(joint_values, missing_states);
-  ASSERT_EQ(missing_states.size(), 0u);
+  ASSERT_EQ(missing_states.size(), 0);
 
   EXPECT_NEAR_TRACED(state.getGlobalLinkTransform("base_link").translation(), Eigen::Vector3d(10, 8, 0));
 
@@ -424,16 +424,16 @@ TEST_F(OneRobot, FK)
   ASSERT_TRUE(g_four == nullptr);
 
   // joint_b is a fixed joint, so no one should have it
-  ASSERT_EQ(g_one->getJointModelNames().size(), 3u);
-  ASSERT_EQ(g_two->getJointModelNames().size(), 3u);
-  ASSERT_EQ(g_three->getJointModelNames().size(), 4u);
-  ASSERT_EQ(g_mim->getJointModelNames().size(), 2u);
+  ASSERT_EQ(g_one->getJointModelNames().size(), 3);
+  ASSERT_EQ(g_two->getJointModelNames().size(), 3);
+  ASSERT_EQ(g_three->getJointModelNames().size(), 4);
+  ASSERT_EQ(g_mim->getJointModelNames().size(), 2);
 
   // only the links in between the joints, and the children of the leafs
-  ASSERT_EQ(g_one->getLinkModelNames().size(), 3u);
+  ASSERT_EQ(g_one->getLinkModelNames().size(), 3);
   // g_two only has three links
-  ASSERT_EQ(g_two->getLinkModelNames().size(), 3u);
-  ASSERT_EQ(g_three->getLinkModelNames().size(), 4u);
+  ASSERT_EQ(g_two->getLinkModelNames().size(), 3);
+  ASSERT_EQ(g_three->getLinkModelNames().size(), 4);
 
   std::vector<std::string> jmn = g_one->getJointModelNames();
   std::sort(jmn.begin(), jmn.end());
@@ -453,9 +453,9 @@ TEST_F(OneRobot, FK)
   EXPECT_EQ(jmn[3], "joint_c");
 
   // but they should have the same links to be updated
-  ASSERT_EQ(g_one->getUpdatedLinkModels().size(), 6u);
-  ASSERT_EQ(g_two->getUpdatedLinkModels().size(), 6u);
-  ASSERT_EQ(g_three->getUpdatedLinkModels().size(), 6u);
+  ASSERT_EQ(g_one->getUpdatedLinkModels().size(), 6);
+  ASSERT_EQ(g_two->getUpdatedLinkModels().size(), 6);
+  ASSERT_EQ(g_three->getUpdatedLinkModels().size(), 6);
 
   EXPECT_EQ(g_one->getUpdatedLinkModels()[0]->getName(), "base_link");
   EXPECT_EQ(g_one->getUpdatedLinkModels()[1]->getName(), "link_a");
@@ -489,28 +489,28 @@ TEST_F(OneRobot, FK)
   state.setVariablePositions(joint_values);
 
   EXPECT_NEAR_TRACED(state.getGlobalLinkTransform("base_link").translation(), Eigen::Vector3d(1, 1, 0));
-  EXPECT_NEAR(0.0, Eigen::Quaterniond(state.getGlobalLinkTransform("base_link").rotation()).x(), 1e-5);
-  EXPECT_NEAR(0.0, Eigen::Quaterniond(state.getGlobalLinkTransform("base_link").rotation()).y(), 1e-5);
-  EXPECT_NEAR(0.247404, Eigen::Quaterniond(state.getGlobalLinkTransform("base_link").rotation()).z(), 1e-5);
-  EXPECT_NEAR(0.968912, Eigen::Quaterniond(state.getGlobalLinkTransform("base_link").rotation()).w(), 1e-5);
+  EXPECT_NEAR(0.0, Eigen::Quaterniond(state.getGlobalLinkTransform("base_link").linear()).x(), 1e-5);
+  EXPECT_NEAR(0.0, Eigen::Quaterniond(state.getGlobalLinkTransform("base_link").linear()).y(), 1e-5);
+  EXPECT_NEAR(0.247404, Eigen::Quaterniond(state.getGlobalLinkTransform("base_link").linear()).z(), 1e-5);
+  EXPECT_NEAR(0.968912, Eigen::Quaterniond(state.getGlobalLinkTransform("base_link").linear()).w(), 1e-5);
 
   EXPECT_NEAR_TRACED(state.getGlobalLinkTransform("link_a").translation(), Eigen::Vector3d(1, 1, 0));
-  EXPECT_NEAR(0.0, Eigen::Quaterniond(state.getGlobalLinkTransform("link_a").rotation()).x(), 1e-5);
-  EXPECT_NEAR(0.0, Eigen::Quaterniond(state.getGlobalLinkTransform("link_a").rotation()).y(), 1e-5);
-  EXPECT_NEAR(0.0, Eigen::Quaterniond(state.getGlobalLinkTransform("link_a").rotation()).z(), 1e-5);
-  EXPECT_NEAR(1.0, Eigen::Quaterniond(state.getGlobalLinkTransform("link_a").rotation()).w(), 1e-5);
+  EXPECT_NEAR(0.0, Eigen::Quaterniond(state.getGlobalLinkTransform("link_a").linear()).x(), 1e-5);
+  EXPECT_NEAR(0.0, Eigen::Quaterniond(state.getGlobalLinkTransform("link_a").linear()).y(), 1e-5);
+  EXPECT_NEAR(0.0, Eigen::Quaterniond(state.getGlobalLinkTransform("link_a").linear()).z(), 1e-5);
+  EXPECT_NEAR(1.0, Eigen::Quaterniond(state.getGlobalLinkTransform("link_a").linear()).w(), 1e-5);
 
   EXPECT_NEAR_TRACED(state.getGlobalLinkTransform("link_b").translation(), Eigen::Vector3d(1, 1.5, 0));
-  EXPECT_NEAR(0.0, Eigen::Quaterniond(state.getGlobalLinkTransform("link_b").rotation()).x(), 1e-5);
-  EXPECT_NEAR(-0.2084598, Eigen::Quaterniond(state.getGlobalLinkTransform("link_b").rotation()).y(), 1e-5);
-  EXPECT_NEAR(0.0, Eigen::Quaterniond(state.getGlobalLinkTransform("link_b").rotation()).z(), 1e-5);
-  EXPECT_NEAR(0.97803091, Eigen::Quaterniond(state.getGlobalLinkTransform("link_b").rotation()).w(), 1e-5);
+  EXPECT_NEAR(0.0, Eigen::Quaterniond(state.getGlobalLinkTransform("link_b").linear()).x(), 1e-5);
+  EXPECT_NEAR(-0.2084598, Eigen::Quaterniond(state.getGlobalLinkTransform("link_b").linear()).y(), 1e-5);
+  EXPECT_NEAR(0.0, Eigen::Quaterniond(state.getGlobalLinkTransform("link_b").linear()).z(), 1e-5);
+  EXPECT_NEAR(0.97803091, Eigen::Quaterniond(state.getGlobalLinkTransform("link_b").linear()).w(), 1e-5);
 
   EXPECT_NEAR_TRACED(state.getGlobalLinkTransform("link_c").translation(), Eigen::Vector3d(1.08, 1.4, 0));
-  EXPECT_NEAR(0.0, Eigen::Quaterniond(state.getGlobalLinkTransform("link_c").rotation()).x(), 1e-5);
-  EXPECT_NEAR(0.0, Eigen::Quaterniond(state.getGlobalLinkTransform("link_c").rotation()).y(), 1e-5);
-  EXPECT_NEAR(0.0, Eigen::Quaterniond(state.getGlobalLinkTransform("link_c").rotation()).z(), 1e-5);
-  EXPECT_NEAR(1.0, Eigen::Quaterniond(state.getGlobalLinkTransform("link_c").rotation()).w(), 1e-5);
+  EXPECT_NEAR(0.0, Eigen::Quaterniond(state.getGlobalLinkTransform("link_c").linear()).x(), 1e-5);
+  EXPECT_NEAR(0.0, Eigen::Quaterniond(state.getGlobalLinkTransform("link_c").linear()).y(), 1e-5);
+  EXPECT_NEAR(0.0, Eigen::Quaterniond(state.getGlobalLinkTransform("link_c").linear()).z(), 1e-5);
+  EXPECT_NEAR(1.0, Eigen::Quaterniond(state.getGlobalLinkTransform("link_c").linear()).w(), 1e-5);
 
   EXPECT_TRUE(state.satisfiesBounds());
 
@@ -546,7 +546,7 @@ TEST_F(OneRobot, FK)
   EXPECT_NEAR_TRACED(state.getGlobalLinkTransform("link_d").translation(), Eigen::Vector3d(1.7, 0.5, 0));
   EXPECT_NEAR_TRACED(state.getGlobalLinkTransform("link_e").translation(), Eigen::Vector3d(2.8, 0.6, 0));
 
-  ASSERT_EQ(g_mim->getVariableCount(), 2u);
+  ASSERT_EQ(g_mim->getVariableCount(), 2);
   double gstate[2];
   state.copyJointGroupPositions(g_mim, gstate);
 

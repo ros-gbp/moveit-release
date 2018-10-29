@@ -67,7 +67,7 @@ SetupAssistantWidget::SetupAssistantWidget(QWidget* parent, boost::program_optio
   rviz_manager_ = NULL;
   rviz_render_panel_ = NULL;
 
-  // Create object to hold all MoveIt! configuration data
+  // Create object to hold all moveit configuration data
   config_data_.reset(new MoveItConfigData());
 
   // Set debug mode flag if necessary

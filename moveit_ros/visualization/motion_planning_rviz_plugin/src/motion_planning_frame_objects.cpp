@@ -47,7 +47,7 @@
 #include <rviz/frame_manager.h>
 #include <rviz/window_manager_interface.h>
 
-#include <tf2_eigen/tf2_eigen.h>
+#include <eigen_conversions/eigen_msg.h>
 #include <geometric_shapes/shape_operations.h>
 
 #include <QMessageBox>
@@ -237,7 +237,7 @@ void MotionPlanningFrame::selectedCollisionObjectChanged()
           if (obj->shapes_.size() == 1)
           {
             obj_pose = obj->shape_poses_[0];
-            Eigen::Vector3d xyz = obj_pose.rotation().eulerAngles(0, 1, 2);
+            Eigen::Vector3d xyz = obj_pose.linear().eulerAngles(0, 1, 2);
             update_scene_marker = true;  // do the marker update outside locked scope to avoid deadlock
 
             bool oldState = ui_->object_x->blockSignals(true);
@@ -321,7 +321,7 @@ void MotionPlanningFrame::updateCollisionObjectPose(bool update_marker_position)
       // Update the interactive marker pose to match the manually introduced one
       if (update_marker_position && scene_marker_)
       {
-        Eigen::Quaterniond eq(p.rotation());
+        Eigen::Quaterniond eq(p.linear());
         scene_marker_->setPose(Ogre::Vector3(ui_->object_x->value(), ui_->object_y->value(), ui_->object_z->value()),
                                Ogre::Quaternion(eq.w(), eq.x(), eq.y(), eq.z()), "");
       }
@@ -361,7 +361,7 @@ void MotionPlanningFrame::imProcessFeedback(visualization_msgs::InteractiveMarke
   ui_->object_z->blockSignals(oldState);
 
   Eigen::Quaterniond q;
-  tf2::fromMsg(feedback.pose.orientation, q);
+  tf::quaternionMsgToEigen(feedback.pose.orientation, q);
   Eigen::Vector3d xyz = q.matrix().eulerAngles(0, 1, 2);
 
   oldState = ui_->object_rx->blockSignals(true);
@@ -694,7 +694,7 @@ void MotionPlanningFrame::createSceneInteractiveMarker()
       ps->getWorld()->getObject(sel[0]->text().toStdString());
   if (obj && obj->shapes_.size() == 1)
   {
-    Eigen::Quaterniond eq(obj->shape_poses_[0].rotation());
+    Eigen::Quaterniond eq(obj->shape_poses_[0].linear());
     geometry_msgs::PoseStamped shape_pose;
     shape_pose.pose.position.x = obj->shape_poses_[0].translation()[0];
     shape_pose.pose.position.y = obj->shape_poses_[0].translation()[1];
@@ -933,17 +933,16 @@ void MotionPlanningFrame::computeImportFromText(const std::string& path)
   if (ps)
   {
     std::ifstream fin(path.c_str());
-    if (ps->loadGeometryFromStream(fin))
+    if (fin.good())
     {
+      ps->loadGeometryFromStream(fin);
+      fin.close();
       ROS_INFO("Loaded scene geometry from '%s'", path.c_str());
       planning_display_->addMainLoopJob(boost::bind(&MotionPlanningFrame::populateCollisionObjectsList, this));
       planning_display_->queueRenderSceneGeometry();
     }
     else
-    {
-      QMessageBox::warning(nullptr, "Loading scene geometry", "Failed to load scene geometry.\n"
-                                                              "See console output for more details.");
-    }
+      ROS_WARN("Unable to load scene geometry from '%s'", path.c_str());
   }
 }
 

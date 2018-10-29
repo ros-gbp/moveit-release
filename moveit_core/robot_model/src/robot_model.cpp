@@ -95,7 +95,7 @@ void RobotModel::buildModel(const urdf::ModelInterface& urdf_model, const srdf::
   if (urdf_model.getRoot())
   {
     const urdf::Link* root_link_ptr = urdf_model.getRoot().get();
-    model_frame_ = root_link_ptr->name;
+    model_frame_ = '/' + root_link_ptr->name;
 
     ROS_DEBUG_NAMED(LOGNAME, "... building kinematic chain");
     root_joint_ = buildRecursive(nullptr, root_link_ptr, srdf_model);
@@ -302,7 +302,7 @@ void RobotModel::buildJointInfo()
       continue;
 
     LinkTransformMap associated_transforms;
-    computeFixedTransforms(link, link->getJointOriginTransform().inverse(), associated_transforms);
+    computeFixedTransforms(link, link->getJointOriginTransform().inverse(Eigen::Isometry), associated_transforms);
     for (auto& tf_base : associated_transforms)
     {
       link_considered[tf_base.first->getLinkIndex()] = true;
@@ -310,7 +310,8 @@ void RobotModel::buildJointInfo()
       {
         if (&tf_base != &tf_target)
           const_cast<LinkModel*>(tf_base.first)  // regain write access to base LinkModel*
-              ->addAssociatedFixedTransform(tf_target.first, tf_base.second.inverse() * tf_target.second);
+              ->addAssociatedFixedTransform(tf_target.first,
+                                            tf_base.second.inverse(Eigen::Isometry) * tf_target.second);
       }
     }
   }
@@ -923,6 +924,8 @@ JointModel* RobotModel::constructJointModel(const urdf::Joint* urdf_joint, const
           if (vjoints[i].type_ != "fixed")
           {
             model_frame_ = vjoints[i].parent_frame_;
+            if (model_frame_[0] != '/')
+              model_frame_ = '/' + model_frame_;
           }
           break;
         }

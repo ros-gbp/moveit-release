@@ -38,8 +38,8 @@
 #define MOVEIT_PERCEPTION_POINTCLOUD_OCTOMAP_UPDATER_
 
 #include <ros/ros.h>
-#include <tf2_ros/transform_listener.h>
-#include <tf2_ros/message_filter.h>
+#include <tf/tf.h>
+#include <tf/message_filter.h>
 #include <message_filters/subscriber.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <moveit/occupancy_map_monitor/occupancy_map_updater.h>
@@ -74,9 +74,7 @@ private:
 
   ros::NodeHandle root_nh_;
   ros::NodeHandle private_nh_;
-
-  std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
-  std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
+  boost::shared_ptr<tf::Transformer> tf_;
 
   ros::Time last_update_time_;
 
@@ -91,7 +89,7 @@ private:
   ros::Publisher filtered_cloud_publisher_;
 
   message_filters::Subscriber<sensor_msgs::PointCloud2>* point_cloud_subscriber_;
-  tf2_ros::MessageFilter<sensor_msgs::PointCloud2>* point_cloud_filter_;
+  tf::MessageFilter<sensor_msgs::PointCloud2>* point_cloud_filter_;
 
   /* used to store all cells in the map which a given ray passes through during raycasting.
      we cache this here because it dynamically pre-allocates a lot of memory in its contsructor */

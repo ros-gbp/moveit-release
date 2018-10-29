@@ -37,15 +37,15 @@
 #include <moveit/collision_distance_field/collision_common_distance_field.h>
 #include <ros/console.h>
 #include <boost/thread/mutex.hpp>
-#include <tf2_eigen/tf2_eigen.h>
+#include <eigen_conversions/eigen_msg.h>
 #include <memory>
 
 namespace collision_detection
 {
 struct BodyDecompositionCache
 {
-  using Comperator = std::owner_less<shapes::ShapeConstWeakPtr>;
-  using Map = std::map<shapes::ShapeConstWeakPtr, BodyDecompositionConstPtr, Comperator>;
+  using Comperator = std::owner_less<std::weak_ptr<const shapes::Shape>>;
+  using Map = std::map<std::weak_ptr<const shapes::Shape>, BodyDecompositionConstPtr, Comperator>;
 
   BodyDecompositionCache() : clean_count_(0)
   {
@@ -66,7 +66,7 @@ BodyDecompositionConstPtr getBodyDecompositionCacheEntry(const shapes::ShapeCons
 {
   // TODO - deal with changing resolution?
   BodyDecompositionCache& cache = getBodyDecompositionCache();
-  shapes::ShapeConstWeakPtr wptr(shape);
+  std::weak_ptr<const shapes::Shape> wptr(shape);
   {
     boost::mutex::scoped_lock slock(cache.lock_);
     BodyDecompositionCache::Map::const_iterator cache_it = cache.map_.find(wptr);
@@ -176,7 +176,7 @@ void getBodySphereVisualizationMarkers(GroupStateRepresentationConstPtr& gsr, st
           gsr->link_body_decompositions_[i];
       for (unsigned int j = 0; j < sphere_representation->getCollisionSpheres().size(); j++)
       {
-        sphere_marker.pose.position = tf2::toMsg(sphere_representation->getSphereCenters()[j]);
+        tf::pointEigenToMsg(sphere_representation->getSphereCenters()[j], sphere_marker.pose.position);
         sphere_marker.scale.x = sphere_marker.scale.y = sphere_marker.scale.z =
             sphere_representation->getCollisionSpheres()[j].radius_;
         sphere_marker.id = id;
@@ -211,7 +211,7 @@ void getBodySphereVisualizationMarkers(GroupStateRepresentationConstPtr& gsr, st
       PosedBodySphereDecompositionVectorPtr sphere_decp = gsr->attached_body_decompositions_[i];
       sphere_decp->updatePose(j, att->getGlobalCollisionBodyTransforms()[j]);
 
-      sphere_marker.pose.position = tf2::toMsg(sphere_decp->getSphereCenters()[j]);
+      tf::pointEigenToMsg(sphere_decp->getSphereCenters()[j], sphere_marker.pose.position);
       sphere_marker.scale.x = sphere_marker.scale.y = sphere_marker.scale.z =
           sphere_decp->getCollisionSpheres()[j].radius_;
       sphere_marker.id = id;

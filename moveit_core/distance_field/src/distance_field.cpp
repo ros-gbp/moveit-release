@@ -37,7 +37,7 @@
 #include <moveit/distance_field/distance_field.h>
 #include <moveit/distance_field/find_internal_points.h>
 #include <geometric_shapes/body_operations.h>
-#include <tf2_eigen/tf2_eigen.h>
+#include <eigen_conversions/eigen_msg.h>
 #include <ros/console.h>
 #include <octomap/octomap.h>
 #include <octomap/OcTree.h>
@@ -172,10 +172,10 @@ void DistanceField::getGradientMarkers(double min_distance, double max_distance,
           // double angle = -gradient.angle(unitX);
           // Eigen::AngleAxisd rotation(angle, axis);
 
-          // marker.pose.orientation.x = rotation.rotation().x();
-          // marker.pose.orientation.y = rotation.rotation().y();
-          // marker.pose.orientation.z = rotation.rotation().z();
-          // marker.pose.orientation.w = rotation.rotation().w();
+          // marker.pose.orientation.x = rotation.linear().x();
+          // marker.pose.orientation.y = rotation.linear().y();
+          // marker.pose.orientation.z = rotation.linear().z();
+          // marker.pose.orientation.w = rotation.linear().w();
 
           marker.scale.x = getResolution();
           marker.scale.y = getResolution();
@@ -227,7 +227,7 @@ void DistanceField::addShapeToField(const shapes::Shape* shape, const Eigen::Aff
 void DistanceField::addShapeToField(const shapes::Shape* shape, const geometry_msgs::Pose& pose)
 {
   Eigen::Affine3d pose_e;
-  tf2::fromMsg(pose, pose_e);
+  tf::poseMsgToEigen(pose, pose_e);
   addShapeToField(shape, pose_e);
 }
 
@@ -308,8 +308,8 @@ void DistanceField::moveShapeInField(const shapes::Shape* shape, const geometry_
                                      const geometry_msgs::Pose& new_pose)
 {
   Eigen::Affine3d old_pose_e, new_pose_e;
-  tf2::fromMsg(old_pose, old_pose_e);
-  tf2::fromMsg(new_pose, new_pose_e);
+  tf::poseMsgToEigen(old_pose, old_pose_e);
+  tf::poseMsgToEigen(new_pose, new_pose_e);
   moveShapeInField(shape, old_pose_e, new_pose_e);
 }
 
@@ -327,7 +327,7 @@ void DistanceField::removeShapeFromField(const shapes::Shape* shape, const Eigen
 void DistanceField::removeShapeFromField(const shapes::Shape* shape, const geometry_msgs::Pose& pose)
 {
   Eigen::Affine3d pose_e;
-  tf2::fromMsg(pose, pose_e);
+  tf::poseMsgToEigen(pose, pose_e);
   removeShapeFromField(shape, pose_e);
 }
 

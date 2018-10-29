@@ -37,7 +37,7 @@
 #include <moveit/benchmarks/BenchmarkExecutor.h>
 #include <moveit/utils/lexical_casts.h>
 #include <moveit/version.h>
-#include <tf2_eigen/tf2_eigen.h>
+#include <eigen_conversions/eigen_msg.h>
 
 #include <boost/regex.hpp>
 #include <boost/progress.hpp>
@@ -447,11 +447,11 @@ void BenchmarkExecutor::shiftConstraintsByOffset(moveit_msgs::Constraints& const
   constraint_pose_msg.position = constraints.position_constraints[0].constraint_region.primitive_poses[0].position;
   constraint_pose_msg.orientation = constraints.orientation_constraints[0].orientation;
   Eigen::Affine3d constraint_pose;
-  tf2::fromMsg(constraint_pose_msg, constraint_pose);
+  tf::poseMsgToEigen(constraint_pose_msg, constraint_pose);
 
   Eigen::Affine3d new_pose = constraint_pose * offset_tf;
   geometry_msgs::Pose new_pose_msg;
-  new_pose_msg = tf2::toMsg(new_pose);
+  tf::poseEigenToMsg(new_pose, new_pose_msg);
 
   constraints.position_constraints[0].constraint_region.primitive_poses[0].position = new_pose_msg.position;
   constraints.orientation_constraints[0].orientation = new_pose_msg.orientation;

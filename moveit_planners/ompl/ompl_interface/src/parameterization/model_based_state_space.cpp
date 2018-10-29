@@ -35,10 +35,10 @@
 /* Author: Ioan Sucan */
 
 #include <moveit/ompl_interface/parameterization/model_based_state_space.h>
-#include <utility>
+#include <boost/bind.hpp>
 
-ompl_interface::ModelBasedStateSpace::ModelBasedStateSpace(ModelBasedStateSpaceSpecification spec)
-  : ompl::base::StateSpace(), spec_(std::move(spec))
+ompl_interface::ModelBasedStateSpace::ModelBasedStateSpace(const ModelBasedStateSpaceSpecification& spec)
+  : ompl::base::StateSpace(), spec_(spec)
 {
   // set the state space name
   setName(spec_.joint_model_group_->getName());
@@ -71,12 +71,13 @@ ompl_interface::ModelBasedStateSpace::ModelBasedStateSpace(ModelBasedStateSpaceS
   setTagSnapToSegment(0.95);
 
   /// expose parameters
-  params_.declareParam<double>("tag_snap_to_segment",
-                               std::bind(&ModelBasedStateSpace::setTagSnapToSegment, this, std::placeholders::_1),
-                               std::bind(&ModelBasedStateSpace::getTagSnapToSegment, this));
+  params_.declareParam<double>("tag_snap_to_segment", boost::bind(&ModelBasedStateSpace::setTagSnapToSegment, this, _1),
+                               boost::bind(&ModelBasedStateSpace::getTagSnapToSegment, this));
 }
 
-ompl_interface::ModelBasedStateSpace::~ModelBasedStateSpace() = default;
+ompl_interface::ModelBasedStateSpace::~ModelBasedStateSpace()
+{
+}
 
 double ompl_interface::ModelBasedStateSpace::getTagSnapToSegment() const
 {
@@ -99,7 +100,7 @@ void ompl_interface::ModelBasedStateSpace::setTagSnapToSegment(double snap)
 
 ompl::base::State* ompl_interface::ModelBasedStateSpace::allocState() const
 {
-  auto* state = new StateType();
+  StateType* state = new StateType();
   state->values = new double[variable_count_];
   return state;
 }
@@ -140,8 +141,8 @@ void ompl_interface::ModelBasedStateSpace::deserialize(ompl::base::State* state,
 unsigned int ompl_interface::ModelBasedStateSpace::getDimension() const
 {
   unsigned int d = 0;
-  for (const robot_model::JointModel* i : joint_model_vector_)
-    d += i->getStateSpaceDimension();
+  for (std::size_t i = 0; i < joint_model_vector_.size(); ++i)
+    d += joint_model_vector_[i]->getStateSpaceDimension();
   return d;
 }
 
@@ -153,11 +154,12 @@ double ompl_interface::ModelBasedStateSpace::getMaximumExtent() const
 double ompl_interface::ModelBasedStateSpace::getMeasure() const
 {
   double m = 1.0;
-  for (const robot_model::JointModel::Bounds* bounds : spec_.joint_bounds_)
+  for (std::size_t i = 0; i < spec_.joint_bounds_.size(); ++i)
   {
-    for (const moveit::core::VariableBounds& bound : *bounds)
+    const robot_model::JointModel::Bounds& bounds = *spec_.joint_bounds_[i];
+    for (std::size_t j = 0; j < bounds.size(); ++j)
     {
-      m *= bound.max_position_ - bound.min_position_;
+      m *= bounds[j].max_position_ - bounds[j].min_position_;
     }
   }
   return m;
@@ -219,7 +221,7 @@ double* ompl_interface::ModelBasedStateSpace::getValueAddressAtIndex(ompl::base:
                                                                      const unsigned int index) const
 {
   if (index >= variable_count_)
-    return nullptr;
+    return NULL;
   return state->as<StateType>()->values + index;
 }
 
@@ -256,20 +258,20 @@ ompl::base::StateSamplerPtr ompl_interface::ModelBasedStateSpace::allocDefaultSt
     {
     }
 
-    void sampleUniform(ompl::base::State* state) override
+    virtual void sampleUniform(ompl::base::State* state)
     {
       joint_model_group_->getVariableRandomPositions(moveit_rng_, state->as<StateType>()->values, *joint_bounds_);
       state->as<StateType>()->clearKnownInformation();
     }
 
-    void sampleUniformNear(ompl::base::State* state, const ompl::base::State* near, const double distance) override
+    virtual void sampleUniformNear(ompl::base::State* state, const ompl::base::State* near, const double distance)
     {
       joint_model_group_->getVariableRandomPositionsNearBy(moveit_rng_, state->as<StateType>()->values, *joint_bounds_,
                                                            near->as<StateType>()->values, distance);
       state->as<StateType>()->clearKnownInformation();
     }
 
-    void sampleGaussian(ompl::base::State* state, const ompl::base::State* mean, const double stdDev) override
+    virtual void sampleGaussian(ompl::base::State* state, const ompl::base::State* mean, const double stdDev)
     {
       sampleUniformNear(state, mean, rng_.gaussian(0.0, stdDev));
     }
@@ -291,11 +293,11 @@ void ompl_interface::ModelBasedStateSpace::printSettings(std::ostream& out) cons
 
 void ompl_interface::ModelBasedStateSpace::printState(const ompl::base::State* state, std::ostream& out) const
 {
-  for (const robot_model::JointModel* j : joint_model_vector_)
+  for (std::size_t j = 0; j < joint_model_vector_.size(); ++j)
   {
-    out << j->getName() << " = ";
-    const int idx = spec_.joint_model_group_->getVariableGroupIndex(j->getName());
-    const int vc = j->getVariableCount();
+    out << joint_model_vector_[j]->getName() << " = ";
+    const int idx = spec_.joint_model_group_->getVariableGroupIndex(joint_model_vector_[j]->getName());
+    const int vc = joint_model_vector_[j]->getVariableCount();
     for (int i = 0; i < vc; ++i)
       out << state->as<StateType>()->values[idx + i] << " ";
     out << std::endl;
