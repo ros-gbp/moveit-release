@@ -1,7 +1,7 @@
 /*********************************************************************
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2008, Willow Garage, Inc.
+ *  Copyright (c) 2018, isys vision, GmbH.
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -32,32 +32,60 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-/* Author: Ioan Sucan */
+/* Author: Simon Schmeisser */
 
-#include <moveit/rviz_plugin_render_tools/planning_link_updater.h>
-#include <OgreQuaternion.h>
-#include <OgreVector3.h>
+#include "moveit/utils/lexical_casts.h"
 
-bool moveit_rviz_plugin::PlanningLinkUpdater::getLinkTransforms(const std::string& link_name,
-                                                                Ogre::Vector3& visual_position,
-                                                                Ogre::Quaternion& visual_orientation,
-                                                                Ogre::Vector3& collision_position,
-                                                                Ogre::Quaternion& collision_orientation) const
+#include <locale>
+#include <sstream>
+
+namespace moveit
 {
-  const robot_model::LinkModel* link_model = kinematic_state_->getLinkModel(link_name);
+namespace core
+{
+template <class InType>
+std::string toStringImpl(InType t)
+{
+  // convert to string using no locale
+  std::ostringstream oss;
+  oss.imbue(std::locale::classic());
+  oss << t;
+  return oss.str();
+}
 
-  if (!link_model)
+std::string toString(double d)
+{
+  return toStringImpl(d);
+}
+
+std::string toString(float f)
+{
+  return toStringImpl(f);
+}
+
+template <class OutType>
+OutType toRealImpl(const std::string& s)
+{
+  // convert from string using no locale
+  std::istringstream stream(s);
+  stream.imbue(std::locale::classic());
+  OutType result;
+  stream >> result;
+  if (stream.fail() || !stream.eof())
   {
-    return false;
+    throw std::runtime_error("Failed converting string to real number");
   }
+  return result;
+}
 
-  const Eigen::Vector3d& robot_visual_position = kinematic_state_->getGlobalLinkTransform(link_model).translation();
-  Eigen::Quaterniond robot_visual_orientation(kinematic_state_->getGlobalLinkTransform(link_model).linear());
-  visual_position = Ogre::Vector3(robot_visual_position.x(), robot_visual_position.y(), robot_visual_position.z());
-  visual_orientation = Ogre::Quaternion(robot_visual_orientation.w(), robot_visual_orientation.x(),
-                                        robot_visual_orientation.y(), robot_visual_orientation.z());
-  collision_position = visual_position;
-  collision_orientation = visual_orientation;
+double toDouble(const std::string& s)
+{
+  return toRealImpl<double>(s);
+}
 
-  return true;
+float toFloat(const std::string& s)
+{
+  return toRealImpl<float>(s);
+}
+}
 }
