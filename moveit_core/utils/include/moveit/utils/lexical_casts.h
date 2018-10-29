@@ -1,7 +1,7 @@
 /*********************************************************************
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2008, Willow Garage, Inc.
+ *  Copyright (c) 2018, isys vision, GmbH.
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -32,32 +32,41 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-/* Author: Ioan Sucan */
+/* Author: Simon Schmeisser */
 
-#include <moveit/rviz_plugin_render_tools/planning_link_updater.h>
-#include <OgreQuaternion.h>
-#include <OgreVector3.h>
+#ifndef MOVEIT_CORE_UTILS_LEXICAL_CASTS_
+#define MOVEIT_CORE_UTILS_LEXICAL_CASTS_
 
-bool moveit_rviz_plugin::PlanningLinkUpdater::getLinkTransforms(const std::string& link_name,
-                                                                Ogre::Vector3& visual_position,
-                                                                Ogre::Quaternion& visual_orientation,
-                                                                Ogre::Vector3& collision_position,
-                                                                Ogre::Quaternion& collision_orientation) const
+/** \file lexical_casts.h
+ *  \brief locale-agnostic conversion functions from floating point numbers to strings
+ *
+ *  Depending on the system locale, a different decimal seperator might be used
+ *  for floating point numbers. This is often not wanted for internal (ie non-user
+ *  facing) purposes. This module provides conversion functions that use std::locale::classic()
+ *  (i.e. the default if no locale is set on the system).
+ */
+
+#include <string>
+namespace moveit
 {
-  const robot_model::LinkModel* link_model = kinematic_state_->getLinkModel(link_name);
+namespace core
+{
+/** \brief Convert a double to std::string using the classic C locale */
+std::string toString(double d);
 
-  if (!link_model)
-  {
-    return false;
-  }
+/** \brief Convert a float to std::string using the classic C locale */
+std::string toString(float f);
 
-  const Eigen::Vector3d& robot_visual_position = kinematic_state_->getGlobalLinkTransform(link_model).translation();
-  Eigen::Quaterniond robot_visual_orientation(kinematic_state_->getGlobalLinkTransform(link_model).linear());
-  visual_position = Ogre::Vector3(robot_visual_position.x(), robot_visual_position.y(), robot_visual_position.z());
-  visual_orientation = Ogre::Quaternion(robot_visual_orientation.w(), robot_visual_orientation.x(),
-                                        robot_visual_orientation.y(), robot_visual_orientation.z());
-  collision_position = visual_position;
-  collision_orientation = visual_orientation;
+/** \brief Converts a std::string to double using the classic C locale
+ \throws std::runtime_exception if not a valid number
+*/
+double toDouble(const std::string& s);
 
-  return true;
+/** \brief Converts a std::string to float using the classic C locale
+ \throws std::runtime_exception if not a valid number
+*/
+float toFloat(const std::string& s);
 }
+}
+
+#endif
