@@ -59,8 +59,6 @@
 #include <OgreSceneNode.h>
 #include <rviz/ogre_helpers/shape.h>
 
-#include <tf/transform_listener.h>
-
 #include <moveit/robot_state/conversions.h>
 #include <moveit/trajectory_processing/trajectory_tools.h>
 
@@ -328,7 +326,7 @@ void MotionPlanningDisplay::updateBackgroundJobProgressBar()
   if (!frame_)
     return;
   QProgressBar* p = frame_->ui_->background_job_progress;
-  std::size_t n = background_process_.getJobCount();
+  int n = background_process_.getJobCount();
 
   if (n == 0)
   {
@@ -1090,7 +1088,7 @@ void MotionPlanningDisplay::setQueryStateHelper(bool use_start_state, const std:
   use_start_state ? setQueryStartState(state) : setQueryGoalState(state);
 }
 
-void MotionPlanningDisplay::populateMenuHandler(boost::shared_ptr<interactive_markers::MenuHandler>& mh)
+void MotionPlanningDisplay::populateMenuHandler(std::shared_ptr<interactive_markers::MenuHandler>& mh)
 {
   typedef interactive_markers::MenuHandler immh;
   std::vector<std::string> state_names;
@@ -1105,7 +1103,7 @@ void MotionPlanningDisplay::populateMenuHandler(boost::shared_ptr<interactive_ma
   // Commands for changing the state
   immh::EntryHandle menu_states =
       mh->insert(is_start ? "Set start state to" : "Set goal state to", immh::FeedbackCallback());
-  for (int i = 0; i < state_names.size(); ++i)
+  for (std::size_t i = 0; i < state_names.size(); ++i)
   {
     // Don't add "same as start" to the start state handler, and vice versa.
     if ((state_names[i] == "same as start" && is_start) || (state_names[i] == "same as goal" && !is_start))
@@ -1237,10 +1235,12 @@ void MotionPlanningDisplay::onEnable()
 
   query_robot_start_->setVisible(query_start_state_property_->getBool());
   query_robot_goal_->setVisible(query_goal_state_property_->getBool());
-  frame_->enable();
 
   int_marker_display_->setEnabled(true);
   int_marker_display_->setFixedFrame(fixed_frame_);
+
+  if (frame_ && frame_->parentWidget())
+    frame_->parentWidget()->show();
 }
 
 // ******************************************************************************************
@@ -1254,13 +1254,15 @@ void MotionPlanningDisplay::onDisable()
 
   query_robot_start_->setVisible(false);
   query_robot_goal_->setVisible(false);
-  frame_->disable();
   text_to_display_->setVisible(false);
 
   PlanningSceneDisplay::onDisable();
 
   // Planned Path Display
   trajectory_visual_->onDisable();
+
+  if (frame_ && frame_->parentWidget())
+    frame_->parentWidget()->hide();
 }
 
 // ******************************************************************************************
@@ -1315,6 +1317,20 @@ void MotionPlanningDisplay::load(const rviz::Config& config)
     bool b;
     if (config.mapGetBool("MoveIt_Use_Constraint_Aware_IK", &b))
       frame_->ui_->collision_aware_ik->setChecked(b);
+    if (config.mapGetBool("MoveIt_Allow_Approximate_IK", &b))
+      frame_->ui_->approximate_ik->setChecked(b);
+    if (config.mapGetBool("MoveIt_Allow_External_Program", &b))
+      frame_->ui_->allow_external_program->setChecked(b);
+    if (config.mapGetBool("MoveIt_Allow_Replanning", &b))
+      frame_->ui_->allow_replanning->setChecked(b);
+    if (config.mapGetBool("MoveIt_Allow_Sensor_Positioning", &b))
+      frame_->ui_->allow_looking->setChecked(b);
+
+    float v;
+    if (config.mapGetFloat("Velocity_Scaling_Factor", &v))
+      frame_->ui_->velocity_scaling_factor->setValue(v);
+    if (config.mapGetFloat("Acceleration_Scaling_Factor", &v))
+      frame_->ui_->acceleration_scaling_factor->setValue(v);
 
     rviz::Config workspace = config.mapGetChild("MoveIt_Workspace");
     rviz::Config ws_center = workspace.mapGetChild("Center");
@@ -1358,10 +1374,20 @@ void MotionPlanningDisplay::save(rviz::Config config) const
   {
     config.mapSetValue("MoveIt_Warehouse_Host", frame_->ui_->database_host->text());
     config.mapSetValue("MoveIt_Warehouse_Port", frame_->ui_->database_port->value());
+
+    config.mapSetValue("MoveIt_Goal_Tolerance", frame_->ui_->goal_tolerance->value());
+
+    // "Options" Section
     config.mapSetValue("MoveIt_Planning_Time", frame_->ui_->planning_time->value());
     config.mapSetValue("MoveIt_Planning_Attempts", frame_->ui_->planning_attempts->value());
-    config.mapSetValue("MoveIt_Goal_Tolerance", frame_->ui_->goal_tolerance->value());
+    config.mapSetValue("Velocity_Scaling_Factor", frame_->ui_->velocity_scaling_factor->value());
+    config.mapSetValue("Acceleration_Scaling_Factor", frame_->ui_->acceleration_scaling_factor->value());
+
+    config.mapSetValue("MoveIt_Allow_Replanning", frame_->ui_->allow_replanning->isChecked());
+    config.mapSetValue("MoveIt_Allow_Sensor_Positioning", frame_->ui_->allow_looking->isChecked());
+    config.mapSetValue("MoveIt_Allow_External_Program", frame_->ui_->allow_external_program->isChecked());
     config.mapSetValue("MoveIt_Use_Constraint_Aware_IK", frame_->ui_->collision_aware_ik->isChecked());
+    config.mapSetValue("MoveIt_Allow_Approximate_IK", frame_->ui_->approximate_ik->isChecked());
 
     rviz::Config workspace = config.mapMakeChild("MoveIt_Workspace");
     rviz::Config ws_center = workspace.mapMakeChild("Center");

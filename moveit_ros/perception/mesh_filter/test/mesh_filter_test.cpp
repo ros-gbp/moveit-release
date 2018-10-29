@@ -65,7 +65,7 @@ class FilterTraits<unsigned short>
 {
 public:
   static const GLushort FILTER_GL_TYPE = GL_UNSIGNED_SHORT;
-  static const double ToMetricScale = 0.001;
+  static constexpr double ToMetricScale = 0.001;
 };
 
 template <>
@@ -73,7 +73,7 @@ class FilterTraits<float>
 {
 public:
   static const GLushort FILTER_GL_TYPE = GL_FLOAT;
-  static const double ToMetricScale = 1.0f;
+  static constexpr double ToMetricScale = 1.0f;
 };
 
 template <typename Type>
@@ -319,7 +319,5 @@ INSTANTIATE_TEST_CASE_P(ushort_test, MeshFilterTestUnsignedShort, ::testing::Ran
 int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);
-  int arg;
-
   return RUN_ALL_TESTS();
 }

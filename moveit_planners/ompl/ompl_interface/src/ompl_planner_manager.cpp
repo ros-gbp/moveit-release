@@ -39,7 +39,7 @@
 #include <moveit/planning_scene/planning_scene.h>
 #include <moveit/robot_state/conversions.h>
 #include <moveit/profiler/profiler.h>
-#include <class_loader/class_loader.h>
+#include <class_loader/class_loader.hpp>
 
 #include <dynamic_reconfigure/server.h>
 #include "moveit_planners_ompl/OMPLDynamicReconfigureConfig.h"
@@ -47,18 +47,62 @@
 #include <moveit_msgs/DisplayRobotState.h>
 #include <moveit_msgs/DisplayTrajectory.h>
 
+#include <ompl/util/Console.h>
+
+#include <thread>
+#include <memory>
+
 namespace ompl_interface
 {
 using namespace moveit_planners_ompl;
 
+#define OMPL_ROS_LOG(ros_log_level)                                                                                    \
+  {                                                                                                                    \
+    ROSCONSOLE_DEFINE_LOCATION(true, ros_log_level, ROSCONSOLE_NAME_PREFIX ".ompl");                                   \
+    if (ROS_UNLIKELY(__rosconsole_define_location__enabled))                                                           \
+      ::ros::console::print(0, __rosconsole_define_location__loc.logger_, __rosconsole_define_location__loc.level_,    \
+                            filename, line, __ROSCONSOLE_FUNCTION__, "%s", text.c_str());                              \
+  }
+
 class OMPLPlannerManager : public planning_interface::PlannerManager
 {
 public:
-  OMPLPlannerManager() : planning_interface::PlannerManager(), nh_("~"), display_random_valid_states_(false)
+  OMPLPlannerManager() : planning_interface::PlannerManager(), nh_("~")
   {
+    class OutputHandler : public ompl::msg::OutputHandler
+    {
+    public:
+      void log(const std::string& text, ompl::msg::LogLevel level, const char* filename, int line) override
+      {
+        switch (level)
+        {
+          case ompl::msg::LOG_DEV2:
+          case ompl::msg::LOG_DEV1:
+          case ompl::msg::LOG_DEBUG:
+            OMPL_ROS_LOG(::ros::console::levels::Debug);
+            break;
+          case ompl::msg::LOG_INFO:
+            OMPL_ROS_LOG(::ros::console::levels::Info);
+            break;
+          case ompl::msg::LOG_WARN:
+            OMPL_ROS_LOG(::ros::console::levels::Warn);
+            break;
+          case ompl::msg::LOG_ERROR:
+            OMPL_ROS_LOG(::ros::console::levels::Error);
+            break;
+          case ompl::msg::LOG_NONE:
+          default:
+            /* ignore */
+            break;
+        }
+      }
+    };
+
+    output_handler_.reset(new OutputHandler());
+    ompl::msg::useOutputHandler(output_handler_.get());
   }
 
-  virtual bool initialize(const robot_model::RobotModelConstPtr& model, const std::string& ns)
+  bool initialize(const robot_model::RobotModelConstPtr& model, const std::string& ns) override
   {
     if (!ns.empty())
       nh_ = ros::NodeHandle(ns);
@@ -67,31 +111,31 @@ public:
     dynamic_reconfigure_server_.reset(
         new dynamic_reconfigure::Server<OMPLDynamicReconfigureConfig>(ros::NodeHandle(nh_, ompl_ns)));
     dynamic_reconfigure_server_->setCallback(
-        boost::bind(&OMPLPlannerManager::dynamicReconfigureCallback, this, _1, _2));
+        std::bind(&OMPLPlannerManager::dynamicReconfigureCallback, this, std::placeholders::_1, std::placeholders::_2));
     config_settings_ = ompl_interface_->getPlannerConfigurations();
     return true;
   }
 
-  virtual bool canServiceRequest(const moveit_msgs::MotionPlanRequest& req) const
+  bool canServiceRequest(const moveit_msgs::MotionPlanRequest& req) const override
   {
     return req.trajectory_constraints.constraints.empty();
   }
 
-  virtual std::string getDescription() const
+  std::string getDescription() const override
   {
     return "OMPL";
   }
 
-  virtual void getPlanningAlgorithms(std::vector<std::string>& algs) const
+  void getPlanningAlgorithms(std::vector<std::string>& algs) const override
   {
     const planning_interface::PlannerConfigurationMap& pconfig = ompl_interface_->getPlannerConfigurations();
     algs.clear();
     algs.reserve(pconfig.size());
-    for (planning_interface::PlannerConfigurationMap::const_iterator it = pconfig.begin(); it != pconfig.end(); ++it)
-      algs.push_back(it->first);
+    for (const std::pair<std::string, planning_interface::PlannerConfigurationSettings>& config : pconfig)
+      algs.push_back(config.first);
   }
 
-  virtual void setPlannerConfigurations(const planning_interface::PlannerConfigurationMap& pconfig)
+  void setPlannerConfigurations(const planning_interface::PlannerConfigurationMap& pconfig) override
   {
     // this call can add a few more configs than we pass in (adds defaults)
     ompl_interface_->setPlannerConfigurations(pconfig);
@@ -99,9 +143,9 @@ public:
     PlannerManager::setPlannerConfigurations(ompl_interface_->getPlannerConfigurations());
   }
 
-  virtual planning_interface::PlanningContextPtr
-  getPlanningContext(const planning_scene::PlanningSceneConstPtr& planning_scene,
-                     const planning_interface::MotionPlanRequest& req, moveit_msgs::MoveItErrorCodes& error_code) const
+  planning_interface::PlanningContextPtr getPlanningContext(const planning_scene::PlanningSceneConstPtr& planning_scene,
+                                                            const planning_interface::MotionPlanRequest& req,
+                                                            moveit_msgs::MoveItErrorCodes& error_code) const override
   {
     return ompl_interface_->getPlanningContext(planning_scene, req, error_code);
   }
@@ -255,16 +299,17 @@ private:
   }
 
   ros::NodeHandle nh_;
-  boost::scoped_ptr<dynamic_reconfigure::Server<OMPLDynamicReconfigureConfig> > dynamic_reconfigure_server_;
-  boost::scoped_ptr<OMPLInterface> ompl_interface_;
-  boost::scoped_ptr<boost::thread> pub_valid_states_thread_;
-  bool display_random_valid_states_;
+  std::unique_ptr<dynamic_reconfigure::Server<OMPLDynamicReconfigureConfig>> dynamic_reconfigure_server_;
+  std::unique_ptr<OMPLInterface> ompl_interface_;
+  std::unique_ptr<std::thread> pub_valid_states_thread_;
+  bool display_random_valid_states_{ false };
   ros::Publisher pub_markers_;
   ros::Publisher pub_valid_states_;
   ros::Publisher pub_valid_traj_;
   std::string planner_data_link_name_;
+  std::shared_ptr<ompl::msg::OutputHandler> output_handler_;
 };
 
-}  // ompl_interface
+}  // namespace ompl_interface
 
 CLASS_LOADER_REGISTER_CLASS(ompl_interface::OMPLPlannerManager, planning_interface::PlannerManager);

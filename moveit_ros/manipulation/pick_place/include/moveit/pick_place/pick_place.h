@@ -45,7 +45,7 @@
 #include <moveit_msgs/PickupAction.h>
 #include <moveit_msgs/PlaceAction.h>
 #include <boost/noncopyable.hpp>
-#include <boost/enable_shared_from_this.hpp>
+#include <memory>
 
 namespace pick_place
 {
@@ -69,6 +69,11 @@ public:
   const moveit_msgs::MoveItErrorCodes& getErrorCode() const
   {
     return error_code_;
+  }
+
+  double getLastPlanTime() const
+  {
+    return last_plan_time_;
   }
 
 protected:
@@ -106,7 +111,7 @@ public:
   bool plan(const planning_scene::PlanningSceneConstPtr& planning_scene, const moveit_msgs::PlaceGoal& goal);
 };
 
-class PickPlace : private boost::noncopyable, public boost::enable_shared_from_this<PickPlace>
+class PickPlace : private boost::noncopyable, public std::enable_shared_from_this<PickPlace>
 {
 public:
   static const std::string DISPLAY_PATH_TOPIC;

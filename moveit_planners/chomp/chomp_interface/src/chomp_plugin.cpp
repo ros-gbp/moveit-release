@@ -38,9 +38,7 @@
 #include <moveit_msgs/GetMotionPlan.h>
 #include <chomp_interface/chomp_planning_context.h>
 
-#include <boost/shared_ptr.hpp>
-
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
 
 namespace chomp_interface
 {
@@ -56,7 +54,7 @@ public:
     // model->printModelInfo(std::cout);
     std::vector<std::string> groups = model->getJointModelGroupNames();
     ROS_INFO_STREAM("Following groups exist:");
-    for (int i = 0; i < groups.size(); i++)
+    for (std::size_t i = 0; i < groups.size(); i++)
     {
       ROS_INFO("%s", groups[i].c_str());
       planning_contexts_[groups[i]] =

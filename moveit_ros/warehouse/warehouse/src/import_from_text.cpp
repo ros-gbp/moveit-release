@@ -40,7 +40,7 @@
 #include <moveit/planning_scene_monitor/planning_scene_monitor.h>
 #include <moveit/kinematic_constraints/utils.h>
 #include <moveit/robot_state/conversions.h>
-#include <eigen_conversions/eigen_msg.h>
+#include <tf2_eigen/tf2_eigen.h>
 #include <boost/program_options/cmdline.hpp>
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/parsers.hpp>
@@ -141,7 +141,7 @@ void parseLinkConstraint(std::istream& in, planning_scene_monitor::PlanningScene
   if (have_position && have_orientation)
   {
     geometry_msgs::PoseStamped pose;
-    tf::poseEigenToMsg(pos * rot, pose.pose);
+    pose.pose = tf2::toMsg(pos * rot);
     pose.header.frame_id = psm->getRobotModel()->getModelFrame();
     moveit_msgs::Constraints constr = kinematic_constraints::constructGoalConstraints(link_name, pose);
     constr.name = name;
@@ -209,7 +209,7 @@ int main(int argc, char** argv)
                                                   "Name of file containing motion planning queries.")(
       "scene", boost::program_options::value<std::string>(), "Name of file containing motion planning scene.")(
       "host", boost::program_options::value<std::string>(),
-      "Host for the MongoDB.")("port", boost::program_options::value<std::size_t>(), "Port for the MongoDB.");
+      "Host for the DB.")("port", boost::program_options::value<std::size_t>(), "Port for the DB.");
 
   boost::program_options::variables_map vm;
   boost::program_options::store(boost::program_options::parse_command_line(argc, argv, desc), vm);
@@ -220,6 +220,12 @@ int main(int argc, char** argv)
     std::cout << desc << std::endl;
     return 1;
   }
+  // Set up db
+  warehouse_ros::DatabaseConnection::Ptr conn = moveit_warehouse::loadDatabase();
+  if (vm.count("host") && vm.count("port"))
+    conn->setParams(vm["host"].as<std::string>(), vm["port"].as<std::size_t>());
+  if (!conn->connect())
+    return 1;
 
   ros::AsyncSpinner spinner(1);
   spinner.start();
@@ -232,12 +238,9 @@ int main(int argc, char** argv)
     return 1;
   }
 
-  moveit_warehouse::PlanningSceneStorage pss(vm.count("host") ? vm["host"].as<std::string>() : "",
-                                             vm.count("port") ? vm["port"].as<std::size_t>() : 0);
-  moveit_warehouse::ConstraintsStorage cs(vm.count("host") ? vm["host"].as<std::string>() : "",
-                                          vm.count("port") ? vm["port"].as<std::size_t>() : 0);
-  moveit_warehouse::RobotStateStorage rs(vm.count("host") ? vm["host"].as<std::string>() : "",
-                                         vm.count("port") ? vm["port"].as<std::size_t>() : 0);
+  moveit_warehouse::PlanningSceneStorage pss(conn);
+  moveit_warehouse::ConstraintsStorage cs(conn);
+  moveit_warehouse::RobotStateStorage rs(conn);
 
   if (vm.count("scene"))
   {

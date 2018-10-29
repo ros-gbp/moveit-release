@@ -1,50 +1,95 @@
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Changelog for package moveit_planners_chomp
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Changelog for package chomp_interface
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.7.14 (2018-10-20)
+0.10.3 (2018-10-29)
+-------------------
+* [fix] Build regression (`#1134 <https://github.com/ros-planning/moveit/issues/1134>`_)
+* [fix] compiler warnings (`#1089 <https://github.com/ros-planning/moveit/issues/1089>`_)
+* Contributors: Robert Haschke
+
+0.10.2 (2018-10-24)
+-------------------
+* [fix] chomp tests: fix order of moveit includes (`#970 <https://github.com/ros-planning/moveit/issues/970>`_)
+* [fix] needs to depend on cmake_modules. (`#976 <https://github.com/ros-planning/moveit/issues/976>`_)
+* [capability][chomp] Failure recovery options for CHOMP by tweaking parameters (`#987 <https://github.com/ros-planning/moveit/issues/987>`_)
+* [capability][chomp] cleanup of unused parameters and code + addition of trajectory initialization methods (linear, cubic, quintic-spline) (`#960 <https://github.com/ros-planning/moveit/issues/960>`_)
+* [maintenance] various compiler warnings (`#1038 <https://github.com/ros-planning/moveit/issues/1038>`_)
+* [maintenance] add minimum required pluginlib version (`#927 <https://github.com/ros-planning/moveit/issues/927>`_)
+* Contributors: Chris Lalancette, Michael Görner, Mikael Arguedas, Raghavender Sahdev, Robert Haschke
+
+0.10.1 (2018-05-25)
+-------------------
+* [fix] dependencies for chomp interface test (`#778 <https://github.com/ros-planning/moveit/issues/778>`_)
+* [maintenance] MoveIt! tf2 migration (`#830 <https://github.com/ros-planning/moveit/issues/830>`_)
+* Contributors: Bence Magyar, Dave Coleman, Ian McMahon, Mikael Arguedas, Robert Haschke, Stephan, Will Baker
+
+0.9.11 (2017-12-25)
 -------------------
 
-0.7.13 (2017-12-25)
+0.9.10 (2017-12-09)
 -------------------
-
-0.7.12 (2017-08-06)
--------------------
-
-0.7.11 (2017-06-21)
--------------------
-
-0.7.10 (2017-06-07)
--------------------
-
-0.7.9 (2017-04-03)
-------------------
-
-0.7.8 (2017-03-08)
-------------------
-
-0.7.7 (2017-02-06)
-------------------
-* [maintenance] clang-format upgraded to 3.8 (`#404 <https://github.com/ros-planning/moveit/issues/404>`_)
-* Contributors: Dave Coleman
-
-0.7.6 (2016-12-30)
-------------------
-
-0.7.5 (2016-12-25)
-------------------
-
-0.7.4 (2016-12-22)
-------------------
-* [indigo][changelog] Remove wrong version entries (see https://github.com/ros-planning/moveit/issues/386#issuecomment-268689110).
+* [package.xml] Update maintainers (Add a release-maintainer etc.)
+  For the reasoning, see https://github.com/ros-planning/moveit/issues/259
 * Contributors: Isaac I.Y. Saito
 
-0.7.3 (2016-12-20)
+0.9.9 (2017-08-06)
 ------------------
-* [ROS Indigo] Initial release from `ros-planning/moveit <https://github.com/ros-planning/moveit>`_ repository.
-* [fix] CHOMP planner and CollisionDistanceField (`#155 <https://github.com/ros-planning/moveit/issues/155>`_)
-* [maintenance] Rename chomp_interface to moveit_planners_chomp (`#306 <https://github.com/ros-planning/moveit/issues/306>`_) (`#326 <https://github.com/ros-planning/moveit/issues/326>`_)
-* [maintenance] add full VERSIONs / SONAMEs to all libraries (`#273 <https://github.com/ros-planning/moveit/issues/273>`_)
-* [maintenance] Auto code formatted Indigo branch using clang-format (`#313 <https://github.com/ros-planning/moveit/issues/313>`_)
-* [maintenance] change find_package Eigen3 to 'Eigen 3' in chomp_interface (`#310 <https://github.com/ros-planning/moveit/issues/310>`_)
-* Contributors: Chittaranjan Srinivas Swaminathan, Dave Coleman, Michael Goerner, Mirs King
+* [improve] Chomp use PlanningScene (`#546 <https://github.com/ros-planning/moveit/issues/546>`_) to partially address `#305 <https://github.com/ros-planning/moveit/issues/305>`_
+* Contributors: Simon Schmeisser
+
+0.9.8 (2017-06-21)
+------------------
+
+0.9.7 (2017-06-05)
+------------------
+
+0.9.6 (2017-04-12)
+------------------
+
+0.9.5 (2017-03-08)
+------------------
+
+0.9.4 (2017-02-06)
+------------------
+* [maintenance] clang-format upgraded to 3.8 (`#367 <https://github.com/ros-planning/moveit/issues/367>`_)
+* Contributors: Dave Coleman
+
+0.9.3 (2016-11-16)
+------------------
+* Merge pull request `#330 <https://github.com/ros-planning/moveit/issues/330>`_ from davetcoleman/kinetic-package.xml
+  Updated package.xml maintainers and author emails
+* Updated package.xml maintainers and author emails
+* Contributors: Dave Coleman, Ian McMahon
+
+0.9.2 (2016-11-05)
+------------------
+
+0.9.0 (2016-10-19)
+------------------
+* Replace broken Eigen3 with correctly spelled EIGEN3 (`#254 <https://github.com/ros-planning/moveit/issues/254>`_)
+  * Fix Eigen3 dependency throughout packages
+  * Eigen 3.2 does not provide EIGEN3_INCLUDE_DIRS, only EIGEN3_INCLUDE_DIR
+* Use shared_ptr typedefs in collision_distance_field and chomp.
+* Fix CHOMP planner and CollisionDistanceField (`#155 <https://github.com/ros-planning/moveit/issues/155>`_)
+  * Copy collision_distance_field package
+  * Resurrect chomp
+  * remove some old Makefiles and manifests
+  * Correct various errors
+  * Code formatting, author, description, version, etc
+  * Add definitions for c++11. Nested templates problem.
+  * Add name to planner plugin.
+  * Change getJointModels to getActiveJointModels.
+  * Call robot_state::RobotState::update in setRobotStateFromPoint.
+  * Create README.md
+  * Improve package.xml, CMake config and other changes suggested by jrgnicho.
+  * Remove some commented code, add scaling factors to computeTimeStampes
+  * Add install targets in moveit_experimental and chomp
+  * Add install target for headers in chomp pkgs.
+  * Remove unnecessary debugging ROS_INFO.
+  * Port collision_distance_field test to indigo.
+  * Remove one assertion that makes collision_distance_field test to fail.
+* Contributors: Chittaranjan Srinivas Swaminathan, Dave Coleman, Maarten de Vries
+
+0.8.3 (2016-08-21)
+------------------

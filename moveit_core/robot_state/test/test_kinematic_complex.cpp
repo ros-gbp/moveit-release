@@ -41,13 +41,14 @@
 #include <fstream>
 #include <gtest/gtest.h>
 #include <boost/filesystem/path.hpp>
+#include <geometric_shapes/shapes.h>
 #include <moveit/profiler/profiler.h>
 #include <moveit_resources/config.h>
 
 class LoadPlanningModelsPr2 : public testing::Test
 {
 protected:
-  virtual void SetUp()
+  void SetUp() override
   {
     boost::filesystem::path res_path(MOVEIT_TEST_RESOURCES_DIR);
 
@@ -69,13 +70,13 @@ protected:
     robot_model.reset(new moveit::core::RobotModel(urdf_model, srdf_model));
   };
 
-  virtual void TearDown()
+  void TearDown() override
   {
   }
 
 protected:
-  boost::shared_ptr<urdf::ModelInterface> urdf_model;
-  boost::shared_ptr<srdf::Model> srdf_model;
+  urdf::ModelInterfaceSharedPtr urdf_model;
+  srdf::ModelSharedPtr srdf_model;
   moveit::core::RobotModelConstPtr robot_model;
 };
 
@@ -87,7 +88,7 @@ TEST_F(LoadPlanningModelsPr2, InitOK)
 
 TEST_F(LoadPlanningModelsPr2, ModelInit)
 {
-  boost::shared_ptr<srdf::Model> srdfModel(new srdf::Model());
+  srdf::ModelSharedPtr srdfModel(new srdf::Model());
 
   // with no world multidof we should get a fixed joint
   moveit::core::RobotModel robot_model0(urdf_model, srdfModel);
@@ -101,8 +102,8 @@ TEST_F(LoadPlanningModelsPr2, ModelInit)
   srdfModel->initString(*urdf_model, SMODEL1);
 
   moveit::core::RobotModel robot_model1(urdf_model, srdfModel);
-  ASSERT_TRUE(robot_model1.getRootJoint() != NULL);
-  EXPECT_EQ(robot_model1.getModelFrame(), "/base_footprint");
+  ASSERT_TRUE(robot_model1.getRootJoint() != nullptr);
+  EXPECT_EQ(robot_model1.getModelFrame(), "base_footprint");
 
   static const std::string SMODEL2 = "<?xml version=\"1.0\" ?>"
                                      "<robot name=\"pr2\">"
@@ -112,8 +113,8 @@ TEST_F(LoadPlanningModelsPr2, ModelInit)
   srdfModel->initString(*urdf_model, SMODEL2);
 
   moveit::core::RobotModel robot_model2(urdf_model, srdfModel);
-  ASSERT_TRUE(robot_model2.getRootJoint() != NULL);
-  EXPECT_EQ(robot_model2.getModelFrame(), "/odom_combined");
+  ASSERT_TRUE(robot_model2.getRootJoint() != nullptr);
+  EXPECT_EQ(robot_model2.getModelFrame(), "odom_combined");
 }
 
 TEST_F(LoadPlanningModelsPr2, GroupInit)
@@ -131,15 +132,15 @@ TEST_F(LoadPlanningModelsPr2, GroupInit)
                                      "</group>"
                                      "</robot>";
 
-  boost::shared_ptr<srdf::Model> srdfModel(new srdf::Model());
+  srdf::ModelSharedPtr srdfModel(new srdf::Model());
   srdfModel->initString(*urdf_model, SMODEL1);
   moveit::core::RobotModel robot_model1(urdf_model, srdfModel);
 
   const moveit::core::JointModelGroup* left_arm_base_tip_group = robot_model1.getJointModelGroup("left_arm_base_tip");
-  ASSERT_TRUE(left_arm_base_tip_group == NULL);
+  ASSERT_TRUE(left_arm_base_tip_group == nullptr);
 
   const moveit::core::JointModelGroup* left_arm_joints_group = robot_model1.getJointModelGroup("left_arm_joints");
-  ASSERT_TRUE(left_arm_joints_group == NULL);
+  ASSERT_TRUE(left_arm_joints_group == nullptr);
 
   static const std::string SMODEL2 = "<?xml version=\"1.0\" ?>"
                                      "<robot name=\"pr2\">"
@@ -163,16 +164,16 @@ TEST_F(LoadPlanningModelsPr2, GroupInit)
   moveit::core::RobotModelPtr robot_model2(new moveit::core::RobotModel(urdf_model, srdfModel));
 
   left_arm_base_tip_group = robot_model2->getJointModelGroup("left_arm_base_tip");
-  ASSERT_TRUE(left_arm_base_tip_group != NULL);
+  ASSERT_TRUE(left_arm_base_tip_group != nullptr);
 
   left_arm_joints_group = robot_model2->getJointModelGroup("left_arm_joints");
-  ASSERT_TRUE(left_arm_joints_group != NULL);
+  ASSERT_TRUE(left_arm_joints_group != nullptr);
 
-  EXPECT_EQ(left_arm_base_tip_group->getJointModels().size(), 9);
-  EXPECT_EQ(left_arm_joints_group->getJointModels().size(), 7);
+  EXPECT_EQ(left_arm_base_tip_group->getJointModels().size(), 9u);
+  EXPECT_EQ(left_arm_joints_group->getJointModels().size(), 7u);
 
   EXPECT_EQ(left_arm_joints_group->getVariableNames().size(), left_arm_joints_group->getVariableCount());
-  EXPECT_EQ(left_arm_joints_group->getVariableCount(), 7);
+  EXPECT_EQ(left_arm_joints_group->getVariableCount(), 7u);
 
   EXPECT_EQ(robot_model2->getVariableNames().size(), robot_model2->getVariableCount());
 
@@ -182,12 +183,12 @@ TEST_F(LoadPlanningModelsPr2, GroupInit)
   {
     if (left_arm_base_tip_group->getLinkModels()[i]->getName() == "l_shoulder_pan_link")
     {
-      EXPECT_TRUE(found_shoulder_pan_link == false);
+      EXPECT_TRUE(!found_shoulder_pan_link);
       found_shoulder_pan_link = true;
     }
     if (left_arm_base_tip_group->getLinkModels()[i]->getName() == "l_wrist_roll_link")
     {
-      EXPECT_TRUE(found_wrist_roll_link == false);
+      EXPECT_TRUE(!found_wrist_roll_link);
       found_wrist_roll_link = true;
     }
     EXPECT_TRUE(left_arm_base_tip_group->getLinkModels()[i]->getName() != "torso_lift_link");
@@ -218,11 +219,11 @@ TEST_F(LoadPlanningModelsPr2, SubgroupInit)
   moveit::core::RobotModel robot_model(urdf_model, srdf_model);
   const moveit::core::JointModelGroup* jmg = robot_model.getJointModelGroup("arms");
   ASSERT_TRUE(jmg);
-  EXPECT_EQ(jmg->getSubgroupNames().size(), 2);
+  EXPECT_EQ(jmg->getSubgroupNames().size(), 2u);
   EXPECT_TRUE(jmg->isSubgroup("right_arm"));
 
   const moveit::core::JointModelGroup* jmg2 = robot_model.getJointModelGroup("whole_body");
-  EXPECT_EQ(jmg2->getSubgroupNames().size(), 5);
+  EXPECT_EQ(jmg2->getSubgroupNames().size(), 5u);
   EXPECT_TRUE(jmg2->isSubgroup("arms"));
   EXPECT_TRUE(jmg2->isSubgroup("right_arm"));
 }
@@ -257,22 +258,22 @@ TEST_F(LoadPlanningModelsPr2, FullTest)
 
   std::vector<const moveit::core::AttachedBody*> attached_bodies_1;
   ks.getAttachedBodies(attached_bodies_1);
-  ASSERT_EQ(attached_bodies_1.size(), 1);
+  ASSERT_EQ(attached_bodies_1.size(), 1u);
 
   std::vector<const moveit::core::AttachedBody*> attached_bodies_2;
   ks2 = ks;
   ks2.getAttachedBodies(attached_bodies_2);
-  ASSERT_EQ(attached_bodies_2.size(), 1);
+  ASSERT_EQ(attached_bodies_2.size(), 1u);
 
   ks.clearAttachedBody("box");
   attached_bodies_1.clear();
   ks.getAttachedBodies(attached_bodies_1);
-  ASSERT_EQ(attached_bodies_1.size(), 0);
+  ASSERT_EQ(attached_bodies_1.size(), 0u);
 
   ks2 = ks;
   attached_bodies_2.clear();
   ks2.getAttachedBodies(attached_bodies_2);
-  ASSERT_EQ(attached_bodies_2.size(), 0);
+  ASSERT_EQ(attached_bodies_2.size(), 0u);
 }
 
 int main(int argc, char** argv)

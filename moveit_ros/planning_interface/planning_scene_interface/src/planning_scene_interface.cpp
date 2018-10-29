@@ -48,8 +48,9 @@ namespace planning_interface
 class PlanningSceneInterface::PlanningSceneInterfaceImpl
 {
 public:
-  PlanningSceneInterfaceImpl()
+  explicit PlanningSceneInterfaceImpl(const std::string& ns = "")
   {
+    node_handle_ = ros::NodeHandle(ns);
     planning_scene_service_ =
         node_handle_.serviceClient<moveit_msgs::GetPlanningScene>(move_group::GET_PLANNING_SCENE_SERVICE_NAME);
     apply_planning_scene_service_ =
@@ -227,10 +228,21 @@ public:
     return response.success;
   }
 
-  void addCollisionObjects(const std::vector<moveit_msgs::CollisionObject>& collision_objects) const
+  void addCollisionObjects(const std::vector<moveit_msgs::CollisionObject>& collision_objects,
+                           const std::vector<moveit_msgs::ObjectColor>& object_colors) const
   {
     moveit_msgs::PlanningScene planning_scene;
     planning_scene.world.collision_objects = collision_objects;
+    planning_scene.object_colors = object_colors;
+
+    for (size_t i = 0; i < planning_scene.object_colors.size(); ++i)
+    {
+      if (planning_scene.object_colors[i].id.empty() && i < collision_objects.size())
+        planning_scene.object_colors[i].id = collision_objects[i].id;
+      else
+        break;
+    }
+
     planning_scene.is_diff = true;
     planning_scene_diff_publisher_.publish(planning_scene);
   }
@@ -257,9 +269,9 @@ private:
   robot_model::RobotModelConstPtr robot_model_;
 };
 
-PlanningSceneInterface::PlanningSceneInterface()
+PlanningSceneInterface::PlanningSceneInterface(const std::string& ns)
 {
-  impl_ = new PlanningSceneInterfaceImpl();
+  impl_ = new PlanningSceneInterfaceImpl(ns);
 }
 
 PlanningSceneInterface::~PlanningSceneInterface()
@@ -308,12 +320,38 @@ bool PlanningSceneInterface::applyCollisionObject(const moveit_msgs::CollisionOb
   return applyPlanningScene(ps);
 }
 
-bool PlanningSceneInterface::applyCollisionObjects(const std::vector<moveit_msgs::CollisionObject>& collision_objects)
+bool PlanningSceneInterface::applyCollisionObject(const moveit_msgs::CollisionObject& collision_object,
+                                                  const std_msgs::ColorRGBA& object_color)
+{
+  moveit_msgs::PlanningScene ps;
+  ps.robot_state.is_diff = true;
+  ps.is_diff = true;
+  ps.world.collision_objects.reserve(1);
+  ps.world.collision_objects.push_back(collision_object);
+  moveit_msgs::ObjectColor oc;
+  oc.id = collision_object.id;
+  oc.color = object_color;
+  ps.object_colors.push_back(oc);
+  return applyPlanningScene(ps);
+}
+
+bool PlanningSceneInterface::applyCollisionObjects(const std::vector<moveit_msgs::CollisionObject>& collision_objects,
+                                                   const std::vector<moveit_msgs::ObjectColor>& object_colors)
 {
   moveit_msgs::PlanningScene ps;
   ps.robot_state.is_diff = true;
   ps.is_diff = true;
   ps.world.collision_objects = collision_objects;
+  ps.object_colors = object_colors;
+
+  for (size_t i = 0; i < ps.object_colors.size(); ++i)
+  {
+    if (ps.object_colors[i].id.empty() && i < collision_objects.size())
+      ps.object_colors[i].id = collision_objects[i].id;
+    else
+      break;
+  }
+
   return applyPlanningScene(ps);
 }
 
@@ -328,29 +366,29 @@ bool PlanningSceneInterface::applyAttachedCollisionObject(const moveit_msgs::Att
 }
 
 bool PlanningSceneInterface::applyAttachedCollisionObjects(
-    const std::vector<moveit_msgs::AttachedCollisionObject>& attached_collision_objects)
+    const std::vector<moveit_msgs::AttachedCollisionObject>& collision_objects)
 {
   moveit_msgs::PlanningScene ps;
   ps.robot_state.is_diff = true;
   ps.is_diff = true;
-  ps.robot_state.attached_collision_objects = attached_collision_objects;
+  ps.robot_state.attached_collision_objects = collision_objects;
   return applyPlanningScene(ps);
 }
 
 bool PlanningSceneInterface::applyPlanningScene(const moveit_msgs::PlanningScene& ps)
 {
-  impl_->applyPlanningScene(ps);
+  return impl_->applyPlanningScene(ps);
 }
 
-void PlanningSceneInterface::addCollisionObjects(
-    const std::vector<moveit_msgs::CollisionObject>& collision_objects) const
+void PlanningSceneInterface::addCollisionObjects(const std::vector<moveit_msgs::CollisionObject>& collision_objects,
+                                                 const std::vector<moveit_msgs::ObjectColor>& object_colors) const
 {
-  return impl_->addCollisionObjects(collision_objects);
+  impl_->addCollisionObjects(collision_objects, object_colors);
 }
 
 void PlanningSceneInterface::removeCollisionObjects(const std::vector<std::string>& object_ids) const
 {
-  return impl_->removeCollisionObjects(object_ids);
+  impl_->removeCollisionObjects(object_ids);
 }
 }
 }

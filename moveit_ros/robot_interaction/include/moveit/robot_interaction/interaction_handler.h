@@ -42,7 +42,7 @@
 //#include <moveit/robot_interaction/robot_interaction.h>
 #include <visualization_msgs/InteractiveMarkerFeedback.h>
 #include <interactive_markers/menu_handler.h>
-#include <tf/tf.h>
+#include <tf2_ros/buffer.h>
 
 namespace robot_interaction
 {
@@ -79,18 +79,18 @@ public:
   // Use this constructor if you have an initial RobotState already.
   InteractionHandler(const RobotInteractionPtr& robot_interaction, const std::string& name,
                      const robot_state::RobotState& initial_robot_state,
-                     const boost::shared_ptr<tf::Transformer>& tf = boost::shared_ptr<tf::Transformer>());
+                     const std::shared_ptr<tf2_ros::Buffer>& tf_buffer = std::shared_ptr<tf2_ros::Buffer>());
 
   // Use this constructor to start with a default state.
   InteractionHandler(const RobotInteractionPtr& robot_interaction, const std::string& name,
-                     const boost::shared_ptr<tf::Transformer>& tf = boost::shared_ptr<tf::Transformer>());
+                     const std::shared_ptr<tf2_ros::Buffer>& tf_buffer = std::shared_ptr<tf2_ros::Buffer>());
 
   // DEPRECATED.
   InteractionHandler(const std::string& name, const robot_state::RobotState& initial_robot_state,
-                     const boost::shared_ptr<tf::Transformer>& tf = boost::shared_ptr<tf::Transformer>());
+                     const std::shared_ptr<tf2_ros::Buffer>& tf_buffer = std::shared_ptr<tf2_ros::Buffer>());
   // DEPRECATED.
   InteractionHandler(const std::string& name, const robot_model::RobotModelConstPtr& model,
-                     const boost::shared_ptr<tf::Transformer>& tf = boost::shared_ptr<tf::Transformer>());
+                     const std::shared_ptr<tf2_ros::Buffer>& tf_buffer = std::shared_ptr<tf2_ros::Buffer>());
 
   virtual ~InteractionHandler()
   {
@@ -151,12 +151,12 @@ public:
   /** \brief Set the menu handler that defines menus and callbacks for all
    *         interactive markers drawn by this interaction handler.
    * @param  A menu handler. */
-  void setMenuHandler(const boost::shared_ptr<interactive_markers::MenuHandler>& mh);
+  void setMenuHandler(const std::shared_ptr<interactive_markers::MenuHandler>& mh);
 
   /** \brief Get the menu handler that defines menus and callbacks for all
    *         interactive markers drawn by this interaction handler.
    * @return  The menu handler. */
-  const boost::shared_ptr<interactive_markers::MenuHandler>& getMenuHandler();
+  const std::shared_ptr<interactive_markers::MenuHandler>& getMenuHandler();
 
   /** \brief Remove the menu handler for this interaction handler. */
   void clearMenuHandler();
@@ -229,7 +229,7 @@ protected:
 
   const std::string name_;
   const std::string planning_frame_;
-  boost::shared_ptr<tf::Transformer> tf_;
+  std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
 
 private:
   typedef boost::function<void(InteractionHandler*)> StateChangeCallbackFn;
@@ -303,7 +303,7 @@ private:
   //
   // PROTECTED BY state_lock_ - The POINTER is protected by state_lock_.  The
   // CONTENTS is not.
-  boost::shared_ptr<interactive_markers::MenuHandler> menu_handler_;
+  std::shared_ptr<interactive_markers::MenuHandler> menu_handler_;
 
   // Called when the RobotState maintained by the handler changes.
   // The caller may, for example, redraw the robot at the new state.
@@ -331,7 +331,7 @@ public:
   void setGroupStateValidityCallback(const robot_state::GroupStateValidityCallbackFn& callback);
   void setIKTimeout(double timeout);
   void setIKAttempts(unsigned int attempts);
-  const kinematics::KinematicsQueryOptions& getKinematicsQueryOptions() const;
+  kinematics::KinematicsQueryOptions getKinematicsQueryOptions() const;
   void setKinematicsQueryOptions(const kinematics::KinematicsQueryOptions& opt);
   void setKinematicsQueryOptionsForGroup(const std::string& group_name,
                                          const kinematics::KinematicsQueryOptions& options);

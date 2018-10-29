@@ -2,90 +2,145 @@
 Changelog for package moveit_ros_visualization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.7.14 (2018-10-20)
+0.10.3 (2018-10-29)
 -------------------
-* [fix] Robot model not shown after MSA `#786 <https://github.com/ros-planning/moveit/issues/786>`_
-* [fix] fix race conditions when updating PlanningScene `#350 <https://github.com/ros-planning/moveit/issues/350>`_
-* Contributors: Michael Görner, Robert Haschke
+* [maintenance] Store more settings of rviz' PlanningFrame (`#1135 <https://github.com/ros-planning/moveit/issues/1135>`_)
+* [maintenance] Lint visualization (`#1144 <https://github.com/ros-planning/moveit/issues/1144>`_)
+* Contributors: Alexander Gutenkunst, Dave Coleman
 
-0.7.13 (2017-12-25)
+0.10.2 (2018-10-24)
+-------------------
+* [fix] build issue in boost/thread/mutex.hpp (`#1055 <https://github.com/ros-planning/moveit/issues/1055>`_)
+* [fix] optional namespace args (`#929 <https://github.com/ros-planning/moveit/issues/929>`_)
+* [maintenance] Python3 support (`#1103 <https://github.com/ros-planning/moveit/issues/1103>`_, `#1054 <https://github.com/ros-planning/moveit/issues/1054>`_)
+* [maintenance] add minimum required pluginlib version (`#927 <https://github.com/ros-planning/moveit/issues/927>`_)
+* Contributors: Michael Görner, Mikael Arguedas, Mohmmad Ayman, Robert Haschke, Timon Engelke, mike lautman
+
+0.10.1 (2018-05-25)
+-------------------
+* [maintenance] migration from tf to tf2 API (`#830 <https://github.com/ros-planning/moveit/issues/830>`_)
+* [feature] rviz plugin: set start/goal RobotState from external (`#823 <https://github.com/ros-planning/moveit/issues/823>`_)
+  - /rviz/moveit/update_custom_start_state
+  - /rviz/moveit/update_custom_goal_state
+  stopping from external:
+  - /rviz/moveit/stop
+* [feature] namespace capabilities for moveit_commander (`#835 <https://github.com/ros-planning/moveit/issues/835>`_)
+* [fix] consider shape transform for OcTree
+* [fix] realtime trajectory display (`#761 <https://github.com/ros-planning/moveit/issues/761>`_)
+* Contributors: Alexander Rössler, Dave Coleman, Ian McMahon, Mikael Arguedas, Pan Hy, Phy, Robert Haschke, Will Baker
+
+0.9.11 (2017-12-25)
+-------------------
+
+0.9.10 (2017-12-09)
 -------------------
 * [fix] don't crash on empty robot_description in RobotState plugin `#688 <https://github.com/ros-planning/moveit/issues/688>`_
 * [fix] RobotState rviz previewer: First message from e.g. latching publishers is not applied to robot state correctly (`#596 <https://github.com/ros-planning/moveit/issues/596>`_)
 * [doc] Document auto scale in Rviz plugin (`#602 <https://github.com/ros-planning/moveit/issues/602>`_)
 * Contributors: Dave Coleman, Isaac I.Y. Saito, Simon Schmeisser, axelschroth
 
-0.7.12 (2017-08-06)
--------------------
+0.9.9 (2017-08-06)
+------------------
 * [fix] RobotStateVisualization: clear before load to avoid segfault `#572 <https://github.com/ros-planning/moveit/pull/572>`_
 * Contributors: v4hn
 
-0.7.11 (2017-06-21)
--------------------
+0.9.8 (2017-06-21)
+------------------
 * [fix] TrajectoryVisualization crash if no window_context exists (`#523 <https://github.com/ros-planning/moveit/issues/523>`_, `#525 <https://github.com/ros-planning/moveit/issues/525>`_)
-* [enhance] rviz display: stop trajectory visualization on new plan. Fixes `#526 <https://github.com/ros-planning/moveit/issues/526>`_ (`#531 <https://github.com/ros-planning/moveit/issues/531>`_, `#510 <https://github.com/ros-planning/moveit/issues/510>`_).
 * [fix] robot display: Don't reload robot model upon topic change (Fixes `#528 <https://github.com/ros-planning/moveit/issues/528>`_)
+* [build] add Qt-moc guards for boost 1.64 compatibility (`#534 <https://github.com/ros-planning/moveit/issues/534>`_)
+* [enhance] rviz display: stop trajectory visualization on new plan. Fixes `#526 <https://github.com/ros-planning/moveit/issues/526>`_ (`#531 <https://github.com/ros-planning/moveit/issues/531>`_, `#510 <https://github.com/ros-planning/moveit/issues/510>`_).
 * Contributors: Isaac I.Y. Saito, Simon Schmeisser, Yannick Jonetzko, henhenhen, v4hn
 
-0.7.10 (2017-06-07)
--------------------
-* [fix] moveit rviz panel name `#482 <https://github.com/ros-planning/moveit/pull/482>`_
-* [fix] Build for Ubuntu YZ by adding BOOST_MATH_DISABLE_FLOAT128 (`#505 <https://github.com/ros-planning/moveit/issues/505>`_)
-* [fix][moveit_ros/visualization] Tentative encoding workaround (https://github.com/ros-infrastructure/catkin_pkg/issues/181).
+
+0.9.7 (2017-06-05)
+------------------
 * [capability] New panel with a slider to control the visualized trajectory (`#491 <https://github.com/ros-planning/moveit/issues/491>`_) (`#508 <https://github.com/ros-planning/moveit/issues/508>`_)
-* Contributors: Dave Coleman, Mikael Arguedas, Isaac I.Y. Saito, Yannick Jonetzko
+* [fix] Build for Ubuntu YZ by adding BOOST_MATH_DISABLE_FLOAT128 (`#505 <https://github.com/ros-planning/moveit/issues/505>`_)
+* Contributors: Dave Coleman, Mikael Arguedas
 
-0.7.9 (2017-04-03)
+0.9.6 (2017-04-12)
 ------------------
-* [fix][moveit_ros_visualization] rviz panel: Don't add object marker if the wrong tab is selected `#454 <https://github.com/ros-planning/moveit/pull/454>`_
-* Contributors: Michael Goerner
+* [fix] RViz plugin some cosmetics and minor refactoring `#482 <https://github.com/ros-planning/moveit/issues/482>`_
+* [fix] rviz panel: Don't add object marker if the wrong tab is selected `#454 <https://github.com/ros-planning/moveit/pull/454>`_
+* [improve] RobotState display [kinetic] (`#465 <https://github.com/ros-planning/moveit/issues/465>`_)
+* Contributors: Jorge Nicho, Michael Goerner, Yannick Jonetzko
 
-0.7.8 (2017-03-08)
+0.9.5 (2017-03-08)
 ------------------
-* [fix] correct "simplify widget handling" `#452 <https://github.com/ros-planning/moveit/pull/452>`_ This reverts "simplify widget handling (`#442 <https://github.com/ros-planning/moveit/issues/442>`_)"
-* [fix][moveit_ros_warehouse] gcc6 build error `#423 <https://github.com/ros-planning/moveit/pull/423>`_
-* Contributors: Dmitry Rozhkov, Yannick Jonetzko
+* [fix] correct "simplify widget handling" `#452 <https://github.com/ros-planning/moveit/pull/452>`_ This reverts "simplify widget handling (`#442 <https://github.com/ros-planning/moveit/issues/442>`_)" 
+* [fix][moveit_ros_warehouse] gcc6 build error `#423 <https://github.com/ros-planning/moveit/pull/423>`_ 
+* [enhancement] Remove "catch (...)" instances, catch std::exception instead of std::runtime_error (`#445 <https://github.com/ros-planning/moveit/issues/445>`_)
+* Contributors: Bence Magyar, Dave Coleman, Isaac I.Y. Saito, Yannick Jonetzko
 
-0.7.7 (2017-02-06)
+0.9.4 (2017-02-06)
 ------------------
-* clang-format upgraded to 3.8 (`#404 <https://github.com/ros-planning/moveit/issues/404>`_)
+* [fix] race conditions when updating PlanningScene (`#350 <https://github.com/ros-planning/moveit/issues/350>`_)
+* [enhancement] Add colours to trajectory_visualisation display (`#362 <https://github.com/ros-planning/moveit/issues/362>`_)
+* [maintenance] clang-format upgraded to 3.8 (`#367 <https://github.com/ros-planning/moveit/issues/367>`_)
+* Contributors: Bence Magyar, Dave Coleman, Robert Haschke
+
+0.9.3 (2016-11-16)
+------------------
+* [maintenance] Updated package.xml maintainers and author emails `#330 <https://github.com/ros-planning/moveit/issues/330>`_
+* Contributors: Dave Coleman, Ian McMahon
+
+0.9.2 (2016-11-05)
+------------------
+* [Maintenance] Auto format codebase using clang-format (`#284 <https://github.com/ros-planning/moveit/issues/284>`_)
 * Contributors: Dave Coleman
 
-0.7.6 (2016-12-30)
+0.6.6 (2016-06-08)
 ------------------
-
-0.7.5 (2016-12-25)
-------------------
-
-0.7.4 (2016-12-22)
-------------------
-
-0.7.3 (2016-12-20)
-------------------
-
-0.7.2 (2016-06-20)
-------------------
-* [fix][joy.py] Installed python file might not be executable. (`#691 <https://github.com/ros-planning/moveit_ros/issues/691>`_)
-* [fix] rostest dependency (`#680 <https://github.com/ros-planning/moveit_ros/issues/680>`_), fixes c6d0ede (`#639 <https://github.com/ros-planning/moveit_ros/issues/639>`_)
-* [fix] always (re)create collision object marker
-  (other properties than pose (such as name of the marker) need to be adapted too)
-* [fix] correctly update planning_scene_node on changes of model-frame w.r.t. fixed frame
-* [fix] Traj Rviz Plugin to properly change robot description parameter
-* [feat] display planned path in correct rviz context
-* [feat] leave frame transforms to rviz
-* [enhance] use getModelFrame() as reference frame for markers
-* Contributors: Ammar Najjar, Dave Coleman, Isaac I.Y. Saito, Robert Haschke, Michael Goerner
-
-0.7.1 (2016-04-11)
-------------------
-* [feat] Adding acceleration scaling factor
-* [fix] widget naming issues
-* [sys] explicitly link rviz' default_plugin library. The library is not exported anymore and now is provided separately from rviz_LIBRARIES. See https://github.com/ros-visualization/rviz/pull/979 for details.
-* Contributors: hemes, v4hn
-
-0.7.0 (2016-01-30)
-------------------
+* cleanup cmake tests, fix empty output
+* added missing rostest dependency (`#680 <https://github.com/ros-planning/moveit_ros/issues/680>`_), fixes c6d0ede (`#639 <https://github.com/ros-planning/moveit_ros/issues/639>`_)
+* [moveit joy] Add friendlier error message
+* relax Qt-version requirement
+  Minor Qt version updates are ABI-compatible with each other:
+  https://wiki.qt.io/Qt-Version-Compatibility
+* replaced cmake_modules dependency with eigen
+* [jade] eigen3 adjustment
+* always (re)create collision object marker
+  other properties than pose (such as name of the marker) need to be adapted too
+* use getModelFrame() as reference frame for markers
+* moved "Publish Scene" button to "Scene Objects" tab
+  previous location on "Context" tab was weird
+* cherry-pick PR `#635 <https://github.com/ros-planning/moveit_ros/issues/635>`_ from indigo-devel
+* unify Qt4 / Qt5 usage across cmake files
+  - fetch Qt version from rviz
+  - define variables/macros commonly used for Qt4 and Qt5
+  - QT_LIBRARIES
+  - qt_wrap_ui()
+* leave frame transforms to rviz
+  The old code
+  (1.) reimplemented frame transforms in rviz
+  although it could simply utilize rviz' FrameManager
+  (2.) assumed the transform between the model-frame
+  and the fixed_frame was constant and only needed to be updated
+  if the frame changes (ever tried to make the endeffector
+  your fixed frame?)
+  (3.) was broken because on startup calculateOffsetPosition was called
+  *before* the robot model is loaded, so the first (and usually only)
+  call to calculateOffsetPosition failed.
+  Disabling/Enabling the display could be used to work around this...
+  This fixes all three issues.
+* display planned path in correct rviz context
+  This was likely a typo.
+* Solved parse error with Boost 1.58. Fixes `#653 <https://github.com/ros-planning/moveit_ros/issues/653>`_
+* Enable optional build against Qt5, use -DUseQt5=On to enable it
+* explicitly link rviz' default_plugin library
+  The library is not exported anymore and now is provided separately from rviz_LIBRARIES.
+  See https://github.com/ros-visualization/rviz/pull/979 for details.
+* merge indigo-devel changes (PR `#633 <https://github.com/ros-planning/moveit_ros/issues/633>`_ trailing whitespace) into jade-devel
 * Removed trailing whitespace from entire repository
+* correctly handle int and float parameters
+  Try to parse parameter as int and float (in that series)
+  and use IntProperty or FloatProperty on success to have
+  input checking.
+  Floats formatted without decimal dot, e.g. "0", will be
+  considered as int!
+  All other parameters will be handled as string.
+* access planner params in rviz' MotionPlanningFrame
 * new method MoveGroup::getDefaultPlannerId(const std::string &group)
   ... to retrieve default planner config from param server
   moved corresponding code from rviz plugin to MoveGroup interface
@@ -97,31 +152,20 @@ Changelog for package moveit_ros_visualization
   instead of loading from `/<ns>/default_planner_config`, use
   `/<ns>/move_group/<group>/default_planner_config`, which is the default
   location for `planner_configs` too
-* Merge pull request #610 : correctly update all markers after robot motion
+* Merge pull request `#610 <https://github.com/ros-planning/moveit_ros/issues/610>`_: correctly update all markers after robot motion
 * fixing conflicts, renaming variable
-* Merge pull request #612 from ubi-agni/interrupt-traj-vis
+* Merge pull request `#612 <https://github.com/ros-planning/moveit_ros/issues/612>`_ from ubi-agni/interrupt-traj-vis
   interrupt trajectory visualization on arrival of new display trajectory
-* fixup! cleanup TrajectoryVisualization::update
-  only enter visualization loop when displaying_trajectory_message is defined
+* cherry-picked PR `#611 <https://github.com/ros-planning/moveit_ros/issues/611>`_: fix segfault when disabling and re-enabling TrajectoryVisualization
+* cherry-picked PR `#609 <https://github.com/ros-planning/moveit_ros/issues/609>`_: load / save rviz' workspace config
 * added missing initialization
 * correctly setAlpha for new trail
 * fixed race condition for trajectory-display interruption
-  - TrajectoryVisualization::update() switches to new trajectory
-  automatically when it has finished displaying the old one
-  - TrajectoryVisualization::interruptCurrentDisplay() might interrupt
-  this newly started trajectory
-  consequences:
-  - protect switching of trajectory with mutex
-  - interrupt only if trajectory display progressed past first waypoint
-  - removed obsolete signal timeToShowNewTrail:
-  update() automatically switches and updates trail in sync
 * cleanup TrajectoryVisualization::update
   simplified code to switch to new trajectory / start over animation in loop mode
 * new GUI property to allow immediate interruption of displayed trajectory
 * immediately show trajectory after planning (interrupting current display)
 * fix segfault when disabling and re-enabling TrajectoryVisualization
-  animating_path was still true causing update() to access
-  displaying_trajectory_message, which was reset onDisable().
 * update pose of all markers when any marker moved
   Having several end-effector markers attached to a group (e.g. a multi-
   fingered hand having an end-effector per fingertip and an end-effector
@@ -139,7 +183,7 @@ Changelog for package moveit_ros_visualization
   If the getMoveGroupNS() returns an empty string, ros::names::append() inserts a slash in front of 'right', which changes it to a global name.
   Checking getMoveGroupNS() before calling append removes the issue.
   append() behaviour will not be changed in ros/ros_comm.
-* Contributors: Dave Coleman, Jochen Welle, Kei Okada, Robert Haschke, Sachin Chitta, TheDash, dg
+* Contributors: Ammar Najjar, Dave Coleman, Isaac I.Y. Saito, Jochen Welle, Kei Okada, Michael Ferguson, Michael Görner, Robert Haschke, Sachin Chitta, Simon Schmeisser (isys vision), TheDash, Thomas Burghout, dg, v4hn
 
 0.6.5 (2015-01-24)
 ------------------

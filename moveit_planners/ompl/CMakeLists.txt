@@ -1,5 +1,8 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 2.8.12)
 project(moveit_planners_ompl)
+
+# C++ 11 required for OMPL
+add_compile_options(-std=c++11)
 
 if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
@@ -12,12 +15,11 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rosconsole
   pluginlib
-  tf
+  tf2_ros
   dynamic_reconfigure
-  eigen_conversions
   )
 
-find_package(OMPL REQUIRED)
+find_package(ompl REQUIRED)
 
 generate_dynamic_reconfigure_options("ompl_interface/cfg/OMPLDynamicReconfigure.cfg")
 

@@ -41,6 +41,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/filesystem.hpp>
 #include <fstream>
+#include <utility>
 
 namespace ompl_interface
 {
@@ -76,7 +77,7 @@ void hexToMsg(const std::string& hex, T& msg)
   ros::serialization::IStream stream_arg(buffer_arg.get(), serial_size_arg);
   ros::serialization::deserialize(stream_arg, msg);
 }
-}
+}  // namespace
 
 class ConstraintApproximationStateSampler : public ob::StateSampler
 {
@@ -89,12 +90,12 @@ public:
     inv_dim_ = space->getDimension() > 0 ? 1.0 / (double)space->getDimension() : 1.0;
   }
 
-  virtual void sampleUniform(ob::State* state)
+  void sampleUniform(ob::State* state) override
   {
     space_->copyState(state, state_storage_->getState(rng_.uniformInt(0, max_index_)));
   }
 
-  virtual void sampleUniformNear(ob::State* state, const ob::State* near, const double distance)
+  void sampleUniformNear(ob::State* state, const ob::State* near, const double distance) override
   {
     int index = -1;
     int tag = near->as<ModelBasedStateSpace::StateType>()->tag;
@@ -130,7 +131,7 @@ public:
       space_->copyState(state, state_storage_->getState(index));
   }
 
-  virtual void sampleGaussian(ob::State* state, const ob::State* mean, const double stdDev)
+  void sampleGaussian(ob::State* state, const ob::State* mean, const double stdDev) override
   {
     sampleUniformNear(state, mean, rng_.gaussian(0.0, stdDev));
   }
@@ -158,7 +159,7 @@ bool interpolateUsingStoredStates(const ConstraintApproximationStateStorage* sta
   {
     const ConstrainedStateMetadata& md = state_storage->getMetadata(tag_from);
 
-    std::map<std::size_t, std::pair<std::size_t, std::size_t> >::const_iterator it = md.second.find(tag_to);
+    auto it = md.second.find(tag_to);
     if (it == md.second.end())
       return false;
     const std::pair<std::size_t, std::size_t>& istates = it->second;
@@ -181,7 +182,8 @@ bool interpolateUsingStoredStates(const ConstraintApproximationStateStorage* sta
 ompl_interface::InterpolationFunction ompl_interface::ConstraintApproximation::getInterpolationFunction() const
 {
   if (explicit_motions_ && milestones_ > 0 && milestones_ < state_storage_->size())
-    return boost::bind(&interpolateUsingStoredStates, state_storage_, _1, _2, _3, _4);
+    return std::bind(&interpolateUsingStoredStates, state_storage_, std::placeholders::_1, std::placeholders::_2,
+                     std::placeholders::_3, std::placeholders::_4);
   return InterpolationFunction();
 }
 
@@ -196,18 +198,17 @@ ompl::base::StateSamplerPtr allocConstraintApproximationStateSampler(
   else
     return ompl::base::StateSamplerPtr(new ConstraintApproximationStateSampler(space, state_storage, milestones));
 }
-}
+}  // namespace ompl_interface
 
 ompl_interface::ConstraintApproximation::ConstraintApproximation(
-    const std::string& group, const std::string& state_space_parameterization, bool explicit_motions,
-    const moveit_msgs::Constraints& msg, const std::string& filename, const ompl::base::StateStoragePtr& storage,
-    std::size_t milestones)
-  : group_(group)
-  , state_space_parameterization_(state_space_parameterization)
+    std::string group, std::string state_space_parameterization, bool explicit_motions, moveit_msgs::Constraints msg,
+    std::string filename, ompl::base::StateStoragePtr storage, std::size_t milestones)
+  : group_(std::move(group))
+  , state_space_parameterization_(std::move(state_space_parameterization))
   , explicit_motions_(explicit_motions)
-  , constraint_msg_(msg)
-  , ompldb_filename_(filename)
-  , state_storage_ptr_(storage)
+  , constraint_msg_(std::move(msg))
+  , ompldb_filename_(std::move(filename))
+  , state_storage_ptr_(std::move(storage))
   , milestones_(milestones)
 {
   state_storage_ = static_cast<ConstraintApproximationStateStorage*>(state_storage_ptr_.get());
@@ -221,7 +222,8 @@ ompl_interface::ConstraintApproximation::getStateSamplerAllocator(const moveit_m
 {
   if (state_storage_->size() == 0)
     return ompl::base::StateSamplerAllocator();
-  return boost::bind(&allocConstraintApproximationStateSampler, _1, space_signature_, state_storage_, milestones_);
+  return std::bind(&allocConstraintApproximationStateSampler, std::placeholders::_1, space_signature_, state_storage_,
+                   milestones_);
 }
 /*
 void ompl_interface::ConstraintApproximation::visualizeDistribution(const std::string &link_name, unsigned int count,
@@ -270,11 +272,12 @@ void ompl_interface::ConstraintsLibrary::loadConstraintApproximations(const std:
   std::ifstream fin((path + "/manifest").c_str());
   if (!fin.good())
   {
-    logWarn("Manifest not found in folder '%s'. Not loading constraint approximations.", path.c_str());
+    ROS_WARN_NAMED("constraints_library", "Manifest not found in folder '%s'. Not loading constraint approximations.",
+                   path.c_str());
     return;
   }
 
-  logInform("Loading constrained space approximations from '%s'...", path.c_str());
+  ROS_INFO_NAMED("constraints_library", "Loading constrained space approximations from '%s'...", path.c_str());
 
   while (fin.good() && !fin.eof())
   {
@@ -297,37 +300,38 @@ void ompl_interface::ConstraintsLibrary::loadConstraintApproximations(const std:
     if (fin.eof())
       break;
     fin >> filename;
-    logInform("Loading constraint approximation of type '%s' for group '%s' from '%s'...",
-              state_space_parameterization.c_str(), group.c_str(), filename.c_str());
+    ROS_INFO_NAMED("constraints_library", "Loading constraint approximation of type '%s' for group '%s' from '%s'...",
+                   state_space_parameterization.c_str(), group.c_str(), filename.c_str());
     const ModelBasedPlanningContextPtr& pc = context_manager_.getPlanningContext(group, state_space_parameterization);
     if (pc)
     {
       moveit_msgs::Constraints msg;
       hexToMsg(serialization, msg);
-      ConstraintApproximationStateStorage* cass =
-          new ConstraintApproximationStateStorage(pc->getOMPLSimpleSetup()->getStateSpace());
+      auto* cass = new ConstraintApproximationStateStorage(pc->getOMPLSimpleSetup()->getStateSpace());
       cass->load((path + "/" + filename).c_str());
       ConstraintApproximationPtr cap(new ConstraintApproximation(group, state_space_parameterization, explicit_motions,
                                                                  msg, filename, ompl::base::StateStoragePtr(cass),
                                                                  milestones));
       if (constraint_approximations_.find(cap->getName()) != constraint_approximations_.end())
-        logWarn("Overwriting constraint approximation named '%s'", cap->getName().c_str());
+        ROS_WARN_NAMED("constraints_library", "Overwriting constraint approximation named '%s'",
+                       cap->getName().c_str());
       constraint_approximations_[cap->getName()] = cap;
       std::size_t sum = 0;
       for (std::size_t i = 0; i < cass->size(); ++i)
         sum += cass->getMetadata(i).first.size();
-      logInform("Loaded %lu states (%lu milestones) and %lu connections (%0.1lf per state) for constraint named '%s'%s",
-                cass->size(), cap->getMilestoneCount(), sum, (double)sum / (double)cap->getMilestoneCount(),
-                msg.name.c_str(), explicit_motions ? ". Explicit motions included." : "");
+      ROS_INFO_NAMED("constraints_library", "Loaded %lu states (%lu milestones) and %lu connections (%0.1lf per state) "
+                                            "for constraint named '%s'%s",
+                     cass->size(), cap->getMilestoneCount(), sum, (double)sum / (double)cap->getMilestoneCount(),
+                     msg.name.c_str(), explicit_motions ? ". Explicit motions included." : "");
     }
   }
-  logInform("Done loading constrained space approximations.");
+  ROS_INFO_NAMED("constraints_library", "Done loading constrained space approximations.");
 }
 
 void ompl_interface::ConstraintsLibrary::saveConstraintApproximations(const std::string& path)
 {
-  logInform("Saving %u constrained space approximations to '%s'", (unsigned int)constraint_approximations_.size(),
-            path.c_str());
+  ROS_INFO_NAMED("constraints_library", "Saving %u constrained space approximations to '%s'",
+                 (unsigned int)constraint_approximations_.size(), path.c_str());
   try
   {
     boost::filesystem::create_directories(path);
@@ -353,7 +357,7 @@ void ompl_interface::ConstraintsLibrary::saveConstraintApproximations(const std:
         it->second->getStateStorage()->store((path + "/" + it->second->getFilename()).c_str());
     }
   else
-    logError("Unable to save constraint approximation to '%s'", path.c_str());
+    ROS_ERROR_NAMED("constraints_library", "Unable to save constraint approximation to '%s'", path.c_str());
   fout.close();
 }
 
@@ -364,22 +368,21 @@ void ompl_interface::ConstraintsLibrary::clearConstraintApproximations()
 
 void ompl_interface::ConstraintsLibrary::printConstraintApproximations(std::ostream& out) const
 {
-  for (std::map<std::string, ConstraintApproximationPtr>::const_iterator it = constraint_approximations_.begin();
-       it != constraint_approximations_.end(); ++it)
+  for (const std::pair<std::string, ConstraintApproximationPtr>& constraint_approximation : constraint_approximations_)
   {
-    out << it->second->getGroup() << std::endl;
-    out << it->second->getStateSpaceParameterization() << std::endl;
-    out << it->second->hasExplicitMotions() << std::endl;
-    out << it->second->getMilestoneCount() << std::endl;
-    out << it->second->getFilename() << std::endl;
-    out << it->second->getConstraintsMsg() << std::endl;
+    out << constraint_approximation.second->getGroup() << std::endl;
+    out << constraint_approximation.second->getStateSpaceParameterization() << std::endl;
+    out << constraint_approximation.second->hasExplicitMotions() << std::endl;
+    out << constraint_approximation.second->getMilestoneCount() << std::endl;
+    out << constraint_approximation.second->getFilename() << std::endl;
+    out << constraint_approximation.second->getConstraintsMsg() << std::endl;
   }
 }
 
 const ompl_interface::ConstraintApproximationPtr&
 ompl_interface::ConstraintsLibrary::getConstraintApproximation(const moveit_msgs::Constraints& msg) const
 {
-  std::map<std::string, ConstraintApproximationPtr>::const_iterator it = constraint_approximations_.find(msg.name);
+  auto it = constraint_approximations_.find(msg.name);
   if (it != constraint_approximations_.end())
     return it->second;
 
@@ -411,7 +414,8 @@ ompl_interface::ConstraintsLibrary::addConstraintApproximation(
 
     ros::WallTime start = ros::WallTime::now();
     ompl::base::StateStoragePtr ss = constructConstraintApproximation(pc, constr_sampling, constr_hard, options, res);
-    logInform("Spent %lf seconds constructing the database", (ros::WallTime::now() - start).toSec());
+    ROS_INFO_NAMED("constraints_library", "Spent %lf seconds constructing the database",
+                   (ros::WallTime::now() - start).toSec());
     if (ss)
     {
       ConstraintApproximationPtr ca(new ConstraintApproximation(
@@ -420,12 +424,13 @@ ompl_interface::ConstraintsLibrary::addConstraintApproximation(
               ".ompldb",
           ss, res.milestones));
       if (constraint_approximations_.find(ca->getName()) != constraint_approximations_.end())
-        logWarn("Overwriting constraint approximation named '%s'", ca->getName().c_str());
+        ROS_WARN_NAMED("constraints_library", "Overwriting constraint approximation named '%s'", ca->getName().c_str());
       constraint_approximations_[ca->getName()] = ca;
       res.approx = ca;
     }
     else
-      logError("Unable to construct constraint approximation for group '%s'", group.c_str());
+      ROS_ERROR_NAMED("constraints_library", "Unable to construct constraint approximation for group '%s'",
+                      group.c_str());
   }
   return res;
 }
@@ -457,7 +462,7 @@ ompl::base::StateStoragePtr ompl_interface::ConstraintsLibrary::constructConstra
 
   robot_state::RobotState kstate(default_state);
   const constraint_samplers::ConstraintSamplerManagerPtr& csmng = pcontext->getConstraintSamplerManager();
-  ConstrainedSampler* csmp = NULL;
+  ConstrainedSampler* csmp = nullptr;
   if (csmng)
   {
     constraint_samplers::ConstraintSamplerPtr cs =
@@ -479,18 +484,19 @@ ompl::base::StateStoragePtr ompl_interface::ConstraintsLibrary::constructConstra
     if (done != done_now)
     {
       done = done_now;
-      logInform("%d%% complete (kept %0.1lf%% sampled states)", done, 100.0 * (double)sstor->size() / (double)attempts);
+      ROS_INFO_NAMED("constraints_library", "%d%% complete (kept %0.1lf%% sampled states)", done,
+                     100.0 * (double)sstor->size() / (double)attempts);
     }
 
     if (!slow_warn && attempts > 10 && attempts > sstor->size() * 100)
     {
       slow_warn = true;
-      logWarn("Computation of valid state database is very slow...");
+      ROS_WARN_NAMED("constraints_library", "Computation of valid state database is very slow...");
     }
 
     if (attempts > options.samples && sstor->size() == 0)
     {
-      logError("Unable to generate any samples");
+      ROS_ERROR_NAMED("constraints_library", "Unable to generate any samples");
       break;
     }
 
@@ -507,22 +513,24 @@ ompl::base::StateStoragePtr ompl_interface::ConstraintsLibrary::constructConstra
   }
 
   result.state_sampling_time = ompl::time::seconds(ompl::time::now() - start);
-  logInform("Generated %u states in %lf seconds", (unsigned int)sstor->size(), result.state_sampling_time);
+  ROS_INFO_NAMED("constraints_library", "Generated %u states in %lf seconds", (unsigned int)sstor->size(),
+                 result.state_sampling_time);
   if (csmp)
   {
     result.sampling_success_rate = csmp->getConstrainedSamplingRate();
-    logInform("Constrained sampling rate: %lf", result.sampling_success_rate);
+    ROS_INFO_NAMED("constraints_library", "Constrained sampling rate: %lf", result.sampling_success_rate);
   }
 
   result.milestones = sstor->size();
   if (options.edges_per_sample > 0)
   {
-    logInform("Computing graph connections (max %u edges per sample) ...", options.edges_per_sample);
+    ROS_INFO_NAMED("constraints_library", "Computing graph connections (max %u edges per sample) ...",
+                   options.edges_per_sample);
 
     // construct connexions
     const ob::StateSpacePtr& space = pcontext->getOMPLSimpleSetup()->getStateSpace();
     unsigned int milestones = sstor->size();
-    std::vector<ob::State*> int_states(options.max_explicit_points, NULL);
+    std::vector<ob::State*> int_states(options.max_explicit_points, nullptr);
     pcontext->getOMPLSimpleSetup()->getSpaceInformation()->allocStates(int_states);
 
     ompl::time::point start = ompl::time::now();
@@ -535,7 +543,7 @@ ompl::base::StateStoragePtr ompl_interface::ConstraintsLibrary::constructConstra
       if (done != done_now)
       {
         done = done_now;
-        logInform("%d%% complete", done);
+        ROS_INFO_NAMED("constraints_library", "%d%% complete", done);
       }
       if (cass->getMetadata(j).first.size() >= options.edges_per_sample)
         continue;
@@ -552,7 +560,6 @@ ompl::base::StateStoragePtr ompl_interface::ConstraintsLibrary::constructConstra
         unsigned int isteps =
             std::min<unsigned int>(options.max_explicit_points, d / options.explicit_points_resolution);
         double step = 1.0 / (double)isteps;
-        double remain = 1.0;
         bool ok = true;
         space->interpolate(sstor->getState(i), sj, step, int_states[0]);
         for (unsigned int k = 1; k < isteps; ++k)
@@ -592,9 +599,15 @@ ompl::base::StateStoragePtr ompl_interface::ConstraintsLibrary::constructConstra
     }
 
     result.state_connection_time = ompl::time::seconds(ompl::time::now() - start);
-    logInform("Computed possible connexions in %lf seconds. Added %d connexions", result.state_connection_time, good);
+    ROS_INFO_NAMED("constraints_library", "Computed possible connexions in %lf seconds. Added %d connexions",
+                   result.state_connection_time, good);
     pcontext->getOMPLSimpleSetup()->getSpaceInformation()->freeStates(int_states);
 
     return sstor;
   }
+
+  // TODO(davetcoleman): this function did not originally return a value, causing compiler warnings in ROS Melodic
+  // Update with more intelligent logic as needed
+  ROS_ERROR_NAMED("constraints_library", "No StateStoragePtr found - implement better solution here.");
+  return sstor;
 }

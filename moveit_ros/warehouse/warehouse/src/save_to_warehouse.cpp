@@ -44,6 +44,7 @@
 #include <boost/program_options/parsers.hpp>
 #include <boost/program_options/variables_map.hpp>
 #include <ros/ros.h>
+#include <tf2_ros/transform_listener.h>
 
 static const std::string ROBOT_DESCRIPTION = "robot_description";
 
@@ -117,8 +118,8 @@ int main(int argc, char** argv)
 
   boost::program_options::options_description desc;
   desc.add_options()("help", "Show help message")("host", boost::program_options::value<std::string>(), "Host for the "
-                                                                                                        "MongoDB.")(
-      "port", boost::program_options::value<std::size_t>(), "Port for the MongoDB.");
+                                                                                                        "DB.")(
+      "port", boost::program_options::value<std::size_t>(), "Port for the DB.");
 
   boost::program_options::variables_map vm;
   boost::program_options::store(boost::program_options::parse_command_line(argc, argv, desc), vm);
@@ -129,13 +130,21 @@ int main(int argc, char** argv)
     std::cout << desc << std::endl;
     return 1;
   }
+  // Set up db
+  warehouse_ros::DatabaseConnection::Ptr conn = moveit_warehouse::loadDatabase();
+  if (vm.count("host") && vm.count("port"))
+    conn->setParams(vm["host"].as<std::string>(), vm["port"].as<std::size_t>());
+  if (!conn->connect())
+    return 1;
 
   ros::AsyncSpinner spinner(1);
   spinner.start();
 
   ros::NodeHandle nh;
-  boost::shared_ptr<tf::TransformListener> tf(new tf::TransformListener());
-  planning_scene_monitor::PlanningSceneMonitor psm(ROBOT_DESCRIPTION, tf);
+  std::shared_ptr<tf2_ros::Buffer> tf_buffer = std::make_shared<tf2_ros::Buffer>();
+  std::shared_ptr<tf2_ros::TransformListener> tf_listener =
+      std::make_shared<tf2_ros::TransformListener>(*tf_buffer, nh);
+  planning_scene_monitor::PlanningSceneMonitor psm(ROBOT_DESCRIPTION, tf_buffer);
   if (!psm.getPlanningScene())
   {
     ROS_ERROR("Unable to initialize PlanningSceneMonitor");
@@ -144,12 +153,9 @@ int main(int argc, char** argv)
 
   psm.startSceneMonitor();
   psm.startWorldGeometryMonitor();
-  moveit_warehouse::PlanningSceneStorage pss(vm.count("host") ? vm["host"].as<std::string>() : "",
-                                             vm.count("port") ? vm["port"].as<std::size_t>() : 0);
-  moveit_warehouse::ConstraintsStorage cs(vm.count("host") ? vm["host"].as<std::string>() : "",
-                                          vm.count("port") ? vm["port"].as<std::size_t>() : 0);
-  moveit_warehouse::RobotStateStorage rs(vm.count("host") ? vm["host"].as<std::string>() : "",
-                                         vm.count("port") ? vm["port"].as<std::size_t>() : 0);
+  moveit_warehouse::PlanningSceneStorage pss(conn);
+  moveit_warehouse::ConstraintsStorage cs(conn);
+  moveit_warehouse::RobotStateStorage rs(conn);
   std::vector<std::string> names;
   pss.getPlanningSceneNames(names);
   if (names.empty())

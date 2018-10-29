@@ -1,7 +1,7 @@
 set(MOVEIT_LIB_NAME moveit_planning_scene)
 
 add_library(${MOVEIT_LIB_NAME} src/planning_scene.cpp)
-set_target_properties(${MOVEIT_LIB_NAME} PROPERTIES VERSION 0.7.3)
+set_target_properties(${MOVEIT_LIB_NAME} PROPERTIES VERSION ${${PROJECT_NAME}_VERSION})
 
 target_link_libraries(${MOVEIT_LIB_NAME}
   moveit_robot_model
@@ -12,7 +12,7 @@ target_link_libraries(${MOVEIT_LIB_NAME}
   moveit_kinematic_constraints
   moveit_robot_trajectory
   moveit_trajectory_processing
-  ${LIBOCTOMAP_LIBRARIES} ${catkin_LIBRARIES} ${console_bridge_LIBRARIES} ${urdfdom_LIBRARIES} ${urdfdom_headers_LIBRARIES} ${Boost_LIBRARIES})
+  ${LIBOCTOMAP_LIBRARIES} ${catkin_LIBRARIES} ${urdfdom_LIBRARIES} ${urdfdom_headers_LIBRARIES} ${Boost_LIBRARIES})
 
 add_dependencies(${MOVEIT_LIB_NAME} ${catkin_EXPORTED_TARGETS})
 

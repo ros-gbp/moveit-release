@@ -49,14 +49,14 @@
 #include <rviz/display_context.h>
 #include <rviz/window_manager_interface.h>
 
-#include <eigen_conversions/eigen_msg.h>
-
 #include <QMessageBox>
 #include <QInputDialog>
 
 #include "ui_motion_planning_rviz_plugin_frame.h"
 
 #include <boost/math/constants/constants.hpp>
+
+#include <memory>
 
 namespace moveit_rviz_plugin
 {
@@ -67,7 +67,7 @@ void MotionPlanningFrame::saveSceneButtonClicked()
     const std::string& name = planning_display_->getPlanningSceneRO()->getName();
     if (name.empty() || planning_scene_storage_->hasPlanningScene(name))
     {
-      boost::scoped_ptr<QMessageBox> q;
+      std::unique_ptr<QMessageBox> q;
       if (name.empty())
         q.reset(new QMessageBox(QMessageBox::Question, "Change Planning Scene Name",
                                 QString("The name for the planning scene should not be empty. Would you like to rename "
@@ -80,7 +80,7 @@ void MotionPlanningFrame::saveSceneButtonClicked()
                                     .append("' already exists. Do you wish to "
                                             "overwrite that scene?"),
                                 QMessageBox::Yes | QMessageBox::No, this));
-      boost::scoped_ptr<QPushButton> rename(q->addButton("&Rename", QMessageBox::AcceptRole));
+      std::unique_ptr<QPushButton> rename(q->addButton("&Rename", QMessageBox::AcceptRole));
       if (q->exec() != QMessageBox::Yes)
       {
         if (q->clickedButton() == rename.get())
@@ -140,7 +140,7 @@ void MotionPlanningFrame::saveQueryButtonClicked()
 
         while (query_name.empty() || planning_scene_storage_->hasPlanningQuery(scene, query_name))
         {
-          boost::scoped_ptr<QMessageBox> q;
+          std::unique_ptr<QMessageBox> q;
           if (query_name.empty())
             q.reset(new QMessageBox(QMessageBox::Question, "Change Planning Query Name",
                                     QString("The name for the planning query should not be empty. Would you like to "
@@ -153,7 +153,7 @@ void MotionPlanningFrame::saveQueryButtonClicked()
                                         .append("' already exists. Do you wish "
                                                 "to overwrite that query?"),
                                     QMessageBox::Yes | QMessageBox::No, this));
-          boost::scoped_ptr<QPushButton> rename(q->addButton("&Rename", QMessageBox::AcceptRole));
+          std::unique_ptr<QPushButton> rename(q->addButton("&Rename", QMessageBox::AcceptRole));
           if (q->exec() == QMessageBox::Yes)
             break;
           else

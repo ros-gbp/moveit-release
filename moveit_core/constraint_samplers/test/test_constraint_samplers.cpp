@@ -72,7 +72,7 @@ protected:
     }
   }
 
-  virtual void SetUp()
+  void SetUp() override
   {
     boost::filesystem::path res_path(MOVEIT_TEST_RESOURCES_DIR);
 
@@ -117,13 +117,13 @@ protected:
     ps.reset(new planning_scene::PlanningScene(kmodel));
   };
 
-  virtual void TearDown()
+  void TearDown() override
   {
   }
 
 protected:
-  boost::shared_ptr<urdf::ModelInterface> urdf_model;
-  boost::shared_ptr<srdf::Model> srdf_model;
+  urdf::ModelInterfaceSharedPtr urdf_model;
+  srdf::ModelSharedPtr srdf_model;
   robot_model::RobotModelPtr kmodel;
   planning_scene::PlanningScenePtr ps;
   pr2_arm_kinematics::PR2ArmKinematicsPluginPtr pr2_kinematics_plugin_right_arm_;
@@ -161,8 +161,8 @@ TEST_F(LoadPlanningModelsPr2, JointConstraintsSamplerSimple)
   EXPECT_TRUE(jc1.configure(jcm1));
   js.push_back(jc1);
   EXPECT_TRUE(jcs.configure(js));
-  EXPECT_EQ(jcs.getConstrainedJointCount(), 1);
-  EXPECT_EQ(jcs.getUnconstrainedJointCount(), 6);
+  EXPECT_EQ(jcs.getConstrainedJointCount(), 1u);
+  EXPECT_EQ(jcs.getUnconstrainedJointCount(), 6u);
   EXPECT_TRUE(jcs.sample(ks, ks, 1));
 
   for (int t = 0; t < 100; ++t)
@@ -173,7 +173,7 @@ TEST_F(LoadPlanningModelsPr2, JointConstraintsSamplerSimple)
 
   // redoing the configure leads to 6 unconstrained variables as well
   EXPECT_TRUE(jcs.configure(js));
-  EXPECT_EQ(jcs.getUnconstrainedJointCount(), 6);
+  EXPECT_EQ(jcs.getUnconstrainedJointCount(), 6u);
 
   kinematic_constraints::JointConstraint jc2(kmodel);
 
@@ -680,11 +680,11 @@ TEST_F(LoadPlanningModelsPr2, PoseConstraintSamplerManager)
 
   constraint_samplers::ConstraintSamplerPtr s =
       constraint_samplers::ConstraintSamplerManager::selectDefaultSampler(ps, "left_arm", c);
-  EXPECT_TRUE(s.get() != NULL);
+  EXPECT_TRUE(s != nullptr);
   constraint_samplers::IKConstraintSampler* iks = dynamic_cast<constraint_samplers::IKConstraintSampler*>(s.get());
   ASSERT_TRUE(iks);
-  ASSERT_TRUE(iks->getPositionConstraint());
-  ASSERT_TRUE(iks->getOrientationConstraint());
+  ASSERT_TRUE(static_cast<bool>(iks->getPositionConstraint()));
+  ASSERT_TRUE(static_cast<bool>(iks->getOrientationConstraint()));
 
   static const int NT = 100;
   int succ = 0;
@@ -705,11 +705,11 @@ TEST_F(LoadPlanningModelsPr2, PoseConstraintSamplerManager)
   c.orientation_constraints.push_back(ocm);
 
   s = constraint_samplers::ConstraintSamplerManager::selectDefaultSampler(ps, "left_arm", c);
-  EXPECT_TRUE(s.get() != NULL);
+  EXPECT_TRUE(s != nullptr);
 
   iks = dynamic_cast<constraint_samplers::IKConstraintSampler*>(s.get());
   ASSERT_TRUE(iks);
-  ASSERT_TRUE(iks->getOrientationConstraint());
+  ASSERT_TRUE(static_cast<bool>(iks->getOrientationConstraint()));
   EXPECT_NEAR(iks->getOrientationConstraint()->getXAxisTolerance(), .1, .0001);
 }
 
@@ -730,9 +730,9 @@ TEST_F(LoadPlanningModelsPr2, JointVersusPoseConstraintSamplerManager)
 
   constraint_samplers::ConstraintSamplerPtr s =
       constraint_samplers::ConstraintSamplerManager::selectDefaultSampler(ps, "right_arm", con);
-  EXPECT_FALSE(s);
+  EXPECT_FALSE(static_cast<bool>(s));
   s = constraint_samplers::ConstraintSamplerManager::selectDefaultSampler(ps, "left_arm", con);
-  EXPECT_TRUE(s);
+  EXPECT_TRUE(static_cast<bool>(s));
 
   con.joint_constraints.resize(7);
 
@@ -774,7 +774,7 @@ TEST_F(LoadPlanningModelsPr2, JointVersusPoseConstraintSamplerManager)
   con.joint_constraints[6].weight = 1.0;
 
   s = constraint_samplers::ConstraintSamplerManager::selectDefaultSampler(ps, "left_arm", con);
-  EXPECT_TRUE(s);
+  EXPECT_TRUE(static_cast<bool>(s));
 
   con.position_constraints.resize(1);
 
@@ -802,14 +802,14 @@ TEST_F(LoadPlanningModelsPr2, JointVersusPoseConstraintSamplerManager)
 
   // this still works, but we should get a JointConstraintSampler
   s = constraint_samplers::ConstraintSamplerManager::selectDefaultSampler(ps, "left_arm", con);
-  EXPECT_TRUE(s);
+  EXPECT_TRUE(static_cast<bool>(s));
   constraint_samplers::JointConstraintSampler* jcs =
       dynamic_cast<constraint_samplers::JointConstraintSampler*>(s.get());
   EXPECT_TRUE(jcs);
 
   con.position_constraints[0].link_name = "l_wrist_roll_link";
   s = constraint_samplers::ConstraintSamplerManager::selectDefaultSampler(ps, "left_arm", con);
-  EXPECT_TRUE(s);
+  EXPECT_TRUE(static_cast<bool>(s));
   jcs = dynamic_cast<constraint_samplers::JointConstraintSampler*>(s.get());
   EXPECT_FALSE(jcs);
   constraint_samplers::IKConstraintSampler* iks = dynamic_cast<constraint_samplers::IKConstraintSampler*>(s.get());
@@ -836,7 +836,7 @@ TEST_F(LoadPlanningModelsPr2, JointVersusPoseConstraintSamplerManager)
 
   // we still get an IK sampler with just the position constraint
   s = constraint_samplers::ConstraintSamplerManager::selectDefaultSampler(ps, "left_arm", con);
-  EXPECT_TRUE(s);
+  EXPECT_TRUE(static_cast<bool>(s));
   ucs = dynamic_cast<constraint_samplers::UnionConstraintSampler*>(s.get());
   ASSERT_TRUE(ucs);
   jcs = dynamic_cast<constraint_samplers::JointConstraintSampler*>(ucs->getSamplers()[0].get());
@@ -844,29 +844,29 @@ TEST_F(LoadPlanningModelsPr2, JointVersusPoseConstraintSamplerManager)
 
   ASSERT_TRUE(iks);
   ASSERT_TRUE(jcs);
-  EXPECT_TRUE(iks->getPositionConstraint());
+  EXPECT_TRUE(static_cast<bool>(iks->getPositionConstraint()));
   EXPECT_FALSE(iks->getOrientationConstraint());
 
   con.orientation_constraints[0].link_name = "l_wrist_roll_link";
 
   // now they both are good
   s = constraint_samplers::ConstraintSamplerManager::selectDefaultSampler(ps, "left_arm", con);
-  EXPECT_TRUE(s);
+  EXPECT_TRUE(static_cast<bool>(s));
   ucs = dynamic_cast<constraint_samplers::UnionConstraintSampler*>(s.get());
   iks = dynamic_cast<constraint_samplers::IKConstraintSampler*>(ucs->getSamplers()[1].get());
   ASSERT_TRUE(iks);
-  EXPECT_TRUE(iks->getPositionConstraint());
-  EXPECT_TRUE(iks->getOrientationConstraint());
+  EXPECT_TRUE(static_cast<bool>(iks->getPositionConstraint()));
+  EXPECT_TRUE(static_cast<bool>(iks->getOrientationConstraint()));
 
   // now just the orientation constraint is good
   con.position_constraints[0].link_name = "r_wrist_roll_link";
   s = constraint_samplers::ConstraintSamplerManager::selectDefaultSampler(ps, "left_arm", con);
-  ASSERT_TRUE(s);
+  ASSERT_TRUE(static_cast<bool>(s));
   ucs = dynamic_cast<constraint_samplers::UnionConstraintSampler*>(s.get());
   iks = dynamic_cast<constraint_samplers::IKConstraintSampler*>(ucs->getSamplers()[1].get());
   ASSERT_TRUE(iks);
   EXPECT_FALSE(iks->getPositionConstraint());
-  EXPECT_TRUE(iks->getOrientationConstraint());
+  EXPECT_TRUE(static_cast<bool>(iks->getOrientationConstraint()));
 
   // now if we constraint all the joints, we get a joint constraint sampler
   con.joint_constraints.resize(8);
@@ -877,7 +877,7 @@ TEST_F(LoadPlanningModelsPr2, JointVersusPoseConstraintSamplerManager)
   con.joint_constraints[7].weight = 1.0;
 
   s = constraint_samplers::ConstraintSamplerManager::selectDefaultSampler(ps, "left_arm", con);
-  EXPECT_TRUE(s);
+  EXPECT_TRUE(static_cast<bool>(s));
   jcs = dynamic_cast<constraint_samplers::JointConstraintSampler*>(s.get());
   ASSERT_TRUE(jcs);
 }
@@ -1011,8 +1011,8 @@ TEST_F(LoadPlanningModelsPr2, SubgroupJointConstraintsSamplerManager)
 
   constraint_samplers::JointConstraintSampler jcs(ps, "arms");
   jcs.configure(js);
-  EXPECT_EQ(jcs.getConstrainedJointCount(), 2);
-  EXPECT_EQ(jcs.getUnconstrainedJointCount(), 12);
+  EXPECT_EQ(jcs.getConstrainedJointCount(), 2u);
+  EXPECT_EQ(jcs.getUnconstrainedJointCount(), 12u);
 
   for (int t = 0; t < 100; ++t)
   {
@@ -1027,7 +1027,7 @@ TEST_F(LoadPlanningModelsPr2, SubgroupJointConstraintsSamplerManager)
   // no constraints should give no sampler
   constraint_samplers::ConstraintSamplerPtr s0 =
       constraint_samplers::ConstraintSamplerManager::selectDefaultSampler(ps, "arms", c);
-  EXPECT_TRUE(s0.get() == NULL);
+  EXPECT_TRUE(s0 == nullptr);
 
   // add the constraints
   c.joint_constraints.push_back(jcm1);
@@ -1037,7 +1037,7 @@ TEST_F(LoadPlanningModelsPr2, SubgroupJointConstraintsSamplerManager)
 
   constraint_samplers::ConstraintSamplerPtr s =
       constraint_samplers::ConstraintSamplerManager::selectDefaultSampler(ps, "arms", c);
-  EXPECT_TRUE(s.get() != NULL);
+  EXPECT_TRUE(s != nullptr);
 
   // test the generated sampler
   for (int t = 0; t < 1000; ++t)
@@ -1104,7 +1104,7 @@ TEST_F(LoadPlanningModelsPr2, SubgroupPoseConstraintsSampler)
   robot_state::Transforms& tf = ps->getTransformsNonConst();
   constraint_samplers::ConstraintSamplerPtr s =
       constraint_samplers::ConstraintSamplerManager::selectDefaultSampler(ps, "arms", c);
-  EXPECT_TRUE(s);
+  EXPECT_TRUE(static_cast<bool>(s));
   constraint_samplers::UnionConstraintSampler* ucs =
       dynamic_cast<constraint_samplers::UnionConstraintSampler*>(s.get());
   EXPECT_TRUE(ucs);
@@ -1128,8 +1128,9 @@ TEST_F(LoadPlanningModelsPr2, SubgroupPoseConstraintsSampler)
     if (s->sample(ks, ks_const, 1))
       succ++;
   }
-  logInform("Success rate for IK Constraint Sampler with position & orientation constraints for both arms: %lf",
-            (double)succ / (double)NT);
+  ROS_INFO_NAMED("pr2_arm_kinematics_plugin",
+                 "Success rate for IK Constraint Sampler with position & orientation constraints for both arms: %lf",
+                 (double)succ / (double)NT);
 }
 
 int main(int argc, char** argv)

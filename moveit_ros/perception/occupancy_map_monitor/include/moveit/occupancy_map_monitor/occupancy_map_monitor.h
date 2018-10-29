@@ -40,8 +40,8 @@
 #include <vector>
 #include <string>
 #include <ros/ros.h>
-#include <tf/tf.h>
-#include <pluginlib/class_loader.h>
+#include <tf2_ros/buffer.h>
+#include <pluginlib/class_loader.hpp>
 
 #include <moveit_msgs/SaveMap.h>
 #include <moveit_msgs/LoadMap.h>
@@ -50,15 +50,17 @@
 
 #include <boost/thread/mutex.hpp>
 
+#include <memory>
+
 namespace occupancy_map_monitor
 {
 class OccupancyMapMonitor
 {
 public:
-  OccupancyMapMonitor(const boost::shared_ptr<tf::Transformer>& tf, const std::string& map_frame = "",
+  OccupancyMapMonitor(const std::shared_ptr<tf2_ros::Buffer>& tf_buffer, const std::string& map_frame = "",
                       double map_resolution = 0.0);
   OccupancyMapMonitor(double map_resolution = 0.0);
-  OccupancyMapMonitor(const boost::shared_ptr<tf::Transformer>& tf, ros::NodeHandle& nh,
+  OccupancyMapMonitor(const std::shared_ptr<tf2_ros::Buffer>& tf_buffer, ros::NodeHandle& nh,
                       const std::string& map_frame = "", double map_resolution = 0.0);
 
   ~OccupancyMapMonitor();
@@ -94,9 +96,9 @@ public:
     return map_resolution_;
   }
 
-  const boost::shared_ptr<tf::Transformer>& getTFClient() const
+  const std::shared_ptr<tf2_ros::Buffer>& getTFClient() const
   {
-    return tf_;
+    return tf_buffer_;
   }
 
   void addUpdater(const OccupancyMapUpdaterPtr& updater);
@@ -134,7 +136,7 @@ private:
   bool getShapeTransformCache(std::size_t index, const std::string& target_frame, const ros::Time& target_time,
                               ShapeTransformCache& cache) const;
 
-  boost::shared_ptr<tf::Transformer> tf_;
+  std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
   std::string map_frame_;
   double map_resolution_;
   boost::mutex parameters_lock_;
@@ -142,7 +144,7 @@ private:
   OccMapTreePtr tree_;
   OccMapTreeConstPtr tree_const_;
 
-  boost::scoped_ptr<pluginlib::ClassLoader<OccupancyMapUpdater> > updater_plugin_loader_;
+  std::unique_ptr<pluginlib::ClassLoader<OccupancyMapUpdater> > updater_plugin_loader_;
   std::vector<OccupancyMapUpdaterPtr> map_updaters_;
   std::vector<std::map<ShapeHandle, ShapeHandle> > mesh_handles_;
   TransformCacheProvider transform_cache_callback_;

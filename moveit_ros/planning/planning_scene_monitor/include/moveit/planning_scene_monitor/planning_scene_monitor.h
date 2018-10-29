@@ -38,8 +38,9 @@
 #define MOVEIT_PLANNING_SCENE_MONITOR_PLANNING_SCENE_MONITOR_
 
 #include <ros/ros.h>
-#include <tf/tf.h>
-#include <tf/message_filter.h>
+#include <ros/callback_queue.h>
+#include <tf2_ros/message_filter.h>
+#include <tf2_ros/buffer.h>
 #include <message_filters/subscriber.h>
 #include <moveit/macros/class_forward.h>
 #include <moveit/planning_scene/planning_scene.h>
@@ -50,6 +51,7 @@
 #include <boost/noncopyable.hpp>
 #include <boost/thread/shared_mutex.hpp>
 #include <boost/thread/recursive_mutex.hpp>
+#include <memory>
 
 namespace planning_scene_monitor
 {
@@ -105,41 +107,55 @@ public:
 
   /** @brief Constructor
    *  @param robot_description The name of the ROS parameter that contains the URDF (in string format)
-   *  @param tf A pointer to a tf::Transformer
+   *  @param tf_buffer A pointer to a tf2_ros::Buffer
    *  @param name A name identifying this planning scene monitor
    */
   PlanningSceneMonitor(const std::string& robot_description,
-                       const boost::shared_ptr<tf::Transformer>& tf = boost::shared_ptr<tf::Transformer>(),
+                       const std::shared_ptr<tf2_ros::Buffer>& tf_buffer = std::shared_ptr<tf2_ros::Buffer>(),
                        const std::string& name = "");
 
   /** @brief Constructor
    *  @param rml A pointer to a kinematic model loader
-   *  @param tf A pointer to a tf::Transformer
+   *  @param tf_buffer A pointer to a tf2_ros::Buffer
    *  @param name A name identifying this planning scene monitor
    */
   PlanningSceneMonitor(const robot_model_loader::RobotModelLoaderPtr& rml,
-                       const boost::shared_ptr<tf::Transformer>& tf = boost::shared_ptr<tf::Transformer>(),
+                       const std::shared_ptr<tf2_ros::Buffer>& tf_buffer = std::shared_ptr<tf2_ros::Buffer>(),
                        const std::string& name = "");
 
   /** @brief Constructor
    *  @param scene The scene instance to maintain up to date with monitored information
    *  @param robot_description The name of the ROS parameter that contains the URDF (in string format)
-   *  @param tf A pointer to a tf::Transformer
+   *  @param tf_buffer A pointer to a tf2_ros::Buffer
    *  @param name A name identifying this planning scene monitor
    */
   PlanningSceneMonitor(const planning_scene::PlanningScenePtr& scene, const std::string& robot_description,
-                       const boost::shared_ptr<tf::Transformer>& tf = boost::shared_ptr<tf::Transformer>(),
+                       const std::shared_ptr<tf2_ros::Buffer>& tf_buffer = std::shared_ptr<tf2_ros::Buffer>(),
                        const std::string& name = "");
 
   /** @brief Constructor
    *  @param scene The scene instance to maintain up to date with monitored information
    *  @param rml A pointer to a kinematic model loader
-   *  @param tf A pointer to a tf::Transformer
+   *  @param tf_buffer A pointer to a tf2_ros::Buffer
    *  @param name A name identifying this planning scene monitor
    */
   PlanningSceneMonitor(const planning_scene::PlanningScenePtr& scene,
                        const robot_model_loader::RobotModelLoaderPtr& rml,
-                       const boost::shared_ptr<tf::Transformer>& tf = boost::shared_ptr<tf::Transformer>(),
+                       const std::shared_ptr<tf2_ros::Buffer>& tf_buffer = std::shared_ptr<tf2_ros::Buffer>(),
+                       const std::string& name = "");
+
+  /** @brief Constructor
+   *  @param scene The scene instance to maintain up to date with monitored information
+   *  @param rml A pointer to a kinematic model loader
+   *  @param nh external parent NodeHandle
+   *         The monitors will use this NodeHandle's CallbackQueue for updates.
+   *         Usually, this should be a different queue than the global queue, otherwise you might run into timeouts.
+   *  @param tf_buffer A pointer to a tf2_ros::Buffer
+   *  @param name A name identifying this planning scene monitor
+   */
+  PlanningSceneMonitor(const planning_scene::PlanningScenePtr& scene,
+                       const robot_model_loader::RobotModelLoaderPtr& rml, const ros::NodeHandle& nh,
+                       const std::shared_ptr<tf2_ros::Buffer>& tf_buffer = std::shared_ptr<tf2_ros::Buffer>(),
                        const std::string& name = "");
 
   ~PlanningSceneMonitor();
@@ -232,9 +248,9 @@ public:
   }
 
   /** @brief Get the instance of the TF client that was passed to the constructor of this class. */
-  const boost::shared_ptr<tf::Transformer>& getTFClient() const
+  const std::shared_ptr<tf2_ros::Buffer>& getTFClient() const
   {
-    return tf_;
+    return tf_buffer_;
   }
 
   /** \brief By default, the maintained planning scene does not reason about diffs. When the flag passed in is true, the
@@ -265,6 +281,11 @@ public:
   /** @brief Get the stored instance of the stored current state monitor
    *  @return An instance of the stored current state monitor*/
   const CurrentStateMonitorPtr& getStateMonitor() const
+  {
+    return current_state_monitor_;
+  }
+
+  CurrentStateMonitorPtr& getStateMonitorNonConst()
   {
     return current_state_monitor_;
   }
@@ -398,7 +419,7 @@ protected:
 
   /** @brief Callback for a new collision object msg that failed to pass the TF filter */
   void collisionObjectFailTFCallback(const moveit_msgs::CollisionObjectConstPtr& obj,
-                                     tf::filter_failure_reasons::FilterFailureReason reason);
+                                     tf2_ros::filter_failure_reasons::FilterFailureReason reason);
 
   /** @brief Callback for a new planning scene world*/
   void newPlanningSceneWorldCallback(const moveit_msgs::PlanningSceneWorldConstPtr& world);
@@ -439,10 +460,15 @@ protected:
   planning_scene::PlanningSceneConstPtr scene_const_;
   planning_scene::PlanningScenePtr parent_scene_;  /// if diffs are monitored, this is the pointer to the parent scene
   boost::shared_mutex scene_update_mutex_;         /// mutex for stored scene
+  ros::Time last_update_time_;                     /// Last time the state was updated
+  ros::Time last_robot_motion_time_;               /// Last time the robot has moved
 
   ros::NodeHandle nh_;
   ros::NodeHandle root_nh_;
-  boost::shared_ptr<tf::Transformer> tf_;
+  ros::CallbackQueue queue_;
+  std::shared_ptr<ros::AsyncSpinner> spinner_;
+  std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
+
   std::string robot_description_;
 
   /// default robot padding
@@ -460,7 +486,7 @@ protected:
 
   // variables for planning scene publishing
   ros::Publisher planning_scene_publisher_;
-  boost::scoped_ptr<boost::thread> publish_planning_scene_;
+  std::unique_ptr<boost::thread> publish_planning_scene_;
   double publish_planning_scene_frequency_;
   SceneUpdateType publish_update_types_;
   SceneUpdateType new_scene_update_;
@@ -472,11 +498,11 @@ protected:
 
   ros::Subscriber attached_collision_object_subscriber_;
 
-  boost::scoped_ptr<message_filters::Subscriber<moveit_msgs::CollisionObject> > collision_object_subscriber_;
-  boost::scoped_ptr<tf::MessageFilter<moveit_msgs::CollisionObject> > collision_object_filter_;
+  std::unique_ptr<message_filters::Subscriber<moveit_msgs::CollisionObject> > collision_object_subscriber_;
+  std::unique_ptr<tf2_ros::MessageFilter<moveit_msgs::CollisionObject> > collision_object_filter_;
 
   // include a octomap monitor
-  boost::scoped_ptr<occupancy_map_monitor::OccupancyMapMonitor> octomap_monitor_;
+  std::unique_ptr<occupancy_map_monitor::OccupancyMapMonitor> octomap_monitor_;
 
   // include a current state monitor
   CurrentStateMonitorPtr current_state_monitor_;
@@ -487,7 +513,7 @@ protected:
   typedef std::map<const robot_state::AttachedBody*,
                    std::vector<std::pair<occupancy_map_monitor::ShapeHandle, std::size_t> > >
       AttachedBodyShapeHandles;
-  typedef std::map<std::string, std::vector<std::pair<occupancy_map_monitor::ShapeHandle, Eigen::Affine3d*> > >
+  typedef std::map<std::string, std::vector<std::pair<occupancy_map_monitor::ShapeHandle, const Eigen::Affine3d*> > >
       CollisionBodyShapeHandles;
 
   LinkShapeHandles link_shape_handles_;
@@ -499,7 +525,6 @@ protected:
   boost::recursive_mutex update_lock_;
   std::vector<boost::function<void(SceneUpdateType)> > update_callbacks_;  /// List of callbacks to trigger when updates
                                                                            /// are received
-  ros::Time last_update_time_;                                             /// Last time the state was updated
 
 private:
   void getUpdatedFrameTransforms(std::vector<geometry_msgs::TransformStamped>& transforms);
@@ -539,7 +564,7 @@ private:
 
   /// Last time the state was updated from current_state_monitor_
   // Only access this from callback functions (and constructor)
-  ros::WallTime last_state_update_;
+  ros::WallTime last_robot_state_update_wall_time_;
 
   robot_model_loader::RobotModelLoaderPtr rm_loader_;
   robot_model::RobotModelConstPtr robot_model_;

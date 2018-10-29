@@ -2,48 +2,64 @@
 Changelog for package moveit_commander
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.7.14 (2018-10-20)
+0.10.3 (2018-10-29)
 -------------------
 
-0.7.13 (2017-12-25)
+0.10.2 (2018-10-24)
+-------------------
+* [capability] Added plan_only flags to pick and place (`#862 <https://github.com/ros-planning/moveit/issues/862>`_)
+* [maintenance] Python3 support (`#1103 <https://github.com/ros-planning/moveit/issues/1103>`_, `#1054 <https://github.com/ros-planning/moveit/issues/1054>`_)
+* Contributors: David Watkins, Michael Görner, d-walsh, mike lautman
+
+0.10.1 (2018-05-25)
+-------------------
+* Get robot markers from state (`#836 <https://github.com/ros-planning/moveit/issues/836>`_)
+* Add namespace capabilities to moveit_commander (`#835 <https://github.com/ros-planning/moveit/issues/835>`_)
+* Constrained Cartesian planning using moveit commander (`#805 <https://github.com/ros-planning/moveit/issues/805>`_)
+* Handle robot_description parameter in RobotCommander (`#782 <https://github.com/ros-planning/moveit/issues/782>`_)
+* support TrajectoryConstraints in MoveGroupInterface + MoveitCommander (`#793 <https://github.com/ros-planning/moveit/issues/793>`_)
+* API to get planner_id (`#788 <https://github.com/ros-planning/moveit/issues/788>`_)
+* Contributors: Akiyoshi Ochiai, Bence Magyar, Bryce Willey, Dave Coleman, Michael Görner, Ryan Keating, Will Baker
+
+0.9.11 (2017-12-25)
+-------------------
+
+0.9.10 (2017-12-09)
 -------------------
 * [fix] Bugs in moveit_commander/robot.py (`#621 <https://github.com/ros-planning/moveit/issues/621>`_)
 * [fix] pyassimp regression workaround  (`#581 <https://github.com/ros-planning/moveit/issues/581>`_)
 * Contributors: Kei Okada, Konstantin Selyunin
 
-0.7.12 (2017-08-06)
--------------------
-* [fix] numpy.ndarray indices bug (`#563 <https://github.com/ros-planning/moveit/issues/563>`_, from `#86 <https://github.com/ros-planning/moveit/issues/86>`_, `#450 <https://github.com/ros-planning/moveit/issues/450>`_)
-* Contributors: Christopher Schindlbeck
-
-0.7.11 (2017-06-21)
--------------------
-
-0.7.10 (2017-06-07)
--------------------
-
-0.7.9 (2017-04-03)
+0.9.9 (2017-08-06)
 ------------------
 
-0.7.8 (2017-03-08)
-------------------
-* [enhancement] Add set_max_acceleration_scaling_factor to moveit_commander. `#377 <https://github.com/ros-planning/moveit/issues/377>`_, `#437 <https://github.com/ros-planning/moveit/issues/437>`_, `#451 <https://github.com/ros-planning/moveit/issues/451>`_
-* [doc][moveit_commander] added description for set_start_state (`#447 <https://github.com/ros-planning/moveit/issues/447>`_)
-* Contributors: Isaac I.Y. Saito, Ravi Prakash Joshi
-
-0.7.7 (2017-02-06)
+0.9.8 (2017-06-21)
 ------------------
 
-0.7.6 (2016-12-30)
+0.9.7 (2017-06-05)
 ------------------
 
-0.7.5 (2016-12-25)
+0.9.6 (2017-04-12)
 ------------------
 
-0.7.4 (2016-12-22)
+0.9.5 (2017-03-08)
 ------------------
+* [fix] Regression on Ubuntu Xenial; numpy.ndarray indices bug (from `#86 <https://github.com/ros-planning/moveit/issues/86>`_) (`#450 <https://github.com/ros-planning/moveit/issues/450>`_).
+* [doc][moveit_commander] added description for set_start_state (`#447 <https://github.com/ros-planning/moveit/issues/447>`_) 
+* Contributors: Adam Allevato, Ravi Prakash Joshi
 
-0.7.3 (2016-12-20)
+0.9.4 (2017-02-06)
+------------------
+* [fix] issue `#373 <https://github.com/ros-planning/moveit/issues/373>`_ for Kinetic (`#377 <https://github.com/ros-planning/moveit/issues/377>`_) (`#385 <https://github.com/ros-planning/moveit/issues/385>`_)
+* [fix] typo in moveit_commander (`#376 <https://github.com/ros-planning/moveit/issues/376>`_)
+* Contributors: Dave Coleman, Shingo Kitagawa
+
+0.9.3 (2016-11-16)
+------------------
+* [maintenance] Updated package.xml maintainers and author emails `#330 <https://github.com/ros-planning/moveit/issues/330>`_
+* Contributors: Dave Coleman, Ian McMahon
+
+0.9.2 (2016-11-05)
 ------------------
 
 0.6.1 (2016-04-28)

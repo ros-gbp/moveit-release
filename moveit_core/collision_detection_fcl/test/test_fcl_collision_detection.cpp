@@ -57,7 +57,7 @@ typedef collision_detection::CollisionRobotFCL DefaultCRobotType;
 class FclCollisionDetectionTester : public testing::Test
 {
 protected:
-  virtual void SetUp()
+  void SetUp() override
   {
     boost::filesystem::path res_path(MOVEIT_TEST_RESOURCES_DIR);
     std::string urdf_file = (res_path / "pr2_description/urdf/robot.xml").string();
@@ -78,7 +78,7 @@ protected:
       }
       xml_file.close();
       urdf_model_ = urdf::parseURDF(xml_string);
-      urdf_ok_ = urdf_model_;
+      urdf_ok_ = static_cast<bool>(urdf_model_);
     }
     else
     {
@@ -95,7 +95,7 @@ protected:
     cworld_.reset(new DefaultCWorldType());
   }
 
-  virtual void TearDown()
+  void TearDown() override
   {
   }
 
@@ -103,8 +103,8 @@ protected:
   bool urdf_ok_;
   bool srdf_ok_;
 
-  boost::shared_ptr<urdf::ModelInterface> urdf_model_;
-  boost::shared_ptr<srdf::Model> srdf_model_;
+  urdf::ModelInterfaceSharedPtr urdf_model_;
+  srdf::ModelSharedPtr srdf_model_;
 
   robot_model::RobotModelPtr kmodel_;
 
@@ -206,8 +206,8 @@ TEST_F(FclCollisionDetectionTester, ContactReporting)
   collision_detection::CollisionResult res;
   crobot_->checkSelfCollision(req, res, kstate, *acm_);
   ASSERT_TRUE(res.collision);
-  EXPECT_EQ(res.contacts.size(), 1);
-  EXPECT_EQ(res.contacts.begin()->second.size(), 1);
+  EXPECT_EQ(res.contacts.size(), 1u);
+  EXPECT_EQ(res.contacts.begin()->second.size(), 1u);
 
   res.clear();
   req.max_contacts = 2;
@@ -215,8 +215,8 @@ TEST_F(FclCollisionDetectionTester, ContactReporting)
   //  req.verbose = true;
   crobot_->checkSelfCollision(req, res, kstate, *acm_);
   ASSERT_TRUE(res.collision);
-  EXPECT_EQ(res.contacts.size(), 2);
-  EXPECT_EQ(res.contacts.begin()->second.size(), 1);
+  EXPECT_EQ(res.contacts.size(), 2u);
+  EXPECT_EQ(res.contacts.begin()->second.size(), 1u);
 
   res.contacts.clear();
   res.contact_count = 0;
@@ -226,8 +226,8 @@ TEST_F(FclCollisionDetectionTester, ContactReporting)
   acm_.reset(new collision_detection::AllowedCollisionMatrix(kmodel_->getLinkModelNames(), false));
   crobot_->checkSelfCollision(req, res, kstate, *acm_);
   ASSERT_TRUE(res.collision);
-  EXPECT_LE(res.contacts.size(), 10);
-  EXPECT_LE(res.contact_count, 10);
+  EXPECT_LE(res.contacts.size(), 10u);
+  EXPECT_LE(res.contact_count, 10u);
 }
 
 TEST_F(FclCollisionDetectionTester, ContactPositions)
@@ -257,8 +257,8 @@ TEST_F(FclCollisionDetectionTester, ContactPositions)
   collision_detection::CollisionResult res;
   crobot_->checkSelfCollision(req, res, kstate, *acm_);
   ASSERT_TRUE(res.collision);
-  ASSERT_EQ(res.contacts.size(), 1);
-  ASSERT_EQ(res.contacts.begin()->second.size(), 1);
+  ASSERT_EQ(res.contacts.size(), 1u);
+  ASSERT_EQ(res.contacts.begin()->second.size(), 1u);
 
   for (collision_detection::CollisionResult::ContactMap::const_iterator it = res.contacts.begin();
        it != res.contacts.end(); it++)
@@ -277,8 +277,8 @@ TEST_F(FclCollisionDetectionTester, ContactPositions)
   collision_detection::CollisionResult res2;
   crobot_->checkSelfCollision(req, res2, kstate, *acm_);
   ASSERT_TRUE(res2.collision);
-  ASSERT_EQ(res2.contacts.size(), 1);
-  ASSERT_EQ(res2.contacts.begin()->second.size(), 1);
+  ASSERT_EQ(res2.contacts.size(), 1u);
+  ASSERT_EQ(res2.contacts.begin()->second.size(), 1u);
 
   for (collision_detection::CollisionResult::ContactMap::const_iterator it = res2.contacts.begin();
        it != res2.contacts.end(); it++)
@@ -499,7 +499,7 @@ TEST_F(FclCollisionDetectionTester, TestCollisionMapAdditionSpeed)
   EXPECT_GE(1.0, t);
   // this is not really a failure; it is just that slow;
   // looking into doing collision checking with a voxel grid.
-  logInform("Adding boxes took %g", t);
+  ROS_INFO_NAMED("collision_detection.fcl", "Adding boxes took %g", t);
 }
 
 TEST_F(FclCollisionDetectionTester, MoveMesh)
