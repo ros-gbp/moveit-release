@@ -1,0 +1,12 @@
+Source: ros-kinetic-moveit-ros-move-group
+Section: misc
+Priority: extra
+Maintainer: Michael Ferguson <mferguson@fetchrobotics.com>
+Build-Depends: debhelper (>= 9.0.0), ros-kinetic-actionlib, ros-kinetic-catkin, ros-kinetic-moveit-core, ros-kinetic-moveit-resources, ros-kinetic-moveit-ros-planning, ros-kinetic-pluginlib (>= 1.11.2), ros-kinetic-rostest, ros-kinetic-std-srvs, ros-kinetic-tf
+Homepage: http://moveit.ros.org
+Standards-Version: 3.9.2
+
+Package: ros-kinetic-moveit-ros-move-group
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-kinetic-actionlib, ros-kinetic-moveit-core, ros-kinetic-moveit-kinematics, ros-kinetic-moveit-ros-planning, ros-kinetic-pluginlib (>= 1.11.2), ros-kinetic-std-srvs, ros-kinetic-tf
+Description: The move_group node for MoveIt
