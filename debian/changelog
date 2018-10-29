@@ -1,0 +1,99 @@
+ros-kinetic-moveit-ros-control-interface (0.9.15-0xenial) xenial; urgency=high
+
+
+
+ -- Mathias Lüdtke <mathias.luedtke@ipa.fraunhofer.de>  Mon, 29 Oct 2018 07:00:00 -0000
+
+ros-kinetic-moveit-ros-control-interface (0.9.14-0xenial) xenial; urgency=high
+
+
+
+ -- Mathias Lüdtke <mathias.luedtke@ipa.fraunhofer.de>  Wed, 24 Oct 2018 07:00:00 -0000
+
+ros-kinetic-moveit-ros-control-interface (0.9.13-0xenial) xenial; urgency=high
+
+
+
+ -- Mathias Lüdtke <mathias.luedtke@ipa.fraunhofer.de>  Wed, 24 Oct 2018 07:00:00 -0000
+
+ros-kinetic-moveit-ros-control-interface (0.9.12-0xenial) xenial; urgency=high
+
+
+
+ -- Mathias Lüdtke <mathias.luedtke@ipa.fraunhofer.de>  Tue, 29 May 2018 07:00:00 -0000
+
+ros-kinetic-moveit-ros-control-interface (0.9.11-0xenial) xenial; urgency=high
+
+
+
+ -- Mathias Lüdtke <mathias.luedtke@ipa.fraunhofer.de>  Mon, 25 Dec 2017 08:00:00 -0000
+
+ros-kinetic-moveit-ros-control-interface (0.9.10-0xenial) xenial; urgency=high
+
+
+
+ -- Mathias Lüdtke <mathias.luedtke@ipa.fraunhofer.de>  Sat, 09 Dec 2017 08:00:00 -0000
+
+ros-kinetic-moveit-ros-control-interface (0.9.9-0xenial) xenial; urgency=high
+
+  * [improve] add backward compatibility patch for indigo (#551 <https://github.com/ros-planning/moveit/issues/551>)
+  * Contributors: Michael Görner
+
+ -- Mathias Lüdtke <mathias.luedtke@ipa.fraunhofer.de>  Sun, 06 Aug 2017 07:00:00 -0000
+
+ros-kinetic-moveit-ros-control-interface (0.9.8-0xenial) xenial; urgency=high
+
+
+
+ -- Mathias Lüdtke <mathias.luedtke@ipa.fraunhofer.de>  Wed, 21 Jun 2017 07:00:00 -0000
+
+ros-kinetic-moveit-ros-control-interface (0.9.7-0xenial) xenial; urgency=high
+
+
+
+ -- Mathias Lüdtke <mathias.luedtke@ipa.fraunhofer.de>  Mon, 05 Jun 2017 07:00:00 -0000
+
+ros-kinetic-moveit-ros-control-interface (0.9.6-0xenial) xenial; urgency=high
+
+
+
+ -- Mathias Lüdtke <mathias.luedtke@ipa.fraunhofer.de>  Wed, 12 Apr 2017 07:00:00 -0000
+
+ros-kinetic-moveit-ros-control-interface (0.9.5-0xenial) xenial; urgency=high
+
+
+
+ -- Mathias Lüdtke <mathias.luedtke@ipa.fraunhofer.de>  Wed, 08 Mar 2017 08:00:00 -0000
+
+ros-kinetic-moveit-ros-control-interface (0.9.4-0xenial) xenial; urgency=high
+
+  * [maintenance] clang-format upgraded to 3.8 (#367 <https://github.com/ros-planning/moveit/issues/367>)
+  * Contributors: Dave Coleman, Michael Goerner
+
+ -- Mathias Lüdtke <mathias.luedtke@ipa.fraunhofer.de>  Mon, 06 Feb 2017 08:00:00 -0000
+
+ros-kinetic-moveit-ros-control-interface (0.9.3-0xenial) xenial; urgency=high
+
+
+
+ -- Mathias Lüdtke <mathias.luedtke@ipa.fraunhofer.de>  Wed, 16 Nov 2016 08:00:00 -0000
+
+ros-kinetic-moveit-ros-control-interface (0.5.7-0xenial) xenial; urgency=high
+
+  * C++03 conforming nested templates
+  * fixed typo, added example config
+  * added brief decription tags
+  * formatted code to roscpp style
+  * improved documentation
+  * introduced getAbsName
+  * Added missing lock
+  * pre-allocate handles
+  * fixed typos
+  * set version to match the others
+  * fixed a lot of typos
+  * Intitial version of moveit_ros_control_interface package
+  * Contributors: Mathias Luedtke
+
+ -- Mathias Lüdtke <mathias.luedtke@ipa.fraunhofer.de>  Sat, 30 Jan 2016 08:00:00 -0000
+
+
