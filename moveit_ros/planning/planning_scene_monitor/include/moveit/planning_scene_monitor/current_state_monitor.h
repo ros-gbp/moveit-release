@@ -38,13 +38,11 @@
 #define MOVEIT_PLANNING_SCENE_MONITOR_CURRENT_STATE_MONITOR_
 
 #include <ros/ros.h>
-#include <tf/tf.h>
+#include <tf2_ros/buffer.h>
 #include <moveit/robot_state/robot_state.h>
 #include <sensor_msgs/JointState.h>
 #include <boost/function.hpp>
-#include <boost/shared_ptr.hpp>
 #include <boost/thread/mutex.hpp>
-#include <moveit/macros/deprecation.h>
 #include <boost/thread/condition_variable.hpp>
 
 namespace planning_scene_monitor
@@ -57,23 +55,24 @@ class CurrentStateMonitor
 {
   /* tf changed their interface between indigo and kinetic
      from boost::signals::connection to boost::signals2::connection */
-  typedef decltype(tf::Transformer().addTransformsChangedListener(boost::function<void(void)>())) TFConnection;
+  typedef decltype(tf2_ros::Buffer()._addTransformsChangedListener(boost::function<void(void)>())) TFConnection;
 
 public:
   /**
    * @brief Constructor.
    * @param robot_model The current kinematic model to build on
-   * @param tf A pointer to the tf transformer to use
+   * @param tf_buffer A pointer to the tf2_ros Buffer to use
    */
-  CurrentStateMonitor(const robot_model::RobotModelConstPtr& robot_model, const boost::shared_ptr<tf::Transformer>& tf);
+  CurrentStateMonitor(const robot_model::RobotModelConstPtr& robot_model,
+                      const std::shared_ptr<tf2_ros::Buffer>& tf_buffer);
 
   /** @brief Constructor.
    *  @param robot_model The current kinematic model to build on
-   *  @param tf A pointer to the tf transformer to use
+   *  @param tf_buffer A pointer to the tf2_ros Buffer to use
    *  @param nh A ros::NodeHandle to pass node specific options
    */
-  CurrentStateMonitor(const robot_model::RobotModelConstPtr& robot_model, const boost::shared_ptr<tf::Transformer>& tf,
-                      ros::NodeHandle nh);
+  CurrentStateMonitor(const robot_model::RobotModelConstPtr& robot_model,
+                      const std::shared_ptr<tf2_ros::Buffer>& tf_buffer, ros::NodeHandle nh);
 
   ~CurrentStateMonitor();
 
@@ -148,14 +147,10 @@ public:
   /** @brief Wait for at most \e wait_time seconds until the complete robot state is known.
       @return true if the full state is known */
   bool waitForCompleteState(double wait_time) const;
-  /** replaced by waitForCompleteState, will be removed in L-turtle: function waits for complete robot state */
-  MOVEIT_DEPRECATED bool waitForCurrentState(double wait_time) const;
 
   /** @brief Wait for at most \e wait_time seconds until the joint values from the group \e group are known. Return true
    * if values for all joints in \e group are known */
   bool waitForCompleteState(const std::string& group, double wait_time) const;
-  /** replaced by waitForCompleteState, will be removed in L-turtle: function waits for complete robot state */
-  MOVEIT_DEPRECATED bool waitForCurrentState(const std::string& group, double wait_time) const;
 
   /** @brief Get the time point when the monitor was started */
   const ros::Time& getMonitorStartTime() const
@@ -200,7 +195,7 @@ private:
   void tfCallback();
 
   ros::NodeHandle nh_;
-  boost::shared_ptr<tf::Transformer> tf_;
+  std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
   robot_model::RobotModelConstPtr robot_model_;
   robot_state::RobotState robot_state_;
   std::map<const moveit::core::JointModel*, ros::Time> joint_time_;

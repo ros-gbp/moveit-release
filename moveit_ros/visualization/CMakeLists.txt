@@ -33,7 +33,11 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   rviz
-  tf
+  tf2_eigen
+  roscpp
+  rosconsole
+  object_recognition_msgs
+  rostest
 )
 
 find_package(Eigen3 REQUIRED)

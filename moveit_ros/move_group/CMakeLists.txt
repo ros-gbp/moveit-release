@@ -15,7 +15,9 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   pluginlib
   std_srvs
-  tf
+  tf2
+  tf2_geometry_msgs
+  tf2_ros
 )
 
 catkin_package(
@@ -49,7 +51,6 @@ add_executable(list_move_group_capabilities src/list_capabilities.cpp)
 add_library(moveit_move_group_default_capabilities
   src/default_capabilities/move_action_capability.cpp
   src/default_capabilities/plan_service_capability.cpp
-  src/default_capabilities/execute_trajectory_service_capability.cpp
   src/default_capabilities/execute_trajectory_action_capability.cpp
   src/default_capabilities/query_planners_service_capability.cpp
   src/default_capabilities/kinematics_service_capability.cpp

@@ -37,7 +37,8 @@ find_package(urdfdom_headers REQUIRED)
 
 find_package(catkin REQUIRED
 COMPONENTS
-  eigen_conversions
+  tf2_eigen
+  tf2_kdl
   eigen_stl_containers
   geometric_shapes
   geometry_msgs
@@ -118,7 +119,7 @@ catkin_package(
     moveit_utils
     ${OCTOMAP_LIBRARIES}
   CATKIN_DEPENDS
-    eigen_conversions
+    tf2_eigen
     eigen_stl_containers
     geometric_shapes
     geometry_msgs
