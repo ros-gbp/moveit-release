@@ -2,6 +2,9 @@
 Changelog for package chomp_interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.10.4 (2018-10-29)
+-------------------
+
 0.10.3 (2018-10-29)
 -------------------
 * [fix] Build regression (`#1134 <https://github.com/ros-planning/moveit/issues/1134>`_)
