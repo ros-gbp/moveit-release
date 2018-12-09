@@ -1,6 +1,6 @@
 <package>
   <name>moveit_ros_visualization</name>
-  <version>0.10.5</version>
+  <version>0.10.6</version>
   <description>Components of MoveIt! that offer visualization</description>
 
   <author email="isucan@google.com">Ioan Sucan</author>
@@ -22,7 +22,6 @@
 
   <build_depend>class_loader</build_depend>
   <build_depend>eigen</build_depend>
-  <build_depend>eigen_conversions</build_depend>
   <build_depend>geometric_shapes</build_depend>
   <build_depend>interactive_markers</build_depend>
   <build_depend>libogre-dev</build_depend>
