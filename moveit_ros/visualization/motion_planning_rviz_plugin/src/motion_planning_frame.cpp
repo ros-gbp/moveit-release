@@ -34,6 +34,7 @@
 
 /* Author: Ioan Sucan */
 
+#include <moveit/common_planning_interface_objects/common_objects.h>
 #include <moveit/motion_planning_rviz_plugin/motion_planning_frame.h>
 #include <moveit/motion_planning_rviz_plugin/motion_planning_display.h>
 #include <moveit/move_group/capability_names.h>
@@ -72,8 +73,10 @@ MotionPlanningFrame::MotionPlanningFrame(MotionPlanningDisplay* pdisplay, rviz::
   connect(ui_->execute_button, SIGNAL(clicked()), this, SLOT(executeButtonClicked()));
   connect(ui_->plan_and_execute_button, SIGNAL(clicked()), this, SLOT(planAndExecuteButtonClicked()));
   connect(ui_->stop_button, SIGNAL(clicked()), this, SLOT(stopButtonClicked()));
-  connect(ui_->use_start_state_button, SIGNAL(clicked()), this, SLOT(useStartStateButtonClicked()));
-  connect(ui_->use_goal_state_button, SIGNAL(clicked()), this, SLOT(useGoalStateButtonClicked()));
+  connect(ui_->start_state_combo_box, SIGNAL(activated(QString)), this, SLOT(startStateTextChanged(QString)));
+  connect(ui_->goal_state_combo_box, SIGNAL(activated(QString)), this, SLOT(goalStateTextChanged(QString)));
+  connect(ui_->planning_group_combo_box, SIGNAL(currentIndexChanged(QString)), this,
+          SLOT(planningGroupTextChanged(QString)));
   connect(ui_->database_connect_button, SIGNAL(clicked()), this, SLOT(databaseConnectButtonClicked()));
   connect(ui_->save_scene_button, SIGNAL(clicked()), this, SLOT(saveSceneButtonClicked()));
   connect(ui_->save_query_button, SIGNAL(clicked()), this, SLOT(saveQueryButtonClicked()));
@@ -196,6 +199,7 @@ MotionPlanningFrame::MotionPlanningFrame(MotionPlanningDisplay* pdisplay, rviz::
 
 MotionPlanningFrame::~MotionPlanningFrame()
 {
+  delete ui_;
 }
 
 void MotionPlanningFrame::approximateIKChanged(int state)
@@ -246,44 +250,57 @@ void MotionPlanningFrame::allowExternalProgramCommunication(bool enable)
   }
 }
 
+void MotionPlanningFrame::fillPlanningGroupOptions()
+{
+  const QSignalBlocker planning_group_blocker(ui_->planning_group_combo_box);
+  ui_->planning_group_combo_box->clear();
+
+  const robot_model::RobotModelConstPtr& kmodel = planning_display_->getRobotModel();
+  for (const std::string group_name : kmodel->getJointModelGroupNames())
+    ui_->planning_group_combo_box->addItem(QString::fromStdString(group_name));
+}
+
 void MotionPlanningFrame::fillStateSelectionOptions()
 {
-  ui_->start_state_selection->clear();
-  ui_->goal_state_selection->clear();
+  const QSignalBlocker start_state_blocker(ui_->start_state_combo_box);
+  const QSignalBlocker goal_state_blocker(ui_->goal_state_combo_box);
+  ui_->start_state_combo_box->clear();
+  ui_->goal_state_combo_box->clear();
 
   if (!planning_display_->getPlanningSceneMonitor())
     return;
 
-  const robot_model::RobotModelConstPtr& kmodel = planning_display_->getRobotModel();
+  const robot_model::RobotModelConstPtr& robot_model = planning_display_->getRobotModel();
   std::string group = planning_display_->getCurrentPlanningGroup();
   if (group.empty())
     return;
-  const robot_model::JointModelGroup* jmg = kmodel->getJointModelGroup(group);
+  const robot_model::JointModelGroup* jmg = robot_model->getJointModelGroup(group);
   if (jmg)
   {
-    ui_->start_state_selection->addItem(QString("<random valid>"));
-    ui_->start_state_selection->addItem(QString("<random>"));
-    ui_->start_state_selection->addItem(QString("<current>"));
-    ui_->start_state_selection->addItem(QString("<same as goal>"));
+    ui_->start_state_combo_box->addItem(QString("<random valid>"));
+    ui_->start_state_combo_box->addItem(QString("<random>"));
+    ui_->start_state_combo_box->addItem(QString("<current>"));
+    ui_->start_state_combo_box->addItem(QString("<same as goal>"));
 
-    ui_->goal_state_selection->addItem(QString("<random valid>"));
-    ui_->goal_state_selection->addItem(QString("<random>"));
-    ui_->goal_state_selection->addItem(QString("<current>"));
-    ui_->goal_state_selection->addItem(QString("<same as start>"));
+    ui_->goal_state_combo_box->addItem(QString("<random valid>"));
+    ui_->goal_state_combo_box->addItem(QString("<random>"));
+    ui_->goal_state_combo_box->addItem(QString("<current>"));
+    ui_->goal_state_combo_box->addItem(QString("<same as start>"));
 
     const std::vector<std::string>& known_states = jmg->getDefaultStateNames();
     if (!known_states.empty())
     {
-      ui_->start_state_selection->insertSeparator(ui_->start_state_selection->count());
-      ui_->goal_state_selection->insertSeparator(ui_->goal_state_selection->count());
+      ui_->start_state_combo_box->insertSeparator(ui_->start_state_combo_box->count());
+      ui_->goal_state_combo_box->insertSeparator(ui_->goal_state_combo_box->count());
       for (std::size_t i = 0; i < known_states.size(); ++i)
       {
-        ui_->start_state_selection->addItem(QString::fromStdString(known_states[i]));
-        ui_->goal_state_selection->addItem(QString::fromStdString(known_states[i]));
+        ui_->start_state_combo_box->addItem(QString::fromStdString(known_states[i]));
+        ui_->goal_state_combo_box->addItem(QString::fromStdString(known_states[i]));
       }
     }
-    ui_->start_state_selection->setCurrentIndex(2);  // default to 'current'
-    ui_->goal_state_selection->setCurrentIndex(0);   // default to 'random valid'
+
+    ui_->start_state_combo_box->setCurrentIndex(2);  // default to 'current'
+    ui_->goal_state_combo_box->setCurrentIndex(2);   // default to 'current'
   }
 }
 
@@ -296,25 +313,27 @@ void MotionPlanningFrame::changePlanningGroupHelper()
   planning_display_->addMainLoopJob(
       boost::bind(&MotionPlanningFrame::populateConstraintsList, this, std::vector<std::string>()));
 
-  const robot_model::RobotModelConstPtr& kmodel = planning_display_->getRobotModel();
+  const robot_model::RobotModelConstPtr& robot_model = planning_display_->getRobotModel();
   std::string group = planning_display_->getCurrentPlanningGroup();
   planning_display_->addMainLoopJob(
       boost::bind(&MotionPlanningParamWidget::setGroupName, ui_->planner_param_treeview, group));
+  planning_display_->addMainLoopJob(
+      [=]() { ui_->planning_group_combo_box->setCurrentText(QString::fromStdString(group)); });
 
-  if (!group.empty() && kmodel)
+  if (!group.empty() && robot_model)
   {
     if (move_group_ && move_group_->getName() == group)
       return;
     ROS_INFO("Constructing new MoveGroup connection for group '%s' in namespace '%s'", group.c_str(),
              planning_display_->getMoveGroupNS().c_str());
     moveit::planning_interface::MoveGroupInterface::Options opt(group);
-    opt.robot_model_ = kmodel;
+    opt.robot_model_ = robot_model;
     opt.robot_description_.clear();
     opt.node_handle_ = ros::NodeHandle(planning_display_->getMoveGroupNS());
     try
     {
-#ifdef ROS_KINETIC
-      std::shared_ptr<tf2_ros::Buffer> tf_buffer = PlanningSceneDisplay::getTF2BufferPtr();
+#ifdef RVIZ_TF1
+      std::shared_ptr<tf2_ros::Buffer> tf_buffer = moveit::planning_interface::getSharedTF();
 #else
       std::shared_ptr<tf2_ros::Buffer> tf_buffer = context_->getFrameManager()->getTF2BufferPtr();
 #endif
@@ -333,6 +352,8 @@ void MotionPlanningFrame::changePlanningGroupHelper()
     {
       move_group_->allowLooking(ui_->allow_looking->isChecked());
       move_group_->allowReplanning(ui_->allow_replanning->isChecked());
+      bool hasUniqueEndeffector = !move_group_->getEndEffectorLink().empty();
+      planning_display_->addMainLoopJob([=]() { ui_->use_cartesian_path->setEnabled(hasUniqueEndeffector); });
       moveit_msgs::PlannerInterfaceDescription desc;
       if (move_group_->getInterfaceDescription(desc))
         planning_display_->addMainLoopJob(boost::bind(&MotionPlanningFrame::populatePlannersList, this, desc));
@@ -380,7 +401,7 @@ void MotionPlanningFrame::importResource(const std::string& path)
       std::size_t slash = path.find_last_of("/\\");
       std::string name = path.substr(slash + 1);
       shapes::ShapeConstPtr shape(mesh);
-      Eigen::Affine3d pose;
+      Eigen::Isometry3d pose;
       pose.setIdentity();
 
       if (planning_display_->getPlanningSceneRO()->getCurrentState().hasAttachedBody(name))
