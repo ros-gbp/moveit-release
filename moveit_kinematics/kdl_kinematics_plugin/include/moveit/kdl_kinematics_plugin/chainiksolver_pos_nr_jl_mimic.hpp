@@ -28,6 +28,7 @@
 #ifndef KDLCHAINIKSOLVERPOS_NR_JL_Mimic_HPP
 #define KDLCHAINIKSOLVERPOS_NR_JL_Mimic_HPP
 
+#include "kdl/config.h"
 #include "kdl/chainiksolver.hpp"
 #include "kdl/chainfksolver.hpp"
 
@@ -67,11 +68,18 @@ public:
                                ChainFkSolverPos& fksolver, ChainIkSolverVel& iksolver, unsigned int maxiter = 100,
                                double eps = 1e-6, bool position_ik = false);
 
-  virtual void updateInternalDataStructures();
+// TODO: simplify after kinetic support is dropped
+#define KDL_VERSION_LESS(a, b, c) (KDL_VERSION < ((a << 16) | (b << 8) | c))
+#if KDL_VERSION_LESS(1, 4, 0)
+  void updateInternalDataStructures();
+#else
+  void updateInternalDataStructures() override;
+#endif
+#undef KDL_VERSION_LESS
 
-  ~ChainIkSolverPos_NR_JL_Mimic();
+  ~ChainIkSolverPos_NR_JL_Mimic() override;
 
-  virtual int CartToJnt(const JntArray& q_init, const Frame& p_in, JntArray& q_out);
+  int CartToJnt(const JntArray& q_init, const Frame& p_in, JntArray& q_out) override;
 
   virtual int CartToJntAdvanced(const JntArray& q_init, const Frame& p_in, JntArray& q_out, bool lock_redundant_joints);
 
