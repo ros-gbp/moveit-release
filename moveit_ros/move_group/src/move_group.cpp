@@ -38,7 +38,6 @@
 #include <tf2_ros/transform_listener.h>
 #include <moveit/move_group/capability_names.h>
 #include <moveit/move_group/move_group_capability.h>
-#include <boost/algorithm/string/join.hpp>
 #include <boost/tokenizer.hpp>
 #include <moveit/macros/console_colors.h>
 #include <moveit/move_group/node_name.h>
@@ -151,17 +150,14 @@ private:
       try
       {
         printf(MOVEIT_CONSOLE_COLOR_CYAN "Loading '%s'...\n" MOVEIT_CONSOLE_COLOR_RESET, plugin->c_str());
-        MoveGroupCapability* cap = capability_plugin_loader_->createUnmanagedInstance(*plugin);
+        MoveGroupCapabilityPtr cap = capability_plugin_loader_->createUniqueInstance(*plugin);
         cap->setContext(context_);
         cap->initialize();
-        capabilities_.push_back(MoveGroupCapabilityPtr(cap));
+        capabilities_.push_back(cap);
       }
       catch (pluginlib::PluginlibException& ex)
       {
-        ROS_ERROR_STREAM("Exception while loading move_group capability '"
-                         << *plugin << "': " << ex.what() << std::endl
-                         << "Available capabilities: "
-                         << boost::algorithm::join(capability_plugin_loader_->getDeclaredClasses(), ", "));
+        ROS_ERROR_STREAM("Exception while loading move_group capability '" << *plugin << "': " << ex.what());
       }
     }
 
@@ -211,11 +207,11 @@ int main(int argc, char** argv)
     else
       ROS_INFO("MoveGroup debug mode is OFF");
 
-    printf(MOVEIT_CONSOLE_COLOR_CYAN "Starting context monitors...\n" MOVEIT_CONSOLE_COLOR_RESET);
+    printf(MOVEIT_CONSOLE_COLOR_CYAN "Starting planning scene monitors...\n" MOVEIT_CONSOLE_COLOR_RESET);
     planning_scene_monitor->startSceneMonitor();
     planning_scene_monitor->startWorldGeometryMonitor();
     planning_scene_monitor->startStateMonitor();
-    printf(MOVEIT_CONSOLE_COLOR_CYAN "Context monitors started.\n" MOVEIT_CONSOLE_COLOR_RESET);
+    printf(MOVEIT_CONSOLE_COLOR_CYAN "Planning scene monitors started.\n" MOVEIT_CONSOLE_COLOR_RESET);
 
     move_group::MoveGroupExe mge(planning_scene_monitor, debug);
 
