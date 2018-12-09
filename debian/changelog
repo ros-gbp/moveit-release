@@ -1,0 +1,9 @@
+ros-melodic-moveit-chomp-optimizer-adapter (0.10.6-0stretch) stretch; urgency=high
+
+  * [maintenance] Moved CHOMP optimizer into own package (#1251 <https://github.com/ros-planning/moveit/issues/1251>)
+  * rename default_planner_request_adapters/CHOMPOptimizerAdapter -> chomp/OptimizerAdapter
+  * Contributors: Robert Haschke
+
+ -- Raghavender Sahdev <raghavendersahdev@gmail.com>  Sat, 08 Dec 2018 23:00:00 -0000
+
+
