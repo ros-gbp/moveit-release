@@ -53,14 +53,12 @@
 #include <vector>
 #include <eigen3/Eigen/Core>
 
-using namespace chomp;
-
-namespace default_planner_request_adapters
+namespace chomp
 {
-class CHOMPOptimizerAdapter : public planning_request_adapter::PlanningRequestAdapter
+class OptimizerAdapter : public planning_request_adapter::PlanningRequestAdapter
 {
 public:
-  CHOMPOptimizerAdapter() : planning_request_adapter::PlanningRequestAdapter(), nh_("~")
+  OptimizerAdapter() : planning_request_adapter::PlanningRequestAdapter(), nh_("~")
   {
     if (!nh_.getParam("planning_time_limit", params_.planning_time_limit_))
     {
@@ -149,7 +147,7 @@ public:
       ROS_INFO_STREAM(
           "Param use_stochastic_descent was not set. Using default value: " << params_.use_stochastic_descent_);
     }
-    if (!nh_.getParam("trajectory_initialization_method", params_.use_stochastic_descent_))
+    if (!nh_.getParam("trajectory_initialization_method", params_.trajectory_initialization_method_))
     {
       params_.trajectory_initialization_method_ = std::string("fillTrajectory");
       ROS_INFO_STREAM("Param trajectory_initialization_method was not set. Using New value as: "
@@ -157,15 +155,14 @@ public:
     }
   }
 
-  virtual std::string getDescription() const
+  std::string getDescription() const override
   {
     return "CHOMP Optimizer";
   }
 
-  virtual bool adaptAndPlan(const PlannerFn& planner, const planning_scene::PlanningSceneConstPtr& ps,
-                            const planning_interface::MotionPlanRequest& req,
-                            planning_interface::MotionPlanResponse& res,
-                            std::vector<std::size_t>& added_path_index) const
+  bool adaptAndPlan(const PlannerFn& planner, const planning_scene::PlanningSceneConstPtr& ps,
+                    const planning_interface::MotionPlanRequest& req, planning_interface::MotionPlanResponse& res,
+                    std::vector<std::size_t>& added_path_index) const override
   {
     // following call to planner() calls the OMPL planner and stores the trajectory inside the MotionPlanResponse res
     // variable which is then used by CHOMP for optimization of the computed trajectory
@@ -183,7 +180,6 @@ public:
     chomp::ChompPlanner chompPlanner;
     planning_interface::MotionPlanDetailedResponse res_detailed;
     moveit_msgs::MotionPlanDetailedResponse res_detailed_moveit_msgs;
-    moveit_msgs::MotionPlanRequest req_moveit_msgs;
 
     // populate the trajectory to pass to CHOMPPlanner::solve() method. Obtain trajectory from OMPL's
     // planning_interface::MotionPlanResponse object and put / populate it in the
@@ -229,5 +225,4 @@ private:
 };
 }
 
-CLASS_LOADER_REGISTER_CLASS(default_planner_request_adapters::CHOMPOptimizerAdapter,
-                            planning_request_adapter::PlanningRequestAdapter);
+CLASS_LOADER_REGISTER_CLASS(chomp::OptimizerAdapter, planning_request_adapter::PlanningRequestAdapter);
