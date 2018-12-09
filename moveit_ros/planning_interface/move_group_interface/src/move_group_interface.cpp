@@ -50,7 +50,6 @@
 #include <moveit/trajectory_execution_manager/trajectory_execution_manager.h>
 #include <moveit/common_planning_interface_objects/common_objects.h>
 #include <moveit/robot_state/conversions.h>
-#include <moveit_msgs/MoveGroupAction.h>
 #include <moveit_msgs/PickupAction.h>
 #include <moveit_msgs/ExecuteTrajectoryAction.h>
 #include <moveit_msgs/PlaceAction.h>
@@ -61,7 +60,6 @@
 #include <moveit_msgs/GetPlannerParams.h>
 #include <moveit_msgs/SetPlannerParams.h>
 
-#include <actionlib/client/simple_action_client.h>
 #include <std_msgs/String.h>
 #include <geometry_msgs/TransformStamped.h>
 #include <tf2/utils.h>
@@ -260,6 +258,11 @@ public:
     return joint_model_group_;
   }
 
+  actionlib::SimpleActionClient<moveit_msgs::MoveGroupAction>& getMoveGroupClient() const
+  {
+    return *move_action_client_;
+  }
+
   bool getInterfaceDescription(moveit_msgs::PlannerInterfaceDescription& desc)
   {
     moveit_msgs::QueryPlannerInterfaces::Request req;
@@ -402,8 +405,8 @@ public:
         if (c->knowsFrameTransform(frame))
         {
           // transform the pose first if possible, then do IK
-          const Eigen::Affine3d& t = getJointStateTarget().getFrameTransform(frame);
-          Eigen::Affine3d p;
+          const Eigen::Isometry3d& t = getJointStateTarget().getFrameTransform(frame);
+          Eigen::Isometry3d p;
           tf2::fromMsg(eef_pose, p);
           return getJointStateTarget().setFromIK(getJointModelGroup(), t * p, eef, 0, 0.0,
                                                  moveit::core::GroupStateValidityCallbackFn(), o);
@@ -1413,6 +1416,12 @@ moveit::planning_interface::MoveItErrorCode moveit::planning_interface::MoveGrou
   return impl_->move(false);
 }
 
+actionlib::SimpleActionClient<moveit_msgs::MoveGroupAction>&
+moveit::planning_interface::MoveGroupInterface::getMoveGroupClient() const
+{
+  return impl_->getMoveGroupClient();
+}
+
 moveit::planning_interface::MoveItErrorCode moveit::planning_interface::MoveGroupInterface::move()
 {
   return impl_->move(true);
@@ -1656,7 +1665,7 @@ bool moveit::planning_interface::MoveGroupInterface::setJointValueTarget(const g
   return impl_->setJointValueTarget(eef_pose.pose, end_effector_link, eef_pose.header.frame_id, false);
 }
 
-bool moveit::planning_interface::MoveGroupInterface::setJointValueTarget(const Eigen::Affine3d& eef_pose,
+bool moveit::planning_interface::MoveGroupInterface::setJointValueTarget(const Eigen::Isometry3d& eef_pose,
                                                                          const std::string& end_effector_link)
 {
   geometry_msgs::Pose msg = tf2::toMsg(eef_pose);
@@ -1676,7 +1685,7 @@ bool moveit::planning_interface::MoveGroupInterface::setApproximateJointValueTar
 }
 
 bool moveit::planning_interface::MoveGroupInterface::setApproximateJointValueTarget(
-    const Eigen::Affine3d& eef_pose, const std::string& end_effector_link)
+    const Eigen::Isometry3d& eef_pose, const std::string& end_effector_link)
 {
   geometry_msgs::Pose msg = tf2::toMsg(eef_pose);
   return setApproximateJointValueTarget(msg, end_effector_link);
@@ -1724,7 +1733,7 @@ void moveit::planning_interface::MoveGroupInterface::clearPoseTargets()
   impl_->clearPoseTargets();
 }
 
-bool moveit::planning_interface::MoveGroupInterface::setPoseTarget(const Eigen::Affine3d& pose,
+bool moveit::planning_interface::MoveGroupInterface::setPoseTarget(const Eigen::Isometry3d& pose,
                                                                    const std::string& end_effector_link)
 {
   std::vector<geometry_msgs::PoseStamped> pose_msg(1);
@@ -1751,7 +1760,7 @@ bool moveit::planning_interface::MoveGroupInterface::setPoseTarget(const geometr
   return setPoseTargets(targets, end_effector_link);
 }
 
-bool moveit::planning_interface::MoveGroupInterface::setPoseTargets(const EigenSTL::vector_Affine3d& target,
+bool moveit::planning_interface::MoveGroupInterface::setPoseTargets(const EigenSTL::vector_Isometry3d& target,
                                                                     const std::string& end_effector_link)
 {
   std::vector<geometry_msgs::PoseStamped> pose_out(target.size());
@@ -1976,7 +1985,7 @@ geometry_msgs::PoseStamped
 moveit::planning_interface::MoveGroupInterface::getRandomPose(const std::string& end_effector_link)
 {
   const std::string& eef = end_effector_link.empty() ? getEndEffectorLink() : end_effector_link;
-  Eigen::Affine3d pose;
+  Eigen::Isometry3d pose;
   pose.setIdentity();
   if (eef.empty())
     ROS_ERROR_NAMED("move_group_interface", "No end-effector specified");
@@ -2002,7 +2011,7 @@ geometry_msgs::PoseStamped
 moveit::planning_interface::MoveGroupInterface::getCurrentPose(const std::string& end_effector_link)
 {
   const std::string& eef = end_effector_link.empty() ? getEndEffectorLink() : end_effector_link;
-  Eigen::Affine3d pose;
+  Eigen::Isometry3d pose;
   pose.setIdentity();
   if (eef.empty())
     ROS_ERROR_NAMED("move_group_interface", "No end-effector specified");
