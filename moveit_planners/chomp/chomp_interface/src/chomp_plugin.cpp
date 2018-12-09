@@ -35,6 +35,7 @@
 #include <moveit/planning_interface/planning_interface.h>
 #include <moveit/planning_scene/planning_scene.h>
 #include <moveit/robot_model/robot_model.h>
+#include <moveit/collision_distance_field/collision_detector_allocator_hybrid.h>
 #include <moveit_msgs/GetMotionPlan.h>
 #include <chomp_interface/chomp_planning_context.h>
 
@@ -49,23 +50,19 @@ public:
   {
   }
 
-  bool initialize(const robot_model::RobotModelConstPtr& model, const std::string& ns)
+  bool initialize(const robot_model::RobotModelConstPtr& model, const std::string& ns) override
   {
-    // model->printModelInfo(std::cout);
-    std::vector<std::string> groups = model->getJointModelGroupNames();
-    ROS_INFO_STREAM("Following groups exist:");
-    for (std::size_t i = 0; i < groups.size(); i++)
+    for (const std::string& group : model->getJointModelGroupNames())
     {
-      ROS_INFO("%s", groups[i].c_str());
-      planning_contexts_[groups[i]] =
-          CHOMPPlanningContextPtr(new CHOMPPlanningContext("chomp_planning_context", groups[i], model));
+      planning_contexts_[group] =
+          CHOMPPlanningContextPtr(new CHOMPPlanningContext("chomp_planning_context", group, model));
     }
     return true;
   }
 
   planning_interface::PlanningContextPtr getPlanningContext(const planning_scene::PlanningSceneConstPtr& planning_scene,
                                                             const planning_interface::MotionPlanRequest& req,
-                                                            moveit_msgs::MoveItErrorCodes& error_code) const
+                                                            moveit_msgs::MoveItErrorCodes& error_code) const override
   {
     error_code.val = moveit_msgs::MoveItErrorCodes::SUCCESS;
 
@@ -83,25 +80,31 @@ public:
       return planning_interface::PlanningContextPtr();
     }
 
-    planning_contexts_.at(req.group_name)->setMotionPlanRequest(req);
-    planning_contexts_.at(req.group_name)->setPlanningScene(planning_scene);
+    // create PlanningScene using hybrid collision detector
+    planning_scene::PlanningScenePtr ps = planning_scene->diff();
+    ps->setActiveCollisionDetector(collision_detection::CollisionDetectorAllocatorHybrid::create(), true);
+
+    // retrieve and configure existing context
+    const CHOMPPlanningContextPtr& context = planning_contexts_.at(req.group_name);
+    context->setPlanningScene(ps);
+    context->setMotionPlanRequest(req);
     error_code.val = moveit_msgs::MoveItErrorCodes::SUCCESS;
-    return planning_contexts_.at(req.group_name);
+    return context;
   }
 
-  bool canServiceRequest(const planning_interface::MotionPlanRequest& req) const
+  bool canServiceRequest(const planning_interface::MotionPlanRequest& req) const override
   {
     // TODO: this is a dummy implementation
     //      capabilities.dummy = false;
     return true;
   }
 
-  std::string getDescription() const
+  std::string getDescription() const override
   {
     return "CHOMP";
   }
 
-  void getPlanningAlgorithms(std::vector<std::string>& algs) const
+  void getPlanningAlgorithms(std::vector<std::string>& algs) const override
   {
     algs.resize(1);
     algs[0] = "CHOMP";
