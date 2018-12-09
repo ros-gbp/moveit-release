@@ -34,10 +34,10 @@
 
 /* Author: Dave Coleman */
 
+#include <moveit/planning_scene/planning_scene.h>
 #include <moveit/setup_assistant/tools/compute_default_collisions.h>
 #include <boost/math/special_functions/binomial.hpp>  // for statistics at end
 #include <boost/thread.hpp>
-#include <boost/lexical_cast.hpp>
 #include <boost/unordered_map.hpp>
 #include <boost/assign.hpp>
 #include <ros/console.h>
@@ -613,7 +613,7 @@ void disableNeverInCollisionThread(ThreadComputation tc)
   const unsigned int progress_interval = tc.num_trials_ / 20;  // show progress update every 5%
 
   // Create a new kinematic state for this thread to work on
-  robot_state::RobotState kstate(tc.scene_.getRobotModel());
+  robot_state::RobotState robot_state(tc.scene_.getRobotModel());
 
   // Do a large number of tests
   for (unsigned int i = 0; i < tc.num_trials_; ++i)
@@ -627,8 +627,8 @@ void disableNeverInCollisionThread(ThreadComputation tc)
     }
 
     collision_detection::CollisionResult res;
-    kstate.setToRandomPositions();
-    tc.scene_.checkSelfCollision(tc.req_, res, kstate);
+    robot_state.setToRandomPositions();
+    tc.scene_.checkSelfCollision(tc.req_, res, robot_state);
 
     // Check all contacts
     for (collision_detection::CollisionResult::ContactMap::const_iterator it = res.contacts.begin();
