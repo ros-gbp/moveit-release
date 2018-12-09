@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <package>
   <name>moveit_ros_planning</name>
-  <version>0.10.5</version>
+  <version>0.10.6</version>
   <description>Planning components of MoveIt! that use ROS</description>
   <author email="isucan@google.com">Ioan Sucan</author>
   <author email="robot.moveit@gmail.com">Sachin Chitta</author>
@@ -30,7 +30,6 @@
   <build_depend>tf2_geometry_msgs</build_depend>
   <build_depend>tf2_msgs</build_depend>
   <build_depend>tf2_ros</build_depend>
-  <build_depend>chomp_motion_planner</build_depend>
 
   <run_depend>moveit_core</run_depend>
   <run_depend>moveit_ros_perception</run_depend>
