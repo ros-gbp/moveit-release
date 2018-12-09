@@ -71,14 +71,14 @@ class RobotStateDisplay : public rviz::Display
 
 public:
   RobotStateDisplay();
-  virtual ~RobotStateDisplay();
+  ~RobotStateDisplay() override;
 
-  virtual void update(float wall_dt, float ros_dt);
-  virtual void reset();
+  void update(float wall_dt, float ros_dt) override;
+  void reset() override;
 
   const robot_model::RobotModelConstPtr& getRobotModel() const
   {
-    return kmodel_;
+    return robot_model_;
   }
 
   void setLinkColor(const std::string& link_name, const QColor& color);
@@ -117,10 +117,10 @@ protected:
   void unsetHighlight(const std::string& link_name);
 
   // overrides from Display
-  virtual void onInitialize();
-  virtual void onEnable();
-  virtual void onDisable();
-  virtual void fixedFrameChanged();
+  void onInitialize() override;
+  void onEnable() override;
+  void onDisable() override;
+  void fixedFrameChanged() override;
 
   // render the robot
   ros::NodeHandle root_nh_;
@@ -128,8 +128,8 @@ protected:
 
   RobotStateVisualizationPtr robot_;
   rdf_loader::RDFLoaderPtr rdf_loader_;
-  robot_model::RobotModelConstPtr kmodel_;
-  robot_state::RobotStatePtr kstate_;
+  robot_model::RobotModelConstPtr robot_model_;
+  robot_state::RobotStatePtr robot_state_;
   std::map<std::string, std_msgs::ColorRGBA> highlights_;
   bool update_state_;
   bool load_robot_model_;  // for delayed robot initialization

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.12)
 project(moveit_ros_planning_interface)
 
-add_compile_options(-std=c++11)
+add_compile_options(-std=c++14)
 
 if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
@@ -44,11 +44,6 @@ find_package(Boost REQUIRED COMPONENTS
 )
 find_package(Eigen3 REQUIRED)
 
-# Eigen 3.2 (Wily) only provides EIGEN3_INCLUDE_DIR, not EIGEN3_INCLUDE_DIRS
-if(NOT EIGEN3_INCLUDE_DIRS)
-  set(EIGEN3_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
-endif()
-
 set(THIS_PACKAGE_INCLUDE_DIRS
   py_bindings_tools/include
   common_planning_interface_objects/include
@@ -66,6 +61,7 @@ catkin_package(
   INCLUDE_DIRS
     ${THIS_PACKAGE_INCLUDE_DIRS}
   CATKIN_DEPENDS
+    actionlib
     moveit_ros_planning
     moveit_ros_warehouse
     moveit_ros_manipulation
