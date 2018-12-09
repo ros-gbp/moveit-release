@@ -1,12 +1,17 @@
 cmake_minimum_required(VERSION 2.8.12)
 project(moveit_core)
 
-add_compile_options(-std=c++11)
+add_compile_options(-std=c++14)
 
 # Warnings
-add_definitions(-Wall -Wextra
+add_compile_options(-Wall -Wextra
   -Wwrite-strings -Wunreachable-code -Wpointer-arith -Wredundant-decls -Wcast-qual
-  -Wno-unused-parameter -Wno-unused-function -Wno-maybe-uninitialized)
+  -Wno-unused-parameter -Wno-unused-function)
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  # This too often has false-positives
+  add_compile_options(-Wno-maybe-uninitialized)
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+endif()
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -16,14 +21,7 @@ if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
 endif()
 
 find_package(Boost REQUIRED system filesystem date_time thread iostreams)
-
 find_package(Eigen3 REQUIRED)
-
-# Eigen 3.2 (Wily) only provides EIGEN3_INCLUDE_DIR, not EIGEN3_INCLUDE_DIRS
-if(NOT EIGEN3_INCLUDE_DIRS)
-  set(EIGEN3_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
-endif()
-
 find_package(PkgConfig REQUIRED)
 
 pkg_check_modules(LIBFCL REQUIRED fcl)
@@ -31,7 +29,6 @@ find_library(LIBFCL_LIBRARIES_FULL ${LIBFCL_LIBRARIES} ${LIBFCL_LIBRARY_DIRS})
 set(LIBFCL_LIBRARIES "${LIBFCL_LIBRARIES_FULL}")
 
 find_package(octomap REQUIRED)
-
 find_package(urdfdom REQUIRED)
 find_package(urdfdom_headers REQUIRED)
 
@@ -75,6 +72,7 @@ set(THIS_PACKAGE_INCLUDE_DIRS
     constraint_samplers/include
     controller_manager/include
     distance_field/include
+    collision_distance_field/include
     dynamics_solver/include
     kinematics_base/include
     kinematics_metrics/include
@@ -114,6 +112,7 @@ catkin_package(
     moveit_profiler
     moveit_trajectory_processing
     moveit_distance_field
+    moveit_collision_distance_field
     moveit_kinematics_metrics
     moveit_dynamics_solver
     moveit_utils
@@ -186,6 +185,7 @@ add_subdirectory(planning_interface)
 add_subdirectory(planning_request_adapter)
 add_subdirectory(trajectory_processing)
 add_subdirectory(distance_field)
+add_subdirectory(collision_distance_field)
 add_subdirectory(kinematics_metrics)
 add_subdirectory(dynamics_solver)
 add_subdirectory(utils)
