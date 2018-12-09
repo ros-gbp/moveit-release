@@ -343,8 +343,10 @@ public:
   /** @brief Stop the scene monitor*/
   void stopSceneMonitor();
 
-  /** @brief Start listening for objects in the world, the collision map and attached collision objects. Additionally,
-   * this function starts the OccupancyMapMonitor as well.
+  /** @brief Start the OccupancyMapMonitor and listening for:
+   *     - Requests to add/remove/update collision objects to/from the world
+   *     - The collision map
+   *     - Requests to attached/detach collision objects
    *  @param collision_objects_topic The topic on which to listen for collision objects
    *  @param planning_scene_world_topic The topic to listen to for world scene geometry
    *  @param load_octomap_monitor Flag to disable octomap monitor if desired
@@ -467,6 +469,7 @@ protected:
   ros::NodeHandle root_nh_;
   ros::CallbackQueue queue_;
   std::shared_ptr<ros::AsyncSpinner> spinner_;
+
   std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
 
   std::string robot_description_;
@@ -513,7 +516,7 @@ protected:
   typedef std::map<const robot_state::AttachedBody*,
                    std::vector<std::pair<occupancy_map_monitor::ShapeHandle, std::size_t> > >
       AttachedBodyShapeHandles;
-  typedef std::map<std::string, std::vector<std::pair<occupancy_map_monitor::ShapeHandle, const Eigen::Affine3d*> > >
+  typedef std::map<std::string, std::vector<std::pair<occupancy_map_monitor::ShapeHandle, const Eigen::Isometry3d*> > >
       CollisionBodyShapeHandles;
 
   LinkShapeHandles link_shape_handles_;
