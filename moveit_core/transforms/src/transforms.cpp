@@ -50,7 +50,7 @@ Transforms::Transforms(const std::string& target_frame) : target_frame_(target_f
     ROS_ERROR_NAMED("transforms", "The target frame for MoveIt! Transforms cannot be empty.");
   else
   {
-    transforms_[target_frame_] = Eigen::Affine3d::Identity();
+    transforms_map_[target_frame_] = Eigen::Isometry3d::Identity();
   }
 }
 
@@ -70,12 +70,12 @@ const std::string& Transforms::getTargetFrame() const
 
 const FixedTransformsMap& Transforms::getAllTransforms() const
 {
-  return transforms_;
+  return transforms_map_;
 }
 
 void Transforms::setAllTransforms(const FixedTransformsMap& transforms)
 {
-  transforms_ = transforms;
+  transforms_map_ = transforms;
 }
 
 bool Transforms::isFixedFrame(const std::string& frame) const
@@ -83,24 +83,25 @@ bool Transforms::isFixedFrame(const std::string& frame) const
   if (frame.empty())
     return false;
   else
-    return transforms_.find(frame) != transforms_.end();
+    return transforms_map_.find(frame) != transforms_map_.end();
 }
 
-const Eigen::Affine3d& Transforms::getTransform(const std::string& from_frame) const
+const Eigen::Isometry3d& Transforms::getTransform(const std::string& from_frame) const
 {
   if (!from_frame.empty())
   {
-    FixedTransformsMap::const_iterator it = transforms_.find(from_frame);
-    if (it != transforms_.end())
+    FixedTransformsMap::const_iterator it = transforms_map_.find(from_frame);
+    if (it != transforms_map_.end())
       return it->second;
+    // If no transform found in map, return identity
   }
 
   ROS_ERROR_NAMED("transforms", "Unable to transform from frame '%s' to frame '%s'. Returning identity.",
                   from_frame.c_str(), target_frame_.c_str());
 
   // return identity
-  static const Eigen::Affine3d identity = Eigen::Affine3d::Identity();
-  return identity;
+  static const Eigen::Isometry3d IDENTITY = Eigen::Isometry3d::Identity();
+  return IDENTITY;
 }
 
 bool Transforms::canTransform(const std::string& from_frame) const
@@ -108,22 +109,22 @@ bool Transforms::canTransform(const std::string& from_frame) const
   if (from_frame.empty())
     return false;
   else
-    return transforms_.find(from_frame) != transforms_.end();
+    return transforms_map_.find(from_frame) != transforms_map_.end();
 }
 
-void Transforms::setTransform(const Eigen::Affine3d& t, const std::string& from_frame)
+void Transforms::setTransform(const Eigen::Isometry3d& t, const std::string& from_frame)
 {
   if (from_frame.empty())
     ROS_ERROR_NAMED("transforms", "Cannot record transform with empty name");
   else
-    transforms_[from_frame] = t;
+    transforms_map_[from_frame] = t;
 }
 
 void Transforms::setTransform(const geometry_msgs::TransformStamped& transform)
 {
   if (sameFrame(transform.child_frame_id, target_frame_))
   {
-    Eigen::Affine3d t = tf2::transformToEigen(transform.transform);
+    Eigen::Isometry3d t = tf2::transformToEigen(transform.transform);
     setTransform(t, transform.header.frame_id);
   }
   else
@@ -141,9 +142,9 @@ void Transforms::setTransforms(const std::vector<geometry_msgs::TransformStamped
 
 void Transforms::copyTransforms(std::vector<geometry_msgs::TransformStamped>& transforms) const
 {
-  transforms.resize(transforms_.size());
+  transforms.resize(transforms_map_.size());
   std::size_t i = 0;
-  for (FixedTransformsMap::const_iterator it = transforms_.begin(); it != transforms_.end(); ++it, ++i)
+  for (FixedTransformsMap::const_iterator it = transforms_map_.begin(); it != transforms_map_.end(); ++it, ++i)
   {
     transforms[i] = tf2::eigenToTransform(it->second);
     transforms[i].child_frame_id = target_frame_;

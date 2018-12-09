@@ -84,7 +84,7 @@ public:
    */
   TrajectoryVisualization(rviz::Property* widget, rviz::Display* display);
 
-  virtual ~TrajectoryVisualization();
+  ~TrajectoryVisualization() override;
 
   virtual void update(float wall_dt, float ros_dt);
   virtual void reset();
@@ -99,6 +99,7 @@ public:
 
 public Q_SLOTS:
   void interruptCurrentDisplay();
+  void setDefaultAttachedObjectColor(const QColor& color);
 
 private Q_SLOTS:
 
