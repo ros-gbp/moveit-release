@@ -75,48 +75,49 @@ public:
    */
   KDLKinematicsPlugin();
 
-  virtual bool
-  getPositionIK(const geometry_msgs::Pose& ik_pose, const std::vector<double>& ik_seed_state,
-                std::vector<double>& solution, moveit_msgs::MoveItErrorCodes& error_code,
-                const kinematics::KinematicsQueryOptions& options = kinematics::KinematicsQueryOptions()) const;
+  bool getPositionIK(
+      const geometry_msgs::Pose& ik_pose, const std::vector<double>& ik_seed_state, std::vector<double>& solution,
+      moveit_msgs::MoveItErrorCodes& error_code,
+      const kinematics::KinematicsQueryOptions& options = kinematics::KinematicsQueryOptions()) const override;
 
-  virtual bool
-  searchPositionIK(const geometry_msgs::Pose& ik_pose, const std::vector<double>& ik_seed_state, double timeout,
-                   std::vector<double>& solution, moveit_msgs::MoveItErrorCodes& error_code,
-                   const kinematics::KinematicsQueryOptions& options = kinematics::KinematicsQueryOptions()) const;
+  bool searchPositionIK(
+      const geometry_msgs::Pose& ik_pose, const std::vector<double>& ik_seed_state, double timeout,
+      std::vector<double>& solution, moveit_msgs::MoveItErrorCodes& error_code,
+      const kinematics::KinematicsQueryOptions& options = kinematics::KinematicsQueryOptions()) const override;
 
-  virtual bool
-  searchPositionIK(const geometry_msgs::Pose& ik_pose, const std::vector<double>& ik_seed_state, double timeout,
-                   const std::vector<double>& consistency_limits, std::vector<double>& solution,
-                   moveit_msgs::MoveItErrorCodes& error_code,
-                   const kinematics::KinematicsQueryOptions& options = kinematics::KinematicsQueryOptions()) const;
+  bool searchPositionIK(
+      const geometry_msgs::Pose& ik_pose, const std::vector<double>& ik_seed_state, double timeout,
+      const std::vector<double>& consistency_limits, std::vector<double>& solution,
+      moveit_msgs::MoveItErrorCodes& error_code,
+      const kinematics::KinematicsQueryOptions& options = kinematics::KinematicsQueryOptions()) const override;
 
-  virtual bool searchPositionIK(
+  bool searchPositionIK(
       const geometry_msgs::Pose& ik_pose, const std::vector<double>& ik_seed_state, double timeout,
       std::vector<double>& solution, const IKCallbackFn& solution_callback, moveit_msgs::MoveItErrorCodes& error_code,
-      const kinematics::KinematicsQueryOptions& options = kinematics::KinematicsQueryOptions()) const;
+      const kinematics::KinematicsQueryOptions& options = kinematics::KinematicsQueryOptions()) const override;
 
-  virtual bool
-  searchPositionIK(const geometry_msgs::Pose& ik_pose, const std::vector<double>& ik_seed_state, double timeout,
-                   const std::vector<double>& consistency_limits, std::vector<double>& solution,
-                   const IKCallbackFn& solution_callback, moveit_msgs::MoveItErrorCodes& error_code,
-                   const kinematics::KinematicsQueryOptions& options = kinematics::KinematicsQueryOptions()) const;
+  bool searchPositionIK(
+      const geometry_msgs::Pose& ik_pose, const std::vector<double>& ik_seed_state, double timeout,
+      const std::vector<double>& consistency_limits, std::vector<double>& solution,
+      const IKCallbackFn& solution_callback, moveit_msgs::MoveItErrorCodes& error_code,
+      const kinematics::KinematicsQueryOptions& options = kinematics::KinematicsQueryOptions()) const override;
 
-  virtual bool getPositionFK(const std::vector<std::string>& link_names, const std::vector<double>& joint_angles,
-                             std::vector<geometry_msgs::Pose>& poses) const;
+  bool getPositionFK(const std::vector<std::string>& link_names, const std::vector<double>& joint_angles,
+                     std::vector<geometry_msgs::Pose>& poses) const override;
 
-  virtual bool initialize(const std::string& robot_description, const std::string& group_name,
-                          const std::string& base_name, const std::string& tip_name, double search_discretization);
+  bool initialize(const moveit::core::RobotModel& robot_model, const std::string& group_name,
+                  const std::string& base_frame, const std::vector<std::string>& tip_frames,
+                  double search_discretization) override;
 
   /**
    * @brief  Return all the joint names in the order they are used internally
    */
-  const std::vector<std::string>& getJointNames() const;
+  const std::vector<std::string>& getJointNames() const override;
 
   /**
    * @brief  Return all the link names in the order they are represented internally
    */
-  const std::vector<std::string>& getLinkNames() const;
+  const std::vector<std::string>& getLinkNames() const override;
 
 protected:
   /**
@@ -140,7 +141,7 @@ protected:
                         moveit_msgs::MoveItErrorCodes& error_code, const std::vector<double>& consistency_limits,
                         const kinematics::KinematicsQueryOptions& options = kinematics::KinematicsQueryOptions()) const;
 
-  virtual bool setRedundantJoints(const std::vector<unsigned int>& redundant_joint_indices);
+  bool setRedundantJoints(const std::vector<unsigned int>& redundant_joint_indices) override;
 
 private:
   bool timedOut(const ros::WallTime& start_time, double duration) const;
@@ -188,16 +189,14 @@ private:
 
   mutable random_numbers::RandomNumberGenerator random_number_generator_;
 
-  robot_model::RobotModelPtr robot_model_;
-
-  robot_state::RobotStatePtr state_, state_2_;
+  robot_state::RobotStatePtr state_;
 
   int num_possible_redundant_joints_;
   std::vector<unsigned int> redundant_joints_map_index_;
 
   // Storage required for when the set of redundant joints is reset
   bool position_ik_;  // whether this solver is only being used for position ik
-  robot_model::JointModelGroup* joint_model_group_;
+  const robot_model::JointModelGroup* joint_model_group_;
   double max_solver_iterations_;
   double epsilon_;
   std::vector<JointMimic> mimic_joints_;
