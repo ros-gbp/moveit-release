@@ -48,7 +48,9 @@
 #include <moveit_msgs/Grasp.h>
 #include <moveit_msgs/PlaceLocation.h>
 #include <moveit_msgs/MotionPlanRequest.h>
+#include <moveit_msgs/MoveGroupAction.h>
 #include <geometry_msgs/PoseStamped.h>
+#include <actionlib/client/simple_action_client.h>
 #include <memory>
 #include <tf2_ros/buffer.h>
 
@@ -444,7 +446,7 @@ public:
 
       If IK fails to find a solution then false is returned BUT THE PARTIAL
       RESULT OF IK IS STILL SET AS THE GOAL. */
-  bool setJointValueTarget(const Eigen::Affine3d& eef_pose, const std::string& end_effector_link = "");
+  bool setJointValueTarget(const Eigen::Isometry3d& eef_pose, const std::string& end_effector_link = "");
 
   /** \brief Set the joint state goal for a particular joint by computing IK.
 
@@ -481,7 +483,7 @@ public:
       previously set Position, Orientation, or Pose targets.
 
       If IK fails to find a solution then an approximation is used. */
-  bool setApproximateJointValueTarget(const Eigen::Affine3d& eef_pose, const std::string& end_effector_link = "");
+  bool setApproximateJointValueTarget(const Eigen::Isometry3d& eef_pose, const std::string& end_effector_link = "");
 
   /** \brief Set the joint state goal to a random joint configuration
 
@@ -545,7 +547,7 @@ public:
       This new pose target replaces any pre-existing JointValueTarget or
       pre-existing Position, Orientation, or Pose target for this \e
       end_effector_link. */
-  bool setPoseTarget(const Eigen::Affine3d& end_effector_pose, const std::string& end_effector_link = "");
+  bool setPoseTarget(const Eigen::Isometry3d& end_effector_pose, const std::string& end_effector_link = "");
 
   /** \brief Set the goal pose of the end-effector \e end_effector_link.
 
@@ -583,7 +585,7 @@ public:
       This new orientation target replaces any pre-existing JointValueTarget or
       pre-existing Position, Orientation, or Pose target(s) for this \e
       end_effector_link. */
-  bool setPoseTargets(const EigenSTL::vector_Affine3d& end_effector_pose, const std::string& end_effector_link = "");
+  bool setPoseTargets(const EigenSTL::vector_Isometry3d& end_effector_pose, const std::string& end_effector_link = "");
 
   /** \brief Set goal poses for \e end_effector_link.
 
@@ -687,6 +689,11 @@ public:
      target.
       This call is not blocking (does not wait for the execution of the trajectory to complete). */
   MoveItErrorCode asyncMove();
+
+  /** \brief Get the move_group action client used by the \e MoveGroupInterface.
+      The client can be used for querying the execution state of the trajectory and abort trajectory execution
+      during asynchronous execution. */
+  actionlib::SimpleActionClient<moveit_msgs::MoveGroupAction>& getMoveGroupClient() const;
 
   /** \brief Plan and execute a trajectory that takes the group of joints declared in the constructor to the specified
      target.
