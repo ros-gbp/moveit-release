@@ -43,11 +43,11 @@
 #include <QRegExp>
 // ROS
 #include "configuration_files_widget.h"
-#include <srdfdom/model.h>  // use their struct datastructures
 #include <ros/ros.h>
 // Boost
-#include <boost/algorithm/string.hpp>  // for trimming whitespace from user input
-#include <boost/filesystem.hpp>        // for creating folders/files
+#include <boost/algorithm/string.hpp>       // for string find and replace in templates
+#include <boost/filesystem/path.hpp>        // for creating folders/files
+#include <boost/filesystem/operations.hpp>  // is_regular_file, is_directory, etc.
 // Read write files
 #include <iostream>  // For writing yaml and launch files
 #include <fstream>
@@ -85,7 +85,7 @@ ConfigurationFilesWidget::ConfigurationFilesWidget(QWidget* parent,
   stack_path_ = new LoadPathWidget("Configuration Package Save Path",
                                    "Specify the desired directory for the MoveIt! configuration package to be "
                                    "generated. Overwriting an existing configuration package directory is acceptable. "
-                                   "Example: <i>/u/robot/ros/pr2_moveit_config</i>",
+                                   "Example: <i>/u/robot/ros/panda_moveit_config</i>",
                                    this, true);  // is directory
   layout->addWidget(stack_path_);
 
@@ -484,6 +484,24 @@ bool ConfigurationFilesWidget::loadGenFiles()
   file.rel_path_ = config_data_->appendPaths(launch_path, file.file_name_);
   template_path = config_data_->appendPaths(template_launch_path, file.file_name_);
   file.description_ = "Run a demo of MoveIt.";
+  file.gen_func_ = boost::bind(&ConfigurationFilesWidget::copyTemplate, this, template_path, _1);
+  file.write_on_changes = 0;
+  gen_files_.push_back(file);
+
+  // gazebo.launch ------------------------------------------------------------------
+  file.file_name_ = "gazebo.launch";
+  file.rel_path_ = config_data_->appendPaths(launch_path, file.file_name_);
+  template_path = config_data_->appendPaths(template_launch_path, "gazebo.launch");
+  file.description_ = "Gazebo launch file which also launches ros_controllers and sends robot urdf to param server, "
+                      "then using gazebo_ros pkg the robot is spawned to Gazebo";
+  file.gen_func_ = boost::bind(&ConfigurationFilesWidget::copyTemplate, this, template_path, _1);
+  gen_files_.push_back(file);
+
+  // demo_gazebo.launch ------------------------------------------------------------------
+  file.file_name_ = "demo_gazebo.launch";
+  file.rel_path_ = config_data_->appendPaths(launch_path, file.file_name_);
+  template_path = config_data_->appendPaths(template_launch_path, file.file_name_);
+  file.description_ = "Run a demo of MoveIt with Gazebo and Rviz";
   file.gen_func_ = boost::bind(&ConfigurationFilesWidget::copyTemplate, this, template_path, _1);
   file.write_on_changes = 0;
   gen_files_.push_back(file);
@@ -1097,7 +1115,9 @@ void ConfigurationFilesWidget::loadTemplateStrings()
     for (std::vector<ROSControlConfig>::iterator controller_it = config_data_->getROSControllers().begin();
          controller_it != config_data_->getROSControllers().end(); ++controller_it)
     {
-      controllers << controller_it->name_ << " ";
+      // Check if the controller belongs to controller_list namespace
+      if (controller_it->type_ != "FollowJointTrajectory")
+        controllers << controller_it->name_ << " ";
     }
     addTemplateString("[ROS_CONTROLLERS]", controllers.str());
   }
