@@ -78,9 +78,9 @@ private:
   dynamic_reconfigure::Server<TrajectoryExecutionDynamicReconfigureConfig> dynamic_reconfigure_server_;
 };
 
-TrajectoryExecutionManager::TrajectoryExecutionManager(const robot_model::RobotModelConstPtr& kmodel,
+TrajectoryExecutionManager::TrajectoryExecutionManager(const robot_model::RobotModelConstPtr& robot_model,
                                                        const planning_scene_monitor::CurrentStateMonitorPtr& csm)
-  : robot_model_(kmodel), csm_(csm), node_handle_("~")
+  : robot_model_(robot_model), csm_(csm), node_handle_("~")
 {
   if (!node_handle_.getParam("moveit_manage_controllers", manage_controllers_))
     manage_controllers_ = false;
@@ -88,10 +88,10 @@ TrajectoryExecutionManager::TrajectoryExecutionManager(const robot_model::RobotM
   initialize();
 }
 
-TrajectoryExecutionManager::TrajectoryExecutionManager(const robot_model::RobotModelConstPtr& kmodel,
+TrajectoryExecutionManager::TrajectoryExecutionManager(const robot_model::RobotModelConstPtr& robot_model,
                                                        const planning_scene_monitor::CurrentStateMonitorPtr& csm,
                                                        bool manage_controllers)
-  : robot_model_(kmodel), csm_(csm), node_handle_("~"), manage_controllers_(manage_controllers)
+  : robot_model_(robot_model), csm_(csm), node_handle_("~"), manage_controllers_(manage_controllers)
 {
   initialize();
 }
@@ -156,7 +156,7 @@ void TrajectoryExecutionManager::initialize()
     if (!controller.empty())
       try
       {
-        controller_manager_.reset(controller_manager_loader_->createUnmanagedInstance(controller));
+        controller_manager_ = controller_manager_loader_->createUniqueInstance(controller);
       }
       catch (pluginlib::PluginlibException& ex)
       {
@@ -1006,12 +1006,12 @@ bool TrajectoryExecutionManager::validate(const TrajectoryExecutionContext& cont
 
         // compute difference (offset vector and rotation angle) between current transform
         // and start transform in trajectory
-        Eigen::Affine3d cur_transform, start_transform;
+        Eigen::Isometry3d cur_transform, start_transform;
         jm->computeTransform(current_state->getJointPositions(jm), cur_transform);
         start_transform = tf2::transformToEigen(transforms[i]);
         Eigen::Vector3d offset = cur_transform.translation() - start_transform.translation();
         Eigen::AngleAxisd rotation;
-        rotation.fromRotationMatrix(cur_transform.rotation().inverse() * start_transform.rotation());
+        rotation.fromRotationMatrix(cur_transform.rotation().transpose() * start_transform.rotation());
         if ((offset.array() > allowed_start_tolerance_).any() || rotation.angle() > allowed_start_tolerance_)
         {
           ROS_ERROR_STREAM_NAMED(name_, "\nInvalid Trajectory: start point deviates from current robot state more than "
