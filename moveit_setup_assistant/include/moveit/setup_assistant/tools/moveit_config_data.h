@@ -37,14 +37,12 @@
 #ifndef MOVEIT_MOVEIT_SETUP_ASSISTANT_TOOLS_MOVEIT_CONFIG_DATA_
 #define MOVEIT_MOVEIT_SETUP_ASSISTANT_TOOLS_MOVEIT_CONFIG_DATA_
 
-#include <srdfdom/model.h>        // use their struct datastructures
-#include <srdfdom/srdf_writer.h>  // for writing srdf data
-#include <urdf/model.h>           // to share throughout app
-#include <yaml-cpp/yaml.h>        // outputing yaml config files
 #include <moveit/macros/class_forward.h>
 #include <moveit/planning_scene/planning_scene.h>                     // for getting kinematic model
-#include <moveit/collision_detection/collision_matrix.h>              // for figuring out if robot is in collision
 #include <moveit/setup_assistant/tools/compute_default_collisions.h>  // for LinkPairMap
+#include <yaml-cpp/yaml.h>                                            // outputing yaml config files
+#include <urdf/model.h>                                               // to share throughout app
+#include <srdfdom/srdf_writer.h>                                      // for writing srdf data
 
 namespace moveit_setup_assistant
 {
@@ -327,6 +325,12 @@ public:
   bool output3DSensorPluginYAML(const std::string& file_path);
 
   /**
+   * \brief Helper function to get the controller that is controlling the joint
+   * \return controller type
+   */
+  std::string getJointHardwareInterface(const std::string& joint_name);
+
+  /**
    * \brief Parses the existing urdf and constructs a string from it with the elements required by gazebo simulator
    * added
    * \return gazebo compatible urdf or empty if error encountered
@@ -370,10 +374,10 @@ public:
 
   /**
    * Helper function for parsing ros_controllers.yaml file
-   * @param YAML::Node - controllers to be parsed
+   * @param std::ifstream of ros_controller.yaml
    * @return true if the file was read correctly
    */
-  bool processROSControllers(const YAML::Node& controllers);
+  bool processROSControllers(std::ifstream& input_stream);
 
   /**
    * Input ros_controllers.yaml file for editing its values
