@@ -123,7 +123,7 @@ void point_containment_filter::ShapeMask::maskContainment(const sensor_msgs::Poi
     std::fill(mask.begin(), mask.end(), (int)OUTSIDE);
   else
   {
-    Eigen::Affine3d tmp;
+    Eigen::Isometry3d tmp;
     bspheres_.resize(bodies_.size());
     std::size_t j = 0;
     for (std::set<SeeShape>::const_iterator it = bodies_.begin(); it != bodies_.end(); ++it)
@@ -131,8 +131,8 @@ void point_containment_filter::ShapeMask::maskContainment(const sensor_msgs::Poi
       if (!transform_callback_(it->handle, tmp))
       {
         if (!it->body)
-          ROS_ERROR_STREAM_NAMED("shape_mask", "Missing transform for shape with handle " << it->handle << " without a "
-                                                                                                           "body");
+          ROS_ERROR_STREAM_NAMED("shape_mask", "Missing transform for shape with handle " << it->handle
+                                                                                          << " without a body");
         else
           ROS_ERROR_STREAM_NAMED("shape_mask", "Missing transform for shape " << it->body->getType() << " with handle "
                                                                               << it->handle);

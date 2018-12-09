@@ -1,7 +1,7 @@
 /*********************************************************************
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2016, University of Hamburg
+ *  Copyright (c) 2013, Willow Garage, Inc.
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -14,7 +14,7 @@
  *     copyright notice, this list of conditions and the following
  *     disclaimer in the documentation and/or other materials provided
  *     with the distribution.
- *   * Neither the name of Willow Garage nor the names of its
+ *   * Neither the name of the Willow Garage nor the names of its
  *     contributors may be used to endorse or promote products derived
  *     from this software without specific prior written permission.
  *
@@ -32,32 +32,25 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-/* Author: Michael 'v4hn' Goerner */
+/* Author: Acorn Pooley, Ioan Sucan */
 
-#ifndef MOVEIT_MOVE_GROUP_INTERFACE_MOVE_GROUP_
-#define MOVEIT_MOVE_GROUP_INTERFACE_MOVE_GROUP_
+#ifndef MOVEIT_COLLISION_DETECTION_COLLISION_DETECTOR_HYBRID_H_
+#define MOVEIT_COLLISION_DETECTION_COLLISION_DETECTOR_HYBRID_H_
 
-#include <moveit/move_group_interface/move_group_interface.h>
-#include <moveit/macros/deprecation.h>
+#include <moveit/collision_detection/collision_detector_allocator.h>
+#include <moveit/collision_distance_field/collision_robot_hybrid.h>
+#include <moveit/collision_distance_field/collision_world_hybrid.h>
 
-#warning "This header is deprecated and will go away in ROS lunar."\
-         "Please use moveit/move_group_interface/move_group_interface.h"\
-         "and the class MoveGroupInterface instead of MoveGroup"
-
-namespace moveit
+namespace collision_detection
 {
-namespace planning_interface
+/** \brief An allocator for Hybrid collision detectors */
+class CollisionDetectorAllocatorHybrid
+    : public CollisionDetectorAllocatorTemplate<CollisionWorldHybrid, CollisionRobotHybrid,
+                                                CollisionDetectorAllocatorHybrid>
 {
-MOVEIT_CLASS_FORWARD(MoveGroup)
-
-/** \brief Deprecated Client interface to access interfaces of the move_group node
-
-    Use MoveGroupInterface instead */
-class MoveGroup : public MoveGroupInterface
-{
-  using MoveGroupInterface::MoveGroupInterface;
-} MOVEIT_DEPRECATED;
-}
+public:
+  static const std::string NAME_;  // defined in collision_world_hybrid.cpp
+};
 }
 
 #endif
