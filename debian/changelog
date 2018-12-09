@@ -1,0 +1,38 @@
+ros-melodic-moveit-plugins (0.10.6-0bionic) bionic; urgency=high
+
+
+
+ -- Michael Görner <me@v4hn.de>  Sat, 08 Dec 2018 23:00:00 -0000
+
+ros-melodic-moveit-plugins (0.5.7-0bionic) bionic; urgency=high
+
+  * added moveit_ros_control_interface to meta-package
+  * Contributors: Mathias Lüdtke
+
+ -- Michael Görner <me@v4hn.de>  Fri, 29 Jan 2016 23:00:00 -0000
+
+ros-melodic-moveit-plugins (0.5.3-0bionic) bionic; urgency=high
+
+  * add fake controller plugin
+
+ -- Michael Görner <me@v4hn.de>  Sun, 22 Sep 2013 22:00:00 -0000
+
+ros-melodic-moveit-plugins (0.4.1-0bionic) bionic; urgency=high
+
+  * minor updates to package.xml
+
+ -- Michael Görner <me@v4hn.de>  Tue, 02 Jul 2013 22:00:00 -0000
+
+ros-melodic-moveit-plugins (0.4.0-0bionic) bionic; urgency=high
+
+  * debs look good, bump to 0.4.0
+
+ -- Michael Görner <me@v4hn.de>  Wed, 05 Jun 2013 22:00:00 -0000
+
+ros-melodic-moveit-plugins (0.1.0-0bionic) bionic; urgency=high
+
+  * add metapackage, clean up build in controller manager
+
+ -- Michael Görner <me@v4hn.de>  Tue, 04 Jun 2013 22:00:00 -0000
+
+
