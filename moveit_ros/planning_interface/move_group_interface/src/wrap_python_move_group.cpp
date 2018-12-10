@@ -286,17 +286,17 @@ public:
       std::vector<double> v = py_bindings_tools::doubleFromList(pose);
       if (v.size() == 6 || v.size() == 7)
       {
-        Eigen::Affine3d p;
+        Eigen::Isometry3d p;
         if (v.size() == 6)
         {
           tf2::Quaternion tq;
           tq.setRPY(v[3], v[4], v[5]);
           Eigen::Quaterniond eq;
           tf2::convert(tq, eq);
-          p = Eigen::Affine3d(eq);
+          p = Eigen::Isometry3d(eq);
         }
         else
-          p = Eigen::Affine3d(Eigen::Quaterniond(v[6], v[3], v[4], v[5]));
+          p = Eigen::Isometry3d(Eigen::Quaterniond(v[6], v[3], v[4], v[5]));
         p.translation() = Eigen::Vector3d(v[0], v[1], v[2]);
         geometry_msgs::Pose pm = tf2::toMsg(p);
         msg.push_back(pm);
@@ -522,17 +522,6 @@ public:
   }
 };
 
-class MoveGroupWrapper : public MoveGroupInterfaceWrapper
-{
-public:
-  MoveGroupWrapper(const std::string& group_name, const std::string& robot_description, const std::string& ns = "")
-    : MoveGroupInterfaceWrapper(group_name, robot_description, ns)
-  {
-    ROS_WARN("The MoveGroup class is deprecated and will be removed in ROS lunar. Please use MoveGroupInterface "
-             "instead.");
-  }
-};
-
 static void wrap_move_group_interface()
 {
   bp::class_<MoveGroupInterfaceWrapper, boost::noncopyable> MoveGroupInterfaceClass(
@@ -650,7 +639,7 @@ static void wrap_move_group_interface()
   MoveGroupInterfaceClass.def("set_max_velocity_scaling_factor",
                               &MoveGroupInterfaceWrapper::setMaxVelocityScalingFactor);
   MoveGroupInterfaceClass.def("set_max_acceleration_scaling_factor",
-                              &MoveGroupWrapper::setMaxAccelerationScalingFactor);
+                              &MoveGroupInterfaceWrapper::setMaxAccelerationScalingFactor);
   MoveGroupInterfaceClass.def("set_planner_id", &MoveGroupInterfaceWrapper::setPlannerId);
   MoveGroupInterfaceClass.def("set_num_planning_attempts", &MoveGroupInterfaceWrapper::setNumPlanningAttempts);
   MoveGroupInterfaceClass.def("compute_plan", &MoveGroupInterfaceWrapper::getPlanPython);
@@ -664,9 +653,6 @@ static void wrap_move_group_interface()
   MoveGroupInterfaceClass.def("get_named_targets", &MoveGroupInterfaceWrapper::getNamedTargetsPython);
   MoveGroupInterfaceClass.def("get_named_target_values", &MoveGroupInterfaceWrapper::getNamedTargetValuesPython);
   MoveGroupInterfaceClass.def("get_current_state_bounded", &MoveGroupInterfaceWrapper::getCurrentStateBoundedPython);
-
-  bp::class_<MoveGroupWrapper, bp::bases<MoveGroupInterfaceWrapper>, boost::noncopyable> MoveGroupClass(
-      "MoveGroup", bp::init<std::string, std::string>());
 }
 }
 }

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.12)
 project(moveit_ros_perception)
 
-add_compile_options(-std=c++11)
+add_compile_options(-std=c++14)
 
 option(WITH_OPENGL "Build the parts that depend on OpenGL" ON)
 
@@ -41,13 +41,7 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 find_package(Eigen3 REQUIRED)
-
-# Eigen 3.2 (Wily) only provides EIGEN3_INCLUDE_DIR, not EIGEN3_INCLUDE_DIRS
-if(NOT EIGEN3_INCLUDE_DIRS)
-  set(EIGEN3_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
-endif()
-
-find_package(OpenMP)
+find_package(OpenMP REQUIRED)
 find_package(octomap REQUIRED)
 find_package(OpenCV)
 
