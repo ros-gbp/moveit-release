@@ -1,6 +1,6 @@
 <package>
   <name>moveit_core</name>
-  <version>0.10.7</version>
+  <version>0.10.8</version>
   <description>Core libraries used by MoveIt!</description>
   <author email="isucan@google.com">Ioan Sucan</author>
   <author email="robot.moveit@gmail.com">Sachin Chitta</author>
@@ -44,8 +44,10 @@
   <build_depend>std_msgs</build_depend>
   <build_depend>tf2_eigen</build_depend>
   <build_depend>tf2_kdl</build_depend>
+  <build_depend>tf2_geometry_msgs</build_depend>
   <build_depend>trajectory_msgs</build_depend>
   <build_depend>visualization_msgs</build_depend>
+  <build_depend>xmlrpcpp</build_depend>
 
   <run_depend>assimp</run_depend>
   <run_depend>boost</run_depend>
@@ -70,8 +72,10 @@
   <run_depend>std_msgs</run_depend>
   <run_depend>tf2_eigen</run_depend>
   <run_depend>tf2_kdl</run_depend>
+  <run_depend>tf2_geometry_msgs</run_depend>
   <run_depend>trajectory_msgs</run_depend>
   <run_depend>visualization_msgs</run_depend>
+  <run_depend>xmlrpcpp</run_depend>
   <run_depend>moveit_experimental</run_depend>
 
   <test_depend>angles</test_depend>
