@@ -36,6 +36,7 @@ find_package(catkin REQUIRED
 COMPONENTS
   tf2_eigen
   tf2_kdl
+  tf2_geometry_msgs
   eigen_stl_containers
   geometric_shapes
   geometry_msgs
@@ -52,6 +53,7 @@ COMPONENTS
   std_msgs
   trajectory_msgs
   visualization_msgs
+  xmlrpcpp
 )
 
 set(VERSION_FILE_PATH "${CATKIN_DEVEL_PREFIX}/include")
