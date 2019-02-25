@@ -1,11 +1,16 @@
 set(MOVEIT_LIB_NAME moveit_robot_state)
 
+if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+  # clang is picky about typeid(*solver)
+  add_compile_options(-Wno-potentially-evaluated-expression)
+endif()
+
 add_library(${MOVEIT_LIB_NAME}
   src/attached_body.cpp
   src/conversions.cpp
   src/robot_state.cpp
 )
-set_target_properties(${MOVEIT_LIB_NAME} PROPERTIES VERSION ${${PROJECT_NAME}_VERSION})
+set_target_properties(${MOVEIT_LIB_NAME} PROPERTIES VERSION "${${PROJECT_NAME}_VERSION}")
 
 target_link_libraries(${MOVEIT_LIB_NAME} moveit_robot_model moveit_kinematics_base moveit_transforms ${catkin_LIBRARIES} ${urdfdom_LIBRARIES} ${urdfdom_headers_LIBRARIES} ${Boost_LIBRARIES})
 
