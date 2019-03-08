@@ -2,7 +2,6 @@
  * Software License Agreement (BSD License)
  *
  *  Copyright (c) 2012, Willow Garage, Inc.
- *  Copyright (c) 2017, Ken Anderson
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -33,47 +32,50 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-/* Author: Ken Anderson, based off add_time_parameterization.cpp by Ioan Sucan */
+/* Author: Ioan Sucan, Michael Ferguson */
 
 #include <moveit/planning_request_adapter/planning_request_adapter.h>
-#include <moveit/trajectory_processing/iterative_spline_parameterization.h>
+#include <moveit/trajectory_processing/time_optimal_trajectory_generation.h>
 #include <class_loader/class_loader.hpp>
 #include <ros/console.h>
 
 namespace default_planner_request_adapters
 {
-class AddIterativeSplineParameterization : public planning_request_adapter::PlanningRequestAdapter
+using namespace trajectory_processing;
+
+/** @brief This adapter uses the time-optimal trajectory generation method */
+class AddTimeOptimalParameterization : public planning_request_adapter::PlanningRequestAdapter
 {
 public:
-  AddIterativeSplineParameterization() : planning_request_adapter::PlanningRequestAdapter()
+  AddTimeOptimalParameterization() : planning_request_adapter::PlanningRequestAdapter()
   {
   }
 
-  std::string getDescription() const override
+  virtual std::string getDescription() const
   {
-    return "Add Time Parameterization";
+    return "Add Time Optimal Parameterization";
   }
 
-  bool adaptAndPlan(const PlannerFn& planner, const planning_scene::PlanningSceneConstPtr& planning_scene,
-                    const planning_interface::MotionPlanRequest& req, planning_interface::MotionPlanResponse& res,
-                    std::vector<std::size_t>& added_path_index) const override
+  virtual bool adaptAndPlan(const PlannerFn& planner, const planning_scene::PlanningSceneConstPtr& planning_scene,
+                            const planning_interface::MotionPlanRequest& req,
+                            planning_interface::MotionPlanResponse& res,
+                            std::vector<std::size_t>& added_path_index) const
   {
     bool result = planner(planning_scene, req, res);
     if (result && res.trajectory_)
     {
       ROS_DEBUG("Running '%s'", getDescription().c_str());
-      if (!time_param_.computeTimeStamps(*res.trajectory_, req.max_velocity_scaling_factor,
-                                         req.max_acceleration_scaling_factor))
+      TimeOptimalTrajectoryGeneration totg;
+      if (!totg.computeTimeStamps(*res.trajectory_, req.max_velocity_scaling_factor,
+                                  req.max_acceleration_scaling_factor))
         ROS_WARN("Time parametrization for the solution path failed.");
     }
 
     return result;
   }
-
-private:
-  trajectory_processing::IterativeSplineParameterization time_param_;
 };
-}  // namespace default_planner_request_adapters
 
-CLASS_LOADER_REGISTER_CLASS(default_planner_request_adapters::AddIterativeSplineParameterization,
+}  // namespace default_planners_request_adapters
+
+CLASS_LOADER_REGISTER_CLASS(default_planner_request_adapters::AddTimeOptimalParameterization,
                             planning_request_adapter::PlanningRequestAdapter);
