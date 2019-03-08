@@ -1,0 +1,12 @@
+Source: ros-melodic-moveit-ros
+Section: misc
+Priority: extra
+Maintainer: Michael Ferguson <mferguson@fetchrobotics.com>
+Build-Depends: debhelper (>= 9.0.0), ros-melodic-catkin
+Homepage: http://moveit.ros.org
+Standards-Version: 3.9.2
+
+Package: ros-melodic-moveit-ros
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-melodic-moveit-ros-benchmarks, ros-melodic-moveit-ros-manipulation, ros-melodic-moveit-ros-move-group, ros-melodic-moveit-ros-perception, ros-melodic-moveit-ros-planning, ros-melodic-moveit-ros-planning-interface, ros-melodic-moveit-ros-robot-interaction, ros-melodic-moveit-ros-visualization, ros-melodic-moveit-ros-warehouse
+Description: Components of MoveIt! that use ROS
