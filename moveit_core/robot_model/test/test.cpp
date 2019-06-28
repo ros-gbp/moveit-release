@@ -40,7 +40,6 @@
 #include <gtest/gtest.h>
 #include <boost/filesystem/path.hpp>
 #include <moveit/profiler/profiler.h>
-#include <moveit_resources/config.h>
 #include <moveit/utils/robot_model_test_utils.h>
 
 class LoadPlanningModelsPr2 : public testing::Test
@@ -48,7 +47,7 @@ class LoadPlanningModelsPr2 : public testing::Test
 protected:
   void SetUp() override
   {
-    robot_model_ = moveit::core::loadTestingRobotModel("pr2_description");
+    robot_model_ = moveit::core::loadTestingRobotModel("pr2");
   };
 
   void TearDown() override
