@@ -40,7 +40,6 @@
 #include <moveit/collision_distance_field/collision_distance_field_types.h>
 #include <moveit/collision_distance_field/collision_robot_distance_field.h>
 #include <moveit/collision_distance_field/collision_world_distance_field.h>
-#include <moveit_resources/config.h>
 
 #include <geometric_shapes/shape_operations.h>
 #include <urdf_parser/urdf_parser.h>
@@ -52,6 +51,8 @@
 #include <ctype.h>
 #include <boost/filesystem.hpp>
 
+#include <ros/package.h>
+
 typedef collision_detection::CollisionWorldDistanceField DefaultCWorldType;
 typedef collision_detection::CollisionRobotDistanceField DefaultCRobotType;
 
@@ -62,7 +63,8 @@ protected:
   {
     srdf_model_.reset(new srdf::Model());
     std::string xml_string;
-    std::fstream xml_file(MOVEIT_TEST_RESOURCES_DIR "/pr2_description/urdf/robot.xml", std::fstream::in);
+    std::fstream xml_file(ros::package::getPath("moveit_resources") + "/pr2_description/urdf/robot.xml",
+                          std::fstream::in);
     if (xml_file.is_open())
     {
       while (xml_file.good())
@@ -77,7 +79,8 @@ protected:
     }
     else
       urdf_ok_ = false;
-    srdf_ok_ = srdf_model_->initFile(*urdf_model_, MOVEIT_TEST_RESOURCES_DIR "/pr2_description/srdf/robot.xml");
+    srdf_ok_ = srdf_model_->initFile(*urdf_model_,
+                                     ros::package::getPath("moveit_resources") + "/pr2_description/srdf/robot.xml");
 
     robot_model_.reset(new robot_model::RobotModel(urdf_model_, srdf_model_));
 
