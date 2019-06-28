@@ -67,7 +67,7 @@ ChompOptimizer::ChompOptimizer(ChompTrajectory* trajectory, const planning_scene
   std::vector<std::string> cd_names;
   planning_scene->getCollisionDetectorNames(cd_names);
 
-  ROS_INFO_STREAM("The following collision detectors are active in the planning scene.");
+  ROS_INFO_STREAM("The following collision detectors are available in the planning scene.");
   for (std::size_t i = 0; i < cd_names.size(); i++)
   {
     ROS_INFO_STREAM(cd_names[i]);
@@ -327,7 +327,7 @@ bool ChompOptimizer::optimize()
   {
     ros::WallTime for_time = ros::WallTime::now();
     performForwardKinematics();
-    ROS_INFO_STREAM("Forward kinematics took " << (ros::WallTime::now() - for_time));
+    ROS_DEBUG_STREAM("Forward kinematics took " << (ros::WallTime::now() - for_time));
     double cCost = getCollisionCost();
     double sCost = getSmoothnessCost();
     double cost = cCost + sCost;
