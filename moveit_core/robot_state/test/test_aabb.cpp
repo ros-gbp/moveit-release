@@ -37,7 +37,6 @@
 #include <moveit/robot_model/aabb.h>
 #include <moveit/robot_model/robot_model.h>
 #include <moveit/robot_state/robot_state.h>
-#include <moveit_resources/config.h>
 #include <urdf_parser/urdf_parser.h>
 #include <fstream>
 #include <boost/filesystem.hpp>
@@ -86,7 +85,7 @@ TEST_F(TestAABB, TestPR2)
 {
   // Contains a link with mesh geometry that is not centered
 
-  robot_state::RobotState pr2_state = this->loadModel("pr2_description");
+  robot_state::RobotState pr2_state = this->loadModel("pr2");
 
   const Eigen::Vector3d& extentsBaseFootprint = pr2_state.getLinkModel("base_footprint")->getShapeExtentsAtOrigin();
   // values taken from moveit_resources/pr2_description/urdf/robot.xml
