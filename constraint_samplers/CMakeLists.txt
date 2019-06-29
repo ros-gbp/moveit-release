@@ -1,5 +1,6 @@
 set(MOVEIT_LIB_NAME moveit_constraint_samplers)
 
+add_compile_options(-Wno-cast-qual)  # suppress warning in tf/Vector3.h: https://github.com/ros/geometry/pull/167
 add_library(${MOVEIT_LIB_NAME}
   src/constraint_sampler.cpp
   src/constraint_sampler_manager.cpp
@@ -27,7 +28,6 @@ if(CATKIN_ENABLE_TESTING)
   find_package(orocos_kdl REQUIRED)
   find_package(angles REQUIRED)
   find_package(tf_conversions REQUIRED)
-  find_package(moveit_resources REQUIRED)
 
   include_directories(${orocos_kdl_INCLUDE_DIRS} ${angles_INCLUDE_DIRS} ${tf_conversions_INCLUDE_DIRS} ${moveit_resources_INCLUDE_DIRS})
 
