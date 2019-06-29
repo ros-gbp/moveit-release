@@ -2,60 +2,26 @@
 Changelog for package moveit_kinematics
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1.0.2 (2019-06-28)
-------------------
-* [fix] KDL IK solver: fix handling of mimic joints (`#1490 <https://github.com/ros-planning/moveit/issues/1490>`_)
-* [fix] Fix ROS apt-key in OpenRAVE docker image (`#1503 <https://github.com/ros-planning/moveit/issues/1503>`_)
-* [fix] Fix ikfast plugin-generator script (`#1492 <https://github.com/ros-planning/moveit/issues/1492>`_, `#1449 <https://github.com/ros-planning/moveit/issues/1449>`_)
-* Contributors: Immanuel Martini, Michael Görner, Robert Haschke
+0.9.16 (2019-06-29)
+-------------------
+* [maintanance] Resolve catkin lint issues (`#1137 <https://github.com/ros-planning/moveit/issues/1137>`_)
+* [maintanance] Fix clang issues (`#1233 <https://github.com/ros-planning/moveit/issues/1233>`_, `#1214 <https://github.com/ros-planning/moveit/issues/1214>`_)
+* Contributors: Ludovic Delval, Michael Görner, Robert Haschke
 
-1.0.1 (2019-03-08)
-------------------
-* [improve] Apply clang tidy fix to entire code base (Part 1) (`#1366 <https://github.com/ros-planning/moveit/issues/1366>`_)
-* Contributors: Robert Haschke, Yu, Yan
-
-1.0.0 (2019-02-24)
-------------------
-* [fix] catkin_lint issues (`#1341 <https://github.com/ros-planning/moveit/issues/1341>`_)
-* [capability] Adapt ikfast plugin to new KinematicsBase API. `#1320 <https://github.com/ros-planning/moveit/issues/1320>`_
-* [improve] cleanup LMA kinematics solver `#1318 <https://github.com/ros-planning/moveit/issues/1318>`_
-* [improve] KDL IK solver improvements (`#1321 <https://github.com/ros-planning/moveit/issues/1321>`_)
-* [improve] Kinematics tests, kdl cleanup `#1272 <https://github.com/ros-planning/moveit/issues/1272>`_, `#1294 <https://github.com/ros-planning/moveit/issues/1294>`_
-* Contributors: Dave Coleman, Jorge Nicho, Mike Lautman, Robert Haschke
-
-0.10.8 (2018-12-24)
+0.9.15 (2018-10-29)
 -------------------
 
-0.10.7 (2018-12-13)
+0.9.14 (2018-10-24)
 -------------------
 
-0.10.6 (2018-12-09)
--------------------
-* [enhancement] Pass RobotModel to IK, avoiding multiple loading (`#1166 <https://github.com/ros-planning/moveit/issues/1166>`_)
-  See `MIGRATION notes <https://github.com/ros-planning/moveit/blob/melodic-devel/MIGRATION.md>`_ for API changes in IK plugins,
-  kdl, srv, or cached_ik for examples.
-* [maintenance] Replaced Eigen::Affine3d -> Eigen::Isometry3d (`#1096 <https://github.com/ros-planning/moveit/issues/1096>`_)
-* [maintenance] Use C++14 (`#1146 <https://github.com/ros-planning/moveit/issues/1146>`_)
-* Contributors: Alex Moriarty, Michael Görner, Robert Haschke
-
-0.10.5 (2018-11-01)
--------------------
-
-0.10.4 (2018-10-29)
--------------------
-
-0.10.3 (2018-10-29)
--------------------
-
-0.10.2 (2018-10-24)
+0.9.13 (2018-10-24)
 -------------------
 * [capability] add IKP_Translation{X,Y,Z}AxisAngle4D to the cpp template, see https://github.com/ros-planning/moveit/issues/548#issuecomment-316298918
 * [maintenance] various compiler warnings (`#1038 <https://github.com/ros-planning/moveit/issues/1038>`_)
 * Contributors: Kei Okada, Mikael Arguedas, Mohmmad Ayman, Robert Haschke, mike lautman, v4hn
 
-0.10.1 (2018-05-25)
+0.9.12 (2018-05-29)
 -------------------
-* migration from tf to tf2 API (`#830 <https://github.com/ros-planning/moveit/issues/830>`_)
 * switch to ROS_LOGGER from CONSOLE_BRIDGE (`#874 <https://github.com/ros-planning/moveit/issues/874>`_)
 * fixes to ikfast kinematics plugin (`#808 <https://github.com/ros-planning/moveit/issues/808>`_)
 * Cached ik kinematics plugin (`#612 <https://github.com/ros-planning/moveit/issues/612>`_)
@@ -104,7 +70,7 @@ Changelog for package moveit_kinematics
 
 0.9.5 (2017-03-08)
 ------------------
-* [fix][moveit_ros_warehouse] gcc6 build error `#423 <https://github.com/ros-planning/moveit/pull/423>`_ 
+* [fix][moveit_ros_warehouse] gcc6 build error `#423 <https://github.com/ros-planning/moveit/pull/423>`_
 * Contributors: Dave Coleman
 
 0.9.4 (2017-02-06)

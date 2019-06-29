@@ -74,7 +74,9 @@ mesh_filter::GLRenderer::GLRenderer(unsigned width, unsigned height, float near,
 
 mesh_filter::GLRenderer::~GLRenderer()
 {
-  glDeleteProgram(program_);
+  if (program_)
+    glDeleteProgram(program_);
+
   deleteFrameBuffers();
   deleteGLContext();
 }
@@ -128,7 +130,7 @@ void mesh_filter::GLRenderer::initFrameBuffers()
 {
   glGenTextures(1, &rgb_id_);
   glBindTexture(GL_TEXTURE_2D, rgb_id_);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width_, height_, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width_, height_, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -137,7 +139,7 @@ void mesh_filter::GLRenderer::initFrameBuffers()
 
   glGenTextures(1, &depth_id_);
   glBindTexture(GL_TEXTURE_2D, depth_id_);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width_, height_, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width_, height_, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -260,7 +262,7 @@ GLuint mesh_filter::GLRenderer::createShader(GLuint shaderType, const string& Sh
 
   // Compile Shader
   char const* SourcePointer = ShaderCode.c_str();
-  glShaderSource(ShaderID, 1, &SourcePointer, nullptr);
+  glShaderSource(ShaderID, 1, &SourcePointer, NULL);
   glCompileShader(ShaderID);
 
   // Check Shader
@@ -273,7 +275,7 @@ GLuint mesh_filter::GLRenderer::createShader(GLuint shaderType, const string& Sh
     if (InfoLogLength > 0)
     {
       vector<char> ShaderErrorMessage(InfoLogLength + 1);
-      glGetShaderInfoLog(ShaderID, InfoLogLength, nullptr, &ShaderErrorMessage[0]);
+      glGetShaderInfoLog(ShaderID, InfoLogLength, NULL, &ShaderErrorMessage[0]);
       stringstream errorStream;
       errorStream << "Could not compile shader: " << (const char*)&ShaderErrorMessage[0];
 
@@ -338,7 +340,7 @@ GLuint mesh_filter::GLRenderer::loadShaders(const string& vertex_source, const s
   if (InfoLogLength > 0)
   {
     vector<char> ProgramErrorMessage(InfoLogLength + 1);
-    glGetProgramInfoLog(ProgramID, InfoLogLength, nullptr, &ProgramErrorMessage[0]);
+    glGetProgramInfoLog(ProgramID, InfoLogLength, NULL, &ProgramErrorMessage[0]);
     std::size_t l = strnlen(&ProgramErrorMessage[0], ProgramErrorMessage.size());
     if (l > 0)
       ROS_ERROR("%s\n", &ProgramErrorMessage[0]);
@@ -438,12 +440,12 @@ GLuint mesh_filter::GLRenderer::getDepthTexture() const
   return depth_id_;
 }
 
-unsigned mesh_filter::GLRenderer::getWidth() const
+const unsigned mesh_filter::GLRenderer::getWidth() const
 {
   return width_;
 }
 
-unsigned mesh_filter::GLRenderer::getHeight() const
+const unsigned mesh_filter::GLRenderer::getHeight() const
 {
   return height_;
 }

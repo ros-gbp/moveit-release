@@ -147,7 +147,7 @@ constraint_samplers::ConstraintSamplerManager::selectDefaultSampler(const planni
                     jmg->getName().c_str());
 
     // keep track of which links we constrained
-    std::map<std::string, IKConstraintSamplerPtr> used_l;
+    std::map<std::string, IKConstraintSamplerPtr> usedL;
 
     // if we have position and/or orientation constraints on links that we can perform IK for,
     // we will use a sampleable goal region that employs IK to sample goals;
@@ -169,14 +169,14 @@ constraint_samplers::ConstraintSamplerManager::selectDefaultSampler(const planni
             {
               bool use = true;
               // Check if there already is a constraint on this link
-              if (used_l.find(constr.position_constraints[p].link_name) != used_l.end())
+              if (usedL.find(constr.position_constraints[p].link_name) != usedL.end())
                 // If there is, check if the previous one has a smaller volume for sampling
-                if (used_l[constr.position_constraints[p].link_name]->getSamplingVolume() < iks->getSamplingVolume())
+                if (usedL[constr.position_constraints[p].link_name]->getSamplingVolume() < iks->getSamplingVolume())
                   use = false;  // only use new constraint if it has a smaller sampling volume
               if (use)
               {
                 // assign the link to a new constraint sampler
-                used_l[constr.position_constraints[p].link_name] = iks;
+                usedL[constr.position_constraints[p].link_name] = iks;
                 ROS_DEBUG_NAMED("constraint_samplers", "Allocated an IK-based sampler for group '%s' "
                                                        "satisfying position and orientation constraints on link '%s'",
                                 jmg->getName().c_str(), constr.position_constraints[p].link_name.c_str());
@@ -186,13 +186,13 @@ constraint_samplers::ConstraintSamplerManager::selectDefaultSampler(const planni
         }
 
     // keep track of links constrained with a full pose
-    std::map<std::string, IKConstraintSamplerPtr> used_l_full_pose = used_l;
+    std::map<std::string, IKConstraintSamplerPtr> usedL_fullPose = usedL;
 
     for (std::size_t p = 0; p < constr.position_constraints.size(); ++p)
     {
       // if we are constraining this link with a full pose, we do not attempt to constrain it with a position constraint
       // only
-      if (used_l_full_pose.find(constr.position_constraints[p].link_name) != used_l_full_pose.end())
+      if (usedL_fullPose.find(constr.position_constraints[p].link_name) != usedL_fullPose.end())
         continue;
 
       kinematic_constraints::PositionConstraintPtr pc(
@@ -203,12 +203,12 @@ constraint_samplers::ConstraintSamplerManager::selectDefaultSampler(const planni
         if (iks->configure(IKSamplingPose(pc)))
         {
           bool use = true;
-          if (used_l.find(constr.position_constraints[p].link_name) != used_l.end())
-            if (used_l[constr.position_constraints[p].link_name]->getSamplingVolume() < iks->getSamplingVolume())
+          if (usedL.find(constr.position_constraints[p].link_name) != usedL.end())
+            if (usedL[constr.position_constraints[p].link_name]->getSamplingVolume() < iks->getSamplingVolume())
               use = false;
           if (use)
           {
-            used_l[constr.position_constraints[p].link_name] = iks;
+            usedL[constr.position_constraints[p].link_name] = iks;
             ROS_DEBUG_NAMED("constraint_samplers", "Allocated an IK-based sampler for group '%s' "
                                                    "satisfying position constraints on link '%s'",
                             jmg->getName().c_str(), constr.position_constraints[p].link_name.c_str());
@@ -221,7 +221,7 @@ constraint_samplers::ConstraintSamplerManager::selectDefaultSampler(const planni
     {
       // if we are constraining this link with a full pose, we do not attempt to constrain it with an orientation
       // constraint only
-      if (used_l_full_pose.find(constr.orientation_constraints[o].link_name) != used_l_full_pose.end())
+      if (usedL_fullPose.find(constr.orientation_constraints[o].link_name) != usedL_fullPose.end())
         continue;
 
       kinematic_constraints::OrientationConstraintPtr oc(
@@ -232,12 +232,12 @@ constraint_samplers::ConstraintSamplerManager::selectDefaultSampler(const planni
         if (iks->configure(IKSamplingPose(oc)))
         {
           bool use = true;
-          if (used_l.find(constr.orientation_constraints[o].link_name) != used_l.end())
-            if (used_l[constr.orientation_constraints[o].link_name]->getSamplingVolume() < iks->getSamplingVolume())
+          if (usedL.find(constr.orientation_constraints[o].link_name) != usedL.end())
+            if (usedL[constr.orientation_constraints[o].link_name]->getSamplingVolume() < iks->getSamplingVolume())
               use = false;
           if (use)
           {
-            used_l[constr.orientation_constraints[o].link_name] = iks;
+            usedL[constr.orientation_constraints[o].link_name] = iks;
             ROS_DEBUG_NAMED("constraint_samplers", "Allocated an IK-based sampler for group '%s' "
                                                    "satisfying orientation constraints on link '%s'",
                             jmg->getName().c_str(), constr.orientation_constraints[o].link_name.c_str());
@@ -246,26 +246,25 @@ constraint_samplers::ConstraintSamplerManager::selectDefaultSampler(const planni
       }
     }
 
-    if (used_l.size() == 1)
+    if (usedL.size() == 1)
     {
       if (samplers.empty())
-        return used_l.begin()->second;
+        return usedL.begin()->second;
       else
       {
-        samplers.push_back(used_l.begin()->second);
+        samplers.push_back(usedL.begin()->second);
         return ConstraintSamplerPtr(new UnionConstraintSampler(scene, jmg->getName(), samplers));
       }
     }
-    else if (used_l.size() > 1)
+    else if (usedL.size() > 1)
     {
       ROS_DEBUG_NAMED("constraint_samplers",
                       "Too many IK-based samplers for group '%s'. Keeping the one with minimal sampling volume",
                       jmg->getName().c_str());
       // find the sampler with the smallest sampling volume; delete the rest
-      IKConstraintSamplerPtr iks = used_l.begin()->second;
+      IKConstraintSamplerPtr iks = usedL.begin()->second;
       double msv = iks->getSamplingVolume();
-      for (std::map<std::string, IKConstraintSamplerPtr>::const_iterator it = ++used_l.begin(); it != used_l.end();
-           ++it)
+      for (std::map<std::string, IKConstraintSamplerPtr>::const_iterator it = ++usedL.begin(); it != usedL.end(); ++it)
       {
         double v = it->second->getSamplingVolume();
         if (v < msv)
@@ -296,7 +295,7 @@ constraint_samplers::ConstraintSamplerManager::selectDefaultSampler(const planni
 
     bool some_sampler_valid = false;
 
-    std::set<std::size_t> used_p, used_o;
+    std::set<std::size_t> usedP, usedO;
     for (robot_model::JointModelGroup::KinematicsSolverMap::const_iterator it = ik_subgroup_alloc.begin();
          it != ik_subgroup_alloc.end(); ++it)
     {
@@ -304,18 +303,18 @@ constraint_samplers::ConstraintSamplerManager::selectDefaultSampler(const planni
       moveit_msgs::Constraints sub_constr;
       for (std::size_t p = 0; p < constr.position_constraints.size(); ++p)
         if (it->first->hasLinkModel(constr.position_constraints[p].link_name))
-          if (used_p.find(p) == used_p.end())
+          if (usedP.find(p) == usedP.end())
           {
             sub_constr.position_constraints.push_back(constr.position_constraints[p]);
-            used_p.insert(p);
+            usedP.insert(p);
           }
 
       for (std::size_t o = 0; o < constr.orientation_constraints.size(); ++o)
         if (it->first->hasLinkModel(constr.orientation_constraints[o].link_name))
-          if (used_o.find(o) == used_o.end())
+          if (usedO.find(o) == usedO.end())
           {
             sub_constr.orientation_constraints.push_back(constr.orientation_constraints[o]);
-            used_o.insert(o);
+            usedO.insert(o);
           }
 
       // if some matching constraints were found, construct the allocator

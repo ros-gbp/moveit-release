@@ -50,9 +50,7 @@
 
 #define MOVEIT_DECLARE_PTR(Name, Type)                                                                                 \
   typedef std::shared_ptr<Type> Name##Ptr;                                                                             \
-  typedef std::shared_ptr<const Type> Name##ConstPtr;                                                                  \
-  typedef std::weak_ptr<Type> Name##WeakPtr;                                                                           \
-  typedef std::weak_ptr<const Type> Name##ConstWeakPtr;
+  typedef std::shared_ptr<const Type> Name##ConstPtr;
 
 /**
  * \def MOVEIT_DELCARE_PTR_MEMBER
@@ -67,8 +65,6 @@
 
 #define MOVEIT_DECLARE_PTR_MEMBER(Type)                                                                                \
   typedef std::shared_ptr<Type> Ptr;                                                                                   \
-  typedef std::shared_ptr<const Type> ConstPtr;                                                                        \
-  typedef std::weak_ptr<Type> WeakPtr;                                                                                 \
-  typedef std::weak_ptr<const Type> ConstWeakPtr;
+  typedef std::shared_ptr<const Type> ConstPtr;
 
 #endif

@@ -1,11 +1,7 @@
 cmake_minimum_required(VERSION 2.8.12)
 project(moveit_ros_visualization)
 
-add_compile_options(-std=c++14)
-if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-  # suppress warning in Ogre
-  add_compile_options(-Wno-deprecated-register)
-endif()
+add_compile_options(-std=c++11)
 
 # definition needed for boost/math/constants/constants.hpp included by Ogre to compile
 add_definitions(-DBOOST_MATH_DISABLE_FLOAT128)
@@ -15,8 +11,16 @@ if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
 endif()
 
 find_package(Boost REQUIRED thread date_time system filesystem)
+
+find_package(PkgConfig REQUIRED)
+
+# Ogre
+pkg_check_modules(OGRE OGRE)
+link_directories( ${OGRE_LIBRARY_DIRS} )
+
 find_package(catkin REQUIRED COMPONENTS
   class_loader
+  eigen_conversions
   geometric_shapes
   interactive_markers
   moveit_ros_perception
@@ -29,17 +33,15 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   rviz
-  tf2_eigen
-  roscpp
-  rosconsole
-  object_recognition_msgs
+  tf
 )
-# TODO: Remove when Kinetic support is dropped
-if(rviz_VERSION VERSION_LESS 1.13.1) # Does rviz supports TF2?
-  add_definitions(-DRVIZ_TF1)
-endif()
 
 find_package(Eigen3 REQUIRED)
+
+# Eigen 3.2 (Wily) only provides EIGEN3_INCLUDE_DIR, not EIGEN3_INCLUDE_DIRS
+if(NOT EIGEN3_INCLUDE_DIRS)
+  set(EIGEN3_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
+endif()
 
 # Qt Stuff
 if(rviz_QT_VERSION VERSION_LESS "5")
@@ -62,16 +64,16 @@ add_definitions(-DQT_NO_KEYWORDS)
 
 catkin_package(
   LIBRARIES
-    moveit_motion_planning_rviz_plugin_core
-    moveit_planning_scene_rviz_plugin_core
-    moveit_robot_state_rviz_plugin_core
     moveit_rviz_plugin_render_tools
+    moveit_robot_state_rviz_plugin_core
+    moveit_motion_planning_rviz_plugin_core
     moveit_trajectory_rviz_plugin_core
+    moveit_planning_scene_rviz_plugin_core
   INCLUDE_DIRS
-    motion_planning_rviz_plugin/include
-    planning_scene_rviz_plugin/include
-    robot_state_rviz_plugin/include
     rviz_plugin_render_tools/include
+    robot_state_rviz_plugin/include
+    planning_scene_rviz_plugin/include
+    motion_planning_rviz_plugin/include
     trajectory_rviz_plugin/include
   CATKIN_DEPENDS
     moveit_ros_planning_interface
@@ -94,7 +96,8 @@ include_directories(rviz_plugin_render_tools/include
 
 include_directories(SYSTEM
                     ${EIGEN3_INCLUDE_DIRS}
-                    ${QT_INCLUDE_DIR})
+                    ${QT_INCLUDE_DIR}
+                    ${OGRE_INCLUDE_DIRS})
 
 add_subdirectory(rviz_plugin_render_tools)
 add_subdirectory(robot_state_rviz_plugin)

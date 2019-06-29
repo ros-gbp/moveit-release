@@ -1,10 +1,5 @@
 set(MOVEIT_LIB_NAME moveit_collision_distance_field)
 
-if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-  # clang is picky about new virtual functions hiding existing ones
-  add_compile_options(-Wno-overloaded-virtual)
-endif()
-
 add_library(${MOVEIT_LIB_NAME}
   src/collision_distance_field_types.cpp
   src/collision_common_distance_field.cpp
@@ -13,7 +8,7 @@ add_library(${MOVEIT_LIB_NAME}
   src/collision_robot_hybrid.cpp
   src/collision_world_hybrid.cpp
 )
-set_target_properties(${MOVEIT_LIB_NAME} PROPERTIES VERSION "${${PROJECT_NAME}_VERSION}")
+set_target_properties(${MOVEIT_LIB_NAME} PROPERTIES VERSION ${${PROJECT_NAME}_VERSION})
 target_link_libraries(${MOVEIT_LIB_NAME}
   moveit_planning_scene moveit_distance_field
   ${catkin_LIBRARIES} ${Boost_LIBRARIES})

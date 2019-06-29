@@ -1,7 +1,7 @@
 /*********************************************************************
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2018, Hamburg University
+ *  Copyright (c) 2016, University of Hamburg
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -14,7 +14,7 @@
  *     copyright notice, this list of conditions and the following
  *     disclaimer in the documentation and/or other materials provided
  *     with the distribution.
- *   * Neither the name of Hamburg University nor the names of its
+ *   * Neither the name of Willow Garage nor the names of its
  *     contributors may be used to endorse or promote products derived
  *     from this software without specific prior written permission.
  *
@@ -32,60 +32,32 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-/* Author: Michael Görner, Robert Haschke */
+/* Author: Michael 'v4hn' Goerner */
 
-#include <moveit/utils/xmlrpc_casts.h>
-#include <ros/console.h>
-#include <boost/algorithm/string/join.hpp>
+#ifndef MOVEIT_MOVE_GROUP_INTERFACE_MOVE_GROUP_
+#define MOVEIT_MOVE_GROUP_INTERFACE_MOVE_GROUP_
+
+#include <moveit/move_group_interface/move_group_interface.h>
+#include <moveit/macros/deprecation.h>
+
+#warning "This header is deprecated and will go away in ROS lunar."\
+         "Please use moveit/move_group_interface/move_group_interface.h"\
+         "and the class MoveGroupInterface instead of MoveGroup"
 
 namespace moveit
 {
-namespace core
+namespace planning_interface
 {
-double parseDouble(XmlRpc::XmlRpcValue& v)
+MOVEIT_CLASS_FORWARD(MoveGroup)
+
+/** \brief Deprecated Client interface to access interfaces of the move_group node
+
+    Use MoveGroupInterface instead */
+class MoveGroup : public MoveGroupInterface
 {
-  if (v.getType() == XmlRpc::XmlRpcValue::TypeDouble)
-    return static_cast<double>(v);
-  else if (v.getType() == XmlRpc::XmlRpcValue::TypeInt)
-    return static_cast<int>(v);
-  else
-    return 0.0;
+  using MoveGroupInterface::MoveGroupInterface;
+} MOVEIT_DEPRECATED;
+}
 }
 
-bool isArray(XmlRpc::XmlRpcValue& v, size_t size, const std::string& name, const std::string& description)
-{
-  if (v.getType() != XmlRpc::XmlRpcValue::TypeArray || (size != 0 && static_cast<size_t>(v.size()) != size))
-  {
-    if (!name.empty())
-      ROS_WARN_STREAM(name << " is not an array[" << size << "] of "
-                           << (description.empty() ? "elements" : description.c_str()));
-    return false;
-  }
-  return true;
-}
-
-bool isStruct(XmlRpc::XmlRpcValue& v, const std::vector<std::string>& keys, const std::string& name)
-{
-  if (v.getType() != XmlRpc::XmlRpcValue::TypeStruct)
-  {
-    if (!name.empty())
-      ROS_WARN_STREAM(name << " is not a struct with keys " << boost::join(keys, ","));
-    return false;
-  }
-
-  std::vector<std::string> missing;
-  for (const std::string& key : keys)
-    if (!v.hasMember(key))
-      missing.push_back(key);
-
-  if (!name.empty() && !missing.empty())
-  {
-    ROS_WARN_STREAM(name << " is not a struct with keys " << boost::join(keys, ",") << " (misses "
-                         << boost::join(missing, ",") << ")");
-    return false;
-  }
-
-  return missing.empty();
-}
-}  // namespace core
-}  // namespace moveit
+#endif

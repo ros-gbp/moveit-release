@@ -37,7 +37,7 @@
 
 #include <moveit/robot_state/conversions.h>
 #include <geometric_shapes/shape_operations.h>
-#include <tf2_eigen/tf2_eigen.h>
+#include <eigen_conversions/eigen_msg.h>
 #include <boost/lexical_cast.hpp>
 
 namespace moveit
@@ -77,7 +77,7 @@ static bool _multiDOFJointsToRobotState(const sensor_msgs::MultiDOFJointState& m
   }
 
   bool error = false;
-  Eigen::Isometry3d inv_t;
+  Eigen::Affine3d inv_t;
   bool use_inv_t = false;
 
   if (nj > 0 && !Transforms::sameFrame(mjs.header.frame_id, state.getRobotModel()->getModelFrame()))
@@ -86,10 +86,10 @@ static bool _multiDOFJointsToRobotState(const sensor_msgs::MultiDOFJointState& m
       try
       {
         // find the transform that takes the given frame_id to the desired fixed frame
-        const Eigen::Isometry3d& t2fixed_frame = tf->getTransform(mjs.header.frame_id);
+        const Eigen::Affine3d& t2fixed_frame = tf->getTransform(mjs.header.frame_id);
         // we update the value of the transform so that it transforms from the known fixed frame to the desired child
         // link
-        inv_t = t2fixed_frame.inverse();
+        inv_t = t2fixed_frame.inverse(Eigen::Isometry);
         use_inv_t = true;
       }
       catch (std::exception& ex)
@@ -115,7 +115,8 @@ static bool _multiDOFJointsToRobotState(const sensor_msgs::MultiDOFJointState& m
       error = true;
       continue;
     }
-    Eigen::Isometry3d transf = tf2::transformToEigen(mjs.transforms[i]);
+    Eigen::Affine3d transf;
+    tf::transformMsgToEigen(mjs.transforms[i], transf);
     // if frames do not mach, attempt to transform
     if (use_inv_t)
       transf = transf * inv_t;
@@ -133,18 +134,18 @@ static inline void _robotStateToMultiDOFJointState(const RobotState& state, sens
   mjs.transforms.clear();
   for (std::size_t i = 0; i < js.size(); ++i)
   {
-    geometry_msgs::TransformStamped p;
+    geometry_msgs::Transform p;
     if (state.dirtyJointTransform(js[i]))
     {
-      Eigen::Isometry3d t;
+      Eigen::Affine3d t;
       t.setIdentity();
       js[i]->computeTransform(state.getJointPositions(js[i]), t);
-      p = tf2::eigenToTransform(t);
+      tf::transformEigenToMsg(t, p);
     }
     else
-      p = tf2::eigenToTransform(state.getJointTransform(js[i]));
+      tf::transformEigenToMsg(state.getJointTransform(js[i]), p);
     mjs.joint_names.push_back(js[i]->getName());
-    mjs.transforms.push_back(p.transform);
+    mjs.transforms.push_back(p);
   }
   mjs.header.frame_id = state.getRobotModel()->getModelFrame();
 }
@@ -198,7 +199,7 @@ static void _attachedBodyToMsg(const AttachedBody& attached_body, moveit_msgs::A
 
   aco.object.operation = moveit_msgs::CollisionObject::ADD;
   const std::vector<shapes::ShapeConstPtr>& ab_shapes = attached_body.getShapes();
-  const EigenSTL::vector_Isometry3d& ab_tf = attached_body.getFixedTransforms();
+  const EigenSTL::vector_Affine3d& ab_tf = attached_body.getFixedTransforms();
   ShapeVisitorAddToCollisionObject sv(&aco.object);
   aco.object.primitives.clear();
   aco.object.meshes.clear();
@@ -212,7 +213,7 @@ static void _attachedBodyToMsg(const AttachedBody& attached_body, moveit_msgs::A
     if (shapes::constructMsgFromShape(ab_shapes[j].get(), sm))
     {
       geometry_msgs::Pose p;
-      p = tf2::toMsg(ab_tf[j]);
+      tf::poseEigenToMsg(ab_tf[j], p);
       sv.addToObject(sm, p);
     }
   }
@@ -247,15 +248,15 @@ static void _msgToAttachedBody(const Transforms* tf, const moveit_msgs::Attached
       if (lm)
       {
         std::vector<shapes::ShapeConstPtr> shapes;
-        EigenSTL::vector_Isometry3d poses;
+        EigenSTL::vector_Affine3d poses;
 
         for (std::size_t i = 0; i < aco.object.primitives.size(); ++i)
         {
           shapes::Shape* s = shapes::constructShapeFromMsg(aco.object.primitives[i]);
           if (s)
           {
-            Eigen::Isometry3d p;
-            tf2::fromMsg(aco.object.primitive_poses[i], p);
+            Eigen::Affine3d p;
+            tf::poseMsgToEigen(aco.object.primitive_poses[i], p);
             shapes.push_back(shapes::ShapeConstPtr(s));
             poses.push_back(p);
           }
@@ -265,8 +266,8 @@ static void _msgToAttachedBody(const Transforms* tf, const moveit_msgs::Attached
           shapes::Shape* s = shapes::constructShapeFromMsg(aco.object.meshes[i]);
           if (s)
           {
-            Eigen::Isometry3d p;
-            tf2::fromMsg(aco.object.mesh_poses[i], p);
+            Eigen::Affine3d p;
+            tf::poseMsgToEigen(aco.object.mesh_poses[i], p);
             shapes.push_back(shapes::ShapeConstPtr(s));
             poses.push_back(p);
           }
@@ -276,8 +277,8 @@ static void _msgToAttachedBody(const Transforms* tf, const moveit_msgs::Attached
           shapes::Shape* s = shapes::constructShapeFromMsg(aco.object.planes[i]);
           if (s)
           {
-            Eigen::Isometry3d p;
-            tf2::fromMsg(aco.object.plane_poses[i], p);
+            Eigen::Affine3d p;
+            tf::poseMsgToEigen(aco.object.plane_poses[i], p);
 
             shapes.push_back(shapes::ShapeConstPtr(s));
             poses.push_back(p);
@@ -287,7 +288,7 @@ static void _msgToAttachedBody(const Transforms* tf, const moveit_msgs::Attached
         // transform poses to link frame
         if (!Transforms::sameFrame(aco.object.header.frame_id, aco.link_name))
         {
-          Eigen::Isometry3d t0;
+          Eigen::Affine3d t0;
           if (state.knowsFrameTransform(aco.object.header.frame_id))
             t0 = state.getFrameTransform(aco.object.header.frame_id);
           else if (tf && tf->canTransform(aco.object.header.frame_id))
@@ -299,7 +300,7 @@ static void _msgToAttachedBody(const Transforms* tf, const moveit_msgs::Attached
                                      "The pose of the attached body may be incorrect",
                             aco.object.header.frame_id.c_str());
           }
-          Eigen::Isometry3d t = state.getGlobalLinkTransform(lm).inverse() * t0;
+          Eigen::Affine3d t = state.getGlobalLinkTransform(lm).inverse(Eigen::Isometry) * t0;
           for (std::size_t i = 0; i < poses.size(); ++i)
             poses[i] = t * poses[i];
         }
@@ -357,7 +358,7 @@ static bool _robotStateMsgToRobotStateHelper(const Transforms* tf, const moveit_
 
   return valid;
 }
-}  // namespace
+}
 
 // ********************************************
 
@@ -522,14 +523,14 @@ void robotStateToStream(const RobotState& state, std::ostream& out,
 
 void streamToRobotState(RobotState& state, const std::string& line, const std::string& separator)
 {
-  std::stringstream line_stream(line);
+  std::stringstream lineStream(line);
   std::string cell;
 
   // For each item/column
   for (std::size_t i = 0; i < state.getVariableCount(); ++i)
   {
     // Get a variable
-    if (!std::getline(line_stream, cell, separator[0]))
+    if (!std::getline(lineStream, cell, separator[0]))
       ROS_ERROR_STREAM_NAMED(LOGNAME, "Missing variable " << state.getVariableNames()[i]);
 
     state.getVariablePositions()[i] = boost::lexical_cast<double>(cell.c_str());

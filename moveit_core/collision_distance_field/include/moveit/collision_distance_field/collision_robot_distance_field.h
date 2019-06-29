@@ -63,13 +63,13 @@ class CollisionRobotDistanceField : public CollisionRobot
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-  CollisionRobotDistanceField(const robot_model::RobotModelConstPtr& robot_model);
+  CollisionRobotDistanceField(const robot_model::RobotModelConstPtr& kmodel);
 
   CollisionRobotDistanceField(const CollisionRobot& col_robot, const Eigen::Vector3d& size,
                               const Eigen::Vector3d& origin, bool use_signed_distance_field, double resolution,
                               double collision_tolerance, double max_propogation_distance, double padding);
 
-  CollisionRobotDistanceField(const robot_model::RobotModelConstPtr& robot_model,
+  CollisionRobotDistanceField(const robot_model::RobotModelConstPtr& kmodel,
                               const std::map<std::string, std::vector<CollisionSphere>>& link_body_decompositions,
                               double size_x = DEFAULT_SIZE_X, double size_y = DEFAULT_SIZE_Y,
                               double size_z = DEFAULT_SIZE_Z,
@@ -85,61 +85,66 @@ public:
                   const Eigen::Vector3d& size, const Eigen::Vector3d& origin, bool use_signed_distance_field,
                   double resolution, double collision_tolerance, double max_propogation_distance);
 
-  void checkSelfCollision(const collision_detection::CollisionRequest& req, collision_detection::CollisionResult& res,
-                          const moveit::core::RobotState& state) const override;
+  virtual void checkSelfCollision(const collision_detection::CollisionRequest& req,
+                                  collision_detection::CollisionResult& res,
+                                  const moveit::core::RobotState& state) const;
 
   void checkSelfCollision(const collision_detection::CollisionRequest& req, collision_detection::CollisionResult& res,
                           const moveit::core::RobotState& state, GroupStateRepresentationPtr& gsr) const;
 
-  void checkSelfCollision(const collision_detection::CollisionRequest& req, collision_detection::CollisionResult& res,
-                          const moveit::core::RobotState& state,
-                          const collision_detection::AllowedCollisionMatrix& acm) const override;
+  virtual void checkSelfCollision(const collision_detection::CollisionRequest& req,
+                                  collision_detection::CollisionResult& res, const moveit::core::RobotState& state,
+                                  const collision_detection::AllowedCollisionMatrix& acm) const;
 
   void checkSelfCollision(const collision_detection::CollisionRequest& req, collision_detection::CollisionResult& res,
                           const moveit::core::RobotState& state, const collision_detection::AllowedCollisionMatrix& acm,
                           GroupStateRepresentationPtr& gsr) const;
 
-  void checkSelfCollision(const collision_detection::CollisionRequest& req, collision_detection::CollisionResult& res,
-                          const moveit::core::RobotState& state1, const moveit::core::RobotState& state2) const override
+  virtual void checkSelfCollision(const collision_detection::CollisionRequest& req,
+                                  collision_detection::CollisionResult& res, const moveit::core::RobotState& state1,
+                                  const moveit::core::RobotState& state2) const
   {
     ROS_ERROR_NAMED("collision_distance_field", "Not implemented");
   };
 
-  void checkSelfCollision(const collision_detection::CollisionRequest& req, collision_detection::CollisionResult& res,
-                          const moveit::core::RobotState& state1, const moveit::core::RobotState& state2,
-                          const collision_detection::AllowedCollisionMatrix& acm) const override
+  virtual void checkSelfCollision(const collision_detection::CollisionRequest& req,
+                                  collision_detection::CollisionResult& res, const moveit::core::RobotState& state1,
+                                  const moveit::core::RobotState& state2,
+                                  const collision_detection::AllowedCollisionMatrix& acm) const
   {
     ROS_ERROR_NAMED("collision_distance_field", "Not implemented");
   };
 
-  void checkOtherCollision(const collision_detection::CollisionRequest& req, collision_detection::CollisionResult& res,
-                           const moveit::core::RobotState& state, const CollisionRobot& other_robot,
-                           const moveit::core::RobotState& other_state) const override
+  virtual void checkOtherCollision(const collision_detection::CollisionRequest& req,
+                                   collision_detection::CollisionResult& res, const moveit::core::RobotState& state,
+                                   const CollisionRobot& other_robot, const moveit::core::RobotState& other_state) const
   {
     ROS_ERROR_NAMED("collision_distance_field", "Not implemented");
   };
 
-  void checkOtherCollision(const collision_detection::CollisionRequest& req, collision_detection::CollisionResult& res,
-                           const moveit::core::RobotState& state, const CollisionRobot& other_robot,
-                           const moveit::core::RobotState& other_state,
-                           const collision_detection::AllowedCollisionMatrix& acm) const override
+  virtual void checkOtherCollision(const collision_detection::CollisionRequest& req,
+                                   collision_detection::CollisionResult& res, const moveit::core::RobotState& state,
+                                   const CollisionRobot& other_robot, const moveit::core::RobotState& other_state,
+                                   const collision_detection::AllowedCollisionMatrix& acm) const
   {
     ROS_ERROR_NAMED("collision_distance_field", "Not implemented");
   };
 
-  void checkOtherCollision(const collision_detection::CollisionRequest& req, collision_detection::CollisionResult& res,
-                           const moveit::core::RobotState& state1, const moveit::core::RobotState& state2,
-                           const CollisionRobot& other_robot, const moveit::core::RobotState& other_state1,
-                           const moveit::core::RobotState& other_state2) const override
+  virtual void checkOtherCollision(const collision_detection::CollisionRequest& req,
+                                   collision_detection::CollisionResult& res, const moveit::core::RobotState& state1,
+                                   const moveit::core::RobotState& state2, const CollisionRobot& other_robot,
+                                   const moveit::core::RobotState& other_state1,
+                                   const moveit::core::RobotState& other_state2) const
   {
     ROS_ERROR_NAMED("collision_distance_field", "Not implemented");
   };
 
-  void checkOtherCollision(const collision_detection::CollisionRequest& req, collision_detection::CollisionResult& res,
-                           const moveit::core::RobotState& state1, const moveit::core::RobotState& state2,
-                           const CollisionRobot& other_robot, const moveit::core::RobotState& other_state1,
-                           const moveit::core::RobotState& other_state2,
-                           const collision_detection::AllowedCollisionMatrix& acm) const override
+  virtual void checkOtherCollision(const collision_detection::CollisionRequest& req,
+                                   collision_detection::CollisionResult& res, const moveit::core::RobotState& state1,
+                                   const moveit::core::RobotState& state2, const CollisionRobot& other_robot,
+                                   const moveit::core::RobotState& other_state1,
+                                   const moveit::core::RobotState& other_state2,
+                                   const collision_detection::AllowedCollisionMatrix& acm) const
   {
     ROS_ERROR_NAMED("collision_distance_field", "Not implemented");
   };
@@ -168,14 +173,13 @@ public:
     return 0.0;
   };
 
-  void distanceSelf(const DistanceRequest& req, DistanceResult& res,
-                    const robot_state::RobotState& state) const override
+  virtual void distanceSelf(const DistanceRequest& req, DistanceResult& res, const robot_state::RobotState& state) const
   {
     ROS_ERROR_NAMED("collision_distance_field", "Not implemented");
   }
 
-  void distanceOther(const DistanceRequest& req, DistanceResult& res, const robot_state::RobotState& state,
-                     const CollisionRobot& other_robot, const robot_state::RobotState& other_state) const override
+  virtual void distanceOther(const DistanceRequest& req, DistanceResult& res, const robot_state::RobotState& state,
+                             const CollisionRobot& other_robot, const robot_state::RobotState& other_state) const
   {
     ROS_ERROR_NAMED("collision_distance_field", "Not implemented");
   }
@@ -243,7 +247,7 @@ protected:
   bool compareCacheEntryToAllowedCollisionMatrix(const DistanceFieldCacheEntryConstPtr& dfce,
                                                  const collision_detection::AllowedCollisionMatrix& acm) const;
 
-  void updatedPaddingOrScaling(const std::vector<std::string>& links) override{};
+  virtual void updatedPaddingOrScaling(const std::vector<std::string>& links){};
 
   Eigen::Vector3d size_;
   Eigen::Vector3d origin_;

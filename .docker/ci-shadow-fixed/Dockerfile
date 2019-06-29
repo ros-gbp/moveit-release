@@ -1,7 +1,7 @@
-# moveit/moveit:melodic-ci-shadow-fixed
+# moveit/moveit:kinetic-ci-shadow-fixed
 # Sets up a base image to use for running Continuous Integration on Travis
 
-FROM moveit/moveit:melodic-ci
+FROM moveit/moveit:kinetic-ci
 MAINTAINER Dave Coleman dave@picknik.ai
 
 # Switch to ros-shadow-fixed

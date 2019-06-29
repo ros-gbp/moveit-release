@@ -76,27 +76,27 @@ template <class CollisionWorldType, class CollisionRobotType, class CollisionDet
 class CollisionDetectorAllocatorTemplate : public CollisionDetectorAllocator
 {
 public:
-  const std::string& getName() const override
+  virtual const std::string& getName() const
   {
     return CollisionDetectorAllocatorType::NAME_;
   }
 
-  CollisionWorldPtr allocateWorld(const WorldPtr& world) const override
+  virtual CollisionWorldPtr allocateWorld(const WorldPtr& world) const
   {
     return CollisionWorldPtr(new CollisionWorldType(world));
   }
 
-  CollisionWorldPtr allocateWorld(const CollisionWorldConstPtr& orig, const WorldPtr& world) const override
+  virtual CollisionWorldPtr allocateWorld(const CollisionWorldConstPtr& orig, const WorldPtr& world) const
   {
     return CollisionWorldPtr(new CollisionWorldType(dynamic_cast<const CollisionWorldType&>(*orig), world));
   }
 
-  CollisionRobotPtr allocateRobot(const robot_model::RobotModelConstPtr& robot_model) const override
+  virtual CollisionRobotPtr allocateRobot(const robot_model::RobotModelConstPtr& robot_model) const
   {
     return CollisionRobotPtr(new CollisionRobotType(robot_model));
   }
 
-  CollisionRobotPtr allocateRobot(const CollisionRobotConstPtr& orig) const override
+  virtual CollisionRobotPtr allocateRobot(const CollisionRobotConstPtr& orig) const
   {
     return CollisionRobotPtr(new CollisionRobotType(dynamic_cast<const CollisionRobotType&>(*orig)));
   }

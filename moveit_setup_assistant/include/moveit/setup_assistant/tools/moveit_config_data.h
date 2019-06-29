@@ -37,12 +37,15 @@
 #ifndef MOVEIT_MOVEIT_SETUP_ASSISTANT_TOOLS_MOVEIT_CONFIG_DATA_
 #define MOVEIT_MOVEIT_SETUP_ASSISTANT_TOOLS_MOVEIT_CONFIG_DATA_
 
+#include <boost/shared_ptr.hpp>
+#include <srdfdom/model.h>        // use their struct datastructures
+#include <srdfdom/srdf_writer.h>  // for writing srdf data
+#include <urdf/model.h>           // to share throughout app
+#include <yaml-cpp/yaml.h>        // outputing yaml config files
 #include <moveit/macros/class_forward.h>
 #include <moveit/planning_scene/planning_scene.h>                     // for getting kinematic model
+#include <moveit/collision_detection/collision_matrix.h>              // for figuring out if robot is in collision
 #include <moveit/setup_assistant/tools/compute_default_collisions.h>  // for LinkPairMap
-#include <yaml-cpp/yaml.h>                                            // outputing yaml config files
-#include <urdf/model.h>                                               // to share throughout app
-#include <srdfdom/srdf_writer.h>                                      // for writing srdf data
 
 namespace moveit_setup_assistant
 {
@@ -57,6 +60,7 @@ static const std::string MOVEIT_ROBOT_STATE = "moveit_robot_state";
 // Default kin solver values
 static const double DEFAULT_KIN_SOLVER_SEARCH_RESOLUTION_ = 0.005;
 static const double DEFAULT_KIN_SOLVER_TIMEOUT_ = 0.005;
+static const int DEFAULT_KIN_SOLVER_ATTEMPTS_ = 3;
 
 // ******************************************************************************************
 // Structs
@@ -70,6 +74,7 @@ struct GroupMetaData
   std::string kinematics_solver_;               // Name of kinematics plugin to use
   double kinematics_solver_search_resolution_;  // resolution to use with solver
   double kinematics_solver_timeout_;            // solver timeout
+  int kinematics_solver_attempts_;              // solver attempts
   std::string default_planner_;                 // Name of the default planner to use
 };
 
@@ -278,7 +283,7 @@ public:
   // ******************************************************************************************
 
   /// Load a robot model
-  void setRobotModel(const moveit::core::RobotModelPtr& robot_model);
+  void setRobotModel(robot_model::RobotModelPtr robot_model);
 
   /// Provide a shared kinematic model loader
   robot_model::RobotModelConstPtr getRobotModel();
@@ -347,7 +352,7 @@ public:
    * \param planning_group name of group to use
    * \return string - value to insert into yaml file
    */
-  std::string decideProjectionJoints(const std::string& planning_group);
+  std::string decideProjectionJoints(std::string planning_group);
 
   /**
    * Input ompl_planning.yaml file for editing its values

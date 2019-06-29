@@ -37,12 +37,7 @@
 #ifndef MOVEIT_MOVEIT_SETUP_ASSISTANT_TOOLS_COMPUTE_DEFAULT_COLLISIONS_
 #define MOVEIT_MOVEIT_SETUP_ASSISTANT_TOOLS_COMPUTE_DEFAULT_COLLISIONS_
 
-#include <map>
-#include <moveit/macros/class_forward.h>
-namespace planning_scene
-{
-MOVEIT_CLASS_FORWARD(PlanningScene);
-}
+#include <moveit/planning_scene/planning_scene.h>
 
 namespace moveit_setup_assistant
 {

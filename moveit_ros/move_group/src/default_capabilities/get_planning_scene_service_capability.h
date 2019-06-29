@@ -47,7 +47,7 @@ class MoveGroupGetPlanningSceneService : public MoveGroupCapability
 public:
   MoveGroupGetPlanningSceneService();
 
-  void initialize() override;
+  virtual void initialize();
 
 private:
   bool getPlanningSceneService(moveit_msgs::GetPlanningScene::Request& req,

@@ -49,6 +49,8 @@
 #include <rviz/display_context.h>
 #include <rviz/window_manager_interface.h>
 
+#include <eigen_conversions/eigen_msg.h>
+
 #include <QMessageBox>
 #include <QInputDialog>
 
@@ -298,4 +300,4 @@ void MotionPlanningFrame::populatePlanningSceneTreeView()
   ui_->planning_scene_tree->setUpdatesEnabled(true);
   checkPlanningSceneTreeEnabledButtons();
 }
-}  // namespace moveit_rviz_plugin
+}

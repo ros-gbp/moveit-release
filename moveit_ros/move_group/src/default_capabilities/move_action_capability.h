@@ -49,7 +49,7 @@ class MoveGroupMoveAction : public MoveGroupCapability
 public:
   MoveGroupMoveAction();
 
-  void initialize() override;
+  virtual void initialize();
 
 private:
   void executeMoveCallback(const moveit_msgs::MoveGroupGoalConstPtr& goal);

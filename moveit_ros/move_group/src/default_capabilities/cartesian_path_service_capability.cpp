@@ -38,7 +38,7 @@
 #include <moveit/robot_state/conversions.h>
 #include <moveit/kinematic_constraints/utils.h>
 #include <moveit/collision_detection/collision_tools.h>
-#include <tf2_eigen/tf2_eigen.h>
+#include <eigen_conversions/eigen_msg.h>
 #include <moveit/move_group/capability_names.h>
 #include <moveit/planning_pipeline/planning_pipeline.h>
 #include <moveit_msgs/DisplayTrajectory.h>
@@ -68,7 +68,7 @@ bool isStateValid(const planning_scene::PlanningScene* planning_scene,
   return (!planning_scene || !planning_scene->isStateColliding(*state, group->getName())) &&
          (!constraint_set || constraint_set->decide(*state).satisfied);
 }
-}  // namespace
+}
 
 bool move_group::MoveGroupCartesianPathService::computeService(moveit_msgs::GetCartesianPath::Request& req,
                                                                moveit_msgs::GetCartesianPath::Response& res)
@@ -86,7 +86,7 @@ bool move_group::MoveGroupCartesianPathService::computeService(moveit_msgs::GetC
       link_name = jmg->getLinkModelNames().back();
 
     bool ok = true;
-    EigenSTL::vector_Isometry3d waypoints(req.waypoints.size());
+    EigenSTL::vector_Affine3d waypoints(req.waypoints.size());
     const std::string& default_frame = context_->planning_scene_monitor_->getRobotModel()->getModelFrame();
     bool no_transform = req.header.frame_id.empty() ||
                         robot_state::Transforms::sameFrame(req.header.frame_id, default_frame) ||
@@ -95,14 +95,14 @@ bool move_group::MoveGroupCartesianPathService::computeService(moveit_msgs::GetC
     for (std::size_t i = 0; i < req.waypoints.size(); ++i)
     {
       if (no_transform)
-        tf2::fromMsg(req.waypoints[i], waypoints[i]);
+        tf::poseMsgToEigen(req.waypoints[i], waypoints[i]);
       else
       {
         geometry_msgs::PoseStamped p;
         p.header = req.header;
         p.pose = req.waypoints[i];
         if (performTransform(p, default_frame))
-          tf2::fromMsg(p.pose, waypoints[i]);
+          tf::poseMsgToEigen(p.pose, waypoints[i]);
         else
         {
           ROS_ERROR("Error encountered transforming waypoints to frame '%s'", default_frame.c_str());
@@ -122,7 +122,7 @@ bool move_group::MoveGroupCartesianPathService::computeService(moveit_msgs::GetC
       }
       else
       {
-        if (!waypoints.empty())
+        if (waypoints.size() > 0)
         {
           robot_state::GroupStateValidityCallbackFn constraint_fn;
           std::unique_ptr<planning_scene_monitor::LockedPlanningSceneRO> ls;
@@ -134,8 +134,8 @@ bool move_group::MoveGroupCartesianPathService::computeService(moveit_msgs::GetC
             kset->add(req.path_constraints, (*ls)->getTransforms());
             constraint_fn = boost::bind(
                 &isStateValid,
-                req.avoid_collisions ? static_cast<const planning_scene::PlanningSceneConstPtr&>(*ls).get() : nullptr,
-                kset->empty() ? nullptr : kset.get(), _1, _2, _3);
+                req.avoid_collisions ? static_cast<const planning_scene::PlanningSceneConstPtr&>(*ls).get() : NULL,
+                kset->empty() ? NULL : kset.get(), _1, _2, _3);
           }
           bool global_frame = !robot_state::Transforms::sameFrame(link_name, req.header.frame_id);
           ROS_INFO("Attempting to follow %u waypoints for link '%s' using a step of %lf m and jump threshold %lf (in "

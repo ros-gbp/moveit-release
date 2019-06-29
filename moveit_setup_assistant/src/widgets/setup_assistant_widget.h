@@ -102,13 +102,13 @@ public:
    * @param parent - used by Qt for destructing all elements
    * @return
    */
-  SetupAssistantWidget(QWidget* parent, const boost::program_options::variables_map& args);
+  SetupAssistantWidget(QWidget* parent, boost::program_options::variables_map args);
 
   /**
    * Deconstructor
    *
    */
-  ~SetupAssistantWidget() override;
+  ~SetupAssistantWidget();
 
   /**
    * Changes viewable screen
@@ -121,7 +121,7 @@ public:
    * Qt close event function for reminding user to save
    * @param event A Qt paramenter
    */
-  void closeEvent(QCloseEvent* event) override;
+  void closeEvent(QCloseEvent* event);
 
   /**
    * Qt error handling function
@@ -227,10 +227,10 @@ private:
   ConfigurationFilesWidget* configuration_files_widget_;
   SimulationWidget* simulation_widget_;
   PerceptionWidget* perception_widget_;
-  ROSControllersWidget* controllers_widget_;
+  moveit_ros_control::ROSControllersWidget* controllers_widget_;
 
   /// Contains all the configuration data for the setup assistant
-  MoveItConfigDataPtr config_data_;
+  moveit_setup_assistant::MoveItConfigDataPtr config_data_;
 
   // ******************************************************************************************
   // Private Functions

@@ -43,11 +43,11 @@
 #include <QRegExp>
 // ROS
 #include "configuration_files_widget.h"
+#include <srdfdom/model.h>  // use their struct datastructures
 #include <ros/ros.h>
 // Boost
-#include <boost/algorithm/string.hpp>       // for string find and replace in templates
-#include <boost/filesystem/path.hpp>        // for creating folders/files
-#include <boost/filesystem/operations.hpp>  // is_regular_file, is_directory, etc.
+#include <boost/algorithm/string.hpp>  // for trimming whitespace from user input
+#include <boost/filesystem.hpp>        // for creating folders/files
 // Read write files
 #include <iostream>  // For writing yaml and launch files
 #include <fstream>
@@ -62,7 +62,8 @@ const std::string SETUP_ASSISTANT_FILE = ".setup_assistant";
 // ******************************************************************************************
 // Outer User Interface for MoveIt! Configuration Assistant
 // ******************************************************************************************
-ConfigurationFilesWidget::ConfigurationFilesWidget(QWidget* parent, const MoveItConfigDataPtr& config_data)
+ConfigurationFilesWidget::ConfigurationFilesWidget(QWidget* parent,
+                                                   moveit_setup_assistant::MoveItConfigDataPtr config_data)
   : SetupScreenWidget(parent), config_data_(config_data), has_generated_pkg_(false), first_focusGiven_(true)
 {
   // Basic widget container
@@ -84,7 +85,7 @@ ConfigurationFilesWidget::ConfigurationFilesWidget(QWidget* parent, const MoveIt
   stack_path_ = new LoadPathWidget("Configuration Package Save Path",
                                    "Specify the desired directory for the MoveIt! configuration package to be "
                                    "generated. Overwriting an existing configuration package directory is acceptable. "
-                                   "Example: <i>/u/robot/ros/panda_moveit_config</i>",
+                                   "Example: <i>/u/robot/ros/pr2_moveit_config</i>",
                                    this, true);  // is directory
   layout->addWidget(stack_path_);
 
@@ -183,7 +184,7 @@ bool ConfigurationFilesWidget::loadGenFiles()
   fs::path template_package_path = config_data_->setup_assistant_path_;
   template_package_path /= "templates";
   template_package_path /= "moveit_config_pkg_template";
-  config_data_->template_package_path_ = template_package_path.make_preferred().native();
+  config_data_->template_package_path_ = template_package_path.make_preferred().native().c_str();
 
   if (!fs::is_directory(config_data_->template_package_path_))
   {
@@ -569,25 +570,25 @@ bool ConfigurationFilesWidget::checkDependencies()
   bool requiredActions = false;
 
   // Check that at least 1 planning group exists
-  if (config_data_->srdf_->groups_.empty())
+  if (!config_data_->srdf_->groups_.size())
   {
     dependencies << "No robot model planning groups have been created";
   }
 
   // Check that at least 1 link pair is disabled from collision checking
-  if (config_data_->srdf_->disabled_collisions_.empty())
+  if (!config_data_->srdf_->disabled_collisions_.size())
   {
     dependencies << "No self-collisions have been disabled";
   }
 
   // Check that there is at least 1 end effector added
-  if (config_data_->srdf_->end_effectors_.empty())
+  if (!config_data_->srdf_->end_effectors_.size())
   {
     dependencies << "No end effectors have been added";
   }
 
   // Check that there is at least 1 virtual joint added
-  if (config_data_->srdf_->virtual_joints_.empty())
+  if (!config_data_->srdf_->virtual_joints_.size())
   {
     dependencies << "No virtual joints have been added";
   }
@@ -612,7 +613,7 @@ bool ConfigurationFilesWidget::checkDependencies()
   }
 
   // Display all accumumlated errors:
-  if (!dependencies.empty())
+  if (dependencies.size())
   {
     // Create a dependency message
     QString dep_message;
@@ -1027,13 +1028,13 @@ bool ConfigurationFilesWidget::noGroupsEmpty()
        group_it != config_data_->srdf_->groups_.end(); ++group_it)
   {
     // Whenever 1 of the 4 component types are found, stop checking this group
-    if (!group_it->joints_.empty())
+    if (group_it->joints_.size())
       continue;
-    if (!group_it->links_.empty())
+    if (group_it->links_.size())
       continue;
-    if (!group_it->chains_.empty())
+    if (group_it->chains_.size())
       continue;
-    if (!group_it->subgroups_.empty())
+    if (group_it->subgroups_.size())
       continue;
 
     // This group has no contents, bad
@@ -1085,8 +1086,8 @@ void ConfigurationFilesWidget::loadTemplateStrings()
   {
     const srdf::Model::VirtualJoint& vj = config_data_->srdf_->virtual_joints_[i];
     if (vj.type_ != "fixed")
-      vjb << "  <node pkg=\"tf2_ros\" type=\"static_transform_publisher\" name=\"virtual_joint_broadcaster_" << i
-          << "\" args=\"0 0 0 0 0 0 " << vj.parent_frame_ << " " << vj.child_link_ << "\" />" << std::endl;
+      vjb << "  <node pkg=\"tf\" type=\"static_transform_publisher\" name=\"virtual_joint_broadcaster_" << i
+          << "\" args=\"0 0 0 0 0 0 " << vj.parent_frame_ << " " << vj.child_link_ << " 100\" />" << std::endl;
   }
   addTemplateString("[VIRTUAL_JOINT_BROADCASTER]", vjb.str());
 
@@ -1206,4 +1207,4 @@ bool ConfigurationFilesWidget::createFolder(const std::string& output_path)
   return true;
 }
 
-}  // namespace moveit_setup_assistant
+}  // namespace

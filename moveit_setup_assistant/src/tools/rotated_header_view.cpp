@@ -36,6 +36,7 @@
 
 #include "rotated_header_view.h"
 #include <QPainter>
+#include <QDebug>
 
 namespace moveit_setup_assistant
 {
@@ -124,6 +125,7 @@ int RotatedHeaderView::sectionSizeHint(int logicalIndex) const
   else
     size = sectionSizeFromContents(logicalIndex);
   int hint = size.height();
+  qDebug() << logicalIndex << size << hint;
   return qMax(minimumSectionSize(), hint);
 }
-}  // namespace moveit_setup_assistant
+}

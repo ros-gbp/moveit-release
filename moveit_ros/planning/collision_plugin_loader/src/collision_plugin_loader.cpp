@@ -58,7 +58,7 @@ public:
     CollisionPluginPtr plugin;
     try
     {
-      plugin = loader_->createUniqueInstance(name);
+      plugin.reset(loader_->createUnmanagedInstance(name));
       plugins_[name] = plugin;
     }
     catch (pluginlib::PluginlibException& ex)
@@ -97,7 +97,9 @@ CollisionPluginLoader::CollisionPluginLoader()
   loader_.reset(new CollisionPluginLoaderImpl());
 }
 
-CollisionPluginLoader::~CollisionPluginLoader() = default;
+CollisionPluginLoader::~CollisionPluginLoader()
+{
+}
 
 bool CollisionPluginLoader::activate(const std::string& name, const planning_scene::PlanningScenePtr& scene,
                                      bool exclusive)
@@ -128,7 +130,7 @@ void CollisionPluginLoader::setupScene(ros::NodeHandle& nh, const planning_scene
     return;
   }
 
-  if (collision_detector_name.empty())
+  if (collision_detector_name == "")
   {
     // This is not a valid name for a collision detector plugin
     return;

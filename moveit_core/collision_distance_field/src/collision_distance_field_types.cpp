@@ -41,10 +41,11 @@
 #include <ros/console.h>
 #include <memory>
 
+const static double RESOLUTION_SCALE = 1.0;
 const static double EPSILON = 0.0001;
 
 std::vector<collision_detection::CollisionSphere>
-collision_detection::determineCollisionSpheres(const bodies::Body* body, Eigen::Isometry3d& relative_transform)
+collision_detection::determineCollisionSpheres(const bodies::Body* body, Eigen::Affine3d& relative_transform)
 {
   std::vector<collision_detection::CollisionSphere> css;
 
@@ -52,7 +53,7 @@ collision_detection::determineCollisionSpheres(const bodies::Body* body, Eigen::
   body->computeBoundingCylinder(cyl);
   unsigned int num_points = ceil(cyl.length / (cyl.radius / 2.0));
   double spacing = cyl.length / ((num_points * 1.0) - 1.0);
-  relative_transform = body->getPose().inverse() * cyl.pose;
+  relative_transform = body->getPose().inverse(Eigen::Isometry) * cyl.pose;
 
   for (unsigned int i = 1; i < num_points - 1; i++)
   {
@@ -249,7 +250,7 @@ bool collision_detection::getCollisionSphereCollision(const distance_field::Dist
     }
   }
 
-  return !colls.empty();
+  return colls.size() > 0;
 }
 
 ///
@@ -260,21 +261,21 @@ collision_detection::BodyDecomposition::BodyDecomposition(const shapes::ShapeCon
                                                           double padding)
 {
   std::vector<shapes::ShapeConstPtr> shapes;
-  EigenSTL::vector_Isometry3d poses(1, Eigen::Isometry3d::Identity());
+  EigenSTL::vector_Affine3d poses(1, Eigen::Affine3d::Identity());
 
   shapes.push_back(shape);
   init(shapes, poses, resolution, padding);
 }
 
 collision_detection::BodyDecomposition::BodyDecomposition(const std::vector<shapes::ShapeConstPtr>& shapes,
-                                                          const EigenSTL::vector_Isometry3d& poses, double resolution,
+                                                          const EigenSTL::vector_Affine3d& poses, double resolution,
                                                           double padding)
 {
   init(shapes, poses, resolution, padding);
 }
 
 void collision_detection::BodyDecomposition::init(const std::vector<shapes::ShapeConstPtr>& shapes,
-                                                  const EigenSTL::vector_Isometry3d& poses, double resolution,
+                                                  const EigenSTL::vector_Affine3d& poses, double resolution,
                                                   double padding)
 {
   bodies_.clear();
@@ -332,14 +333,14 @@ collision_detection::PosedBodyPointDecomposition::PosedBodyPointDecomposition(
 }
 
 collision_detection::PosedBodyPointDecomposition::PosedBodyPointDecomposition(
-    const BodyDecompositionConstPtr& body_decomposition, const Eigen::Isometry3d& trans)
+    const BodyDecompositionConstPtr& body_decomposition, const Eigen::Affine3d& trans)
   : body_decomposition_(body_decomposition)
 {
   updatePose(trans);
 }
 
 collision_detection::PosedBodyPointDecomposition::PosedBodyPointDecomposition(
-    const std::shared_ptr<const octomap::OcTree>& octree)
+    std::shared_ptr<const octomap::OcTree> octree)
   : body_decomposition_()
 {
   int num_nodes = octree->getNumLeafNodes();
@@ -351,7 +352,7 @@ collision_detection::PosedBodyPointDecomposition::PosedBodyPointDecomposition(
   }
 }
 
-void collision_detection::PosedBodyPointDecomposition::updatePose(const Eigen::Isometry3d& trans)
+void collision_detection::PosedBodyPointDecomposition::updatePose(const Eigen::Affine3d& trans)
 {
   if (body_decomposition_)
   {
@@ -370,10 +371,10 @@ collision_detection::PosedBodySphereDecomposition::PosedBodySphereDecomposition(
 {
   posed_bounding_sphere_center_ = body_decomposition_->getRelativeBoundingSphere().center;
   sphere_centers_.resize(body_decomposition_->getCollisionSpheres().size());
-  updatePose(Eigen::Isometry3d::Identity());
+  updatePose(Eigen::Affine3d::Identity());
 }
 
-void collision_detection::PosedBodySphereDecomposition::updatePose(const Eigen::Isometry3d& trans)
+void collision_detection::PosedBodySphereDecomposition::updatePose(const Eigen::Affine3d& trans)
 {
   // updating sphere centers
   posed_bounding_sphere_center_ = trans * body_decomposition_->getRelativeBoundingSphere().center;
@@ -402,7 +403,11 @@ bool collision_detection::doBoundingSpheresIntersect(const PosedBodySphereDecomp
   double p2_radius = p2->getBoundingSphereRadius();
 
   double dist = (p1_sphere_center - p2_sphere_center).squaredNorm();
-  return dist < (p1_radius + p2_radius);
+  if (dist < (p1_radius + p2_radius))
+  {
+    return true;
+  }
+  return false;
 }
 
 void collision_detection::getCollisionSphereMarkers(

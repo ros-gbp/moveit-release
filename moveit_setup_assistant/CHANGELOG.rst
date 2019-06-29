@@ -2,56 +2,20 @@
 Changelog for package moveit_setup_assistant
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1.0.2 (2019-06-28)
-------------------
-* [fix]     static transform publisher does not take a rate (`#1494 <https://github.com/ros-planning/moveit/issues/1494>`_)
-* [feature] Add arguments `load_robot_description`, `pipeline`, `rviz config_file`  to launch file templates (`#1397 <https://github.com/ros-planning/moveit/issues/1397>`_)
-* Contributors: Mike Lautman, Robert Haschke, jschleicher
+0.9.16 (2019-06-29)
+-------------------
+* [maintanance] Resolve catkin lint issues (`#1137 <https://github.com/ros-planning/moveit/issues/1137>`_)
+* [maintanance] Fix clang issues (`#1233 <https://github.com/ros-planning/moveit/issues/1233>`_)
+* [feature]     Added demo_gazebo.launch (`#1051 <https://github.com/ros-planning/moveit/issues/1051>`_)
+* Contributors: Ludovic Delval, Michael Görner, Mohmmad Ayman, Robert Haschke
 
-1.0.1 (2019-03-08)
-------------------
-* [fix] re-add required build dependencies (`#1373 <https://github.com/ros-planning/moveit/issues/1373>`_)
-* [improve] Apply clang tidy fix to entire code base (Part 1) (`#1366 <https://github.com/ros-planning/moveit/issues/1366>`_)
-* Contributors: Isaac I.Y. Saito, Robert Haschke, Yu, Yan
-
-1.0.0 (2019-02-24)
-------------------
-* [fix] catkin_lint issues (`#1341 <https://github.com/ros-planning/moveit/issues/1341>`_)
-* [fix] memory leaks (`#1292 <https://github.com/ros-planning/moveit/issues/1292>`_)
-* [improve] Remove (redundant) random seeding and #attempts from RobotState::setFromIK() as the IK solver perform random seeding themselves. `#1288 <https://github.com/ros-planning/moveit/issues/1288>`_
-* [improve] support dark themes (`#1173 <https://github.com/ros-planning/moveit/issues/1173>`_)
-* Contributors: Dave Coleman, Robert Haschke, Victor Lamoine
-
-0.10.8 (2018-12-24)
+0.9.15 (2018-10-29)
 -------------------
 
-0.10.7 (2018-12-13)
+0.9.14 (2018-10-24)
 -------------------
 
-0.10.6 (2018-12-09)
--------------------
-* [enhancement] Create demo_gazebo.launch (`#1051 <https://github.com/ros-planning/moveit/issues/1051>`_)
-* [maintenance] Cleanup includes to speedup compiling (`#1205 <https://github.com/ros-planning/moveit/issues/1205>`_)
-* [maintenance] Use C++14 (`#1146 <https://github.com/ros-planning/moveit/issues/1146>`_)
-* [maintenance] Code Cleanup
-  * `#1179 <https://github.com/ros-planning/moveit/issues/1179>`_
-  * `#1196 <https://github.com/ros-planning/moveit/issues/1196>`_
-* Contributors: Alex Moriarty, Dave Coleman, Michael Görner, Robert Haschke
-
-0.10.5 (2018-11-01)
--------------------
-
-0.10.4 (2018-10-29)
--------------------
-* [fix] Build regression (`#1170 <https://github.com/ros-planning/moveit/issues/1170>`_)
-* Contributors: Robert Haschke
-
-0.10.3 (2018-10-29)
--------------------
-* [fix] compiler warnings (`#1089 <https://github.com/ros-planning/moveit/issues/1089>`_)
-* Contributors: Robert Haschke
-
-0.10.2 (2018-10-24)
+0.9.13 (2018-10-24)
 -------------------
 * [fix] Some bugs (`#1022 <https://github.com/ros-planning/moveit/issues/1022>`_, `#1013 <https://github.com/ros-planning/moveit/issues/1013>`_, `#1040 <https://github.com/ros-planning/moveit/issues/1040>`_)
 * [capability][chomp] Failure recovery options for CHOMP by tweaking parameters (`#987 <https://github.com/ros-planning/moveit/issues/987>`_)
@@ -69,12 +33,13 @@ Changelog for package moveit_setup_assistant
 * [capability][chomp] cleanup of unused parameters and code + addition of trajectory initialization methods (linear, cubic, quintic-spline) (`#960 <https://github.com/ros-planning/moveit/issues/960>`_)
 * Contributors: Alexander Gutenkunst, Dave Coleman, Mike Lautman, MohmadAyman, Mohmmad Ayman, Raghavender Sahdev, Robert Haschke, Sohieb Abdelrahman, mike lautman
 
-0.10.1 (2018-05-25)
+0.9.12 (2018-05-29)
 -------------------
-* [maintenance] migration from tf to tf2 API (`#830 <https://github.com/ros-planning/moveit/issues/830>`_)
+* [maintenance] trim group + link names (`#921 <https://github.com/ros-planning/moveit/issues/921>`_)
+* [feature] combo box to choose default planner (`#658 <https://github.com/ros-planning/moveit/issues/658>`_)
 * [maintenance] cleanup yaml parsing, remove yaml-cpp 0.3 support (`#795 <https://github.com/ros-planning/moveit/issues/795>`_)
 * [feature] allow editing of xacro args (`#796 <https://github.com/ros-planning/moveit/issues/796>`_)
-* Contributors: Dave Coleman, Ian McMahon, Michael Görner, Mikael Arguedas, Robert Haschke, Will Baker
+* Contributors: Mohmmad Ayman, Dave Coleman, Ian McMahon, Michael Görner, Mikael Arguedas, Robert Haschke, Will Baker
 
 0.9.11 (2017-12-25)
 -------------------
@@ -111,7 +76,7 @@ Changelog for package moveit_setup_assistant
 
 0.9.5 (2017-03-08)
 ------------------
-* [fix][moveit_ros_warehouse] gcc6 build error `#423 <https://github.com/ros-planning/moveit/pull/423>`_ 
+* [fix][moveit_ros_warehouse] gcc6 build error `#423 <https://github.com/ros-planning/moveit/pull/423>`_
 * Contributors: Dave Coleman
 
 0.9.4 (2017-02-06)
@@ -137,7 +102,7 @@ Changelog for package moveit_setup_assistant
 
 0.7.1 (2016-06-24)
 ------------------
-* [sys] Qt adjustment. 
+* [sys] Qt adjustment.
   * relax Qt-version requirement.  Minor Qt version updates are ABI-compatible with each other:  https://wiki.qt.io/Qt-Version-Compatibility
   * auto-select Qt version matching the one from rviz `#114 <https://github.com/ros-planning/moveit_setup_assistant/issues/114>`_
   * Allow to conditionally compile against Qt5 by setting -DUseQt5=On

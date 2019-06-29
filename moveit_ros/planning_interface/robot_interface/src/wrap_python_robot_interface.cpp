@@ -148,12 +148,12 @@ public:
     const robot_model::LinkModel* lm = state->getLinkModel(name);
     if (lm)
     {
-      const Eigen::Isometry3d& t = state->getGlobalLinkTransform(lm);
+      const Eigen::Affine3d& t = state->getGlobalLinkTransform(lm);
       std::vector<double> v(7);
       v[0] = t.translation().x();
       v[1] = t.translation().y();
       v[2] = t.translation().z();
-      Eigen::Quaterniond q(t.rotation());
+      Eigen::Quaterniond q(t.linear());
       v[3] = q.x();
       v[4] = q.y();
       v[5] = q.z();
@@ -233,7 +233,7 @@ public:
     return py_bindings_tools::serializeMsg(msg);
   }
 
-  bp::tuple getEndEffectorParentGroup(const std::string& group)
+  bp::tuple getEndEffectorParentGroup(std::string group)
   {
     // name of the group that is parent to this end-effector group;
     // Second: the link this in the parent group that this group attaches to
@@ -303,7 +303,7 @@ public:
     return py_bindings_tools::serializeMsg(msg);
   }
 
-  std::string getRobotMarkersPythonList(const bp::list& links)
+  std::string getRobotMarkersPythonList(bp::list links)
   {
     if (!ensureCurrentState())
       return "";
@@ -314,7 +314,7 @@ public:
     return py_bindings_tools::serializeMsg(msg);
   }
 
-  std::string getRobotMarkersGroup(const std::string& group)
+  std::string getRobotMarkersGroup(std::string group)
   {
     if (!ensureCurrentState())
       return "";
@@ -329,7 +329,7 @@ public:
     return py_bindings_tools::serializeMsg(msg);
   }
 
-  std::string getRobotMarkersGroupPythonDict(const std::string& group, bp::dict& values)
+  std::string getRobotMarkersGroupPythonDict(std::string group, bp::dict& values)
   {
     const robot_model::JointModelGroup* jmg = robot_model_->getJointModelGroup(group);
     if (!jmg)
@@ -367,7 +367,7 @@ private:
   planning_scene_monitor::CurrentStateMonitorPtr current_state_monitor_;
   ros::NodeHandle nh_;
 };
-}  // namespace moveit
+}
 
 static void wrap_robot_interface()
 {

@@ -2,47 +2,26 @@
 Changelog for package moveit_commander
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1.0.2 (2019-06-28)
-------------------
+0.9.16 (2019-06-29)
+-------------------
 * [feature]     Add get_jacobian_matrix to moveit_commander (`#1501 <https://github.com/ros-planning/moveit/issues/1501>`_)
-* [maintanance] Cleanup Python PlanningSceneInterface (`#1405 <https://github.com/ros-planning/moveit/issues/1405>`_, `#789 <https://github.com/ros-planning/moveit/issues/789>`_)
-* Contributors: Bence Magyar, Robert Haschke, Ryosuke Tajima
+* [feature]     Expose get_named_targets and get_named_target_values functions (`#1300 <https://github.com/ros-planning/moveit/issues/1300>`_)
+* [maintanance] Resolve catkin lint issues (`#1137 <https://github.com/ros-planning/moveit/issues/1137>`_)
+* Contributors: Keerthana Subramanian Manivannan, Ludovic Delval, Ryosuke Tajima
 
-1.0.1 (2019-03-08)
-------------------
-* [capability] python PlanningSceneInterface.add_cylinder() (`#1372 <https://github.com/ros-planning/moveit/issues/1372>`_)
-* Contributors: Robert Haschke
-
-1.0.0 (2019-02-24)
-------------------
-* [fix] catkin_lint issues (`#1341 <https://github.com/ros-planning/moveit/issues/1341>`_)
-* Contributors: Keerthana Subramanian Manivannan, Robert Haschke
-
-0.10.8 (2018-12-24)
+0.9.15 (2018-10-29)
 -------------------
 
-0.10.7 (2018-12-13)
+0.9.14 (2018-10-24)
 -------------------
 
-0.10.6 (2018-12-09)
--------------------
-
-0.10.5 (2018-11-01)
--------------------
-
-0.10.4 (2018-10-29)
--------------------
-
-0.10.3 (2018-10-29)
--------------------
-
-0.10.2 (2018-10-24)
+0.9.13 (2018-10-24)
 -------------------
 * [capability] Added plan_only flags to pick and place (`#862 <https://github.com/ros-planning/moveit/issues/862>`_)
 * [maintenance] Python3 support (`#1103 <https://github.com/ros-planning/moveit/issues/1103>`_, `#1054 <https://github.com/ros-planning/moveit/issues/1054>`_)
 * Contributors: David Watkins, Michael Görner, d-walsh, mike lautman
 
-0.10.1 (2018-05-25)
+0.9.12 (2018-05-29)
 -------------------
 * Get robot markers from state (`#836 <https://github.com/ros-planning/moveit/issues/836>`_)
 * Add namespace capabilities to moveit_commander (`#835 <https://github.com/ros-planning/moveit/issues/835>`_)
@@ -76,7 +55,7 @@ Changelog for package moveit_commander
 0.9.5 (2017-03-08)
 ------------------
 * [fix] Regression on Ubuntu Xenial; numpy.ndarray indices bug (from `#86 <https://github.com/ros-planning/moveit/issues/86>`_) (`#450 <https://github.com/ros-planning/moveit/issues/450>`_).
-* [doc][moveit_commander] added description for set_start_state (`#447 <https://github.com/ros-planning/moveit/issues/447>`_) 
+* [doc][moveit_commander] added description for set_start_state (`#447 <https://github.com/ros-planning/moveit/issues/447>`_)
 * Contributors: Adam Allevato, Ravi Prakash Joshi
 
 0.9.4 (2017-02-06)
@@ -132,7 +111,7 @@ Changelog for package moveit_commander
 
 0.5.6 (2014-03-24)
 ------------------
-* Added the calls necessary to manage path constraints. 
+* Added the calls necessary to manage path constraints.
 * fix joint and link acces on __getattr__  when trying to acces a joint and its paramaters throught
 * Contributors: Acorn, Emili Boronat, Sachin Chitta
 

@@ -64,8 +64,8 @@ TrajectoryVisualization::TrajectoryVisualization(rviz::Property* widget, rviz::D
   , current_state_(-1)
   , display_(display)
   , widget_(widget)
-  , trajectory_slider_panel_(nullptr)
-  , trajectory_slider_dock_panel_(nullptr)
+  , trajectory_slider_panel_(NULL)
+  , trajectory_slider_dock_panel_(NULL)
 {
   trajectory_topic_property_ =
       new rviz::RosTopicProperty("Trajectory Topic", "/move_group/display_planned_path",
@@ -132,7 +132,7 @@ TrajectoryVisualization::~TrajectoryVisualization()
 }
 
 void TrajectoryVisualization::onInitialize(Ogre::SceneNode* scene_node, rviz::DisplayContext* context,
-                                           const ros::NodeHandle& update_nh)
+                                           ros::NodeHandle update_nh)
 {
   // Save pointers for later use
   scene_node_ = scene_node;
@@ -164,7 +164,7 @@ void TrajectoryVisualization::setName(const QString& name)
     trajectory_slider_dock_panel_->setWindowTitle(name + " - Slider");
 }
 
-void TrajectoryVisualization::onRobotModelLoaded(const robot_model::RobotModelConstPtr& robot_model)
+void TrajectoryVisualization::onRobotModelLoaded(robot_model::RobotModelConstPtr robot_model)
 {
   robot_model_ = robot_model;
 
@@ -182,9 +182,6 @@ void TrajectoryVisualization::onRobotModelLoaded(const robot_model::RobotModelCo
   // Load rviz robot
   display_path_robot_->load(*robot_model_->getURDF());
   enabledRobotColor();  // force-refresh to account for saved display configuration
-  // perform post-poned subscription to trajectory topic
-  if (trajectory_topic_sub_.getTopic().empty())
-    changedTrajectoryTopic();
 }
 
 void TrajectoryVisualization::reset()
@@ -231,8 +228,7 @@ void TrajectoryVisualization::changedShowTrail()
   for (std::size_t i = 0; i < trajectory_trail_.size(); i++)
   {
     int waypoint_i = std::min(i * stepsize, t->getWayPointCount() - 1);  // limit to last trajectory point
-    rviz::Robot* r =
-        new rviz::Robot(scene_node_, context_, "Trail Robot " + boost::lexical_cast<std::string>(i), nullptr);
+    rviz::Robot* r = new rviz::Robot(scene_node_, context_, "Trail Robot " + boost::lexical_cast<std::string>(i), NULL);
     r->load(*robot_model_->getURDF());
     r->setVisualVisible(display_path_visual_enabled_property_->getBool());
     r->setCollisionVisible(display_path_collision_enabled_property_->getBool());
@@ -261,8 +257,7 @@ void TrajectoryVisualization::changedRobotPathAlpha()
 void TrajectoryVisualization::changedTrajectoryTopic()
 {
   trajectory_topic_sub_.shutdown();
-  // post-pone subscription if robot_state_ is not yet defined, i.e. onRobotModelLoaded() not yet called
-  if (!trajectory_topic_property_->getStdString().empty() && robot_state_)
+  if (!trajectory_topic_property_->getStdString().empty())
   {
     trajectory_topic_sub_ = update_nh_.subscribe(trajectory_topic_property_->getStdString(), 2,
                                                  &TrajectoryVisualization::incomingDisplayTrajectory, this);
@@ -477,27 +472,18 @@ void TrajectoryVisualization::incomingDisplayTrajectory(const moveit_msgs::Displ
   trajectory_message_to_display_.reset();
 
   robot_trajectory::RobotTrajectoryPtr t(new robot_trajectory::RobotTrajectory(robot_model_, ""));
-  try
+  for (std::size_t i = 0; i < msg->trajectory.size(); ++i)
   {
-    for (std::size_t i = 0; i < msg->trajectory.size(); ++i)
+    if (t->empty())
     {
-      if (t->empty())
-      {
-        t->setRobotTrajectoryMsg(*robot_state_, msg->trajectory_start, msg->trajectory[i]);
-      }
-      else
-      {
-        robot_trajectory::RobotTrajectory tmp(robot_model_, "");
-        tmp.setRobotTrajectoryMsg(t->getLastWayPoint(), msg->trajectory[i]);
-        t->append(tmp, 0.0);
-      }
+      t->setRobotTrajectoryMsg(*robot_state_, msg->trajectory_start, msg->trajectory[i]);
     }
-    display_->setStatus(rviz::StatusProperty::Ok, "Trajectory", "");
-  }
-  catch (const moveit::Exception& e)
-  {
-    display_->setStatus(rviz::StatusProperty::Error, "Trajectory", e.what());
-    return;
+    else
+    {
+      robot_trajectory::RobotTrajectory tmp(robot_model_, "");
+      tmp.setRobotTrajectoryMsg(t->getLastWayPoint(), msg->trajectory[i]);
+      t->append(tmp, 0.0);
+    }
   }
 
   if (!t->empty())

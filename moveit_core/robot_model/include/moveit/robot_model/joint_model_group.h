@@ -71,7 +71,7 @@ class JointModelGroup
 public:
   struct KinematicsSolver
   {
-    KinematicsSolver() : default_ik_timeout_(0.5)
+    KinematicsSolver() : default_ik_timeout_(0.5), default_ik_attempts_(2)
     {
     }
 
@@ -84,6 +84,7 @@ public:
     void reset()
     {
       solver_instance_.reset();
+      solver_instance_const_.reset();
       bijection_.clear();
     }
 
@@ -97,9 +98,13 @@ public:
         i in the kinematic solver. */
     std::vector<unsigned int> bijection_;
 
+    kinematics::KinematicsBaseConstPtr solver_instance_const_;
+
     kinematics::KinematicsBasePtr solver_instance_;
 
     double default_ik_timeout_;
+
+    unsigned int default_ik_attempts_;
   };
 
   /// Map from group instances to allocator functions & bijections
@@ -352,12 +357,6 @@ public:
   }
 
   /** \brief Compute random values for the state of the joint group */
-  void getVariableRandomPositionsNearBy(random_numbers::RandomNumberGenerator& rng, double* values, const double* near,
-                                        const std::vector<double>& distances) const
-  {
-    getVariableRandomPositionsNearBy(rng, values, active_joint_models_bounds_, near, distances);
-  }
-  /** \brief Compute random values for the state of the joint group */
   void getVariableRandomPositionsNearBy(random_numbers::RandomNumberGenerator& rng, std::vector<double>& values,
                                         const std::vector<double>& near, const std::vector<double>& distances) const
   {
@@ -484,8 +483,8 @@ public:
   }
 
   /**
-   * \brief Get the unique set of end effector tips included in a particular joint model group
-   * as defined by the SRDF end effector elements
+   * \brief Get a vector of end effector tips included in a particular joint model group as defined by the SRDF end
+   * effector semantic
    *        e.g. for a humanoid robot this would return 4 tips for the hands and feet
    * \param tips - the output vector of link models of the tips
    * \return true on success
@@ -493,8 +492,8 @@ public:
   bool getEndEffectorTips(std::vector<const LinkModel*>& tips) const;
 
   /**
-   * \brief Get the unique set of end effector tips included in a particular joint model group
-   * as defined by the SRDF end effector elements
+   * \brief Get a vector of end effector tips included in a particular joint model group as defined by the SRDF end
+   * effector semantic
    *        e.g. for a humanoid robot this would return 4 tips for the hands and feet
    * \param tips - the output vector of link names of the tips
    * \return true on success
@@ -527,9 +526,9 @@ public:
 
   void setSolverAllocators(const std::pair<SolverAllocatorFn, SolverAllocatorMapFn>& solvers);
 
-  const kinematics::KinematicsBaseConstPtr getSolverInstance() const
+  const kinematics::KinematicsBaseConstPtr& getSolverInstance() const
   {
-    return group_kinematics_.first.solver_instance_;
+    return group_kinematics_.first.solver_instance_const_;
   }
 
   const kinematics::KinematicsBasePtr& getSolverInstance()
@@ -554,6 +553,15 @@ public:
 
   /** \brief Set the default IK timeout */
   void setDefaultIKTimeout(double ik_timeout);
+
+  /** \brief Get the default IK attempts */
+  unsigned int getDefaultIKAttempts() const
+  {
+    return group_kinematics_.first.default_ik_attempts_;
+  }
+
+  /** \brief Set the default IK attempts */
+  void setDefaultIKAttempts(unsigned int ik_attempts);
 
   /** \brief Return the mapping between the order of the joints in this group and the order of the joints in the
      kinematics solver.

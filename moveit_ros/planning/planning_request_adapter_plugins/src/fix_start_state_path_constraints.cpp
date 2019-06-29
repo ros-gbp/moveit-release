@@ -50,14 +50,15 @@ public:
   {
   }
 
-  std::string getDescription() const override
+  virtual std::string getDescription() const
   {
     return "Fix Start State Path Constraints";
   }
 
-  bool adaptAndPlan(const PlannerFn& planner, const planning_scene::PlanningSceneConstPtr& planning_scene,
-                    const planning_interface::MotionPlanRequest& req, planning_interface::MotionPlanResponse& res,
-                    std::vector<std::size_t>& added_path_index) const override
+  virtual bool adaptAndPlan(const PlannerFn& planner, const planning_scene::PlanningSceneConstPtr& planning_scene,
+                            const planning_interface::MotionPlanRequest& req,
+                            planning_interface::MotionPlanResponse& res,
+                            std::vector<std::size_t>& added_path_index) const
   {
     ROS_DEBUG("Running '%s'", getDescription().c_str());
 
@@ -128,7 +129,7 @@ public:
     }
   }
 };
-}  // namespace default_planner_request_adapters
+}
 
 CLASS_LOADER_REGISTER_CLASS(default_planner_request_adapters::FixStartStatePathConstraints,
                             planning_request_adapter::PlanningRequestAdapter);

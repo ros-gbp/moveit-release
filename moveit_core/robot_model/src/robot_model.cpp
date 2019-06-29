@@ -95,7 +95,7 @@ void RobotModel::buildModel(const urdf::ModelInterface& urdf_model, const srdf::
   if (urdf_model.getRoot())
   {
     const urdf::Link* root_link_ptr = urdf_model.getRoot().get();
-    model_frame_ = root_link_ptr->name;
+    model_frame_ = '/' + root_link_ptr->name;
 
     ROS_DEBUG_NAMED(LOGNAME, "... building kinematic chain");
     root_joint_ = buildRecursive(nullptr, root_link_ptr, srdf_model);
@@ -191,7 +191,7 @@ void computeCommonRootsHelper(const JointModel* joint, std::vector<int>& common_
     computeCommonRootsHelper(ch[i], common_roots, size);
   }
 }
-}  // namespace
+}
 
 void RobotModel::computeCommonRoots()
 {
@@ -302,7 +302,7 @@ void RobotModel::buildJointInfo()
       continue;
 
     LinkTransformMap associated_transforms;
-    computeFixedTransforms(link, link->getJointOriginTransform().inverse(), associated_transforms);
+    computeFixedTransforms(link, link->getJointOriginTransform().inverse(Eigen::Isometry), associated_transforms);
     for (auto& tf_base : associated_transforms)
     {
       link_considered[tf_base.first->getLinkIndex()] = true;
@@ -310,7 +310,8 @@ void RobotModel::buildJointInfo()
       {
         if (&tf_base != &tf_target)
           const_cast<LinkModel*>(tf_base.first)  // regain write access to base LinkModel*
-              ->addAssociatedFixedTransform(tf_target.first, tf_base.second.inverse() * tf_target.second);
+              ->addAssociatedFixedTransform(tf_target.first,
+                                            tf_base.second.inverse(Eigen::Isometry) * tf_target.second);
       }
     }
   }
@@ -527,11 +528,11 @@ void RobotModel::buildGroups(const srdf::Model& srdf_model)
     joint_model_group_names_.push_back(joint_model_groups_[i]->getName());
   }
 
-  buildGroupsInfoSubgroups(srdf_model);
-  buildGroupsInfoEndEffectors(srdf_model);
+  buildGroupsInfo_Subgroups(srdf_model);
+  buildGroupsInfo_EndEffectors(srdf_model);
 }
 
-void RobotModel::buildGroupsInfoSubgroups(const srdf::Model& srdf_model)
+void RobotModel::buildGroupsInfo_Subgroups(const srdf::Model& srdf_model)
 {
   // compute subgroups
   for (JointModelGroupMap::const_iterator it = joint_model_group_map_.begin(); it != joint_model_group_map_.end(); ++it)
@@ -560,7 +561,7 @@ void RobotModel::buildGroupsInfoSubgroups(const srdf::Model& srdf_model)
   }
 }
 
-void RobotModel::buildGroupsInfoEndEffectors(const srdf::Model& srdf_model)
+void RobotModel::buildGroupsInfo_EndEffectors(const srdf::Model& srdf_model)
 {
   // set the end-effector flags
   const std::vector<srdf::Model::EndEffector>& eefs = srdf_model.getEndEffectors();
@@ -637,6 +638,7 @@ void RobotModel::buildGroupsInfoEndEffectors(const srdf::Model& srdf_model)
           ROS_WARN_NAMED(LOGNAME, "Could not identify parent group for end-effector '%s'", eefs[k].name_.c_str());
           it->second->setEndEffectorParent("", eefs[k].parent_link_);
         }
+        break;
       }
   }
   std::sort(end_effectors_.begin(), end_effectors_.end(), OrderGroupsByName());
@@ -840,14 +842,14 @@ static inline VariableBounds jointBoundsFromURDF(const urdf::Joint* urdf_joint)
   }
   return b;
 }
-}  // namespace
+}
 
 JointModel* RobotModel::constructJointModel(const urdf::Joint* urdf_joint, const urdf::Link* child_link,
                                             const srdf::Model& srdf_model)
 {
   JointModel* result = nullptr;
 
-  // if urdf_joint exists, must be the root link transform
+  // must be the root link transform
   if (urdf_joint)
   {
     switch (urdf_joint->type)
@@ -892,37 +894,38 @@ JointModel* RobotModel::constructJointModel(const urdf::Joint* urdf_joint, const
         break;
     }
   }
-  else  // if urdf_joint passed in as null, then we're at root of URDF model
+  else
   {
-    const std::vector<srdf::Model::VirtualJoint>& virtual_joints = srdf_model.getVirtualJoints();
-    for (std::size_t i = 0; i < virtual_joints.size(); ++i)
+    const std::vector<srdf::Model::VirtualJoint>& vjoints = srdf_model.getVirtualJoints();
+    for (std::size_t i = 0; i < vjoints.size(); ++i)
     {
-      if (virtual_joints[i].child_link_ != child_link->name)
+      if (vjoints[i].child_link_ != child_link->name)
       {
         ROS_WARN_NAMED(LOGNAME, "Skipping virtual joint '%s' because its child frame '%s' "
                                 "does not match the URDF frame '%s'",
-                       virtual_joints[i].name_.c_str(), virtual_joints[i].child_link_.c_str(),
-                       child_link->name.c_str());
+                       vjoints[i].name_.c_str(), vjoints[i].child_link_.c_str(), child_link->name.c_str());
       }
-      else if (virtual_joints[i].parent_frame_.empty())
+      else if (vjoints[i].parent_frame_.empty())
       {
         ROS_WARN_NAMED(LOGNAME, "Skipping virtual joint '%s' because its parent frame is empty",
-                       virtual_joints[i].name_.c_str());
+                       vjoints[i].name_.c_str());
       }
       else
       {
-        if (virtual_joints[i].type_ == "fixed")
-          result = new FixedJointModel(virtual_joints[i].name_);
-        else if (virtual_joints[i].type_ == "planar")
-          result = new PlanarJointModel(virtual_joints[i].name_);
-        else if (virtual_joints[i].type_ == "floating")
-          result = new FloatingJointModel(virtual_joints[i].name_);
+        if (vjoints[i].type_ == "fixed")
+          result = new FixedJointModel(vjoints[i].name_);
+        else if (vjoints[i].type_ == "planar")
+          result = new PlanarJointModel(vjoints[i].name_);
+        else if (vjoints[i].type_ == "floating")
+          result = new FloatingJointModel(vjoints[i].name_);
         if (result)
         {
           // for fixed frames we still use the robot root link
-          if (virtual_joints[i].type_ != "fixed")
+          if (vjoints[i].type_ != "fixed")
           {
-            model_frame_ = virtual_joints[i].parent_frame_;
+            model_frame_ = vjoints[i].parent_frame_;
+            if (model_frame_[0] != '/')
+              model_frame_ = '/' + model_frame_;
           }
           break;
         }
@@ -954,10 +957,10 @@ JointModel* RobotModel::constructJointModel(const urdf::Joint* urdf_joint, const
 
 namespace
 {
-static inline Eigen::Isometry3d urdfPose2Isometry3d(const urdf::Pose& pose)
+static inline Eigen::Affine3d urdfPose2Affine3d(const urdf::Pose& pose)
 {
   Eigen::Quaterniond q(pose.rotation.w, pose.rotation.x, pose.rotation.y, pose.rotation.z);
-  Eigen::Isometry3d af(Eigen::Translation3d(pose.position.x, pose.position.y, pose.position.z) * q);
+  Eigen::Affine3d af(Eigen::Translation3d(pose.position.x, pose.position.y, pose.position.z) * q.toRotationMatrix());
   return af;
 }
 }
@@ -971,7 +974,7 @@ LinkModel* RobotModel::constructLinkModel(const urdf::Link* urdf_link)
                                            urdf_link->collision_array;
 
   std::vector<shapes::ShapeConstPtr> shapes;
-  EigenSTL::vector_Isometry3d poses;
+  EigenSTL::vector_Affine3d poses;
 
   for (std::size_t i = 0; i < col_array.size(); ++i)
     if (col_array[i] && col_array[i]->geometry)
@@ -980,7 +983,7 @@ LinkModel* RobotModel::constructLinkModel(const urdf::Link* urdf_link)
       if (s)
       {
         shapes.push_back(s);
-        poses.push_back(urdfPose2Isometry3d(col_array[i]->origin));
+        poses.push_back(urdfPose2Affine3d(col_array[i]->origin));
       }
     }
   if (shapes.empty())
@@ -995,7 +998,7 @@ LinkModel* RobotModel::constructLinkModel(const urdf::Link* urdf_link)
         if (s)
         {
           shapes.push_back(s);
-          poses.push_back(urdfPose2Isometry3d(vis_array[i]->origin));
+          poses.push_back(urdfPose2Affine3d(vis_array[i]->origin));
         }
       }
   }
@@ -1009,7 +1012,7 @@ LinkModel* RobotModel::constructLinkModel(const urdf::Link* urdf_link)
     {
       const urdf::Mesh* mesh = static_cast<const urdf::Mesh*>(urdf_link->visual->geometry.get());
       if (!mesh->filename.empty())
-        result->setVisualMesh(mesh->filename, urdfPose2Isometry3d(urdf_link->visual->origin),
+        result->setVisualMesh(mesh->filename, urdfPose2Affine3d(urdf_link->visual->origin),
                               Eigen::Vector3d(mesh->scale.x, mesh->scale.y, mesh->scale.z));
     }
   }
@@ -1019,13 +1022,13 @@ LinkModel* RobotModel::constructLinkModel(const urdf::Link* urdf_link)
     {
       const urdf::Mesh* mesh = static_cast<const urdf::Mesh*>(urdf_link->collision->geometry.get());
       if (!mesh->filename.empty())
-        result->setVisualMesh(mesh->filename, urdfPose2Isometry3d(urdf_link->collision->origin),
+        result->setVisualMesh(mesh->filename, urdfPose2Affine3d(urdf_link->collision->origin),
                               Eigen::Vector3d(mesh->scale.x, mesh->scale.y, mesh->scale.z));
     }
   }
 
   if (urdf_link->parent_joint)
-    result->setJointOriginTransform(urdfPose2Isometry3d(urdf_link->parent_joint->parent_to_joint_origin_transform));
+    result->setJointOriginTransform(urdfPose2Affine3d(urdf_link->parent_joint->parent_to_joint_origin_transform));
 
   return result;
 }
@@ -1389,7 +1392,7 @@ void RobotModel::printModelInfo(std::ostream& out) const
     joint_model_groups_[i]->printGroupInfo(out);
 }
 
-void RobotModel::computeFixedTransforms(const LinkModel* link, const Eigen::Isometry3d& transform,
+void RobotModel::computeFixedTransforms(const LinkModel* link, const Eigen::Affine3d& transform,
                                         LinkTransformMap& associated_transforms)
 {
   associated_transforms[link] = transform * link->getJointOriginTransform();

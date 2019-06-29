@@ -80,7 +80,7 @@ int main(int argc, char** argv)
       moveit::tools::Profiler::End("FK Random");
     }
 
-    std::vector<robot_state::RobotState*> copies(N, (robot_state::RobotState*)nullptr);
+    std::vector<robot_state::RobotState*> copies(N, (robot_state::RobotState*)NULL);
     printf("Evaluating Copy State ...\n");
     for (int i = 0; i < N; ++i)
     {

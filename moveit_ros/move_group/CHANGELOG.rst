@@ -2,46 +2,28 @@
 Changelog for package moveit_ros_move_group
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1.0.2 (2019-06-28)
-------------------
+0.9.16 (2019-06-29)
+-------------------
+* [maintanance] Resolve catkin lint issues (`#1137 <https://github.com/ros-planning/moveit/issues/1137>`_)
+* [maintanance] Reduce log spamming: list capabilities only once (`#1250 <https://github.com/ros-planning/moveit/issues/1250>`_)
+* Contributors: Ludovic Delval, Robert Haschke
 
-1.0.1 (2019-03-08)
-------------------
-* [improve] Apply clang tidy fix to entire code base (Part 1) (`#1366 <https://github.com/ros-planning/moveit/issues/1366>`_)
-* Contributors: Yu, Yan
-
-1.0.0 (2019-02-24)
-------------------
-* [fix] catkin_lint issues (`#1341 <https://github.com/ros-planning/moveit/issues/1341>`_)
-* [improve] Remove (redundant) random seeding and #attempts from RobotState::setFromIK() as the IK solver perform random seeding themselves. `#1288 <https://github.com/ros-planning/moveit/issues/1288>`_
-* Contributors: Robert Haschke
-
-0.10.8 (2018-12-24)
+0.9.15 (2018-10-29)
 -------------------
 
-0.10.7 (2018-12-13)
+0.9.14 (2018-10-24)
 -------------------
 
-0.10.6 (2018-12-09)
--------------------
-* [fix] Fixed various memory leaks (`#1104 <https://github.com/ros-planning/moveit/issues/1104>`_)
-* [maintenance] Replaced Eigen::Affine3d -> Eigen::Isometry3d (`#1096 <https://github.com/ros-planning/moveit/issues/1096>`_)
-* [maintenance] Code Cleanup
-  * `#1180 <https://github.com/ros-planning/moveit/issues/1180>`_
-  * `#1196 <https://github.com/ros-planning/moveit/issues/1196>`_
-* Contributors: Dave Coleman, Robert Haschke
-
-0.10.2 (2018-10-24)
+0.9.13 (2018-10-24)
 -------------------
 * [fix] PlanningSceneMonitor lock `#1033 <https://github.com/ros-planning/moveit/issues/1033>`_: Fix `#868 <https://github.com/ros-planning/moveit/issues/868>`_ (`#1057 <https://github.com/ros-planning/moveit/issues/1057>`_)
 * [maintenance] various compiler warnings (`#1038 <https://github.com/ros-planning/moveit/issues/1038>`_)
 * [maintenance] add minimum required pluginlib version (`#927 <https://github.com/ros-planning/moveit/issues/927>`_)
 * Contributors: Mikael Arguedas, Mohmmad Ayman, Robert Haschke, mike lautman
 
-0.10.1 (2018-05-25)
+0.9.12 (2018-05-29)
 -------------------
-* Remove deprecated ExecuteTrajectoryServiceCapability (`#833 <https://github.com/ros-planning/moveit/issues/833>`_)
-* migration from tf to tf2 API (`#830 <https://github.com/ros-planning/moveit/issues/830>`_)
+* disable waitForCurrentRobotState() for PlanService capability (`#923 <https://github.com/ros-planning/moveit/issues/923>`_), fixing (`#868 <https://github.com/ros-planning/moveit/issues/868>`_)
 * Add namespace capabilities to moveit_commander (`#835 <https://github.com/ros-planning/moveit/issues/835>`_)
 * [fix] MoveAction capability can drop cancel request if it is sent shortly after goal is sent (`#756 <https://github.com/ros-planning/moveit/issues/756>`_)
 * Contributors: Dave Coleman, Ian McMahon, Mikael Arguedas, Robert Haschke, Will Baker
@@ -69,7 +51,7 @@ Changelog for package moveit_ros_move_group
 
 0.9.5 (2017-03-08)
 ------------------
-* [fix][moveit_ros_warehouse] gcc6 build error `#423 <https://github.com/ros-planning/moveit/pull/423>`_ 
+* [fix][moveit_ros_warehouse] gcc6 build error `#423 <https://github.com/ros-planning/moveit/pull/423>`_
 * [enhancement] Remove "catch (...)" instances, catch std::exception instead of std::runtime_error (`#445 <https://github.com/ros-planning/moveit/issues/445>`_)
 * Contributors: Bence Magyar, Dave Coleman
 

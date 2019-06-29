@@ -2,47 +2,20 @@
 Changelog for package chomp_interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1.0.2 (2019-06-28)
-------------------
-* [fix] Fix chomp planner (`#1512 <https://github.com/ros-planning/moveit/issues/1512>`_)
-  * Fix start-state handling
-  * remove time parameterization from planning code
+0.9.16 (2019-06-29)
+-------------------
+* [maintanance] Cleanup Chomp packages (`#1282 <https://github.com/ros-planning/moveit/issues/1282>`_)
+* Contributors: Michael Görner, Robert Haschke
+
+0.9.15 (2018-10-29)
+-------------------
+* [fix] Build regression (`#1134 <https://github.com/ros-planning/moveit/issues/1134>`_) 
 * Contributors: Robert Haschke
 
-1.0.1 (2019-03-08)
-------------------
-* [improve] Apply clang tidy fix to entire code base (Part 1) (`#1366 <https://github.com/ros-planning/moveit/issues/1366>`_)
-* Contributors: Robert Haschke, Yu, Yan
-
-1.0.0 (2019-02-24)
-------------------
-* [fix] catkin_lint issues (`#1341 <https://github.com/ros-planning/moveit/issues/1341>`_)
-* Contributors: Dave Coleman, Robert Haschke
-
-0.10.8 (2018-12-24)
+0.9.14 (2018-10-24)
 -------------------
 
-0.10.7 (2018-12-13)
--------------------
-
-0.10.6 (2018-12-09)
--------------------
-* [maintenance] Rearranged CHOMP-related modules within moveit_planners/chomp (`#1251 <https://github.com/ros-planning/moveit/issues/1251>`_)
-* Contributors: Robert Haschke
-
-0.10.5 (2018-11-01)
--------------------
-
-0.10.4 (2018-10-29)
--------------------
-
-0.10.3 (2018-10-29)
--------------------
-* [fix] Build regression (`#1134 <https://github.com/ros-planning/moveit/issues/1134>`_)
-* [fix] compiler warnings (`#1089 <https://github.com/ros-planning/moveit/issues/1089>`_)
-* Contributors: Robert Haschke
-
-0.10.2 (2018-10-24)
+0.9.13 (2018-10-24)
 -------------------
 * [fix] chomp tests: fix order of moveit includes (`#970 <https://github.com/ros-planning/moveit/issues/970>`_)
 * [fix] needs to depend on cmake_modules. (`#976 <https://github.com/ros-planning/moveit/issues/976>`_)
@@ -52,10 +25,9 @@ Changelog for package chomp_interface
 * [maintenance] add minimum required pluginlib version (`#927 <https://github.com/ros-planning/moveit/issues/927>`_)
 * Contributors: Chris Lalancette, Michael Görner, Mikael Arguedas, Raghavender Sahdev, Robert Haschke
 
-0.10.1 (2018-05-25)
+0.9.12 (2018-05-29)
 -------------------
 * [fix] dependencies for chomp interface test (`#778 <https://github.com/ros-planning/moveit/issues/778>`_)
-* [maintenance] MoveIt! tf2 migration (`#830 <https://github.com/ros-planning/moveit/issues/830>`_)
 * Contributors: Bence Magyar, Dave Coleman, Ian McMahon, Mikael Arguedas, Robert Haschke, Stephan, Will Baker
 
 0.9.11 (2017-12-25)

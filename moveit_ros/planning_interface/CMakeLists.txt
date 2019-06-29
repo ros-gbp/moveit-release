@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.12)
 project(moveit_ros_planning_interface)
 
-add_compile_options(-std=c++14)
+add_compile_options(-std=c++11)
 
 if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
@@ -13,12 +13,10 @@ find_package(catkin REQUIRED COMPONENTS
   moveit_ros_warehouse
   moveit_ros_manipulation
   moveit_ros_move_group
-  geometry_msgs
-  tf2
-  tf2_eigen
-  tf2_geometry_msgs
-  tf2_ros
+  eigen_conversions
   eigenpy
+  tf_conversions
+  tf
   roscpp
   actionlib
   rospy
@@ -45,6 +43,11 @@ find_package(Boost REQUIRED COMPONENTS
 )
 find_package(Eigen3 REQUIRED)
 
+# Eigen 3.2 (Wily) only provides EIGEN3_INCLUDE_DIR, not EIGEN3_INCLUDE_DIRS
+if(NOT EIGEN3_INCLUDE_DIRS)
+  set(EIGEN3_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
+endif()
+
 set(THIS_PACKAGE_INCLUDE_DIRS
   py_bindings_tools/include
   common_planning_interface_objects/include
@@ -67,9 +70,7 @@ catkin_package(
     moveit_ros_warehouse
     moveit_ros_manipulation
     moveit_ros_move_group
-    geometry_msgs
     moveit_msgs
-    tf2_geometry_msgs
   DEPENDS
     EIGEN3
 )
@@ -81,6 +82,7 @@ include_directories(${THIS_PACKAGE_INCLUDE_DIRS}
 include_directories(SYSTEM
                     ${EIGEN3_INCLUDE_DIRS}
                     ${PYTHON_INCLUDE_DIRS})
+
 
 add_subdirectory(py_bindings_tools)
 add_subdirectory(common_planning_interface_objects)

@@ -90,11 +90,6 @@ int JointModel::getLocalVariableIndex(const std::string& variable) const
   return it->second;
 }
 
-bool JointModel::harmonizePosition(double* values, const Bounds& other_bounds) const
-{
-  return false;
-}
-
 bool JointModel::enforceVelocityBounds(double* values, const Bounds& other_bounds) const
 {
   bool change = false;
@@ -216,7 +211,7 @@ inline void printBoundHelper(std::ostream& out, double v)
   else
     out << v;
 }
-}  // namespace
+}
 
 std::ostream& operator<<(std::ostream& out, const VariableBounds& b)
 {

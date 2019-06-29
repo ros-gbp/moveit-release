@@ -38,7 +38,7 @@
 #include <moveit/robot_state/robot_state.h>
 #include <moveit_ros_planning/TrajectoryExecutionDynamicReconfigureConfig.h>
 #include <dynamic_reconfigure/server.h>
-#include <tf2_eigen/tf2_eigen.h>
+#include <eigen_conversions/eigen_msg.h>
 
 namespace trajectory_execution_manager
 {
@@ -78,9 +78,9 @@ private:
   dynamic_reconfigure::Server<TrajectoryExecutionDynamicReconfigureConfig> dynamic_reconfigure_server_;
 };
 
-TrajectoryExecutionManager::TrajectoryExecutionManager(const robot_model::RobotModelConstPtr& robot_model,
+TrajectoryExecutionManager::TrajectoryExecutionManager(const robot_model::RobotModelConstPtr& kmodel,
                                                        const planning_scene_monitor::CurrentStateMonitorPtr& csm)
-  : robot_model_(robot_model), csm_(csm), node_handle_("~")
+  : robot_model_(kmodel), csm_(csm), node_handle_("~")
 {
   if (!node_handle_.getParam("moveit_manage_controllers", manage_controllers_))
     manage_controllers_ = false;
@@ -88,10 +88,10 @@ TrajectoryExecutionManager::TrajectoryExecutionManager(const robot_model::RobotM
   initialize();
 }
 
-TrajectoryExecutionManager::TrajectoryExecutionManager(const robot_model::RobotModelConstPtr& robot_model,
+TrajectoryExecutionManager::TrajectoryExecutionManager(const robot_model::RobotModelConstPtr& kmodel,
                                                        const planning_scene_monitor::CurrentStateMonitorPtr& csm,
                                                        bool manage_controllers)
-  : robot_model_(robot_model), csm_(csm), node_handle_("~"), manage_controllers_(manage_controllers)
+  : robot_model_(kmodel), csm_(csm), node_handle_("~"), manage_controllers_(manage_controllers)
 {
   initialize();
 }
@@ -103,9 +103,12 @@ TrajectoryExecutionManager::~TrajectoryExecutionManager()
   delete reconfigure_impl_;
 }
 
+static const char* DEPRECATION_WARNING =
+    "\nDeprecation warning: parameter '%s' moved into namespace 'trajectory_execution'."
+    "\nPlease, adjust file trajectory_execution.launch.xml!";
 void TrajectoryExecutionManager::initialize()
 {
-  reconfigure_impl_ = nullptr;
+  reconfigure_impl_ = NULL;
   verbose_ = false;
   execution_complete_ = true;
   stop_continuous_execution_ = false;
@@ -116,8 +119,16 @@ void TrajectoryExecutionManager::initialize()
   execution_velocity_scaling_ = 1.0;
   allowed_start_tolerance_ = 0.01;
 
-  allowed_execution_duration_scaling_ = DEFAULT_CONTROLLER_GOAL_DURATION_SCALING;
-  allowed_goal_duration_margin_ = DEFAULT_CONTROLLER_GOAL_DURATION_MARGIN;
+  // TODO: Reading from old param location should be removed in L-turtle. Handled by DynamicReconfigure.
+  if (node_handle_.getParam("allowed_execution_duration_scaling", allowed_execution_duration_scaling_))
+    ROS_WARN_NAMED(name_, DEPRECATION_WARNING, "allowed_execution_duration_scaling");
+  else
+    allowed_execution_duration_scaling_ = DEFAULT_CONTROLLER_GOAL_DURATION_SCALING;
+
+  if (node_handle_.getParam("allowed_goal_duration_margin", allowed_goal_duration_margin_))
+    ROS_WARN_NAMED(name_, DEPRECATION_WARNING, "allowed_goal_duration_margin");
+  else
+    allowed_goal_duration_margin_ = DEFAULT_CONTROLLER_GOAL_DURATION_MARGIN;
 
   // load controller-specific values for allowed_execution_duration_scaling and allowed_goal_duration_margin
   loadControllerParams();
@@ -156,7 +167,7 @@ void TrajectoryExecutionManager::initialize()
     if (!controller.empty())
       try
       {
-        controller_manager_ = controller_manager_loader_->createUniqueInstance(controller);
+        controller_manager_.reset(controller_manager_loader_->createUnmanagedInstance(controller));
       }
       catch (pluginlib::PluginlibException& ex)
       {
@@ -402,7 +413,7 @@ void TrajectoryExecutionManager::continuousExecutionThread()
 
     while (!continuous_execution_queue_.empty())
     {
-      TrajectoryExecutionContext* context = nullptr;
+      TrajectoryExecutionContext* context = NULL;
       {
         boost::mutex::scoped_lock slock(continuous_execution_mutex_);
         if (continuous_execution_queue_.empty())
@@ -666,7 +677,7 @@ struct OrderPotentialControllerCombination
   std::vector<std::size_t> nrjoints;
   std::vector<std::size_t> nractive;
 };
-}  // namespace
+}
 
 bool TrajectoryExecutionManager::findControllers(const std::set<std::string>& actuated_joints,
                                                  std::size_t controller_count,
@@ -811,7 +822,7 @@ bool TrajectoryExecutionManager::distributeTrajectory(const moveit_msgs::RobotTr
     const robot_model::JointModel* jm = robot_model_->getJointModel(trajectory.joint_trajectory.joint_names[i]);
     if (jm)
     {
-      if (jm->isPassive() || jm->getMimic() != nullptr || jm->getType() == robot_model::JointModel::FIXED)
+      if (jm->isPassive() || jm->getMimic() != NULL || jm->getType() == robot_model::JointModel::FIXED)
         continue;
       actuated_joints_single.insert(jm->getName());
     }
@@ -1006,12 +1017,12 @@ bool TrajectoryExecutionManager::validate(const TrajectoryExecutionContext& cont
 
         // compute difference (offset vector and rotation angle) between current transform
         // and start transform in trajectory
-        Eigen::Isometry3d cur_transform, start_transform;
+        Eigen::Affine3d cur_transform, start_transform;
         jm->computeTransform(current_state->getJointPositions(jm), cur_transform);
-        start_transform = tf2::transformToEigen(transforms[i]);
+        tf::transformMsgToEigen(transforms[i], start_transform);
         Eigen::Vector3d offset = cur_transform.translation() - start_transform.translation();
         Eigen::AngleAxisd rotation;
-        rotation.fromRotationMatrix(cur_transform.rotation().transpose() * start_transform.rotation());
+        rotation.fromRotationMatrix(cur_transform.linear().transpose() * start_transform.linear());
         if ((offset.array() > allowed_start_tolerance_).any() || rotation.angle() > allowed_start_tolerance_)
         {
           ROS_ERROR_STREAM_NAMED(name_, "\nInvalid Trajectory: start point deviates from current robot state more than "
@@ -1200,7 +1211,7 @@ void TrajectoryExecutionManager::execute(const ExecutionCompleteCallback& callba
   stopExecution(false);
 
   // check whether first trajectory starts at current robot state
-  if (!trajectories_.empty() && !validate(*trajectories_.front()))
+  if (trajectories_.size() && !validate(*trajectories_.front()))
   {
     last_execution_status_ = moveit_controller_manager::ExecutionStatus::ABORTED;
     if (auto_clear)
@@ -1627,7 +1638,7 @@ bool TrajectoryExecutionManager::ensureActiveControllersForJoints(const std::vec
     const robot_model::JointModel* jm = robot_model_->getJointModel(joints[i]);
     if (jm)
     {
-      if (jm->isPassive() || jm->getMimic() != nullptr || jm->getType() == robot_model::JointModel::FIXED)
+      if (jm->isPassive() || jm->getMimic() != NULL || jm->getType() == robot_model::JointModel::FIXED)
         continue;
       jset.insert(joints[i]);
     }
@@ -1764,4 +1775,4 @@ void TrajectoryExecutionManager::loadControllerParams()
     }
   }
 }
-}  // namespace trajectory_execution_manager
+}

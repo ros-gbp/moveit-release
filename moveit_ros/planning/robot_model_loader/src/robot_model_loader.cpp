@@ -39,21 +39,20 @@
 #include <ros/ros.h>
 #include <typeinfo>
 
-namespace robot_model_loader
-{
-RobotModelLoader::RobotModelLoader(const std::string& robot_description, bool load_kinematics_solvers)
+robot_model_loader::RobotModelLoader::RobotModelLoader(const std::string& robot_description,
+                                                       bool load_kinematics_solvers)
 {
   Options opt(robot_description);
   opt.load_kinematics_solvers_ = load_kinematics_solvers;
   configure(opt);
 }
 
-RobotModelLoader::RobotModelLoader(const Options& opt)
+robot_model_loader::RobotModelLoader::RobotModelLoader(const Options& opt)
 {
   configure(opt);
 }
 
-RobotModelLoader::~RobotModelLoader()
+robot_model_loader::RobotModelLoader::~RobotModelLoader()
 {
   // Make sure we destroy the robot model first. It contains the loaded
   // kinematics plugins, and those must be destroyed before the pluginlib class
@@ -81,15 +80,17 @@ bool canSpecifyPosition(const robot_model::JointModel* jmodel, const unsigned in
     ok = true;
   return ok;
 }
-}  // namespace
+}
 
-void RobotModelLoader::configure(const Options& opt)
+void robot_model_loader::RobotModelLoader::configure(const Options& opt)
 {
   moveit::tools::Profiler::ScopedStart prof_start;
   moveit::tools::Profiler::ScopedBlock prof_block("RobotModelLoader::configure");
 
   ros::WallTime start = ros::WallTime::now();
-  if (!opt.urdf_string_.empty() && !opt.srdf_string_.empty())
+  if (opt.urdf_doc_ && opt.srdf_doc_)
+    rdf_loader_.reset(new rdf_loader::RDFLoader(opt.urdf_doc_, opt.srdf_doc_));
+  else if (!opt.urdf_string_.empty() && !opt.srdf_string_.empty())
     rdf_loader_.reset(new rdf_loader::RDFLoader(opt.urdf_string_, opt.srdf_string_));
   else
     rdf_loader_.reset(new rdf_loader::RDFLoader(opt.robot_description_));
@@ -164,7 +165,8 @@ void RobotModelLoader::configure(const Options& opt)
                                                                             << " seconds");
 }
 
-void RobotModelLoader::loadKinematicsSolvers(const kinematics_plugin_loader::KinematicsPluginLoaderPtr& kloader)
+void robot_model_loader::RobotModelLoader::loadKinematicsSolvers(
+    const kinematics_plugin_loader::KinematicsPluginLoaderPtr& kloader)
 {
   moveit::tools::Profiler::ScopedStart prof_start;
   moveit::tools::Profiler::ScopedBlock prof_block("RobotModelLoader::loadKinematicsSolvers");
@@ -224,6 +226,15 @@ void RobotModelLoader::loadKinematicsSolvers(const kinematics_plugin_loader::Kin
       robot_model::JointModelGroup* jmg = model_->getJointModelGroup(it->first);
       jmg->setDefaultIKTimeout(it->second);
     }
+
+    // set the default IK attempts
+    const std::map<std::string, unsigned int>& attempts = kinematics_loader_->getIKAttempts();
+    for (std::map<std::string, unsigned int>::const_iterator it = attempts.begin(); it != attempts.end(); ++it)
+    {
+      if (!model_->hasJointModelGroup(it->first))
+        continue;
+      robot_model::JointModelGroup* jmg = model_->getJointModelGroup(it->first);
+      jmg->setDefaultIKAttempts(it->second);
+    }
   }
 }
-}  // namespace robot_model_loader

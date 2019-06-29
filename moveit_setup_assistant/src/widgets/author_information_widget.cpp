@@ -42,14 +42,25 @@
 #include <QSplitter>
 // ROS
 #include "author_information_widget.h"
+#include <srdfdom/model.h>  // use their struct datastructures
 #include <ros/ros.h>
+// Boost
+#include <boost/algorithm/string.hpp>  // for trimming whitespace from user input
+#include <boost/filesystem.hpp>        // for creating folders/files
+// Read write files
+#include <iostream>  // For writing yaml and launch files
+#include <fstream>
 
 namespace moveit_setup_assistant
 {
+// Boost file system
+namespace fs = boost::filesystem;
+
 // ******************************************************************************************
 // Outer User Interface for MoveIt! Configuration Assistant
 // ******************************************************************************************
-AuthorInformationWidget::AuthorInformationWidget(QWidget* parent, const MoveItConfigDataPtr& config_data)
+AuthorInformationWidget::AuthorInformationWidget(QWidget* parent,
+                                                 moveit_setup_assistant::MoveItConfigDataPtr config_data)
   : SetupScreenWidget(parent), config_data_(config_data)
 {
   // Basic widget container
@@ -107,4 +118,4 @@ void AuthorInformationWidget::edited_email()
   config_data_->changes |= MoveItConfigData::AUTHOR_INFO;
 }
 
-}  // namespace moveit_setup_assistant
+}  // namespace

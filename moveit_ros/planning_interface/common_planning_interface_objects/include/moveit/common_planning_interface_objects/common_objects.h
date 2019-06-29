@@ -43,33 +43,33 @@ namespace moveit
 {
 namespace planning_interface
 {
-std::shared_ptr<tf2_ros::Buffer> getSharedTF();
+boost::shared_ptr<tf::Transformer> getSharedTF();
 
 robot_model::RobotModelConstPtr getSharedRobotModel(const std::string& robot_description);
 
 /**
   @brief getSharedStateMonitor is a simpler version of getSharedStateMonitor(const robot_model::RobotModelConstPtr
-  &robot_model, const std::shared_ptr<tf2_ros::Buffer>& tf_buffer,
+  &kmodel, const boost::shared_ptr<tf::Transformer> &tf,
     ros::NodeHandle nh = ros::NodeHandle() ). It calls this function using the default constructed ros::NodeHandle
 
-  @param robot_model
-  @param tf_buffer
+  @param kmodel
+  @param tf
   @return
  */
-planning_scene_monitor::CurrentStateMonitorPtr getSharedStateMonitor(const robot_model::RobotModelConstPtr& robot_model,
-                                                                     const std::shared_ptr<tf2_ros::Buffer>& tf_buffer);
+planning_scene_monitor::CurrentStateMonitorPtr getSharedStateMonitor(const robot_model::RobotModelConstPtr& kmodel,
+                                                                     const boost::shared_ptr<tf::Transformer>& tf);
 
 /**
   @brief getSharedStateMonitor
 
-  @param robot_model
-  @param tf_buffer
+  @param kmodel
+  @param tf
   @param nh A ros::NodeHandle to pass node specific configurations, such as callbacks queues.
   @return
  */
-planning_scene_monitor::CurrentStateMonitorPtr getSharedStateMonitor(const robot_model::RobotModelConstPtr& robot_model,
-                                                                     const std::shared_ptr<tf2_ros::Buffer>& tf_buffer,
-                                                                     const ros::NodeHandle& nh);
+planning_scene_monitor::CurrentStateMonitorPtr getSharedStateMonitor(const robot_model::RobotModelConstPtr& kmodel,
+                                                                     const boost::shared_ptr<tf::Transformer>& tf,
+                                                                     ros::NodeHandle nh);
 
 }  // namespace planning interface
 }  // namespace moveit

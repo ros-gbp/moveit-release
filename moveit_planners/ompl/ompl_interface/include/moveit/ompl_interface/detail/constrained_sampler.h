@@ -53,16 +53,16 @@ public:
    *  @param pg The planning group
    *  @param cs A pointer to a kinematic constraint sampler
    */
-  ConstrainedSampler(const ModelBasedPlanningContext* pc, constraint_samplers::ConstraintSamplerPtr cs);
+  ConstrainedSampler(const ModelBasedPlanningContext* pc, const constraint_samplers::ConstraintSamplerPtr& cs);
 
   /** @brief Sample a state (uniformly)*/
-  void sampleUniform(ompl::base::State* state) override;
+  virtual void sampleUniform(ompl::base::State* state);
 
   /** @brief Sample a state (uniformly) within a certain distance of another state*/
-  void sampleUniformNear(ompl::base::State* state, const ompl::base::State* near, const double distance) override;
+  virtual void sampleUniformNear(ompl::base::State* state, const ompl::base::State* near, const double distance);
 
   /** @brief Sample a state using the specified Gaussian*/
-  void sampleGaussian(ompl::base::State* state, const ompl::base::State* mean, const double stdDev) override;
+  virtual void sampleGaussian(ompl::base::State* state, const ompl::base::State* mean, const double stdDev);
 
   double getConstrainedSamplingRate() const;
 

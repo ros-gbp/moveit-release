@@ -94,7 +94,7 @@ bool jointPrecedes(const JointModel* a, const JointModel* b)
 
   return false;
 }
-}  // namespace
+}
 
 JointModelGroup::JointModelGroup(const std::string& group_name, const srdf::Model::Group& config,
                                  const std::vector<const JointModel*>& unsorted_group_joints,
@@ -244,7 +244,7 @@ JointModelGroup::JointModelGroup(const std::string& group_name, const srdf::Mode
     updated_link_model_with_geometry_name_vector_.push_back(updated_link_model_with_geometry_vector_[i]->getName());
 
   // check if this group should actually be a chain
-  if (joint_roots_.size() == 1 && !active_joint_model_vector_.empty())
+  if (joint_roots_.size() == 1 && active_joint_model_vector_.size() >= 1)
   {
     bool chain = true;
     // due to our sorting, the joints are sorted in a DF fashion, so looking at them in reverse,
@@ -489,17 +489,18 @@ bool JointModelGroup::getEndEffectorTips(std::vector<std::string>& tips) const
 
   // Convert to string names
   tips.clear();
-  for (const LinkModel* link_model : tip_links)
-    tips.push_back(link_model->getName());
+  for (std::size_t i = 0; i < tip_links.size(); ++i)
+  {
+    tips.push_back(tip_links[i]->getName());
+  }
   return true;
 }
 
 bool JointModelGroup::getEndEffectorTips(std::vector<const LinkModel*>& tips) const
 {
-  tips.clear();
-  for (const std::string& name : getAttachedEndEffectorNames())
+  for (std::size_t i = 0; i < getAttachedEndEffectorNames().size(); ++i)
   {
-    const JointModelGroup* eef = parent_model_->getEndEffector(name);
+    const JointModelGroup* eef = parent_model_->getEndEffector(getAttachedEndEffectorNames()[i]);
     if (!eef)
     {
       ROS_ERROR_NAMED("robot_model.jmg", "Unable to find joint model group for eef");
@@ -513,10 +514,8 @@ bool JointModelGroup::getEndEffectorTips(std::vector<const LinkModel*>& tips) co
       ROS_ERROR_NAMED("robot_model.jmg", "Unable to find end effector link for eef");
       return false;
     }
-    // insert eef_link into tips, maintaining a *sorted* vector, thus enabling use of std::lower_bound
-    const auto insert_it = std::lower_bound(tips.cbegin(), tips.cend(), eef_link);
-    if (insert_it == tips.end() || eef_link != *insert_it)  // only insert if not a duplicate
-      tips.insert(insert_it, eef_link);
+
+    tips.push_back(eef_link);
   }
   return true;
 }
@@ -555,6 +554,13 @@ void JointModelGroup::setDefaultIKTimeout(double ik_timeout)
     it->second.default_ik_timeout_ = ik_timeout;
 }
 
+void JointModelGroup::setDefaultIKAttempts(unsigned int ik_attempts)
+{
+  group_kinematics_.first.default_ik_attempts_ = ik_attempts;
+  for (KinematicsSolverMap::iterator it = group_kinematics_.second.begin(); it != group_kinematics_.second.end(); ++it)
+    it->second.default_ik_attempts_ = ik_attempts;
+}
+
 bool JointModelGroup::computeIKIndexBijection(const std::vector<std::string>& ik_jnames,
                                               std::vector<unsigned int>& joint_bijection) const
 {
@@ -588,6 +594,7 @@ void JointModelGroup::setSolverAllocators(const std::pair<SolverAllocatorFn, Sol
     if (group_kinematics_.first.solver_instance_)
     {
       group_kinematics_.first.solver_instance_->setDefaultTimeout(group_kinematics_.first.default_ik_timeout_);
+      group_kinematics_.first.solver_instance_const_ = group_kinematics_.first.solver_instance_;
       if (!computeIKIndexBijection(group_kinematics_.first.solver_instance_->getJointNames(),
                                    group_kinematics_.first.bijection_))
         group_kinematics_.first.reset();
@@ -601,7 +608,9 @@ void JointModelGroup::setSolverAllocators(const std::pair<SolverAllocatorFn, Sol
         KinematicsSolver& ks = group_kinematics_.second[it->first];
         ks.allocator_ = it->second;
         ks.solver_instance_ = const_cast<JointModelGroup*>(it->first)->getSolverInstance();
+        ks.solver_instance_const_ = ks.solver_instance_;
         ks.default_ik_timeout_ = group_kinematics_.first.default_ik_timeout_;
+        ks.default_ik_attempts_ = group_kinematics_.first.default_ik_attempts_;
         if (!computeIKIndexBijection(ks.solver_instance_->getJointNames(), ks.bijection_))
         {
           group_kinematics_.second.clear();

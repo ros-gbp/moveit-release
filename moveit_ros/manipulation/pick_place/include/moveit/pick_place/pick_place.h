@@ -71,11 +71,6 @@ public:
     return error_code_;
   }
 
-  double getLastPlanTime() const
-  {
-    return last_plan_time_;
-  }
-
 protected:
   void initialize();
   void waitForPipeline(const ros::WallTime& endtime);

@@ -52,7 +52,9 @@ TrajectoryDisplay::TrajectoryDisplay() : Display(), load_robot_model_(false)
   trajectory_visual_.reset(new TrajectoryVisualization(this, this));
 }
 
-TrajectoryDisplay::~TrajectoryDisplay() = default;
+TrajectoryDisplay::~TrajectoryDisplay()
+{
+}
 
 void TrajectoryDisplay::onInitialize()
 {

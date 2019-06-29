@@ -1,7 +1,7 @@
 set(MOVEIT_LIB_NAME moveit_planning_scene)
 
 add_library(${MOVEIT_LIB_NAME} src/planning_scene.cpp)
-set_target_properties(${MOVEIT_LIB_NAME} PROPERTIES VERSION "${${PROJECT_NAME}_VERSION}")
+set_target_properties(${MOVEIT_LIB_NAME} PROPERTIES VERSION ${${PROJECT_NAME}_VERSION})
 
 target_link_libraries(${MOVEIT_LIB_NAME}
   moveit_robot_model
@@ -22,7 +22,6 @@ install(TARGETS ${MOVEIT_LIB_NAME}
 install(DIRECTORY include/ DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION})
 
 if(CATKIN_ENABLE_TESTING)
-  find_package(moveit_resources REQUIRED)
   include_directories(${moveit_resources_INCLUDE_DIRS})
 
   catkin_add_gtest(test_planning_scene test/test_planning_scene.cpp)

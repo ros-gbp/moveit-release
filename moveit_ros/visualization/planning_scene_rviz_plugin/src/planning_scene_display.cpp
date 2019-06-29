@@ -35,7 +35,6 @@
 
 /* Author: Ioan Sucan */
 
-#include <moveit/common_planning_interface_objects/common_objects.h>
 #include <moveit/planning_scene_rviz_plugin/planning_scene_display.h>
 #include <moveit/rviz_plugin_render_tools/robot_state_visualization.h>
 #include <moveit/rviz_plugin_render_tools/octomap_render.h>
@@ -53,7 +52,7 @@
 #include <rviz/properties/enum_property.h>
 #include <rviz/display_context.h>
 #include <rviz/frame_manager.h>
-#include <tf2_ros/buffer.h>
+#include <tf/transform_listener.h>
 
 #include <OgreSceneManager.h>
 #include <OgreSceneNode.h>
@@ -80,7 +79,7 @@ PlanningSceneDisplay::PlanningSceneDisplay(bool listen_to_planning_scene, bool s
                                    "The topic on which the moveit_msgs::PlanningScene messages are received", this,
                                    SLOT(changedPlanningSceneTopic()), this);
   else
-    planning_scene_topic_property_ = nullptr;
+    planning_scene_topic_property_ = NULL;
 
   // Planning scene category -------------------------------------------------------------------------------------------
   scene_category_ = new rviz::Property("Scene Geometry", QVariant(), "", this);
@@ -145,11 +144,11 @@ PlanningSceneDisplay::PlanningSceneDisplay(bool listen_to_planning_scene, bool s
   }
   else
   {
-    robot_category_ = nullptr;
-    scene_robot_visual_enabled_property_ = nullptr;
-    scene_robot_collision_enabled_property_ = nullptr;
-    robot_alpha_property_ = nullptr;
-    attached_body_color_property_ = nullptr;
+    robot_category_ = NULL;
+    scene_robot_visual_enabled_property_ = NULL;
+    scene_robot_collision_enabled_property_ = NULL;
+    robot_alpha_property_ = NULL;
+    attached_body_color_property_ = NULL;
   }
 }
 
@@ -485,13 +484,9 @@ void PlanningSceneDisplay::unsetLinkColor(rviz::Robot* robot, const std::string&
 // ******************************************************************************************
 planning_scene_monitor::PlanningSceneMonitorPtr PlanningSceneDisplay::createPlanningSceneMonitor()
 {
-#ifdef RVIZ_TF1
-  std::shared_ptr<tf2_ros::Buffer> tf_buffer = moveit::planning_interface::getSharedTF();
-#else
-  std::shared_ptr<tf2_ros::Buffer> tf_buffer = context_->getFrameManager()->getTF2BufferPtr();
-#endif
   return planning_scene_monitor::PlanningSceneMonitorPtr(new planning_scene_monitor::PlanningSceneMonitor(
-      robot_description_property_->getStdString(), tf_buffer, getNameStd() + "_planning_scene_monitor"));
+      robot_description_property_->getStdString(), context_->getFrameManager()->getTFClientPtr(),
+      getNameStd() + "_planning_scene_monitor"));
 }
 
 void PlanningSceneDisplay::clearRobotModel()

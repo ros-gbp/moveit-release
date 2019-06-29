@@ -50,7 +50,7 @@ public:
                               const collision_detection::AllowedCollisionMatrixConstPtr& collision_matrix,
                               const constraint_samplers::ConstraintSamplerManagerPtr& constraints_sampler_manager);
 
-  bool evaluate(const ManipulationPlanPtr& plan) const override;
+  virtual bool evaluate(const ManipulationPlanPtr& plan) const;
 
 private:
   bool isEndEffectorFree(const ManipulationPlanPtr& plan, robot_state::RobotState& token_state) const;

@@ -43,7 +43,6 @@
 
 namespace po = boost::program_options;
 
-/** Benchmark program measuring time to solve inverse kinematics of robot described in robot_description */
 int main(int argc, char* argv[])
 {
   std::string group;
@@ -51,16 +50,13 @@ int main(int argc, char* argv[])
   unsigned int num;
   bool reset_to_default;
   po::options_description desc("Options");
-  // clang-format off
-  desc.add_options()
-      ("help", "show help message")
-      ("group", po::value<std::string>(&group)->default_value("all"), "name of planning group")
-      ("tip", po::value<std::string>(&tip)->default_value("default"), "name of the end effector in the planning group")
-      ("num", po::value<unsigned int>(&num)->default_value(100000), "number of IK solutions to compute")
-      ("reset_to_default", po::value<bool>(&reset_to_default)->default_value(true),
-       "whether to reset IK seed to default state. If set to false, the seed is the "
-       "correct IK solution (to accelerate filling the cache).");
-  // clang-format on
+  desc.add_options()("help", "show help message")("group", po::value<std::string>(&group)->default_value("all"),
+                                                  "name of planning group")(
+      "tip", po::value<std::string>(&tip)->default_value("default"), "name of the end effector in the planning group")(
+      "num", po::value<unsigned int>(&num)->default_value(100000),
+      "number of IK solutions to compute")("reset_to_default", po::value<bool>(&reset_to_default)->default_value(true),
+                                           "wether to reset IK seed to default state. If set to false, the seed is the "
+                                           "correct IK solution (to accelerate filling the cache).");
 
   po::variables_map vm;
   po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -72,18 +68,19 @@ int main(int argc, char* argv[])
     return 1;
   }
 
-  ros::init(argc, argv, "benchmark_ik");
+  ros::init(argc, argv, "measure_ik_call_cost");
   ros::AsyncSpinner spinner(1);
   spinner.start();
 
   robot_model_loader::RobotModelLoader robot_model_loader;
-  const robot_model::RobotModelPtr& kinematic_model = robot_model_loader.getModel();
+  robot_model::RobotModelPtr kinematic_model = robot_model_loader.getModel();
   planning_scene::PlanningScene planning_scene(kinematic_model);
   robot_state::RobotState& kinematic_state = planning_scene.getCurrentStateNonConst();
   collision_detection::CollisionRequest collision_request;
   collision_detection::CollisionResult collision_result;
-  std::chrono::duration<double> ik_time(0);
-  std::chrono::time_point<std::chrono::system_clock> start;
+  std::vector<double> joint_values;
+  std::chrono::duration<double> ik_time;
+  std::chrono::time_point<std::chrono::system_clock> start, end;
   std::vector<robot_state::JointModelGroup*> groups;
   std::vector<std::string> end_effectors;
 
@@ -106,17 +103,17 @@ int main(int argc, char* argv[])
     // perform first IK call to load the cache, so that the time for loading is not included in
     // average IK call time
     kinematic_state.setToDefaultValues();
-    EigenSTL::vector_Isometry3d default_eef_states;
+    EigenSTL::vector_Affine3d default_eef_states;
     for (const auto& end_effector : end_effectors)
       default_eef_states.push_back(kinematic_state.getGlobalLinkTransform(end_effector));
     if (end_effectors.size() == 1)
-      kinematic_state.setFromIK(group, default_eef_states[0], end_effectors[0], 0.1);
+      kinematic_state.setFromIK(group, default_eef_states[0], end_effectors[0], 1, 0.1);
     else
-      kinematic_state.setFromIK(group, default_eef_states, end_effectors, 0.1);
+      kinematic_state.setFromIK(group, default_eef_states, end_effectors, 1, 0.1);
 
     bool found_ik;
     unsigned int num_failed_calls = 0, num_self_collisions = 0;
-    EigenSTL::vector_Isometry3d end_effector_states(end_effectors.size());
+    EigenSTL::vector_Affine3d end_effector_states(end_effectors.size());
     unsigned int i = 0;
     while (i < num)
     {
@@ -134,9 +131,9 @@ int main(int argc, char* argv[])
         kinematic_state.setToDefaultValues();
       start = std::chrono::system_clock::now();
       if (end_effectors.size() == 1)
-        found_ik = kinematic_state.setFromIK(group, end_effector_states[0], end_effectors[0], 0.1);
+        found_ik = kinematic_state.setFromIK(group, end_effector_states[0], end_effectors[0], 10, 0.1);
       else
-        found_ik = kinematic_state.setFromIK(group, end_effector_states, end_effectors, 0.1);
+        found_ik = kinematic_state.setFromIK(group, end_effector_states, end_effectors, 10, 0.1);
       ik_time += std::chrono::system_clock::now() - start;
       if (!found_ik)
         num_failed_calls++;

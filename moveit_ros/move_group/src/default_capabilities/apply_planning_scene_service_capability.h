@@ -51,7 +51,7 @@ class ApplyPlanningSceneService : public MoveGroupCapability
 public:
   ApplyPlanningSceneService();
 
-  void initialize() override;
+  virtual void initialize();
 
 private:
   bool applyScene(moveit_msgs::ApplyPlanningScene::Request& req, moveit_msgs::ApplyPlanningScene::Response& res);

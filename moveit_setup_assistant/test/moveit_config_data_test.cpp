@@ -41,9 +41,9 @@
 #include <fstream>
 #include <string>
 #include <boost/filesystem/path.hpp>
-#include <boost/filesystem/operations.hpp>
+#include <moveit_resources/config.h>
+#include <boost/filesystem.hpp>  // for creating/deleting folders/files
 #include <moveit/setup_assistant/tools/moveit_config_data.h>
-#include <ros/package.h>
 
 // This tests writing/parsing of ros_controller.yaml
 class MoveItConfigData : public testing::Test
@@ -51,7 +51,7 @@ class MoveItConfigData : public testing::Test
 protected:
   void SetUp() override
   {
-    boost::filesystem::path res_path(ros::package::getPath("moveit_resources"));
+    boost::filesystem::path res_path(MOVEIT_TEST_RESOURCES_DIR);
 
     srdf_model.reset(new srdf::Model());
     std::string xml_string;
@@ -79,7 +79,7 @@ protected:
 
 TEST_F(MoveItConfigData, ReadingControllers)
 {
-  boost::filesystem::path res_path(ros::package::getPath("moveit_resources"));
+  boost::filesystem::path res_path(MOVEIT_TEST_RESOURCES_DIR);
 
   // Contains all the configuration data for the setup assistant
   moveit_setup_assistant::MoveItConfigDataPtr config_data_;
@@ -89,13 +89,13 @@ TEST_F(MoveItConfigData, ReadingControllers)
   config_data_->setRobotModel(robot_model);
 
   // Initially no controllers
-  EXPECT_EQ(config_data_->getROSControllers().size(), 0u);
+  EXPECT_EQ(config_data_->getROSControllers().size(), 0);
 
   // Adding default controllers, a controller for each planning group
   config_data_->addDefaultControllers();
 
   // Number of the planning groups defined in the model srdf
-  size_t group_count = config_data_->srdf_->srdf_model_->getGroups().size();
+  int group_count = config_data_->srdf_->srdf_model_->getGroups().size();
 
   // Test that addDefaultControllers() did accually add a controller for the new_group
   EXPECT_EQ(config_data_->getROSControllers().size(), group_count);
@@ -106,11 +106,11 @@ TEST_F(MoveItConfigData, ReadingControllers)
   // ros_controller.yaml written correctly
   EXPECT_EQ(config_data_->outputROSControllersYAML(test_file), true);
 
-  // Reset MoveIt! config MoveItConfigData
+  // Reset moveit config MoveItConfigData
   config_data_.reset(new moveit_setup_assistant::MoveItConfigData());
 
   // Initially no controllers
-  EXPECT_EQ(config_data_->getROSControllers().size(), 0u);
+  EXPECT_EQ(config_data_->getROSControllers().size(), 0);
 
   // ros_controllers.yaml read correctly
   EXPECT_EQ(config_data_->inputROSControllersYAML(test_file), true);
@@ -132,7 +132,7 @@ TEST_F(MoveItConfigData, ReadingSensorsConfig)
   boost::filesystem::path setup_assistant_path(config_data_->setup_assistant_path_);
 
   // Before parsing, no config available
-  EXPECT_EQ(config_data_->getSensorPluginConfig().size(), 0u);
+  EXPECT_EQ(config_data_->getSensorPluginConfig().size(), 0);
 
   // Read the file containing the default config parameters
   config_data_->input3DSensorsYAML(
@@ -140,7 +140,7 @@ TEST_F(MoveItConfigData, ReadingSensorsConfig)
 
   // Default config for the two available sensor plugins
   // Make sure both are parsed correctly
-  EXPECT_EQ(config_data_->getSensorPluginConfig().size(), 2u);
+  EXPECT_EQ(config_data_->getSensorPluginConfig().size(), 2);
 
   EXPECT_EQ(config_data_->getSensorPluginConfig()[0]["sensor_plugin"].getValue(),
             std::string("occupancy_map_monitor/PointCloudOctomapUpdater"));

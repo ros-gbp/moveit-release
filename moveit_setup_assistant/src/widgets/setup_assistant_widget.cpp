@@ -41,6 +41,7 @@
 #include <QStackedLayout>
 #include <QListWidget>
 #include <QListWidgetItem>
+#include <QDebug>
 #include <QFont>
 #include <QLabel>
 #include <QPushButton>
@@ -60,13 +61,13 @@ namespace moveit_setup_assistant
 // ******************************************************************************************
 // Outer User Interface for MoveIt! Configuration Assistant
 // ******************************************************************************************
-SetupAssistantWidget::SetupAssistantWidget(QWidget* parent, const boost::program_options::variables_map& args)
+SetupAssistantWidget::SetupAssistantWidget(QWidget* parent, boost::program_options::variables_map args)
   : QWidget(parent)
 {
-  rviz_manager_ = nullptr;
-  rviz_render_panel_ = nullptr;
+  rviz_manager_ = NULL;
+  rviz_render_panel_ = NULL;
 
-  // Create object to hold all MoveIt! configuration data
+  // Create object to hold all moveit configuration data
   config_data_.reset(new MoveItConfigData());
 
   // Set debug mode flag if necessary
@@ -175,11 +176,11 @@ SetupAssistantWidget::SetupAssistantWidget(QWidget* parent, const boost::program
 // ******************************************************************************************
 SetupAssistantWidget::~SetupAssistantWidget()
 {
-  if (rviz_manager_ != nullptr)
+  if (rviz_manager_ != NULL)
     rviz_manager_->removeAllDisplays();
-  if (rviz_render_panel_ != nullptr)
+  if (rviz_render_panel_ != NULL)
     delete rviz_render_panel_;
-  if (rviz_manager_ != nullptr)
+  if (rviz_manager_ != NULL)
     delete rviz_manager_;
 }
 
@@ -303,7 +304,7 @@ void SetupAssistantWidget::progressPastStartScreen()
   connect(passive_joints_widget_, SIGNAL(unhighlightAll()), this, SLOT(unhighlightAll()));
 
   // ROS Controllers
-  controllers_widget_ = new ROSControllersWidget(this, config_data_);
+  controllers_widget_ = new moveit_ros_control::ROSControllersWidget(this, config_data_);
   main_content_->addWidget(controllers_widget_);
   connect(controllers_widget_, SIGNAL(isModal(bool)), this, SLOT(setModalMode(bool)));
   connect(controllers_widget_, SIGNAL(highlightLink(const std::string&, const QColor&)), this,
@@ -519,4 +520,4 @@ void SetupAssistantWidget::setModalMode(bool isModal)
   }
 }
 
-}  // namespace moveit_setup_assistant
+}  // namespace

@@ -84,13 +84,13 @@ public:
    */
   TrajectoryVisualization(rviz::Property* widget, rviz::Display* display);
 
-  ~TrajectoryVisualization() override;
+  virtual ~TrajectoryVisualization();
 
   virtual void update(float wall_dt, float ros_dt);
   virtual void reset();
 
-  void onInitialize(Ogre::SceneNode* scene_node, rviz::DisplayContext* context, const ros::NodeHandle& update_nh);
-  void onRobotModelLoaded(const robot_model::RobotModelConstPtr& robot_model);
+  void onInitialize(Ogre::SceneNode* scene_node, rviz::DisplayContext* context, ros::NodeHandle update_nh);
+  void onRobotModelLoaded(robot_model::RobotModelConstPtr robot_model);
   void onEnable();
   void onDisable();
   void setName(const QString& name);

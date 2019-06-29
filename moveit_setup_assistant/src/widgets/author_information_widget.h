@@ -59,10 +59,10 @@ public:
   // Public Functions
   // ******************************************************************************************
 
-  AuthorInformationWidget(QWidget* parent, const MoveItConfigDataPtr& config_data);
+  AuthorInformationWidget(QWidget* parent, moveit_setup_assistant::MoveItConfigDataPtr config_data);
 
   /// Received when this widget is chosen from the navigation menu
-  void focusGiven() override;
+  virtual void focusGiven();
 
   // ******************************************************************************************
   // Qt Components

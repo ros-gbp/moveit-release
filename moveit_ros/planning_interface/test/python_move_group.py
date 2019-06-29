@@ -59,7 +59,7 @@ class PythonMoveGroupTest(unittest.TestCase):
     def test_get_jacobian_matrix(self):
         current = self.group.get_current_joint_values()
         result = self.group.get_jacobian_matrix(current)
-        # Value check by known value at the initial pose
+        # Value check by known value at the initial pose 
         expected = np.array([[ 0.  ,  0.8 , -0.2 ,  0.  ,  0.  ,  0.  ],
                              [ 0.89,  0.  ,  0.  ,  0.  ,  0.  ,  0.  ],
                              [ 0.  , -0.74,  0.74,  0.  ,  0.1 ,  0.  ],
@@ -74,3 +74,6 @@ if __name__ == '__main__':
     NODENAME = 'moveit_test_python_move_group'
     rospy.init_node(NODENAME)
     rostest.rosrun(PKGNAME, NODENAME, PythonMoveGroupTest)
+
+    # suppress cleanup segfault
+    os._exit(0)

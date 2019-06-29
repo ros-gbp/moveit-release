@@ -36,8 +36,6 @@
 
 #include <moveit/warehouse/planning_scene_world_storage.h>
 
-#include <utility>
-
 const std::string moveit_warehouse::PlanningSceneWorldStorage::DATABASE_NAME = "moveit_planning_scene_worlds";
 const std::string moveit_warehouse::PlanningSceneWorldStorage::PLANNING_SCENE_WORLD_ID_NAME = "world_id";
 
@@ -45,7 +43,7 @@ using warehouse_ros::Metadata;
 using warehouse_ros::Query;
 
 moveit_warehouse::PlanningSceneWorldStorage::PlanningSceneWorldStorage(warehouse_ros::DatabaseConnection::Ptr conn)
-  : MoveItMessageStorage(std::move(conn))
+  : MoveItMessageStorage(conn)
 {
   createCollections();
 }

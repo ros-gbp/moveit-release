@@ -374,27 +374,27 @@ void AllowedCollisionMatrix::print(std::ostream& out) const
   getAllEntryNames(names);
   std::sort(names.begin(), names.end());
 
-  std::size_t spacing = 4;
+  std::size_t L = 4;
   for (auto& name : names)
   {
-    std::size_t length = name.length();
-    if (length > spacing)
-      spacing = length;
+    std::size_t l = name.length();
+    if (l > L)
+      L = l;
   }
-  ++spacing;
+  ++L;
 
-  std::size_t number_digits = 2;
-  while (names.size() > pow(10, number_digits) - 1)
-    number_digits++;
+  std::size_t D = 2;
+  while (names.size() > pow(10, D) - 1)
+    D++;
 
   // print indices along the top of the matrix
-  for (std::size_t j = 0; j < number_digits; ++j)
+  for (std::size_t j = 0; j < D; ++j)
   {
-    out << std::setw(spacing + number_digits + 4) << "";
+    out << std::setw(L + D + 4) << "";
     for (std::size_t i = 0; i < names.size(); ++i)
     {
       std::stringstream ss;
-      ss << std::setw(number_digits) << i;
+      ss << std::setw(D) << i;
       out << std::setw(3) << ss.str().c_str()[j];
     }
     out << std::endl;
@@ -402,8 +402,8 @@ void AllowedCollisionMatrix::print(std::ostream& out) const
 
   for (std::size_t i = 0; i < names.size(); ++i)
   {
-    out << std::setw(spacing) << names[i];
-    out << std::setw(number_digits + 1) << i;
+    out << std::setw(L) << names[i];
+    out << std::setw(D + 1) << i;
     out << " | ";
     for (std::size_t j = 0; j < names.size(); ++j)
     {

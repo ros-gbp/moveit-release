@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.12)
 project(moveit_ros_manipulation)
 
-add_compile_options(-std=c++14)
+add_compile_options(-std=c++11)
 
 if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
@@ -9,17 +9,23 @@ endif()
 
 find_package(catkin REQUIRED COMPONENTS
   moveit_core
-  moveit_msgs
   moveit_ros_planning
   moveit_ros_move_group
+  moveit_msgs
   dynamic_reconfigure
   roscpp
   rosconsole
-  tf2_eigen
+  tf
   pluginlib
   actionlib
 )
 find_package(Eigen3 REQUIRED)
+
+# Eigen 3.2 (Wily) only provides EIGEN3_INCLUDE_DIR, not EIGEN3_INCLUDE_DIRS
+if(NOT EIGEN3_INCLUDE_DIRS)
+  set(EIGEN3_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
+endif()
+
 find_package(Boost REQUIRED thread system filesystem date_time program_options)
 
 generate_dynamic_reconfigure_options("pick_place/cfg/PickPlaceDynamicReconfigure.cfg")

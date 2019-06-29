@@ -117,7 +117,7 @@ public:
    *
    * @return Always true
    */
-  bool configure(const moveit_msgs::Constraints& constr) override
+  virtual bool configure(const moveit_msgs::Constraints& constr)
   {
     return true;
   }
@@ -149,17 +149,17 @@ public:
    *
    * @return True if all invidual samplers return true
    */
-  bool sample(robot_state::RobotState& state, const robot_state::RobotState& reference_state,
-              unsigned int max_attempts) override;
+  virtual bool sample(robot_state::RobotState& state, const robot_state::RobotState& reference_state,
+                      unsigned int max_attempts);
 
-  bool project(robot_state::RobotState& state, unsigned int max_attempts) override;
+  virtual bool project(robot_state::RobotState& state, unsigned int max_attempts);
 
   /**
    * \brief Get the name of the constraint sampler, for debugging purposes
    * should be in CamelCase format.
    * \return string of name
    */
-  const std::string& getName() const override
+  virtual const std::string& getName() const
   {
     static const std::string SAMPLER_NAME = "UnionConstraintSampler";
     return SAMPLER_NAME;

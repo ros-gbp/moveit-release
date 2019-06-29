@@ -46,27 +46,27 @@ public:
    *  @param goals The input set of goals*/
   GoalSampleableRegionMux(const std::vector<ompl::base::GoalPtr>& goals);
 
-  ~GoalSampleableRegionMux() override
+  virtual ~GoalSampleableRegionMux()
   {
   }
 
   /** @brief Sample a goal*/
-  void sampleGoal(ompl::base::State* st) const override;
+  virtual void sampleGoal(ompl::base::State* st) const;
 
   /** @brief Get the max sample count*/
-  unsigned int maxSampleCount() const override;
+  virtual unsigned int maxSampleCount() const;
 
   /** @brief Query if sampler can find any sample*/
   virtual bool canSample() const;
 
   /** @brief Query if sampler could find a sample in the future */
-  bool couldSample() const override;
+  virtual bool couldSample() const;
 
   /** @brief Is the goal satisfied for this state (given a distance)*/
-  bool isSatisfied(const ompl::base::State* st, double* distance) const override;
+  virtual bool isSatisfied(const ompl::base::State* st, double* distance) const;
 
   /** @brief Find the distance of this state from the goal*/
-  double distanceGoal(const ompl::base::State* st) const override;
+  virtual double distanceGoal(const ompl::base::State* st) const;
 
   /** @brief If there are any member lazy samplers, start them */
   void startSampling();
@@ -75,7 +75,7 @@ public:
   void stopSampling();
 
   /** @brief Pretty print goal information*/
-  void print(std::ostream& out = std::cout) const override;
+  virtual void print(std::ostream& out = std::cout) const;
 
 protected:
   std::vector<ompl::base::GoalPtr> goals_;

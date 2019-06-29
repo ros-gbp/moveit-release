@@ -71,13 +71,13 @@ class PlanningSceneDisplay : public rviz::Display
 
 public:
   PlanningSceneDisplay(bool listen_to_planning_scene = true, bool show_scene_robot = true);
-  ~PlanningSceneDisplay() override;
+  virtual ~PlanningSceneDisplay();
 
-  void load(const rviz::Config& config) override;
-  void save(rviz::Config config) const override;
+  virtual void load(const rviz::Config& config);
+  virtual void save(rviz::Config config) const;
 
-  void update(float wall_dt, float ros_dt) override;
-  void reset() override;
+  virtual void update(float wall_dt, float ros_dt);
+  virtual void reset();
 
   void setLinkColor(const std::string& link_name, const QColor& color);
   void unsetLinkColor(const std::string& link_name);
@@ -166,10 +166,10 @@ protected:
   void unsetAllColors(rviz::Robot* robot);
 
   // overrides from Display
-  void onInitialize() override;
-  void onEnable() override;
-  void onDisable() override;
-  void fixedFrameChanged() override;
+  virtual void onInitialize();
+  virtual void onEnable();
+  virtual void onDisable();
+  virtual void fixedFrameChanged();
 
   // new virtual functions added by this plugin
   virtual void updateInternal(float wall_dt, float ros_dt);

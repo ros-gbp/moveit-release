@@ -52,12 +52,12 @@ class StateValidityChecker : public ompl::base::StateValidityChecker
 public:
   StateValidityChecker(const ModelBasedPlanningContext* planning_context);
 
-  bool isValid(const ompl::base::State* state) const override
+  virtual bool isValid(const ompl::base::State* state) const
   {
     return isValid(state, verbose_);
   }
 
-  bool isValid(const ompl::base::State* state, double& dist) const override
+  virtual bool isValid(const ompl::base::State* state, double& dist) const
   {
     return isValid(state, dist, verbose_);
   }
@@ -66,7 +66,7 @@ public:
   bool isValid(const ompl::base::State* state, double& dist, bool verbose) const;
 
   virtual double cost(const ompl::base::State* state) const;
-  double clearance(const ompl::base::State* state) const override;
+  virtual double clearance(const ompl::base::State* state) const;
 
   void setVerbose(bool flag);
 

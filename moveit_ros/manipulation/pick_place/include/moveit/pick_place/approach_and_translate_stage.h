@@ -49,7 +49,7 @@ public:
   ApproachAndTranslateStage(const planning_scene::PlanningSceneConstPtr& scene,
                             const collision_detection::AllowedCollisionMatrixConstPtr& collision_matrix);
 
-  bool evaluate(const ManipulationPlanPtr& plan) const override;
+  virtual bool evaluate(const ManipulationPlanPtr& plan) const;
 
 private:
   planning_scene::PlanningSceneConstPtr planning_scene_;

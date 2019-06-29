@@ -100,9 +100,8 @@ class MotionPlanningFrame : public QWidget
   Q_OBJECT
 
 public:
-  MotionPlanningFrame(const MotionPlanningFrame&) = delete;
   MotionPlanningFrame(MotionPlanningDisplay* pdisplay, rviz::DisplayContext* context, QWidget* parent = 0);
-  ~MotionPlanningFrame() override;
+  ~MotionPlanningFrame();
 
   void changePlanningGroup();
   void enable();
@@ -151,8 +150,6 @@ private Q_SLOTS:
   void approximateIKChanged(int state);
 
   // Planning tab
-  bool computeCartesianPlan();
-  bool computeJointSpacePlan();
   void planButtonClicked();
   void executeButtonClicked();
   void planAndExecuteButtonClicked();
@@ -161,9 +158,8 @@ private Q_SLOTS:
   void allowLookingToggled(bool checked);
   void allowExternalProgramCommunication(bool enable);
   void pathConstraintsIndexChanged(int index);
-  void startStateTextChanged(const QString& start_state);
-  void goalStateTextChanged(const QString& goal_state);
-  void planningGroupTextChanged(const QString& planning_group);
+  void useStartStateButtonClicked();
+  void useGoalStateButtonClicked();
   void onClearOctomapClicked();
 
   // Scene Objects tab
@@ -232,13 +228,12 @@ private:
   void configureWorkspace();
   void updateQueryStateHelper(robot_state::RobotState& state, const std::string& v);
   void fillStateSelectionOptions();
-  void fillPlanningGroupOptions();
-  void startStateTextChangedExec(const std::string& start_state);
-  void goalStateTextChangedExec(const std::string& goal_state);
+  void useStartStateButtonExec();
+  void useGoalStateButtonExec();
 
   // Scene objects tab
   void addObject(const collision_detection::WorldPtr& world, const std::string& id, const shapes::ShapeConstPtr& shape,
-                 const Eigen::Isometry3d& pose);
+                 const Eigen::Affine3d& pose);
   void updateCollisionObjectPose(bool update_marker_position);
   void createSceneInteractiveMarker();
   void renameCollisionObject(QListWidgetItem* item);

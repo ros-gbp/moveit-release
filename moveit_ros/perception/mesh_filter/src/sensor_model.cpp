@@ -38,7 +38,9 @@
 #include <stdint.h>
 #include <stdexcept>
 
-mesh_filter::SensorModel::~SensorModel() = default;
+mesh_filter::SensorModel::~SensorModel()
+{
+}
 
 mesh_filter::SensorModel::Parameters::Parameters(unsigned width, unsigned height, float near_clipping_plane_distance,
                                                  float far_clipping_plane_distance)
@@ -49,7 +51,9 @@ mesh_filter::SensorModel::Parameters::Parameters(unsigned width, unsigned height
 {
 }
 
-mesh_filter::SensorModel::Parameters::~Parameters() = default;
+mesh_filter::SensorModel::Parameters::~Parameters()
+{
+}
 
 void mesh_filter::SensorModel::Parameters::setImageSize(unsigned width, unsigned height)
 {
@@ -99,7 +103,7 @@ inline bool isAligned16(const void* pointer)
 {
   return (((uintptr_t)pointer & 15) == 0);
 }
-}  // namespace
+}
 
 void mesh_filter::SensorModel::Parameters::transformModelDepthToMetricDepth(float* depth) const
 {

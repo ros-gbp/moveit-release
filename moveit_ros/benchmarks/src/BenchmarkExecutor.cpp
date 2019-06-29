@@ -37,7 +37,7 @@
 #include <moveit/benchmarks/BenchmarkExecutor.h>
 #include <moveit/utils/lexical_casts.h>
 #include <moveit/version.h>
-#include <tf2_eigen/tf2_eigen.h>
+#include <eigen_conversions/eigen_msg.h>
 
 #include <boost/regex.hpp>
 #include <boost/progress.hpp>
@@ -64,11 +64,11 @@ static std::string getHostname()
 
 BenchmarkExecutor::BenchmarkExecutor(const std::string& robot_description_param)
 {
-  pss_ = nullptr;
-  psws_ = nullptr;
-  rs_ = nullptr;
-  cs_ = nullptr;
-  tcs_ = nullptr;
+  pss_ = NULL;
+  psws_ = NULL;
+  rs_ = NULL;
+  cs_ = NULL;
+  tcs_ = NULL;
   psm_ = new planning_scene_monitor::PlanningSceneMonitor(robot_description_param);
   planning_scene_ = psm_->getPlanningScene();
 
@@ -86,11 +86,16 @@ BenchmarkExecutor::BenchmarkExecutor(const std::string& robot_description_param)
 
 BenchmarkExecutor::~BenchmarkExecutor()
 {
-  delete pss_;
-  delete psws_;
-  delete rs_;
-  delete cs_;
-  delete tcs_;
+  if (pss_)
+    delete pss_;
+  if (psws_)
+    delete psws_;
+  if (rs_)
+    delete rs_;
+  if (cs_)
+    delete cs_;
+  if (tcs_)
+    delete tcs_;
   delete psm_;
 }
 
@@ -142,27 +147,27 @@ void BenchmarkExecutor::clear()
   if (pss_)
   {
     delete pss_;
-    pss_ = nullptr;
+    pss_ = NULL;
   }
   if (psws_)
   {
     delete psws_;
-    psws_ = nullptr;
+    psws_ = NULL;
   }
   if (rs_)
   {
     delete rs_;
-    rs_ = nullptr;
+    rs_ = NULL;
   }
   if (cs_)
   {
     delete cs_;
-    cs_ = nullptr;
+    cs_ = NULL;
   }
   if (tcs_)
   {
     delete tcs_;
-    tcs_ = nullptr;
+    tcs_ = NULL;
   }
 
   benchmark_data_.clear();
@@ -174,39 +179,39 @@ void BenchmarkExecutor::clear()
   query_end_fns_.clear();
 }
 
-void BenchmarkExecutor::addPreRunEvent(const PreRunEventFunction& func)
+void BenchmarkExecutor::addPreRunEvent(PreRunEventFunction func)
 {
   pre_event_fns_.push_back(func);
 }
 
-void BenchmarkExecutor::addPostRunEvent(const PostRunEventFunction& func)
+void BenchmarkExecutor::addPostRunEvent(PostRunEventFunction func)
 {
   post_event_fns_.push_back(func);
 }
 
-void BenchmarkExecutor::addPlannerStartEvent(const PlannerStartEventFunction& func)
+void BenchmarkExecutor::addPlannerStartEvent(PlannerStartEventFunction func)
 {
   planner_start_fns_.push_back(func);
 }
 
-void BenchmarkExecutor::addPlannerCompletionEvent(const PlannerCompletionEventFunction& func)
+void BenchmarkExecutor::addPlannerCompletionEvent(PlannerCompletionEventFunction func)
 {
   planner_completion_fns_.push_back(func);
 }
 
-void BenchmarkExecutor::addQueryStartEvent(const QueryStartEventFunction& func)
+void BenchmarkExecutor::addQueryStartEvent(QueryStartEventFunction func)
 {
   query_start_fns_.push_back(func);
 }
 
-void BenchmarkExecutor::addQueryCompletionEvent(const QueryCompletionEventFunction& func)
+void BenchmarkExecutor::addQueryCompletionEvent(QueryCompletionEventFunction func)
 {
   query_end_fns_.push_back(func);
 }
 
 bool BenchmarkExecutor::runBenchmarks(const BenchmarkOptions& opts)
 {
-  if (planner_interfaces_.empty())
+  if (planner_interfaces_.size() == 0)
   {
     ROS_ERROR("No planning interfaces configured.  Did you call BenchmarkExecutor::initialize?");
     return false;
@@ -363,8 +368,8 @@ bool BenchmarkExecutor::initializeBenchmarks(const BenchmarkOptions& opts, movei
     if (brequest.request.goal_constraints.size() == 1 &&
         brequest.request.goal_constraints[0].position_constraints.size() == 1 &&
         brequest.request.goal_constraints[0].orientation_constraints.size() == 1 &&
-        brequest.request.goal_constraints[0].visibility_constraints.empty() &&
-        brequest.request.goal_constraints[0].joint_constraints.empty())
+        brequest.request.goal_constraints[0].visibility_constraints.size() == 0 &&
+        brequest.request.goal_constraints[0].joint_constraints.size() == 0)
       shiftConstraintsByOffset(brequest.request.goal_constraints[0], goal_offset);
 
     std::vector<BenchmarkRequest> request_combos;
@@ -416,8 +421,8 @@ bool BenchmarkExecutor::initializeBenchmarks(const BenchmarkOptions& opts, movei
     if (brequest.request.trajectory_constraints.constraints.size() == 1 &&
         brequest.request.trajectory_constraints.constraints[0].position_constraints.size() == 1 &&
         brequest.request.trajectory_constraints.constraints[0].orientation_constraints.size() == 1 &&
-        brequest.request.trajectory_constraints.constraints[0].visibility_constraints.empty() &&
-        brequest.request.trajectory_constraints.constraints[0].joint_constraints.empty())
+        brequest.request.trajectory_constraints.constraints[0].visibility_constraints.size() == 0 &&
+        brequest.request.trajectory_constraints.constraints[0].joint_constraints.size() == 0)
       shiftConstraintsByOffset(brequest.request.trajectory_constraints.constraints[0], goal_offset);
 
     std::vector<BenchmarkRequest> request_combos;
@@ -431,22 +436,22 @@ bool BenchmarkExecutor::initializeBenchmarks(const BenchmarkOptions& opts, movei
 }
 
 void BenchmarkExecutor::shiftConstraintsByOffset(moveit_msgs::Constraints& constraints,
-                                                 const std::vector<double>& offset)
+                                                 const std::vector<double> offset)
 {
-  Eigen::Isometry3d offset_tf(Eigen::AngleAxis<double>(offset[3], Eigen::Vector3d::UnitX()) *
-                              Eigen::AngleAxis<double>(offset[4], Eigen::Vector3d::UnitY()) *
-                              Eigen::AngleAxis<double>(offset[5], Eigen::Vector3d::UnitZ()));
+  Eigen::Affine3d offset_tf(Eigen::AngleAxis<double>(offset[3], Eigen::Vector3d::UnitX()) *
+                            Eigen::AngleAxis<double>(offset[4], Eigen::Vector3d::UnitY()) *
+                            Eigen::AngleAxis<double>(offset[5], Eigen::Vector3d::UnitZ()));
   offset_tf.translation() = Eigen::Vector3d(offset[0], offset[1], offset[2]);
 
   geometry_msgs::Pose constraint_pose_msg;
   constraint_pose_msg.position = constraints.position_constraints[0].constraint_region.primitive_poses[0].position;
   constraint_pose_msg.orientation = constraints.orientation_constraints[0].orientation;
-  Eigen::Isometry3d constraint_pose;
-  tf2::fromMsg(constraint_pose_msg, constraint_pose);
+  Eigen::Affine3d constraint_pose;
+  tf::poseMsgToEigen(constraint_pose_msg, constraint_pose);
 
-  Eigen::Isometry3d new_pose = constraint_pose * offset_tf;
+  Eigen::Affine3d new_pose = constraint_pose * offset_tf;
   geometry_msgs::Pose new_pose_msg;
-  new_pose_msg = tf2::toMsg(new_pose);
+  tf::poseEigenToMsg(new_pose, new_pose_msg);
 
   constraints.position_constraints[0].constraint_region.primitive_poses[0].position = new_pose_msg.position;
   constraints.orientation_constraints[0].orientation = new_pose_msg.orientation;
@@ -640,7 +645,7 @@ bool BenchmarkExecutor::loadQueries(const std::string& regex, const std::string&
 
 bool BenchmarkExecutor::loadStates(const std::string& regex, std::vector<StartState>& start_states)
 {
-  if (!regex.empty())
+  if (regex.size())
   {
     boost::regex start_regex(regex);
     std::vector<std::string> state_names;
@@ -678,7 +683,7 @@ bool BenchmarkExecutor::loadStates(const std::string& regex, std::vector<StartSt
 
 bool BenchmarkExecutor::loadPathConstraints(const std::string& regex, std::vector<PathConstraints>& constraints)
 {
-  if (!regex.empty())
+  if (regex.size())
   {
     std::vector<std::string> cnames;
     cs_->getKnownConstraints(regex, cnames);
@@ -714,7 +719,7 @@ bool BenchmarkExecutor::loadPathConstraints(const std::string& regex, std::vecto
 bool BenchmarkExecutor::loadTrajectoryConstraints(const std::string& regex,
                                                   std::vector<TrajectoryConstraints>& constraints)
 {
-  if (!regex.empty())
+  if (regex.size())
   {
     std::vector<std::string> cnames;
     tcs_->getKnownTrajectoryConstraints(regex, cnames);
@@ -915,7 +920,7 @@ void BenchmarkExecutor::writeOutput(const BenchmarkRequest& brequest, const std:
     hostname = "UNKNOWN";
 
   std::string filename = options_.getOutputDirectory();
-  if (!filename.empty() && filename[filename.size() - 1] != '/')
+  if (filename.size() && filename[filename.size() - 1] != '/')
     filename.append("/");
 
   // Ensure directories exist

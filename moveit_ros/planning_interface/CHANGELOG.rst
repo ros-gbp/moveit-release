@@ -2,65 +2,30 @@
 Changelog for package moveit_ros_planning_interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1.0.2 (2019-06-28)
-------------------
-* [maintenance] Removed unnecessary null pointer checks on deletion (`#1410 <https://github.com/ros-planning/moveit/issues/1410>`_)
-* Contributors: Mahmoud Ahmed Selim
-
-1.0.1 (2019-03-08)
-------------------
-* [improve] Apply clang tidy fix to entire code base (Part 1) (`#1366 <https://github.com/ros-planning/moveit/issues/1366>`_)
-* Contributors: Robert Haschke, Yu, Yan
-
-1.0.0 (2019-02-24)
-------------------
-* [fix] catkin_lint issues (`#1341 <https://github.com/ros-planning/moveit/issues/1341>`_)
-* [improve] Remove (redundant) random seeding and #attempts from RobotState::setFromIK() as the IK solver perform random seeding themselves. `#1288 <https://github.com/ros-planning/moveit/issues/1288>`_
-* Contributors: Dave Coleman, Robert Haschke
-
-0.10.8 (2018-12-24)
+0.9.16 (2019-06-29)
 -------------------
+* [maintanance] Resolve catkin lint issues (`#1137 <https://github.com/ros-planning/moveit/issues/1137>`_)
+* [maintanance] Improve clang-format (`#1214 <https://github.com/ros-planning/moveit/issues/1214>`_)
+* [feature]     Add getMoveGroupClient() to move_group_interface (`#1215 <https://github.com/ros-planning/moveit/issues/1215>`_)
+* Contributors: Ludovic Delval, Martin Günther, Robert Haschke, Ryosuke Tajima
 
-0.10.7 (2018-12-13)
+0.9.15 (2018-10-29)
 -------------------
-* [fix] Fixed destruction order of shared tf2::Buffer / tf2::TransformListener (`#1261 <https://github.com/ros-planning/moveit/pull/1261>`_)
+* [improvement] Exploit the fact that our transforms are isometries (instead of general affine transformations). `#1091 <https://github.com/ros-planning/moveit/issues/1091>`_
 * Contributors: Robert Haschke
 
-0.10.6 (2018-12-09)
--------------------
-* [fix] Fixed various memory leaks (`#1104 <https://github.com/ros-planning/moveit/issues/1104>`_)
-  * SharedStorage: Use weak_ptrs for caching
-* [enhancement] Add getMoveGroupClient() to move_group_interface (`#1215 <https://github.com/ros-planning/moveit/issues/1215>`_)
-* [maintenance] Replaced Eigen::Affine3d -> Eigen::Isometry3d (`#1096 <https://github.com/ros-planning/moveit/issues/1096>`_)
-* [maintenance] Remove deprecated MoveGroup class (`#1211 <https://github.com/ros-planning/moveit/issues/1211>`_)
-* [maintenance] Use C++14 (`#1146 <https://github.com/ros-planning/moveit/issues/1146>`_)
-* [maintenance] Code Cleanup
-  * `#1179 <https://github.com/ros-planning/moveit/issues/1179>`_
-  * `#1196 <https://github.com/ros-planning/moveit/issues/1196>`_
-* Contributors: Alex Moriarty, Dave Coleman, Martin Günther, Michael Görner, Robert Haschke
-
-0.10.5 (2018-11-01)
+0.9.14 (2018-10-24)
 -------------------
 
-0.10.4 (2018-10-29)
--------------------
-
-0.10.3 (2018-10-29)
--------------------
-* [capability] Get available planning group names from MoveGroup C++ (`#1159 <https://github.com/ros-planning/moveit/issues/1159>`_)
-* Contributors: Dave Coleman
-
-0.10.2 (2018-10-24)
+0.9.13 (2018-10-24)
 -------------------
 * [capability] Added plan_only flags to pick and place (`#862 <https://github.com/ros-planning/moveit/issues/862>`_)
 * [maintenance] Python3 support (`#1103 <https://github.com/ros-planning/moveit/issues/1103>`_, `#1054 <https://github.com/ros-planning/moveit/issues/1054>`_)
 * [fix] optional namespace args (`#929 <https://github.com/ros-planning/moveit/issues/929>`_)
 * Contributors: David Watkins, Michael Görner, Mohmmad Ayman, Robert Haschke, mike lautman
 
-0.10.1 (2018-05-25)
+0.9.12 (2018-05-29)
 -------------------
-* [maintenance] Remove deprecated ExecuteTrajectoryServiceCapability (`#833 <https://github.com/ros-planning/moveit/issues/833>`_)
-* [maintenance] migration from tf to tf2 API (`#830 <https://github.com/ros-planning/moveit/issues/830>`_)
 * [maintenance] switch to ROS_LOGGER from CONSOLE_BRIDGE (`#874 <https://github.com/ros-planning/moveit/issues/874>`_)
 * [capability] namespace to moveit_commander (`#835 <https://github.com/ros-planning/moveit/issues/835>`_)
 * Constrained Cartesian planning using moveit commander (`#805 <https://github.com/ros-planning/moveit/issues/805>`_)
@@ -96,7 +61,7 @@ Changelog for package moveit_ros_planning_interface
 
 0.9.5 (2017-03-08)
 ------------------
-* [fix][moveit_ros_warehouse] gcc6 build error `#423 <https://github.com/ros-planning/moveit/pull/423>`_ 
+* [fix][moveit_ros_warehouse] gcc6 build error `#423 <https://github.com/ros-planning/moveit/pull/423>`_
 * [enhancement] Remove "catch (...)" instances, catch std::exception instead of std::runtime_error (`#445 <https://github.com/ros-planning/moveit/issues/445>`_)
 * [enhancement][MoveGroup] Add getLinkNames function (`#440 <https://github.com/ros-planning/moveit/issues/440>`_)
 * Contributors: Bence Magyar, Dave Coleman

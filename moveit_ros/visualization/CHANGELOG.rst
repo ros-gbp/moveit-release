@@ -2,63 +2,24 @@
 Changelog for package moveit_ros_visualization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1.0.2 (2019-06-28)
-------------------
-* [maintenance] Removed unnecessary null pointer checks on deletion (`#1410 <https://github.com/ros-planning/moveit/issues/1410>`_)
-* Contributors: Mahmoud Ahmed Selim
-
-1.0.1 (2019-03-08)
-------------------
-* [improve] Apply clang tidy fix to entire code base (Part 1) (`#1366 <https://github.com/ros-planning/moveit/issues/1366>`_)
-* Contributors: Isaac Robert Haschke, Yu, Yan
-
-1.0.0 (2019-02-24)
-------------------
-* [fix] catkin_lint issues (`#1341 <https://github.com/ros-planning/moveit/issues/1341>`_)
-* Contributors: Dave Coleman, Robert Haschke
-
-0.10.8 (2018-12-24)
+0.9.16 (2019-06-29)
 -------------------
-* [fix] Handle exceptions in rviz plugins (`#1267 <https://github.com/ros-planning/moveit/issues/1267>`_)
-* Contributors: Christian Rauch, Robert Haschke
+* [maintanance] Resolve catkin lint issues (`#1137 <https://github.com/ros-planning/moveit/issues/1137>`_)
+* [maintanance] Improve clang-format (`#1214 <https://github.com/ros-planning/moveit/issues/1214>`_)
+* [fix]         Fix issues in rendering of attached bodies (`#1199 <https://github.com/ros-planning/moveit/issues/1199>`_)
+* Contributors: Ludovic Delval, Robert Haschke, Sven Krause
 
-0.10.7 (2018-12-13)
+0.9.15 (2018-10-29)
 -------------------
-
-0.10.6 (2018-12-09)
--------------------
-* [enhancement] Add check box for CartesianPath planning (`#1238 <https://github.com/ros-planning/moveit/issues/1238>`_)
-* [enhancement] Improve MotionPlanning panel (`#1198 <https://github.com/ros-planning/moveit/issues/1198>`_)
-  * Allow selection of planning group in planning panel
-  * Choose start and goal state directly from combobox
-* [fix] rviz crash when changing the planning group while executing (`#1198 <https://github.com/ros-planning/moveit/issues/1198>`_)
-* [fix] Fix several issues in rendering of attached bodies (`#1199 <https://github.com/ros-planning/moveit/issues/1199>`_)
-  * Show / hide attached body together with robot
-  * Force PlanningScene rendering on enable
-  * Link SceneDisplay's attached-body-color to TrajectoryVisualization's one
-* [maintenance] Replaced Eigen::Affine3d -> Eigen::Isometry3d (`#1096 <https://github.com/ros-planning/moveit/issues/1096>`_)
-* [maintenance] Use C++14 (`#1146 <https://github.com/ros-planning/moveit/issues/1146>`_)
-* [maintenance] Cleanup Robot Interaction (`#1194 <https://github.com/ros-planning/moveit/issues/1194>`_)
-  * Postpone subscription to trajectory topic
-  * Fix memory leaks
-* [maintenance] Simplify shared tf2 buffer usage (`#1196 <https://github.com/ros-planning/moveit/issues/1196>`_)
-* [maintenance] Code Cleanup (`#1179 <https://github.com/ros-planning/moveit/issues/1179>`_)
-* Remove obsolete eigen_conversions dependency (`#1181 <https://github.com/ros-planning/moveit/issues/1181>`_)
-* Contributors: Alex Moriarty, Benjamin Scholz, Dave Coleman, Kei Okada, Michael Görner, Robert Haschke, Sven Krause
-
-0.10.5 (2018-11-01)
--------------------
-
-0.10.4 (2018-10-29)
--------------------
-
-0.10.3 (2018-10-29)
--------------------
+* [improvement] Exploit the fact that our transforms are isometries (instead of general affine transformations). `#1091 <https://github.com/ros-planning/moveit/issues/1091>`_
 * [maintenance] Store more settings of rviz' PlanningFrame (`#1135 <https://github.com/ros-planning/moveit/issues/1135>`_)
-* [maintenance] Lint visualization (`#1144 <https://github.com/ros-planning/moveit/issues/1144>`_)
-* Contributors: Alexander Gutenkunst, Dave Coleman
+* [code] cleanup, improvements (`#1141 <https://github.com/ros-planning/moveit/issues/1141>`_)
+* Contributors: Alexander Gutenkunst, Jonathan Hechtbauer, Robert Haschke
 
-0.10.2 (2018-10-24)
+0.9.14 (2018-10-24)
+-------------------
+
+0.9.13 (2018-10-24)
 -------------------
 * [fix] build issue in boost/thread/mutex.hpp (`#1055 <https://github.com/ros-planning/moveit/issues/1055>`_)
 * [fix] optional namespace args (`#929 <https://github.com/ros-planning/moveit/issues/929>`_)
@@ -66,9 +27,9 @@ Changelog for package moveit_ros_visualization
 * [maintenance] add minimum required pluginlib version (`#927 <https://github.com/ros-planning/moveit/issues/927>`_)
 * Contributors: Michael Görner, Mikael Arguedas, Mohmmad Ayman, Robert Haschke, Timon Engelke, mike lautman
 
-0.10.1 (2018-05-25)
+0.9.12 (2018-05-29)
 -------------------
-* [maintenance] migration from tf to tf2 API (`#830 <https://github.com/ros-planning/moveit/issues/830>`_)
+* [maintenance] Reduce vertical size of Rviz MotionPlanning Window (`#891 <https://github.com/ros-planning/moveit/issues/891>`_)
 * [feature] rviz plugin: set start/goal RobotState from external (`#823 <https://github.com/ros-planning/moveit/issues/823>`_)
   - /rviz/moveit/update_custom_start_state
   - /rviz/moveit/update_custom_goal_state
@@ -118,8 +79,8 @@ Changelog for package moveit_ros_visualization
 
 0.9.5 (2017-03-08)
 ------------------
-* [fix] correct "simplify widget handling" `#452 <https://github.com/ros-planning/moveit/pull/452>`_ This reverts "simplify widget handling (`#442 <https://github.com/ros-planning/moveit/issues/442>`_)" 
-* [fix][moveit_ros_warehouse] gcc6 build error `#423 <https://github.com/ros-planning/moveit/pull/423>`_ 
+* [fix] correct "simplify widget handling" `#452 <https://github.com/ros-planning/moveit/pull/452>`_ This reverts "simplify widget handling (`#442 <https://github.com/ros-planning/moveit/issues/442>`_)"
+* [fix][moveit_ros_warehouse] gcc6 build error `#423 <https://github.com/ros-planning/moveit/pull/423>`_
 * [enhancement] Remove "catch (...)" instances, catch std::exception instead of std::runtime_error (`#445 <https://github.com/ros-planning/moveit/issues/445>`_)
 * Contributors: Bence Magyar, Dave Coleman, Isaac I.Y. Saito, Yannick Jonetzko
 

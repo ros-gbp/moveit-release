@@ -1,13 +1,13 @@
 cmake_minimum_required(VERSION 2.8.12)
 project(moveit_ros_move_group)
 
-add_compile_options(-std=c++14)
+add_compile_options(-std=c++11)
 
 if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
-find_package(Boost REQUIRED system filesystem date_time program_options thread)
+find_package(Boost REQUIRED system filesystem date_time program_options signals thread)
 find_package(catkin REQUIRED COMPONENTS
   moveit_core
   moveit_ros_planning
@@ -15,9 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   pluginlib
   std_srvs
-  tf2
-  tf2_geometry_msgs
-  tf2_ros
+  tf
 )
 
 catkin_package(
@@ -26,9 +24,9 @@ catkin_package(
   INCLUDE_DIRS
     include
   CATKIN_DEPENDS
+    roscpp
     moveit_core
     moveit_ros_planning
-    tf2_geometry_msgs
 )
 
 include_directories(include)
@@ -39,7 +37,7 @@ add_library(moveit_move_group_capabilities_base
   src/move_group_context.cpp
   src/move_group_capability.cpp
   )
-set_target_properties(moveit_move_group_capabilities_base PROPERTIES VERSION "${${PROJECT_NAME}_VERSION}")
+set_target_properties(moveit_move_group_capabilities_base PROPERTIES VERSION ${${PROJECT_NAME}_VERSION})
 add_dependencies(moveit_move_group_capabilities_base ${catkin_EXPORTED_TARGETS}) # wait until all *_msgs packages are finished being built
 
 add_executable(move_group src/move_group.cpp)
@@ -49,6 +47,7 @@ add_executable(list_move_group_capabilities src/list_capabilities.cpp)
 add_library(moveit_move_group_default_capabilities
   src/default_capabilities/move_action_capability.cpp
   src/default_capabilities/plan_service_capability.cpp
+  src/default_capabilities/execute_trajectory_service_capability.cpp
   src/default_capabilities/execute_trajectory_action_capability.cpp
   src/default_capabilities/query_planners_service_capability.cpp
   src/default_capabilities/kinematics_service_capability.cpp
@@ -58,7 +57,7 @@ add_library(moveit_move_group_default_capabilities
   src/default_capabilities/apply_planning_scene_service_capability.cpp
   src/default_capabilities/clear_octomap_service_capability.cpp
   )
-set_target_properties(moveit_move_group_default_capabilities PROPERTIES VERSION "${${PROJECT_NAME}_VERSION}")
+set_target_properties(moveit_move_group_default_capabilities PROPERTIES VERSION ${${PROJECT_NAME}_VERSION})
 add_dependencies(moveit_move_group_default_capabilities ${catkin_EXPORTED_TARGETS})
 
 target_link_libraries(moveit_move_group_capabilities_base ${catkin_LIBRARIES} ${Boost_LIBRARIES})

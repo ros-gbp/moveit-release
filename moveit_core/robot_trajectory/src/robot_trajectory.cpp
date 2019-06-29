@@ -36,7 +36,7 @@
 
 #include <moveit/robot_trajectory/robot_trajectory.h>
 #include <moveit/robot_state/conversions.h>
-#include <tf2_eigen/tf2_eigen.h>
+#include <eigen_conversions/eigen_msg.h>
 #include <boost/math/constants/constants.hpp>
 #include <numeric>
 
@@ -62,8 +62,8 @@ const std::string& RobotTrajectory::getGroupName() const
 {
   if (group_)
     return group_->getName();
-  static const std::string EMPTY;
-  return EMPTY;
+  static const std::string empty;
+  return empty;
 }
 
 double RobotTrajectory::getAverageSegmentDuration() const
@@ -239,7 +239,7 @@ void RobotTrajectory::getRobotTrajectoryMsg(moveit_msgs::RobotTrajectory& trajec
     trajectory.multi_dof_joint_trajectory.points.resize(waypoints_.size());
   }
 
-  static const ros::Duration ZERO_DURATION(0.0);
+  static const ros::Duration zero_duration(0.0);
   double total_time = 0.0;
   for (std::size_t i = 0; i < waypoints_.size(); ++i)
   {
@@ -279,15 +279,15 @@ void RobotTrajectory::getRobotTrajectoryMsg(moveit_msgs::RobotTrajectory& trajec
       if (duration_from_previous_.size() > i)
         trajectory.joint_trajectory.points[i].time_from_start = ros::Duration(total_time);
       else
-        trajectory.joint_trajectory.points[i].time_from_start = ZERO_DURATION;
+        trajectory.joint_trajectory.points[i].time_from_start = zero_duration;
     }
     if (!mdof.empty())
     {
       trajectory.multi_dof_joint_trajectory.points[i].transforms.resize(mdof.size());
       for (std::size_t j = 0; j < mdof.size(); ++j)
       {
-        geometry_msgs::TransformStamped ts = tf2::eigenToTransform(waypoints_[i]->getJointTransform(mdof[j]));
-        trajectory.multi_dof_joint_trajectory.points[i].transforms[j] = ts.transform;
+        tf::transformEigenToMsg(waypoints_[i]->getJointTransform(mdof[j]),
+                                trajectory.multi_dof_joint_trajectory.points[i].transforms[j]);
         // TODO: currently only checking for planar multi DOF joints / need to add check for floating
         if (waypoints_[i]->hasVelocities() && (mdof[j]->getType() == robot_model::JointModel::JointType::PLANAR))
         {
@@ -321,7 +321,7 @@ void RobotTrajectory::getRobotTrajectoryMsg(moveit_msgs::RobotTrajectory& trajec
       if (duration_from_previous_.size() > i)
         trajectory.multi_dof_joint_trajectory.points[i].time_from_start = ros::Duration(total_time);
       else
-        trajectory.multi_dof_joint_trajectory.points[i].time_from_start = ZERO_DURATION;
+        trajectory.multi_dof_joint_trajectory.points[i].time_from_start = zero_duration;
     }
   }
 }
@@ -330,7 +330,7 @@ void RobotTrajectory::setRobotTrajectoryMsg(const robot_state::RobotState& refer
                                             const trajectory_msgs::JointTrajectory& trajectory)
 {
   // make a copy just in case the next clear() removes the memory for the reference passed in
-  const robot_state::RobotState& copy = reference_state;
+  robot_state::RobotState copy = reference_state;
   clear();
   std::size_t state_count = trajectory.points.size();
   ros::Time last_time_stamp = trajectory.header.stamp;
@@ -356,7 +356,7 @@ void RobotTrajectory::setRobotTrajectoryMsg(const robot_state::RobotState& refer
                                             const moveit_msgs::RobotTrajectory& trajectory)
 {
   // make a copy just in case the next clear() removes the memory for the reference passed in
-  const robot_state::RobotState& copy = reference_state;
+  robot_state::RobotState copy = reference_state;
   clear();
 
   std::size_t state_count =
@@ -388,7 +388,8 @@ void RobotTrajectory::setRobotTrajectoryMsg(const robot_state::RobotState& refer
     {
       for (std::size_t j = 0; j < trajectory.multi_dof_joint_trajectory.joint_names.size(); ++j)
       {
-        Eigen::Isometry3d t = tf2::transformToEigen(trajectory.multi_dof_joint_trajectory.points[i].transforms[j]);
+        Eigen::Affine3d t;
+        tf::transformMsgToEigen(trajectory.multi_dof_joint_trajectory.points[i].transforms[j], t);
         st->setJointPositions(trajectory.multi_dof_joint_trajectory.joint_names[j], t);
       }
       this_time_stamp = trajectory.multi_dof_joint_trajectory.header.stamp +

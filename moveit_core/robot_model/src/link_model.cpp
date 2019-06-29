@@ -57,11 +57,11 @@ LinkModel::LinkModel(const std::string& name)
 
 LinkModel::~LinkModel() = default;
 
-void LinkModel::setJointOriginTransform(const Eigen::Isometry3d& transform)
+void LinkModel::setJointOriginTransform(const Eigen::Affine3d& transform)
 {
   joint_origin_transform_ = transform;
   joint_origin_transform_is_identity_ =
-      joint_origin_transform_.rotation().isIdentity() &&
+      joint_origin_transform_.linear().isIdentity() &&
       joint_origin_transform_.translation().norm() < std::numeric_limits<double>::epsilon();
 }
 
@@ -71,8 +71,7 @@ void LinkModel::setParentJointModel(const JointModel* joint)
   is_parent_joint_fixed_ = joint->getType() == JointModel::FIXED;
 }
 
-void LinkModel::setGeometry(const std::vector<shapes::ShapeConstPtr>& shapes,
-                            const EigenSTL::vector_Isometry3d& origins)
+void LinkModel::setGeometry(const std::vector<shapes::ShapeConstPtr>& shapes, const EigenSTL::vector_Affine3d& origins)
 {
   shapes_ = shapes;
   collision_origin_transform_ = origins;
@@ -83,11 +82,11 @@ void LinkModel::setGeometry(const std::vector<shapes::ShapeConstPtr>& shapes,
   for (std::size_t i = 0; i < shapes_.size(); ++i)
   {
     collision_origin_transform_is_identity_[i] =
-        (collision_origin_transform_[i].rotation().isIdentity() &&
+        (collision_origin_transform_[i].linear().isIdentity() &&
          collision_origin_transform_[i].translation().norm() < std::numeric_limits<double>::epsilon()) ?
             1 :
             0;
-    Eigen::Isometry3d transform = collision_origin_transform_[i];
+    Eigen::Affine3d transform = collision_origin_transform_[i];
 
     if (shapes_[i]->type != shapes::MESH)
     {
@@ -113,7 +112,7 @@ void LinkModel::setGeometry(const std::vector<shapes::ShapeConstPtr>& shapes,
     shape_extents_ = aabb.sizes();
 }
 
-void LinkModel::setVisualMesh(const std::string& visual_mesh, const Eigen::Isometry3d& origin,
+void LinkModel::setVisualMesh(const std::string& visual_mesh, const Eigen::Affine3d& origin,
                               const Eigen::Vector3d& scale)
 {
   visual_mesh_filename_ = visual_mesh;

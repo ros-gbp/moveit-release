@@ -73,9 +73,9 @@ public:
   /**
    * \brief Start screen user interface for MoveIt! Configuration Assistant
    */
-  StartScreenWidget(QWidget* parent, const MoveItConfigDataPtr& config_data);
+  StartScreenWidget(QWidget* parent, moveit_setup_assistant::MoveItConfigDataPtr config_data);
 
-  ~StartScreenWidget() override;
+  ~StartScreenWidget();
 
   // ******************************************************************************************
   // Qt Components
@@ -187,7 +187,7 @@ public:
   // Load file button
   QPushButton* btn_new_;
   QPushButton* btn_exist_;
-  QLabel* widget_instructions_;
+  QTextEdit* widget_instructions_;
 };
 }
 

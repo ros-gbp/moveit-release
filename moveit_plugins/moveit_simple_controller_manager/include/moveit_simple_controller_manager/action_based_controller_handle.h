@@ -57,9 +57,6 @@ public:
 
   virtual void addJoint(const std::string& name) = 0;
   virtual void getJoints(std::vector<std::string>& joints) = 0;
-  virtual void configure(XmlRpc::XmlRpcValue& config)
-  {
-  }
 };
 
 MOVEIT_CLASS_FORWARD(ActionBasedControllerHandleBase);
@@ -109,7 +106,7 @@ public:
     return static_cast<bool>(controller_action_client_);
   }
 
-  bool cancelExecution() override
+  virtual bool cancelExecution()
   {
     if (!controller_action_client_)
       return false;
@@ -123,24 +120,24 @@ public:
     return true;
   }
 
-  bool waitForExecution(const ros::Duration& timeout = ros::Duration(0)) override
+  virtual bool waitForExecution(const ros::Duration& timeout = ros::Duration(0))
   {
     if (controller_action_client_ && !done_)
       return controller_action_client_->waitForResult(timeout);
     return true;
   }
 
-  moveit_controller_manager::ExecutionStatus getLastExecutionStatus() override
+  virtual moveit_controller_manager::ExecutionStatus getLastExecutionStatus()
   {
     return last_exec_;
   }
 
-  void addJoint(const std::string& name) override
+  virtual void addJoint(const std::string& name)
   {
     joints_.push_back(name);
   }
 
-  void getJoints(std::vector<std::string>& joints) override
+  virtual void getJoints(std::vector<std::string>& joints)
   {
     joints = joints_;
   }

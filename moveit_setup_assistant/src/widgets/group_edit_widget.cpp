@@ -48,7 +48,7 @@ namespace moveit_setup_assistant
 // ******************************************************************************************
 //
 // ******************************************************************************************
-GroupEditWidget::GroupEditWidget(QWidget* parent, const MoveItConfigDataPtr& config_data)
+GroupEditWidget::GroupEditWidget(QWidget* parent, moveit_setup_assistant::MoveItConfigDataPtr config_data)
   : QWidget(parent), config_data_(config_data)
 {
   // Basic widget container
@@ -87,6 +87,11 @@ GroupEditWidget::GroupEditWidget(QWidget* parent, const MoveItConfigDataPtr& con
   kinematics_timeout_field_ = new QLineEdit(this);
   kinematics_timeout_field_->setMaximumWidth(400);
   form_layout->addRow("Kin. Search Timeout (sec):", kinematics_timeout_field_);
+
+  // number of IK attempts
+  kinematics_attempts_field_ = new QLineEdit(this);
+  kinematics_attempts_field_->setMaximumWidth(400);
+  form_layout->addRow("Kin. Solver Attempts:", kinematics_attempts_field_);
 
   group1->setLayout(form_layout);
 
@@ -233,6 +238,15 @@ void GroupEditWidget::setSelected(const std::string& group_name)
   }
   kinematics_timeout_field_->setText(QString::number(*timeout));
 
+  // Load attempts
+  int* attempts = &config_data_->group_meta_data_[group_name].kinematics_solver_attempts_;
+  if (*attempts == 0)
+  {
+    // Set default value
+    *attempts = DEFAULT_KIN_SOLVER_ATTEMPTS_;
+  }
+  kinematics_attempts_field_->setText(QString::number(*attempts));
+
   // Set kin solver
   std::string kin_solver = config_data_->group_meta_data_[group_name].kinematics_solver_;
 
@@ -338,4 +352,4 @@ void GroupEditWidget::loadKinematicPlannersComboBox()
   }
 }
 
-}  // namespace moveit_setup_assistant
+}  // namespace

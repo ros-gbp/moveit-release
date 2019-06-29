@@ -51,8 +51,8 @@
 #include <moveit_msgs/MoveGroupAction.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <actionlib/client/simple_action_client.h>
-#include <memory>
-#include <tf2_ros/buffer.h>
+#include <boost/shared_ptr.hpp>
+#include <tf/tf.h>
 
 namespace moveit
 {
@@ -143,27 +143,25 @@ public:
       \param opt. A MoveGroupInterface::Options structure, if you pass a ros::NodeHandle with a specific callback queue,
      it has to be of type ros::CallbackQueue
         (which is the default type of callback queues used in ROS)
-      \param tf_buffer. Specify a TF2_ROS Buffer instance to use. If not specified,
-                        one will be constructed internally along with an internal TF2_ROS TransformListener
+      \param tf. Specify a TF instance to use. If not specified, one will be constructed internally.
       \param wait_for_servers. Timeout for connecting to action servers. Zero time means unlimited waiting.
     */
   MoveGroupInterface(const Options& opt,
-                     const std::shared_ptr<tf2_ros::Buffer>& tf_buffer = std::shared_ptr<tf2_ros::Buffer>(),
+                     const boost::shared_ptr<tf::Transformer>& tf = boost::shared_ptr<tf::Transformer>(),
                      const ros::WallDuration& wait_for_servers = ros::WallDuration());
-  MOVEIT_DEPRECATED MoveGroupInterface(const Options& opt, const std::shared_ptr<tf2_ros::Buffer>& tf_buffer,
+  MOVEIT_DEPRECATED MoveGroupInterface(const Options& opt, const boost::shared_ptr<tf::Transformer>& tf,
                                        const ros::Duration& wait_for_servers);
 
   /**
       \brief Construct a client for the MoveGroup action for a particular \e group.
 
-      \param tf_buffer. Specify a TF2_ROS Buffer instance to use. If not specified,
-                        one will be constructed internally along with an internal TF2_ROS TransformListener
+      \param tf. Specify a TF instance to use. If not specified, one will be constructed internally.
       \param wait_for_servers. Timeout for connecting to action servers. Zero time means unlimited waiting.
     */
   MoveGroupInterface(const std::string& group,
-                     const std::shared_ptr<tf2_ros::Buffer>& tf_buffer = std::shared_ptr<tf2_ros::Buffer>(),
+                     const boost::shared_ptr<tf::Transformer>& tf = boost::shared_ptr<tf::Transformer>(),
                      const ros::WallDuration& wait_for_servers = ros::WallDuration());
-  MOVEIT_DEPRECATED MoveGroupInterface(const std::string& group, const std::shared_ptr<tf2_ros::Buffer>& tf_buffer,
+  MOVEIT_DEPRECATED MoveGroupInterface(const std::string& group, const boost::shared_ptr<tf::Transformer>& tf,
                                        const ros::Duration& wait_for_servers);
 
   ~MoveGroupInterface();
@@ -194,9 +192,6 @@ public:
 
   /** \brief Get the name of the frame in which the robot is planning */
   const std::string& getPlanningFrame() const;
-
-  /** \brief Get the available planning group names */
-  const std::vector<std::string>& getJointModelGroupNames() const;
 
   /** \brief Get vector of names of joints available in move group */
   const std::vector<std::string>& getJointNames();
@@ -446,7 +441,7 @@ public:
 
       If IK fails to find a solution then false is returned BUT THE PARTIAL
       RESULT OF IK IS STILL SET AS THE GOAL. */
-  bool setJointValueTarget(const Eigen::Isometry3d& eef_pose, const std::string& end_effector_link = "");
+  bool setJointValueTarget(const Eigen::Affine3d& eef_pose, const std::string& end_effector_link = "");
 
   /** \brief Set the joint state goal for a particular joint by computing IK.
 
@@ -483,7 +478,7 @@ public:
       previously set Position, Orientation, or Pose targets.
 
       If IK fails to find a solution then an approximation is used. */
-  bool setApproximateJointValueTarget(const Eigen::Isometry3d& eef_pose, const std::string& end_effector_link = "");
+  bool setApproximateJointValueTarget(const Eigen::Affine3d& eef_pose, const std::string& end_effector_link = "");
 
   /** \brief Set the joint state goal to a random joint configuration
 
@@ -547,7 +542,7 @@ public:
       This new pose target replaces any pre-existing JointValueTarget or
       pre-existing Position, Orientation, or Pose target for this \e
       end_effector_link. */
-  bool setPoseTarget(const Eigen::Isometry3d& end_effector_pose, const std::string& end_effector_link = "");
+  bool setPoseTarget(const Eigen::Affine3d& end_effector_pose, const std::string& end_effector_link = "");
 
   /** \brief Set the goal pose of the end-effector \e end_effector_link.
 
@@ -585,7 +580,7 @@ public:
       This new orientation target replaces any pre-existing JointValueTarget or
       pre-existing Position, Orientation, or Pose target(s) for this \e
       end_effector_link. */
-  bool setPoseTargets(const EigenSTL::vector_Isometry3d& end_effector_pose, const std::string& end_effector_link = "");
+  bool setPoseTargets(const EigenSTL::vector_Affine3d& end_effector_pose, const std::string& end_effector_link = "");
 
   /** \brief Set goal poses for \e end_effector_link.
 

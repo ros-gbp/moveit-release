@@ -38,10 +38,10 @@
 
 namespace sbpl_interface
 {
-SBPLMetaInterface::SBPLMetaInterface(const planning_models::RobotModelConstPtr& robot_model)
+SBPLMetaInterface::SBPLMetaInterface(const planning_models::RobotModelConstPtr& kmodel)
 {
-  sbpl_interface_first_.reset(new sbpl_interface::SBPLInterface(robot_model));
-  sbpl_interface_second_.reset(new sbpl_interface::SBPLInterface(robot_model));
+  sbpl_interface_first_.reset(new sbpl_interface::SBPLInterface(kmodel));
+  sbpl_interface_second_.reset(new sbpl_interface::SBPLInterface(kmodel));
 }
 
 bool SBPLMetaInterface::solve(const planning_scene::PlanningSceneConstPtr& planning_scene,

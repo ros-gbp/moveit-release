@@ -46,42 +46,45 @@ class CollisionRobotFCL : public CollisionRobot
   friend class CollisionWorldFCL;
 
 public:
-  CollisionRobotFCL(const robot_model::RobotModelConstPtr& robot_model, double padding = 0.0, double scale = 1.0);
+  CollisionRobotFCL(const robot_model::RobotModelConstPtr& kmodel, double padding = 0.0, double scale = 1.0);
 
   CollisionRobotFCL(const CollisionRobotFCL& other);
 
-  void checkSelfCollision(const CollisionRequest& req, CollisionResult& res,
-                          const robot_state::RobotState& state) const override;
-  void checkSelfCollision(const CollisionRequest& req, CollisionResult& res, const robot_state::RobotState& state,
-                          const AllowedCollisionMatrix& acm) const override;
-  void checkSelfCollision(const CollisionRequest& req, CollisionResult& res, const robot_state::RobotState& state1,
-                          const robot_state::RobotState& state2) const override;
-  void checkSelfCollision(const CollisionRequest& req, CollisionResult& res, const robot_state::RobotState& state1,
-                          const robot_state::RobotState& state2, const AllowedCollisionMatrix& acm) const override;
+  virtual void checkSelfCollision(const CollisionRequest& req, CollisionResult& res,
+                                  const robot_state::RobotState& state) const;
+  virtual void checkSelfCollision(const CollisionRequest& req, CollisionResult& res,
+                                  const robot_state::RobotState& state, const AllowedCollisionMatrix& acm) const;
+  virtual void checkSelfCollision(const CollisionRequest& req, CollisionResult& res,
+                                  const robot_state::RobotState& state1, const robot_state::RobotState& state2) const;
+  virtual void checkSelfCollision(const CollisionRequest& req, CollisionResult& res,
+                                  const robot_state::RobotState& state1, const robot_state::RobotState& state2,
+                                  const AllowedCollisionMatrix& acm) const;
 
-  void checkOtherCollision(const CollisionRequest& req, CollisionResult& res, const robot_state::RobotState& state,
-                           const CollisionRobot& other_robot,
-                           const robot_state::RobotState& other_state) const override;
-  void checkOtherCollision(const CollisionRequest& req, CollisionResult& res, const robot_state::RobotState& state,
-                           const CollisionRobot& other_robot, const robot_state::RobotState& other_state,
-                           const AllowedCollisionMatrix& acm) const override;
-  void checkOtherCollision(const CollisionRequest& req, CollisionResult& res, const robot_state::RobotState& state1,
-                           const robot_state::RobotState& state2, const CollisionRobot& other_robot,
-                           const robot_state::RobotState& other_state1,
-                           const robot_state::RobotState& other_state2) const override;
-  void checkOtherCollision(const CollisionRequest& req, CollisionResult& res, const robot_state::RobotState& state1,
-                           const robot_state::RobotState& state2, const CollisionRobot& other_robot,
-                           const robot_state::RobotState& other_state1, const robot_state::RobotState& other_state2,
-                           const AllowedCollisionMatrix& acm) const override;
+  virtual void checkOtherCollision(const CollisionRequest& req, CollisionResult& res,
+                                   const robot_state::RobotState& state, const CollisionRobot& other_robot,
+                                   const robot_state::RobotState& other_state) const;
+  virtual void checkOtherCollision(const CollisionRequest& req, CollisionResult& res,
+                                   const robot_state::RobotState& state, const CollisionRobot& other_robot,
+                                   const robot_state::RobotState& other_state, const AllowedCollisionMatrix& acm) const;
+  virtual void checkOtherCollision(const CollisionRequest& req, CollisionResult& res,
+                                   const robot_state::RobotState& state1, const robot_state::RobotState& state2,
+                                   const CollisionRobot& other_robot, const robot_state::RobotState& other_state1,
+                                   const robot_state::RobotState& other_state2) const;
+  virtual void checkOtherCollision(const CollisionRequest& req, CollisionResult& res,
+                                   const robot_state::RobotState& state1, const robot_state::RobotState& state2,
+                                   const CollisionRobot& other_robot, const robot_state::RobotState& other_state1,
+                                   const robot_state::RobotState& other_state2,
+                                   const AllowedCollisionMatrix& acm) const;
 
-  void distanceSelf(const DistanceRequest& req, DistanceResult& res,
-                    const robot_state::RobotState& state) const override;
+  virtual void distanceSelf(const DistanceRequest& req, DistanceResult& res,
+                            const robot_state::RobotState& state) const override;
 
-  void distanceOther(const DistanceRequest& req, DistanceResult& res, const robot_state::RobotState& state,
-                     const CollisionRobot& other_robot, const robot_state::RobotState& other_state) const override;
+  virtual void distanceOther(const DistanceRequest& req, DistanceResult& res, const robot_state::RobotState& state,
+                             const CollisionRobot& other_robot,
+                             const robot_state::RobotState& other_state) const override;
 
 protected:
-  void updatedPaddingOrScaling(const std::vector<std::string>& links) override;
+  virtual void updatedPaddingOrScaling(const std::vector<std::string>& links);
   void constructFCLObject(const robot_state::RobotState& state, FCLObject& fcl_obj) const;
   void allocSelfCollisionBroadPhase(const robot_state::RobotState& state, FCLManager& manager) const;
   void getAttachedBodyObjects(const robot_state::AttachedBody* ab, std::vector<FCLGeometryConstPtr>& geoms) const;

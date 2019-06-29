@@ -37,7 +37,7 @@
 #include <moveit/pick_place/pick_place.h>
 #include <moveit/pick_place/approach_and_translate_stage.h>
 #include <moveit/trajectory_processing/trajectory_tools.h>
-#include <tf2_eigen/tf2_eigen.h>
+#include <eigen_conversions/eigen_msg.h>
 #include <ros/console.h>
 
 namespace pick_place
@@ -66,7 +66,7 @@ bool isStateCollisionFree(const planning_scene::PlanningScene* planning_scene,
   req.verbose = verbose;
   req.group_name = group->getName();
 
-  if (!grasp_posture->joint_names.empty())
+  if (grasp_posture->joint_names.size() > 0)
   {
     // apply the grasp posture for the end effector (we always apply it here since it could be the case the sampler
     // changes this posture)
@@ -164,7 +164,7 @@ void addGripperTrajectory(const ManipulationPlanPtr& plan,
     ee_closed_traj->setRobotTrajectoryMsg(*ee_closed_state, plan->retreat_posture_);
     // If user has defined a time for it's gripper movement time, don't add the
     // DEFAULT_GRASP_POSTURE_COMPLETION_DURATION
-    if (!plan->retreat_posture_.points.empty() &&
+    if (plan->retreat_posture_.points.size() > 0 &&
         plan->retreat_posture_.points.back().time_from_start > ros::Duration(0.0))
     {
       ee_closed_traj->addPrefixWayPoint(ee_closed_state, 0.0);
@@ -190,7 +190,7 @@ void addGripperTrajectory(const ManipulationPlanPtr& plan,
   }
 }
 
-}  // namespace
+}  // annonymous namespace
 
 bool ApproachAndTranslateStage::evaluate(const ManipulationPlanPtr& plan) const
 {
@@ -202,8 +202,8 @@ bool ApproachAndTranslateStage::evaluate(const ManipulationPlanPtr& plan) const
 
   // convert approach direction and retreat direction to Eigen structures
   Eigen::Vector3d approach_direction, retreat_direction;
-  tf2::fromMsg(plan->approach_.direction.vector, approach_direction);
-  tf2::fromMsg(plan->retreat_.direction.vector, retreat_direction);
+  tf::vectorMsgToEigen(plan->approach_.direction.vector, approach_direction);
+  tf::vectorMsgToEigen(plan->retreat_.direction.vector, retreat_direction);
 
   // if translation vectors are specified in the frame of the ik link name, then we assume the frame is local;
   // otherwise, the frame is global
@@ -215,10 +215,10 @@ bool ApproachAndTranslateStage::evaluate(const ManipulationPlanPtr& plan) const
   // transform the input vectors in accordance to frame specified in the header;
   if (approach_direction_is_global_frame)
     approach_direction =
-        planning_scene_->getFrameTransform(plan->approach_.direction.header.frame_id).rotation() * approach_direction;
+        planning_scene_->getFrameTransform(plan->approach_.direction.header.frame_id).linear() * approach_direction;
   if (retreat_direction_is_global_frame)
     retreat_direction =
-        planning_scene_->getFrameTransform(plan->retreat_.direction.header.frame_id).rotation() * retreat_direction;
+        planning_scene_->getFrameTransform(plan->retreat_.direction.header.frame_id).linear() * retreat_direction;
 
   // state validity checking during the approach must ensure that the gripper posture is that for pre-grasping
   robot_state::GroupStateValidityCallbackFn approach_validCallback =
@@ -357,4 +357,4 @@ bool ApproachAndTranslateStage::evaluate(const ManipulationPlanPtr& plan) const
 
   return false;
 }
-}  // namespace pick_place
+}

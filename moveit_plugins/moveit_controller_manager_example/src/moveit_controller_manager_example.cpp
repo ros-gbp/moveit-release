@@ -49,25 +49,25 @@ public:
   {
   }
 
-  bool sendTrajectory(const moveit_msgs::RobotTrajectory& t) override
+  virtual bool sendTrajectory(const moveit_msgs::RobotTrajectory& t)
   {
     // do whatever is needed to actually execute this trajectory
     return true;
   }
 
-  bool cancelExecution() override
+  virtual bool cancelExecution()
   {
     // do whatever is needed to cancel execution
     return true;
   }
 
-  bool waitForExecution(const ros::Duration& /*timeout*/) override
+  virtual bool waitForExecution(const ros::Duration&)
   {
     // wait for the current execution to finish
     return true;
   }
 
-  moveit_controller_manager::ExecutionStatus getLastExecutionStatus() override
+  virtual moveit_controller_manager::ExecutionStatus getLastExecutionStatus()
   {
     return moveit_controller_manager::ExecutionStatus(moveit_controller_manager::ExecutionStatus::SUCCEEDED);
   }
@@ -80,9 +80,11 @@ public:
   {
   }
 
-  ~MoveItControllerManagerExample() override = default;
+  virtual ~MoveItControllerManagerExample()
+  {
+  }
 
-  moveit_controller_manager::MoveItControllerHandlePtr getControllerHandle(const std::string& name) override
+  virtual moveit_controller_manager::MoveItControllerHandlePtr getControllerHandle(const std::string& name)
   {
     return moveit_controller_manager::MoveItControllerHandlePtr(new ExampleControllerHandle(name));
   }
@@ -90,7 +92,7 @@ public:
   /*
    * Get the list of controller names.
    */
-  void getControllersList(std::vector<std::string>& names) override
+  virtual void getControllersList(std::vector<std::string>& names)
   {
     names.resize(1);
     names[0] = "my_example_controller";
@@ -100,7 +102,7 @@ public:
    * This plugin assumes that all controllers are already active -- and if they are not, well, it has no way to deal
    * with it anyways!
    */
-  void getActiveControllers(std::vector<std::string>& names) override
+  virtual void getActiveControllers(std::vector<std::string>& names)
   {
     getControllersList(names);
   }
@@ -116,7 +118,7 @@ public:
   /*
    * Get the list of joints that a controller can control.
    */
-  void getControllerJoints(const std::string& name, std::vector<std::string>& joints) override
+  virtual void getControllerJoints(const std::string& name, std::vector<std::string>& joints)
   {
     joints.clear();
     if (name == "my_example_controller")
@@ -133,8 +135,8 @@ public:
   /*
    * Controllers are all active and default.
    */
-  moveit_controller_manager::MoveItControllerManager::ControllerState
-  getControllerState(const std::string& name) override
+  virtual moveit_controller_manager::MoveItControllerManager::ControllerState
+  getControllerState(const std::string& name)
   {
     moveit_controller_manager::MoveItControllerManager::ControllerState state;
     state.active_ = true;
@@ -143,7 +145,7 @@ public:
   }
 
   /* Cannot switch our controllers */
-  bool switchControllers(const std::vector<std::string>& activate, const std::vector<std::string>& deactivate) override
+  virtual bool switchControllers(const std::vector<std::string>& activate, const std::vector<std::string>& deactivate)
   {
     return false;
   }

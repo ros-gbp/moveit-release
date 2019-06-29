@@ -174,28 +174,6 @@ bool RevoluteJointModel::satisfiesPositionBounds(const double* values, const Bou
     return !(values[0] < bounds[0].min_position_ - margin || values[0] > bounds[0].max_position_ + margin);
 }
 
-bool RevoluteJointModel::harmonizePosition(double* values, const JointModel::Bounds& other_bounds) const
-{
-  bool modified = false;
-  if (*values < other_bounds[0].min_position_)
-  {
-    while (*values + 2 * M_PI <= other_bounds[0].max_position_)
-    {
-      *values += 2 * M_PI;
-      modified = true;
-    }
-  }
-  else if (*values > other_bounds[0].max_position_)
-  {
-    while (*values - 2 * M_PI >= other_bounds[0].min_position_)
-    {
-      *values -= 2 * M_PI;
-      modified = true;
-    }
-  }
-  return modified;
-}
-
 bool RevoluteJointModel::enforcePositionBounds(double* values, const Bounds& bounds) const
 {
   if (continuous_)
@@ -227,7 +205,7 @@ bool RevoluteJointModel::enforcePositionBounds(double* values, const Bounds& bou
   return false;
 }
 
-void RevoluteJointModel::computeTransform(const double* joint_values, Eigen::Isometry3d& transf) const
+void RevoluteJointModel::computeTransform(const double* joint_values, Eigen::Affine3d& transf) const
 {
   const double c = cos(joint_values[0]);
   const double s = sin(joint_values[0]);
@@ -263,16 +241,16 @@ void RevoluteJointModel::computeTransform(const double* joint_values, Eigen::Iso
   d[14] = 0.0;
   d[15] = 1.0;
 
-  //  transf = Eigen::Isometry3d(Eigen::AngleAxisd(joint_values[0], axis_));
+  //  transf = Eigen::Affine3d(Eigen::AngleAxisd(joint_values[0], axis_));
 }
 
-void RevoluteJointModel::computeVariablePositions(const Eigen::Isometry3d& transf, double* joint_values) const
+void RevoluteJointModel::computeVariablePositions(const Eigen::Affine3d& transf, double* joint_values) const
 {
-  Eigen::Quaterniond q(transf.rotation());
+  Eigen::Quaterniond q(transf.linear());
   q.normalize();
-  size_t max_idx;
-  axis_.array().abs().maxCoeff(&max_idx);
-  joint_values[0] = 2. * atan2(q.vec()[max_idx] / axis_[max_idx], q.w());
+  size_t maxIdx;
+  axis_.array().abs().maxCoeff(&maxIdx);
+  joint_values[0] = 2. * atan2(q.vec()[maxIdx] / axis_[maxIdx], q.w());
 }
 
 }  // end of namespace core

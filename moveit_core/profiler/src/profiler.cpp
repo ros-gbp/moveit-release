@@ -46,7 +46,7 @@ namespace moveit
 {
 namespace tools
 {
-Profiler& Profiler::instance()
+Profiler& Profiler::Instance()
 {
   static Profiler p(false, false);
   return p;
@@ -181,57 +181,57 @@ void Profiler::console()
 /// @cond IGNORE
 namespace
 {
-struct DataIntVal
+struct dataIntVal
 {
-  std::string name_;
-  unsigned long int value_;
+  std::string name;
+  unsigned long int value;
 };
 
 struct SortIntByValue
 {
-  bool operator()(const DataIntVal& a, const DataIntVal& b) const
+  bool operator()(const dataIntVal& a, const dataIntVal& b) const
   {
-    return a.value_ > b.value_;
+    return a.value > b.value;
   }
 };
 
-struct DataDoubleVal
+struct dataDoubleVal
 {
-  std::string name_;
-  double value_;
+  std::string name;
+  double value;
 };
 
 struct SortDoubleByValue
 {
-  bool operator()(const DataDoubleVal& a, const DataDoubleVal& b) const
+  bool operator()(const dataDoubleVal& a, const dataDoubleVal& b) const
   {
-    return a.value_ > b.value_;
+    return a.value > b.value;
   }
 };
-}  // namespace
+}
 /// @endcond
 
 void Profiler::printThreadInfo(std::ostream& out, const PerThread& data)
 {
   double total = to_seconds(tinfo_.total);
 
-  std::vector<DataIntVal> events;
+  std::vector<dataIntVal> events;
   for (std::map<std::string, unsigned long int>::const_iterator iev = data.events.begin(); iev != data.events.end();
        ++iev)
   {
-    DataIntVal next = { iev->first, iev->second };
+    dataIntVal next = { iev->first, iev->second };
     events.push_back(next);
   }
   std::sort(events.begin(), events.end(), SortIntByValue());
   if (!events.empty())
     out << "Events:" << std::endl;
   for (unsigned int i = 0; i < events.size(); ++i)
-    out << events[i].name_ << ": " << events[i].value_ << std::endl;
+    out << events[i].name << ": " << events[i].value << std::endl;
 
-  std::vector<DataDoubleVal> avg;
+  std::vector<dataDoubleVal> avg;
   for (std::map<std::string, AvgInfo>::const_iterator ia = data.avg.begin(); ia != data.avg.end(); ++ia)
   {
-    DataDoubleVal next = { ia->first, ia->second.total / (double)ia->second.parts };
+    dataDoubleVal next = { ia->first, ia->second.total / (double)ia->second.parts };
     avg.push_back(next);
   }
   std::sort(avg.begin(), avg.end(), SortDoubleByValue());
@@ -239,17 +239,17 @@ void Profiler::printThreadInfo(std::ostream& out, const PerThread& data)
     out << "Averages:" << std::endl;
   for (unsigned int i = 0; i < avg.size(); ++i)
   {
-    const AvgInfo& a = data.avg.find(avg[i].name_)->second;
-    out << avg[i].name_ << ": " << avg[i].value_ << " (stddev = "
-        << sqrt(fabs(a.totalSqr - (double)a.parts * avg[i].value_ * avg[i].value_) / ((double)a.parts - 1.)) << ")"
+    const AvgInfo& a = data.avg.find(avg[i].name)->second;
+    out << avg[i].name << ": " << avg[i].value << " (stddev = "
+        << sqrt(fabs(a.totalSqr - (double)a.parts * avg[i].value * avg[i].value) / ((double)a.parts - 1.)) << ")"
         << std::endl;
   }
 
-  std::vector<DataDoubleVal> time;
+  std::vector<dataDoubleVal> time;
 
   for (std::map<std::string, TimeInfo>::const_iterator itm = data.time.begin(); itm != data.time.end(); ++itm)
   {
-    DataDoubleVal next = { itm->first, to_seconds(itm->second.total) };
+    dataDoubleVal next = { itm->first, to_seconds(itm->second.total) };
     time.push_back(next);
   }
 
@@ -260,12 +260,12 @@ void Profiler::printThreadInfo(std::ostream& out, const PerThread& data)
   double unaccounted = total;
   for (unsigned int i = 0; i < time.size(); ++i)
   {
-    const TimeInfo& d = data.time.find(time[i].name_)->second;
+    const TimeInfo& d = data.time.find(time[i].name)->second;
 
-    double t_s = to_seconds(d.shortest);
-    double t_l = to_seconds(d.longest);
-    out << time[i].name_ << ": " << time[i].value_ << "s (" << (100.0 * time[i].value_ / total) << "%), [" << t_s
-        << "s --> " << t_l << " s], " << d.parts << " parts";
+    double tS = to_seconds(d.shortest);
+    double tL = to_seconds(d.longest);
+    out << time[i].name << ": " << time[i].value << "s (" << (100.0 * time[i].value / total) << "%), [" << tS
+        << "s --> " << tL << " s], " << d.parts << " parts";
     if (d.parts > 0)
     {
       double pavg = to_seconds(d.total) / (double)d.parts;
@@ -274,7 +274,7 @@ void Profiler::printThreadInfo(std::ostream& out, const PerThread& data)
         out << " (" << 1.0 / pavg << " /s)";
     }
     out << std::endl;
-    unaccounted -= time[i].value_;
+    unaccounted -= time[i].value;
   }
   // if we do not appear to have counted time multiple times, print the unaccounted time too
   if (unaccounted >= 0.0)

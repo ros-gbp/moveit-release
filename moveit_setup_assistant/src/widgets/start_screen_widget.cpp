@@ -54,8 +54,9 @@
 #include <fstream>  // for reading in urdf
 #include <streambuf>
 // Boost
-#include <boost/filesystem/path.hpp>        // for reading folders/files
-#include <boost/filesystem/operations.hpp>  // for reading folders/files
+#include <boost/algorithm/string.hpp>  // for trimming whitespace from user input
+#include <boost/filesystem.hpp>        // for reading folders/files
+#include <boost/algorithm/string.hpp>  // for string find and replace in paths
 // MoveIt
 #include <moveit/rdf_loader/rdf_loader.h>
 
@@ -67,7 +68,7 @@ namespace fs = boost::filesystem;
 // ******************************************************************************************
 // Start screen user interface for MoveIt! Configuration Assistant
 // ******************************************************************************************
-StartScreenWidget::StartScreenWidget(QWidget* parent, const MoveItConfigDataPtr& config_data)
+StartScreenWidget::StartScreenWidget(QWidget* parent, moveit_setup_assistant::MoveItConfigDataPtr config_data)
   : SetupScreenWidget(parent), config_data_(config_data)
 {
   // Basic widget container
@@ -126,7 +127,7 @@ StartScreenWidget::StartScreenWidget(QWidget* parent, const MoveItConfigDataPtr&
                              "optional xacro arguments:", this, true);  // directory
   // user needs to select option before this is shown
   stack_path_->hide();
-  stack_path_->setArgs("");
+  stack_path_->setArgs("--inorder ");
   connect(stack_path_, SIGNAL(pathChanged(QString)), this, SLOT(onPackagePathChanged(QString)));
   left_layout->addWidget(stack_path_);
 
@@ -137,7 +138,7 @@ StartScreenWidget::StartScreenWidget(QWidget* parent, const MoveItConfigDataPtr&
                                       "optional xacro arguments:", this, false, true);  // no directory, load only
   // user needs to select option before this is shown
   urdf_file_->hide();
-  urdf_file_->setArgs("");
+  urdf_file_->setArgs("--inorder ");
   connect(urdf_file_, SIGNAL(pathChanged(QString)), this, SLOT(onUrdfPathChanged(QString)));
   left_layout->addWidget(urdf_file_);
 
@@ -400,7 +401,7 @@ bool StartScreenWidget::loadExistingFiles()
   fs::path kinematics_yaml_path = config_data_->config_pkg_path_;
   kinematics_yaml_path /= "config/kinematics.yaml";
 
-  if (!config_data_->inputKinematicsYAML(kinematics_yaml_path.make_preferred().native()))
+  if (!config_data_->inputKinematicsYAML(kinematics_yaml_path.make_preferred().native().c_str()))
   {
     QMessageBox::warning(this, "No Kinematic YAML File",
                          QString("Failed to parse kinematics yaml file. This file is not critical but any previous "
@@ -416,11 +417,11 @@ bool StartScreenWidget::loadExistingFiles()
   // Load ros controllers yaml file if available-----------------------------------------------
   fs::path ros_controllers_yaml_path = config_data_->config_pkg_path_;
   ros_controllers_yaml_path /= "config/ros_controllers.yaml";
-  config_data_->inputROSControllersYAML(ros_controllers_yaml_path.make_preferred().native());
+  config_data_->inputROSControllersYAML(ros_controllers_yaml_path.make_preferred().native().c_str());
 
   fs::path ompl_yaml_path = config_data_->config_pkg_path_;
   ompl_yaml_path /= "config/ompl_planning.yaml";
-  config_data_->inputOMPLYAML(ompl_yaml_path.make_preferred().native());
+  config_data_->inputOMPLYAML(ompl_yaml_path.make_preferred().native().c_str());
 
   // DONE LOADING --------------------------------------------------------------------------
 
@@ -455,7 +456,7 @@ bool StartScreenWidget::loadNewFiles()
   // Check that box is filled out
   if (config_data_->urdf_path_.empty())
   {
-    QMessageBox::warning(this, "Error Loading Files", "No robot model file specified");
+    QMessageBox::warning(this, "Error Loading Files", "No robot model file specefied");
     return false;
   }
 
@@ -781,12 +782,12 @@ bool StartScreenWidget::load3DSensorsFile()
 
   if (!fs::is_regular_file(sensors_3d_yaml_path))
   {
-    return config_data_->input3DSensorsYAML(default_sensors_3d_yaml_path.make_preferred().native());
+    return config_data_->input3DSensorsYAML(default_sensors_3d_yaml_path.make_preferred().native().c_str());
   }
   else
   {
-    return config_data_->input3DSensorsYAML(default_sensors_3d_yaml_path.make_preferred().native(),
-                                            sensors_3d_yaml_path.make_preferred().native());
+    return config_data_->input3DSensorsYAML(default_sensors_3d_yaml_path.make_preferred().native().c_str(),
+                                            sensors_3d_yaml_path.make_preferred().native().c_str());
   }
 }
 
@@ -822,15 +823,24 @@ SelectModeWidget::SelectModeWidget(QWidget* parent) : QFrame(parent)
   layout->setAlignment(widget_title, Qt::AlignTop);
 
   // Widget Instructions
-  widget_instructions_ = new QLabel(this);
-  widget_instructions_->setAlignment(Qt::AlignLeft | Qt::AlignTop);
-  widget_instructions_->setWordWrap(true);
-  widget_instructions_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+  widget_instructions_ = new QTextEdit(this);
   widget_instructions_->setText(
       "All settings for MoveIt! are stored in the MoveIt! configuration package. Here you have "
       "the option to create a new configuration package or load an existing one. Note: "
       "changes to a MoveIt! configuration package outside this Setup Assistant are likely to be "
       "overwritten by this tool.");
+
+  // Change color of TextEdit
+  QPalette p = widget_instructions_->palette();
+  p.setColor(QPalette::Active, QPalette::Base, this->palette().color(QWidget::backgroundRole()));
+  p.setColor(QPalette::Inactive, QPalette::Base, this->palette().color(QWidget::backgroundRole()));
+  widget_instructions_->setPalette(p);
+
+  // Make TextEdit behave like QLabel
+  widget_instructions_->setWordWrapMode(QTextOption::WrapAtWordBoundaryOrAnywhere);
+  widget_instructions_->setReadOnly(true);
+  widget_instructions_->setFrameShape(QFrame::NoFrame);
+  widget_instructions_->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
   layout->addWidget(widget_instructions_);
   layout->setAlignment(widget_instructions_, Qt::AlignTop);
@@ -852,4 +862,4 @@ SelectModeWidget::SelectModeWidget(QWidget* parent) : QFrame(parent)
   btn_new_->setCheckable(true);
 }
 
-}  // namespace moveit_setup_assistant
+}  // namespace

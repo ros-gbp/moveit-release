@@ -34,6 +34,8 @@
 
 /*
  * Capability of execute trajectory with a ROS action.
+ * In order to allow monitoring and stopping the execution,
+ * the service should be turned into an action.
  *
  * Author: Kentaro Wada
  * */
@@ -53,7 +55,7 @@ class MoveGroupExecuteTrajectoryAction : public MoveGroupCapability
 public:
   MoveGroupExecuteTrajectoryAction();
 
-  void initialize() override;
+  virtual void initialize();
 
 private:
   void executePathCallback(const moveit_msgs::ExecuteTrajectoryGoalConstPtr& goal);

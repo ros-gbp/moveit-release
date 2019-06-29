@@ -83,14 +83,15 @@ public:
     }
   }
 
-  std::string getDescription() const override
+  virtual std::string getDescription() const
   {
     return "Fix Start State In Collision";
   }
 
-  bool adaptAndPlan(const PlannerFn& planner, const planning_scene::PlanningSceneConstPtr& planning_scene,
-                    const planning_interface::MotionPlanRequest& req, planning_interface::MotionPlanResponse& res,
-                    std::vector<std::size_t>& added_path_index) const override
+  virtual bool adaptAndPlan(const PlannerFn& planner, const planning_scene::PlanningSceneConstPtr& planning_scene,
+                            const planning_interface::MotionPlanRequest& req,
+                            planning_interface::MotionPlanResponse& res,
+                            std::vector<std::size_t>& added_path_index) const
   {
     ROS_DEBUG("Running '%s'", getDescription().c_str());
 
@@ -191,7 +192,7 @@ private:
 const std::string FixStartStateCollision::DT_PARAM_NAME = "start_state_max_dt";
 const std::string FixStartStateCollision::JIGGLE_PARAM_NAME = "jiggle_fraction";
 const std::string FixStartStateCollision::ATTEMPTS_PARAM_NAME = "max_sampling_attempts";
-}  // namespace default_planner_request_adapters
+}
 
 CLASS_LOADER_REGISTER_CLASS(default_planner_request_adapters::FixStartStateCollision,
                             planning_request_adapter::PlanningRequestAdapter);

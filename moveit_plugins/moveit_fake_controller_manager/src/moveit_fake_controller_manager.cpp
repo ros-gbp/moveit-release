@@ -92,7 +92,7 @@ public:
 
       try
       {
-        const std::string name = std::string(controller_list[i]["name"]);
+        std::string name = std::string(controller_list[i]["name"]);
 
         if (controller_list[i]["joints"].getType() != XmlRpc::XmlRpcValue::TypeArray)
         {
@@ -101,9 +101,8 @@ public:
           continue;
         }
         std::vector<std::string> joints;
-        joints.reserve(controller_list[i]["joints"].size());
         for (int j = 0; j < controller_list[i]["joints"].size(); ++j)
-          joints.emplace_back(std::string(controller_list[i]["joints"][j]));
+          joints.push_back(std::string(controller_list[i]["joints"][j]));
 
         const std::string& type =
             controller_list[i].hasMember("type") ? std::string(controller_list[i]["type"]) : DEFAULT_TYPE;
@@ -135,7 +134,7 @@ public:
     }
 
     robot_model_loader::RobotModelLoader robot_model_loader(ROBOT_DESCRIPTION);
-    const robot_model::RobotModelPtr& robot_model = robot_model_loader.getModel();
+    robot_model::RobotModelPtr robot_model = robot_model_loader.getModel();
     typedef std::map<std::string, double> JointPoseMap;
     JointPoseMap joints;
 
@@ -197,12 +196,14 @@ public:
     return js;
   }
 
-  ~MoveItFakeControllerManager() override = default;
+  virtual ~MoveItFakeControllerManager()
+  {
+  }
 
   /*
    * Get a controller, by controller name (which was specified in the controllers.yaml
    */
-  moveit_controller_manager::MoveItControllerHandlePtr getControllerHandle(const std::string& name) override
+  virtual moveit_controller_manager::MoveItControllerHandlePtr getControllerHandle(const std::string& name)
   {
     std::map<std::string, BaseFakeControllerPtr>::const_iterator it = controllers_.find(name);
     if (it != controllers_.end())
@@ -215,7 +216,7 @@ public:
   /*
    * Get the list of controller names.
    */
-  void getControllersList(std::vector<std::string>& names) override
+  virtual void getControllersList(std::vector<std::string>& names)
   {
     for (std::map<std::string, BaseFakeControllerPtr>::const_iterator it = controllers_.begin();
          it != controllers_.end(); ++it)
@@ -226,7 +227,7 @@ public:
   /*
    * Fake controllers are always active
    */
-  void getActiveControllers(std::vector<std::string>& names) override
+  virtual void getActiveControllers(std::vector<std::string>& names)
   {
     getControllersList(names);
   }
@@ -242,7 +243,7 @@ public:
   /*
    * Get the list of joints that a controller can control.
    */
-  void getControllerJoints(const std::string& name, std::vector<std::string>& joints) override
+  virtual void getControllerJoints(const std::string& name, std::vector<std::string>& joints)
   {
     std::map<std::string, BaseFakeControllerPtr>::const_iterator it = controllers_.find(name);
     if (it != controllers_.end())
@@ -261,8 +262,8 @@ public:
   /*
    * Controllers are all active and default.
    */
-  moveit_controller_manager::MoveItControllerManager::ControllerState
-  getControllerState(const std::string& name) override
+  virtual moveit_controller_manager::MoveItControllerManager::ControllerState
+  getControllerState(const std::string& name)
   {
     moveit_controller_manager::MoveItControllerManager::ControllerState state;
     state.active_ = true;
@@ -271,7 +272,7 @@ public:
   }
 
   /* Cannot switch our controllers */
-  bool switchControllers(const std::vector<std::string>& activate, const std::vector<std::string>& deactivate) override
+  virtual bool switchControllers(const std::vector<std::string>& activate, const std::vector<std::string>& deactivate)
   {
     return false;
   }

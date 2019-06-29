@@ -35,6 +35,7 @@
 
 /* Authors: Ioan Sucan, Michael Goerner */
 
+#include <tf/transform_datatypes.h>
 #include <moveit/ompl_interface/ompl_interface.h>
 #include <moveit/robot_model_loader/robot_model_loader.h>
 #include <moveit/profiler/profiler.h>

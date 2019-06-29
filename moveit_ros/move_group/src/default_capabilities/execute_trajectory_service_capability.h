@@ -32,50 +32,32 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-/* Author: Ioan Sucan, Michael Ferguson */
+/* Author: Ioan Sucan */
 
-#include <moveit/planning_request_adapter/planning_request_adapter.h>
-#include <moveit/trajectory_processing/time_optimal_trajectory_generation.h>
-#include <class_loader/class_loader.hpp>
-#include <ros/console.h>
+#ifndef MOVEIT_MOVE_GROUP_EXECUTE_TRAJECTORY_SERVICE_CAPABILITY_
+#define MOVEIT_MOVE_GROUP_EXECUTE_TRAJECTORY_SERVICE_CAPABILITY_
 
-namespace default_planner_request_adapters
+#include <moveit/move_group/move_group_capability.h>
+#include <moveit_msgs/ExecuteKnownTrajectory.h>
+
+namespace move_group
 {
-using namespace trajectory_processing;
-
-/** @brief This adapter uses the time-optimal trajectory generation method */
-class AddTimeOptimalParameterization : public planning_request_adapter::PlanningRequestAdapter
+class MoveGroupExecuteService : public MoveGroupCapability
 {
 public:
-  AddTimeOptimalParameterization() : planning_request_adapter::PlanningRequestAdapter()
-  {
-  }
+  MoveGroupExecuteService();
+  ~MoveGroupExecuteService();
 
-  virtual std::string getDescription() const
-  {
-    return "Add Time Optimal Parameterization";
-  }
+  virtual void initialize();
 
-  virtual bool adaptAndPlan(const PlannerFn& planner, const planning_scene::PlanningSceneConstPtr& planning_scene,
-                            const planning_interface::MotionPlanRequest& req,
-                            planning_interface::MotionPlanResponse& res,
-                            std::vector<std::size_t>& added_path_index) const
-  {
-    bool result = planner(planning_scene, req, res);
-    if (result && res.trajectory_)
-    {
-      ROS_DEBUG("Running '%s'", getDescription().c_str());
-      TimeOptimalTrajectoryGeneration totg;
-      if (!totg.computeTimeStamps(*res.trajectory_, req.max_velocity_scaling_factor,
-                                  req.max_acceleration_scaling_factor))
-        ROS_WARN("Time parametrization for the solution path failed.");
-    }
+private:
+  bool executeTrajectoryService(moveit_msgs::ExecuteKnownTrajectory::Request& req,
+                                moveit_msgs::ExecuteKnownTrajectory::Response& res);
 
-    return result;
-  }
+  ros::ServiceServer execute_service_;
+  ros::CallbackQueue callback_queue_;
+  ros::AsyncSpinner spinner_;
 };
+}
 
-}  // namespace default_planners_request_adapters
-
-CLASS_LOADER_REGISTER_CLASS(default_planner_request_adapters::AddTimeOptimalParameterization,
-                            planning_request_adapter::PlanningRequestAdapter);
+#endif

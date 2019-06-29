@@ -41,10 +41,7 @@
 
 #include <dynamic_reconfigure/server.h>
 #include <moveit_ros_planning/PlanningSceneMonitorDynamicReconfigureConfig.h>
-#include <tf2/exceptions.h>
-#include <tf2/LinearMath/Transform.h>
-#include <tf2_eigen/tf2_eigen.h>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <tf_conversions/tf_eigen.h>
 #include <moveit/profiler/profiler.h>
 
 #include <memory>
@@ -114,29 +111,28 @@ const std::string PlanningSceneMonitor::DEFAULT_PLANNING_SCENE_SERVICE = "get_pl
 const std::string PlanningSceneMonitor::MONITORED_PLANNING_SCENE_TOPIC = "monitored_planning_scene";
 
 PlanningSceneMonitor::PlanningSceneMonitor(const std::string& robot_description,
-                                           const std::shared_ptr<tf2_ros::Buffer>& tf_buffer, const std::string& name)
-  : PlanningSceneMonitor(planning_scene::PlanningScenePtr(), robot_description, tf_buffer, name)
+                                           const boost::shared_ptr<tf::Transformer>& tf, const std::string& name)
+  : PlanningSceneMonitor(planning_scene::PlanningScenePtr(), robot_description, tf, name)
 {
 }
 
 PlanningSceneMonitor::PlanningSceneMonitor(const planning_scene::PlanningScenePtr& scene,
                                            const std::string& robot_description,
-                                           const std::shared_ptr<tf2_ros::Buffer>& tf_buffer, const std::string& name)
-  : PlanningSceneMonitor(scene, std::make_shared<robot_model_loader::RobotModelLoader>(robot_description), tf_buffer,
-                         name)
+                                           const boost::shared_ptr<tf::Transformer>& tf, const std::string& name)
+  : PlanningSceneMonitor(scene, std::make_shared<robot_model_loader::RobotModelLoader>(robot_description), tf, name)
 {
 }
 
 PlanningSceneMonitor::PlanningSceneMonitor(const robot_model_loader::RobotModelLoaderPtr& rm_loader,
-                                           const std::shared_ptr<tf2_ros::Buffer>& tf_buffer, const std::string& name)
-  : PlanningSceneMonitor(planning_scene::PlanningScenePtr(), rm_loader, tf_buffer, name)
+                                           const boost::shared_ptr<tf::Transformer>& tf, const std::string& name)
+  : PlanningSceneMonitor(planning_scene::PlanningScenePtr(), rm_loader, tf, name)
 {
 }
 
 PlanningSceneMonitor::PlanningSceneMonitor(const planning_scene::PlanningScenePtr& scene,
                                            const robot_model_loader::RobotModelLoaderPtr& rm_loader,
-                                           const std::shared_ptr<tf2_ros::Buffer>& tf_buffer, const std::string& name)
-  : monitor_name_(name), nh_("~"), tf_buffer_(tf_buffer), rm_loader_(rm_loader)
+                                           const boost::shared_ptr<tf::Transformer>& tf, const std::string& name)
+  : monitor_name_(name), nh_("~"), tf_(tf), rm_loader_(rm_loader)
 {
   root_nh_.setCallbackQueue(&queue_);
   nh_.setCallbackQueue(&queue_);
@@ -147,9 +143,9 @@ PlanningSceneMonitor::PlanningSceneMonitor(const planning_scene::PlanningScenePt
 
 PlanningSceneMonitor::PlanningSceneMonitor(const planning_scene::PlanningScenePtr& scene,
                                            const robot_model_loader::RobotModelLoaderPtr& rm_loader,
-                                           const ros::NodeHandle& nh, const std::shared_ptr<tf2_ros::Buffer>& tf_buffer,
+                                           const ros::NodeHandle& nh, const boost::shared_ptr<tf::Transformer>& tf,
                                            const std::string& name)
-  : monitor_name_(name), nh_("~"), root_nh_(nh), tf_buffer_(tf_buffer), rm_loader_(rm_loader)
+  : monitor_name_(name), nh_("~"), root_nh_(nh), tf_(tf), rm_loader_(rm_loader)
 {
   // use same callback queue as root_nh_
   nh_.setCallbackQueue(root_nh_.getCallbackQueue());
@@ -427,7 +423,7 @@ void PlanningSceneMonitor::getMonitoredTopics(std::vector<std::string>& topics) 
   if (planning_scene_subscriber_)
     topics.push_back(planning_scene_subscriber_.getTopic());
   if (collision_object_subscriber_)
-    topics.push_back(collision_object_subscriber_.getTopic());
+    topics.push_back(collision_object_subscriber_->getTopic());
   if (planning_scene_world_subscriber_)
     topics.push_back(planning_scene_world_subscriber_.getTopic());
 }
@@ -443,7 +439,7 @@ bool sceneIsParentOf(const planning_scene::PlanningSceneConstPtr& scene,
     return sceneIsParentOf(scene->getParent(), possible_parent);
   return false;
 }
-}  // namespace
+}
 
 bool PlanningSceneMonitor::updatesScene(const planning_scene::PlanningScenePtr& scene) const
 {
@@ -581,7 +577,7 @@ bool PlanningSceneMonitor::newPlanningSceneMessage(const moveit_msgs::PlanningSc
       if (!planning_scene::PlanningScene::isEmpty(scene.robot_state))
       {
         upd = (SceneUpdateType)((int)upd | (int)UPDATE_STATE);
-        if (!scene.robot_state.attached_collision_objects.empty() || !static_cast<bool>(scene.robot_state.is_diff))
+        if (!scene.robot_state.attached_collision_objects.empty() || scene.robot_state.is_diff == false)
           upd = (SceneUpdateType)((int)upd | (int)UPDATE_GEOMETRY);
       }
     }
@@ -614,19 +610,26 @@ void PlanningSceneMonitor::newPlanningSceneWorldCallback(const moveit_msgs::Plan
   }
 }
 
+void PlanningSceneMonitor::collisionObjectFailTFCallback(const moveit_msgs::CollisionObjectConstPtr& obj,
+                                                         tf::filter_failure_reasons::FilterFailureReason reason)
+{
+  // if we just want to remove objects, the frame does not matter
+  if (reason == tf::filter_failure_reasons::EmptyFrameID && obj->operation == moveit_msgs::CollisionObject::REMOVE)
+    collisionObjectCallback(obj);
+}
+
 void PlanningSceneMonitor::collisionObjectCallback(const moveit_msgs::CollisionObjectConstPtr& obj)
 {
-  if (!scene_)
-    return;
-
-  updateFrameTransforms();
+  if (scene_)
   {
-    boost::unique_lock<boost::shared_mutex> ulock(scene_update_mutex_);
-    last_update_time_ = ros::Time::now();
-    if (!scene_->processCollisionObjectMsg(*obj))
-      return;
+    updateFrameTransforms();
+    {
+      boost::unique_lock<boost::shared_mutex> ulock(scene_update_mutex_);
+      last_update_time_ = ros::Time::now();
+      scene_->processCollisionObjectMsg(*obj);
+    }
+    triggerSceneUpdateEvent(UPDATE_GEOMETRY);
   }
-  triggerSceneUpdateEvent(UPDATE_GEOMETRY);
 }
 
 void PlanningSceneMonitor::attachObjectCallback(const moveit_msgs::AttachedCollisionObjectConstPtr& obj)
@@ -943,7 +946,7 @@ void PlanningSceneMonitor::startSceneMonitor(const std::string& scene_topic)
 {
   stopSceneMonitor();
 
-  ROS_INFO_NAMED(LOGNAME, "Starting planning scene monitor");
+  ROS_INFO_NAMED(LOGNAME, "Starting scene monitor");
   // listen for planning scene updates; these messages include transforms, so no need for filters
   if (!scene_topic.empty())
   {
@@ -957,7 +960,7 @@ void PlanningSceneMonitor::stopSceneMonitor()
 {
   if (planning_scene_subscriber_)
   {
-    ROS_INFO_NAMED(LOGNAME, "Stopping planning scene monitor");
+    ROS_INFO_NAMED(LOGNAME, "Stopping scene monitor");
     planning_scene_subscriber_.shutdown();
   }
 }
@@ -965,7 +968,7 @@ void PlanningSceneMonitor::stopSceneMonitor()
 bool PlanningSceneMonitor::getShapeTransformCache(const std::string& target_frame, const ros::Time& target_time,
                                                   occupancy_map_monitor::ShapeTransformCache& cache) const
 {
-  if (!tf_buffer_)
+  if (!tf_)
     return false;
   try
   {
@@ -973,35 +976,40 @@ bool PlanningSceneMonitor::getShapeTransformCache(const std::string& target_fram
 
     for (LinkShapeHandles::const_iterator it = link_shape_handles_.begin(); it != link_shape_handles_.end(); ++it)
     {
-      tf_buffer_->canTransform(target_frame, it->first->getName(), target_time,
-                               shape_transform_cache_lookup_wait_time_);
-      Eigen::Isometry3d ttr =
-          tf2::transformToEigen(tf_buffer_->lookupTransform(target_frame, it->first->getName(), target_time));
+      tf::StampedTransform tr;
+      tf_->waitForTransform(target_frame, it->first->getName(), target_time, shape_transform_cache_lookup_wait_time_);
+      tf_->lookupTransform(target_frame, it->first->getName(), target_time, tr);
+      Eigen::Affine3d ttr;
+      tf::transformTFToEigen(tr, ttr);
       for (std::size_t j = 0; j < it->second.size(); ++j)
         cache[it->second[j].first] = ttr * it->first->getCollisionOriginTransforms()[it->second[j].second];
     }
     for (AttachedBodyShapeHandles::const_iterator it = attached_body_shape_handles_.begin();
          it != attached_body_shape_handles_.end(); ++it)
     {
-      tf_buffer_->canTransform(target_frame, it->first->getAttachedLinkName(), target_time,
-                               shape_transform_cache_lookup_wait_time_);
-      Eigen::Isometry3d transform = tf2::transformToEigen(
-          tf_buffer_->lookupTransform(target_frame, it->first->getAttachedLinkName(), target_time));
+      tf::StampedTransform tr;
+      tf_->waitForTransform(target_frame, it->first->getAttachedLinkName(), target_time,
+                            shape_transform_cache_lookup_wait_time_);
+      tf_->lookupTransform(target_frame, it->first->getAttachedLinkName(), target_time, tr);
+      Eigen::Affine3d transform;
+      tf::transformTFToEigen(tr, transform);
       for (std::size_t k = 0; k < it->second.size(); ++k)
         cache[it->second[k].first] = transform * it->first->getFixedTransforms()[it->second[k].second];
     }
     {
-      tf_buffer_->canTransform(target_frame, scene_->getPlanningFrame(), target_time,
-                               shape_transform_cache_lookup_wait_time_);
-      Eigen::Isometry3d transform =
-          tf2::transformToEigen(tf_buffer_->lookupTransform(target_frame, scene_->getPlanningFrame(), target_time));
+      tf::StampedTransform tr;
+      tf_->waitForTransform(target_frame, scene_->getPlanningFrame(), target_time,
+                            shape_transform_cache_lookup_wait_time_);
+      tf_->lookupTransform(target_frame, scene_->getPlanningFrame(), target_time, tr);
+      Eigen::Affine3d transform;
+      tf::transformTFToEigen(tr, transform);
       for (CollisionBodyShapeHandles::const_iterator it = collision_body_shape_handles_.begin();
            it != collision_body_shape_handles_.end(); ++it)
         for (std::size_t k = 0; k < it->second.size(); ++k)
           cache[it->second[k].first] = transform * (*it->second[k].second);
     }
   }
-  catch (tf2::TransformException& ex)
+  catch (tf::TransformException& ex)
   {
     ROS_ERROR_THROTTLE_NAMED(1, LOGNAME, "Transform error: %s", ex.what());
     return false;
@@ -1014,15 +1022,30 @@ void PlanningSceneMonitor::startWorldGeometryMonitor(const std::string& collisio
                                                      const bool load_octomap_monitor)
 {
   stopWorldGeometryMonitor();
-  ROS_INFO_NAMED(LOGNAME, "Starting world geometry update monitor for collision objects, attached objects, octomap "
-                          "updates.");
+  ROS_INFO_NAMED(LOGNAME, "Starting world geometry monitor");
 
-  // Listen to the /collision_objects topic to detect requests to add/remove/update collision objects to/from the world
+  // listen for world geometry updates using message filters
   if (!collision_objects_topic.empty())
   {
-    collision_object_subscriber_ =
-        root_nh_.subscribe(collision_objects_topic, 1024, &PlanningSceneMonitor::collisionObjectCallback, this);
-    ROS_INFO_NAMED(LOGNAME, "Listening to '%s'", root_nh_.resolveName(collision_objects_topic).c_str());
+    collision_object_subscriber_.reset(
+        new message_filters::Subscriber<moveit_msgs::CollisionObject>(root_nh_, collision_objects_topic, 1024));
+    if (tf_)
+    {
+      collision_object_filter_.reset(new tf::MessageFilter<moveit_msgs::CollisionObject>(
+          *collision_object_subscriber_, *tf_, scene_->getPlanningFrame(), 1024));
+      collision_object_filter_->registerCallback(boost::bind(&PlanningSceneMonitor::collisionObjectCallback, this, _1));
+      collision_object_filter_->registerFailureCallback(
+          boost::bind(&PlanningSceneMonitor::collisionObjectFailTFCallback, this, _1, _2));
+      ROS_INFO_NAMED(LOGNAME, "Listening to '%s' using message notifier with target frame '%s'",
+                     root_nh_.resolveName(collision_objects_topic).c_str(),
+                     collision_object_filter_->getTargetFramesString().c_str());
+    }
+    else
+    {
+      collision_object_subscriber_->registerCallback(
+          boost::bind(&PlanningSceneMonitor::collisionObjectCallback, this, _1));
+      ROS_INFO_NAMED(LOGNAME, "Listening to '%s'", root_nh_.resolveName(collision_objects_topic).c_str());
+    }
   }
 
   if (!planning_scene_world_topic.empty())
@@ -1038,7 +1061,7 @@ void PlanningSceneMonitor::startWorldGeometryMonitor(const std::string& collisio
   {
     if (!octomap_monitor_)
     {
-      octomap_monitor_.reset(new occupancy_map_monitor::OccupancyMapMonitor(tf_buffer_, scene_->getPlanningFrame()));
+      octomap_monitor_.reset(new occupancy_map_monitor::OccupancyMapMonitor(tf_, scene_->getPlanningFrame()));
       excludeRobotLinksFromOctree();
       excludeAttachedBodiesFromOctree();
       excludeWorldObjectsFromOctree();
@@ -1053,10 +1076,12 @@ void PlanningSceneMonitor::startWorldGeometryMonitor(const std::string& collisio
 
 void PlanningSceneMonitor::stopWorldGeometryMonitor()
 {
-  if (collision_object_subscriber_)
+  if (collision_object_subscriber_ || collision_object_filter_)
   {
     ROS_INFO_NAMED(LOGNAME, "Stopping world geometry monitor");
-    collision_object_subscriber_.shutdown();
+    collision_object_filter_.reset();
+    collision_object_subscriber_.reset();
+    planning_scene_world_subscriber_.shutdown();
   }
   else if (planning_scene_world_subscriber_)
   {
@@ -1074,7 +1099,7 @@ void PlanningSceneMonitor::startStateMonitor(const std::string& joint_states_top
   if (scene_)
   {
     if (!current_state_monitor_)
-      current_state_monitor_.reset(new CurrentStateMonitor(getRobotModel(), tf_buffer_, root_nh_));
+      current_state_monitor_.reset(new CurrentStateMonitor(getRobotModel(), tf_, root_nh_));
     current_state_monitor_->addUpdateCallback(boost::bind(&PlanningSceneMonitor::onStateUpdate, this, _1));
     current_state_monitor_->startStateMonitor(joint_states_topic);
 
@@ -1180,7 +1205,7 @@ void PlanningSceneMonitor::octomapUpdateCallback()
     octomap_monitor_->getOcTreePtr()->lockRead();
     try
     {
-      scene_->processOctomapPtr(octomap_monitor_->getOcTreePtr(), Eigen::Isometry3d::Identity());
+      scene_->processOctomapPtr(octomap_monitor_->getOcTreePtr(), Eigen::Affine3d::Identity());
       octomap_monitor_->getOcTreePtr()->unlockRead();
     }
     catch (...)
@@ -1268,33 +1293,58 @@ void PlanningSceneMonitor::getUpdatedFrameTransforms(std::vector<geometry_msgs::
   const std::string& target = getRobotModel()->getModelFrame();
 
   std::vector<std::string> all_frame_names;
-  tf_buffer_->_getFrameStrings(all_frame_names);
+  tf_->getFrameStrings(all_frame_names);
   for (std::size_t i = 0; i < all_frame_names.size(); ++i)
   {
-    if (all_frame_names[i] == target || getRobotModel()->hasLinkModel(all_frame_names[i]))
+    const std::string& frame_no_slash = (!all_frame_names[i].empty() && all_frame_names[i][0] == '/') ?
+                                            all_frame_names[i].substr(1) :
+                                            all_frame_names[i];
+    const std::string& frame_with_slash =
+        (!all_frame_names[i].empty() && all_frame_names[i][0] != '/') ? '/' + all_frame_names[i] : all_frame_names[i];
+
+    if (frame_with_slash == target || getRobotModel()->hasLinkModel(frame_no_slash))
       continue;
 
-    geometry_msgs::TransformStamped f;
+    ros::Time stamp(0);
+    std::string err_string;
+    if (tf_->getLatestCommonTime(target, all_frame_names[i], stamp, &err_string) != tf::NO_ERROR)
+    {
+      ROS_WARN_STREAM_NAMED(LOGNAME, "No transform available between frame '"
+                                         << all_frame_names[i] << "' and planning frame '" << target << "' ("
+                                         << err_string << ")");
+      continue;
+    }
+
+    tf::StampedTransform t;
     try
     {
-      f = tf_buffer_->lookupTransform(target, all_frame_names[i], ros::Time(0));
+      tf_->lookupTransform(target, all_frame_names[i], stamp, t);
     }
-    catch (tf2::TransformException& ex)
+    catch (tf::TransformException& ex)
     {
       ROS_WARN_STREAM_NAMED(LOGNAME, "Unable to transform object from frame '"
                                          << all_frame_names[i] << "' to planning frame '" << target << "' ("
                                          << ex.what() << ")");
       continue;
     }
-    f.header.frame_id = all_frame_names[i];
+    geometry_msgs::TransformStamped f;
+    f.header.frame_id = frame_with_slash;
     f.child_frame_id = target;
+    f.transform.translation.x = t.getOrigin().x();
+    f.transform.translation.y = t.getOrigin().y();
+    f.transform.translation.z = t.getOrigin().z();
+    const tf::Quaternion& q = t.getRotation();
+    f.transform.rotation.x = q.x();
+    f.transform.rotation.y = q.y();
+    f.transform.rotation.z = q.z();
+    f.transform.rotation.w = q.w();
     transforms.push_back(f);
   }
 }
 
 void PlanningSceneMonitor::updateFrameTransforms()
 {
-  if (!tf_buffer_)
+  if (!tf_)
     return;
 
   if (scene_)
@@ -1386,4 +1436,4 @@ void PlanningSceneMonitor::configureDefaultPadding()
   ROS_DEBUG_STREAM_NAMED(LOGNAME, "Loaded " << default_robot_link_padd_.size() << " default link paddings");
   ROS_DEBUG_STREAM_NAMED(LOGNAME, "Loaded " << default_robot_link_scale_.size() << " default link scales");
 }
-}  // namespace planning_scene_monitor
+}

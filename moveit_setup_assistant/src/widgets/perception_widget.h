@@ -65,13 +65,13 @@ public:
   // Public Functions
   // ******************************************************************************************
 
-  PerceptionWidget(QWidget* parent, const MoveItConfigDataPtr& config_data);
+  PerceptionWidget(QWidget* parent, moveit_setup_assistant::MoveItConfigDataPtr config_data);
 
   /// Received when this widget is chosen from the navigation menu
-  void focusGiven() override;
+  virtual void focusGiven();
 
   /// Received when another widget is chosen from the navigation menu
-  bool focusLost() override;
+  virtual bool focusLost();
 
   /// Populate the combo dropdown box with sensor plugins
   void loadSensorPluginsComboBox();

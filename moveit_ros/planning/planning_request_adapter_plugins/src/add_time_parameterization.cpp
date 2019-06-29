@@ -48,14 +48,15 @@ public:
   {
   }
 
-  std::string getDescription() const override
+  virtual std::string getDescription() const
   {
     return "Add Time Parameterization";
   }
 
-  bool adaptAndPlan(const PlannerFn& planner, const planning_scene::PlanningSceneConstPtr& planning_scene,
-                    const planning_interface::MotionPlanRequest& req, planning_interface::MotionPlanResponse& res,
-                    std::vector<std::size_t>& added_path_index) const override
+  virtual bool adaptAndPlan(const PlannerFn& planner, const planning_scene::PlanningSceneConstPtr& planning_scene,
+                            const planning_interface::MotionPlanRequest& req,
+                            planning_interface::MotionPlanResponse& res,
+                            std::vector<std::size_t>& added_path_index) const
   {
     bool result = planner(planning_scene, req, res);
     if (result && res.trajectory_)
@@ -72,7 +73,7 @@ public:
 private:
   trajectory_processing::IterativeParabolicTimeParameterization time_param_;
 };
-}  // namespace default_planner_request_adapters
+}
 
 CLASS_LOADER_REGISTER_CLASS(default_planner_request_adapters::AddTimeParameterization,
                             planning_request_adapter::PlanningRequestAdapter);

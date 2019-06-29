@@ -51,15 +51,15 @@ class CollisionMatrixModel : public QAbstractTableModel
 public:
   CollisionMatrixModel(moveit_setup_assistant::LinkPairMap& pairs, const std::vector<std::string>& names,
                        QObject* parent = NULL);
-  int rowCount(const QModelIndex& parent = QModelIndex()) const override;
-  int columnCount(const QModelIndex& parent = QModelIndex()) const override;
-  QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
-  QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
+  int rowCount(const QModelIndex& parent = QModelIndex()) const;
+  int columnCount(const QModelIndex& parent = QModelIndex()) const;
+  QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
+  QVariant headerData(int section, Qt::Orientation orientation, int role) const;
   moveit_setup_assistant::DisabledReason reason(const QModelIndex& index) const;
 
   // for editing
-  Qt::ItemFlags flags(const QModelIndex& index) const override;
-  bool setData(const QModelIndex&, const QVariant& value, int role) override;
+  Qt::ItemFlags flags(const QModelIndex& index) const;
+  bool setData(const QModelIndex&, const QVariant& value, int role);
   void setEnabled(const QItemSelection& selection, bool value);
   void setEnabled(const QModelIndexList& indexes, bool value);
 

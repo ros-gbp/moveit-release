@@ -221,7 +221,7 @@ public:
    *
    *
    */
-  ~PropagationDistanceField() override
+  virtual ~PropagationDistanceField()
   {
   }
 
@@ -238,7 +238,7 @@ public:
    *
    * @param [in] points The set of obstacle points to add
    */
-  void addPointsToField(const EigenSTL::vector_Vector3d& points) override;
+  virtual void addPointsToField(const EigenSTL::vector_Vector3d& points);
 
   /**
    * \brief Remove a set of obstacle points from the distance field,
@@ -259,7 +259,7 @@ public:
    *
    * @param [in] points The set of obstacle points that will be set as free
    */
-  void removePointsFromField(const EigenSTL::vector_Vector3d& points) override;
+  virtual void removePointsFromField(const EigenSTL::vector_Vector3d& points);
 
   /**
    * \brief This function will remove any obstacle points that are in
@@ -283,15 +283,15 @@ public:
    * @param [in] new_points The set of points, all of which are intended to be obstacle points in the distance field
    *
    */
-  void updatePointsInField(const EigenSTL::vector_Vector3d& old_points,
-                           const EigenSTL::vector_Vector3d& new_points) override;
+  virtual void updatePointsInField(const EigenSTL::vector_Vector3d& old_points,
+                                   const EigenSTL::vector_Vector3d& new_points);
 
   /**
    * \brief Resets the entire distance field to max_distance for
    * positive values and zero for negative values.
    *
    */
-  void reset() override;
+  virtual void reset();
 
   /**
    * \brief Get the distance value associated with the cell indicated
@@ -308,7 +308,7 @@ public:
    *
    * @return The distance value
    */
-  double getDistance(double x, double y, double z) const override;
+  virtual double getDistance(double x, double y, double z) const;
 
   /**
    * \brief Get the distance value associated with the cell indicated
@@ -325,14 +325,14 @@ public:
    *
    * @return The distance value for the cell
    */
-  double getDistance(int x, int y, int z) const override;
+  virtual double getDistance(int x, int y, int z) const;
 
-  bool isCellValid(int x, int y, int z) const override;
-  int getXNumCells() const override;
-  int getYNumCells() const override;
-  int getZNumCells() const override;
-  bool gridToWorld(int x, int y, int z, double& world_x, double& world_y, double& world_z) const override;
-  bool worldToGrid(double world_x, double world_y, double world_z, int& x, int& y, int& z) const override;
+  virtual bool isCellValid(int x, int y, int z) const;
+  virtual int getXNumCells() const;
+  virtual int getYNumCells() const;
+  virtual int getZNumCells() const;
+  virtual bool gridToWorld(int x, int y, int z, double& world_x, double& world_y, double& world_z) const;
+  virtual bool worldToGrid(double world_x, double world_y, double world_z, int& x, int& y, int& z) const;
 
   /**
    * \brief Writes the contents of the distance field to the supplied stream.
@@ -350,7 +350,7 @@ public:
    *
    * @return True
    */
-  bool writeToStream(std::ostream& stream) const override;
+  virtual bool writeToStream(std::ostream& stream) const;
 
   /**
    * \brief Reads, parameterizes, and populates the distance field
@@ -368,10 +368,10 @@ public:
    * @return True if reading, parameterizing, and populating the
    * distance field is successful; otherwise False.
    */
-  bool readFromStream(std::istream& stream) override;
+  virtual bool readFromStream(std::istream& stream);
 
   // passthrough docs to DistanceField
-  double getUninitializedDistance() const override
+  virtual double getUninitializedDistance() const
   {
     return max_distance_;
   }

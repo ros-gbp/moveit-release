@@ -42,13 +42,14 @@
 #include <moveit/robot_state/robot_state.h>
 #include <moveit/kinematic_constraints/kinematic_constraint.h>
 #include <moveit/constraint_samplers/constraint_sampler.h>
+#include "../detail/same_shared_ptr.hpp"
 
 namespace ompl_interface
 {
-typedef std::function<bool(const ompl::base::State* from, const ompl::base::State* to, const double t,
-                           ompl::base::State* state)>
+typedef boost::function<bool(const ompl::base::State* from, const ompl::base::State* to, const double t,
+                             ompl::base::State* state)>
     InterpolationFunction;
-typedef std::function<double(const ompl::base::State* state1, const ompl::base::State* state2)> DistanceFunction;
+typedef boost::function<double(const ompl::base::State* state1, const ompl::base::State* state2)> DistanceFunction;
 
 struct ModelBasedStateSpaceSpecification
 {
@@ -69,8 +70,6 @@ struct ModelBasedStateSpaceSpecification
   const robot_model::JointModelGroup* joint_model_group_;
   robot_model::JointBoundsVector joint_bounds_;
 };
-
-OMPL_CLASS_FORWARD(ModelBasedStateSpace);
 
 class ModelBasedStateSpace : public ompl::base::StateSpace
 {
@@ -167,8 +166,8 @@ public:
     double distance;
   };
 
-  ModelBasedStateSpace(ModelBasedStateSpaceSpecification spec);
-  ~ModelBasedStateSpace() override;
+  ModelBasedStateSpace(const ModelBasedStateSpaceSpecification& spec);
+  virtual ~ModelBasedStateSpace();
 
   void setInterpolationFunction(const InterpolationFunction& fun)
   {
@@ -180,26 +179,26 @@ public:
     distance_function_ = fun;
   }
 
-  ompl::base::State* allocState() const override;
-  void freeState(ompl::base::State* state) const override;
-  unsigned int getDimension() const override;
-  void enforceBounds(ompl::base::State* state) const override;
-  bool satisfiesBounds(const ompl::base::State* state) const override;
+  virtual ompl::base::State* allocState() const;
+  virtual void freeState(ompl::base::State* state) const;
+  virtual unsigned int getDimension() const;
+  virtual void enforceBounds(ompl::base::State* state) const;
+  virtual bool satisfiesBounds(const ompl::base::State* state) const;
 
-  void copyState(ompl::base::State* destination, const ompl::base::State* source) const override;
-  void interpolate(const ompl::base::State* from, const ompl::base::State* to, const double t,
-                   ompl::base::State* state) const override;
-  double distance(const ompl::base::State* state1, const ompl::base::State* state2) const override;
-  bool equalStates(const ompl::base::State* state1, const ompl::base::State* state2) const override;
-  double getMaximumExtent() const override;
-  double getMeasure() const override;
+  virtual void copyState(ompl::base::State* destination, const ompl::base::State* source) const;
+  virtual void interpolate(const ompl::base::State* from, const ompl::base::State* to, const double t,
+                           ompl::base::State* state) const;
+  virtual double distance(const ompl::base::State* state1, const ompl::base::State* state2) const;
+  virtual bool equalStates(const ompl::base::State* state1, const ompl::base::State* state2) const;
+  virtual double getMaximumExtent() const;
+  virtual double getMeasure() const;
 
-  unsigned int getSerializationLength() const override;
-  void serialize(void* serialization, const ompl::base::State* state) const override;
-  void deserialize(ompl::base::State* state, const void* serialization) const override;
-  double* getValueAddressAtIndex(ompl::base::State* state, const unsigned int index) const override;
+  virtual unsigned int getSerializationLength() const;
+  virtual void serialize(void* serialization, const ompl::base::State* state) const;
+  virtual void deserialize(ompl::base::State* state, const void* serialization) const;
+  virtual double* getValueAddressAtIndex(ompl::base::State* state, const unsigned int index) const;
 
-  ompl::base::StateSamplerPtr allocDefaultStateSampler() const override;
+  virtual ompl::base::StateSamplerPtr allocDefaultStateSampler() const;
 
   const robot_model::RobotModelConstPtr& getRobotModel() const
   {
@@ -221,8 +220,8 @@ public:
     return spec_;
   }
 
-  void printState(const ompl::base::State* state, std::ostream& out) const override;
-  void printSettings(std::ostream& out) const override;
+  virtual void printState(const ompl::base::State* state, std::ostream& out) const;
+  virtual void printSettings(std::ostream& out) const;
 
   /// Set the planning volume for the possible SE2 and/or SE3 components of the state space
   virtual void setPlanningVolume(double minX, double maxX, double minY, double maxY, double minZ, double maxZ);
@@ -269,6 +268,8 @@ protected:
   double tag_snap_to_segment_;
   double tag_snap_to_segment_complement_;
 };
-}  // namespace ompl_interface
+
+typedef same_shared_ptr<ModelBasedStateSpace, ompl::base::StateSpacePtr>::type ModelBasedStateSpacePtr;
+}
 
 #endif

@@ -62,7 +62,7 @@ int main(int argc, char** argv)
     planning_request_adapter::PlanningRequestAdapterConstPtr ad;
     try
     {
-      ad = loader->createUniqueInstance(classes[i]);
+      ad.reset(loader->createUnmanagedInstance(classes[i]));
     }
     catch (pluginlib::PluginlibException& ex)
     {

@@ -47,7 +47,7 @@
 #include <rviz/frame_manager.h>
 #include <rviz/window_manager_interface.h>
 
-#include <tf2_eigen/tf2_eigen.h>
+#include <eigen_conversions/eigen_msg.h>
 #include <geometric_shapes/shape_operations.h>
 
 #include <QMessageBox>
@@ -225,7 +225,7 @@ void MotionPlanningFrame::selectedCollisionObjectChanged()
     {
       ui_->scene_scale->setEnabled(true);
       bool update_scene_marker = false;
-      Eigen::Isometry3d obj_pose;
+      Eigen::Affine3d obj_pose;
       {
         const planning_scene_monitor::LockedPlanningSceneRO& ps = planning_display_->getPlanningSceneRO();
         const collision_detection::CollisionWorld::ObjectConstPtr& obj =
@@ -237,7 +237,7 @@ void MotionPlanningFrame::selectedCollisionObjectChanged()
           if (obj->shapes_.size() == 1)
           {
             obj_pose = obj->shape_poses_[0];
-            Eigen::Vector3d xyz = obj_pose.rotation().eulerAngles(0, 1, 2);
+            Eigen::Vector3d xyz = obj_pose.linear().eulerAngles(0, 1, 2);
             update_scene_marker = true;  // do the marker update outside locked scope to avoid deadlock
 
             bool oldState = ui_->object_x->blockSignals(true);
@@ -305,7 +305,7 @@ void MotionPlanningFrame::updateCollisionObjectPose(bool update_marker_position)
     collision_detection::CollisionWorld::ObjectConstPtr obj = ps->getWorld()->getObject(sel[0]->text().toStdString());
     if (obj && obj->shapes_.size() == 1)
     {
-      Eigen::Isometry3d p;
+      Eigen::Affine3d p;
       p.translation()[0] = ui_->object_x->value();
       p.translation()[1] = ui_->object_y->value();
       p.translation()[2] = ui_->object_z->value();
@@ -321,7 +321,7 @@ void MotionPlanningFrame::updateCollisionObjectPose(bool update_marker_position)
       // Update the interactive marker pose to match the manually introduced one
       if (update_marker_position && scene_marker_)
       {
-        Eigen::Quaterniond eq(p.rotation());
+        Eigen::Quaterniond eq(p.linear());
         scene_marker_->setPose(Ogre::Vector3(ui_->object_x->value(), ui_->object_y->value(), ui_->object_z->value()),
                                Ogre::Quaternion(eq.w(), eq.x(), eq.y(), eq.z()), "");
       }
@@ -361,7 +361,7 @@ void MotionPlanningFrame::imProcessFeedback(visualization_msgs::InteractiveMarke
   ui_->object_z->blockSignals(oldState);
 
   Eigen::Quaterniond q;
-  tf2::fromMsg(feedback.pose.orientation, q);
+  tf::quaternionMsgToEigen(feedback.pose.orientation, q);
   Eigen::Vector3d xyz = q.matrix().eulerAngles(0, 1, 2);
 
   oldState = ui_->object_rx->blockSignals(true);
@@ -647,7 +647,7 @@ void MotionPlanningFrame::computeLoadQueryButtonClicked()
 
           robot_state::RobotStatePtr goal_state(new robot_state::RobotState(*planning_display_->getQueryGoalState()));
           for (std::size_t i = 0; i < mp->goal_constraints.size(); ++i)
-            if (!mp->goal_constraints[i].joint_constraints.empty())
+            if (mp->goal_constraints[i].joint_constraints.size() > 0)
             {
               std::map<std::string, double> vals;
               for (std::size_t j = 0; j < mp->goal_constraints[i].joint_constraints.size(); ++j)
@@ -667,7 +667,7 @@ void MotionPlanningFrame::computeLoadQueryButtonClicked()
 }
 
 void MotionPlanningFrame::addObject(const collision_detection::WorldPtr& world, const std::string& id,
-                                    const shapes::ShapeConstPtr& shape, const Eigen::Isometry3d& pose)
+                                    const shapes::ShapeConstPtr& shape, const Eigen::Affine3d& pose)
 {
   world->addToObject(id, shape, pose);
 
@@ -694,7 +694,7 @@ void MotionPlanningFrame::createSceneInteractiveMarker()
       ps->getWorld()->getObject(sel[0]->text().toStdString());
   if (obj && obj->shapes_.size() == 1)
   {
-    Eigen::Quaterniond eq(obj->shape_poses_[0].rotation());
+    Eigen::Quaterniond eq(obj->shape_poses_[0].linear());
     geometry_msgs::PoseStamped shape_pose;
     shape_pose.pose.position.x = obj->shape_poses_[0].translation()[0];
     shape_pose.pose.position.y = obj->shape_poses_[0].translation()[1];
@@ -933,17 +933,16 @@ void MotionPlanningFrame::computeImportFromText(const std::string& path)
   if (ps)
   {
     std::ifstream fin(path.c_str());
-    if (ps->loadGeometryFromStream(fin))
+    if (fin.good())
     {
+      ps->loadGeometryFromStream(fin);
+      fin.close();
       ROS_INFO("Loaded scene geometry from '%s'", path.c_str());
       planning_display_->addMainLoopJob(boost::bind(&MotionPlanningFrame::populateCollisionObjectsList, this));
       planning_display_->queueRenderSceneGeometry();
     }
     else
-    {
-      QMessageBox::warning(nullptr, "Loading scene geometry", "Failed to load scene geometry.\n"
-                                                              "See console output for more details.");
-    }
+      ROS_WARN("Unable to load scene geometry from '%s'", path.c_str());
   }
 }
 
@@ -955,4 +954,4 @@ void MotionPlanningFrame::importFromTextButtonClicked()
     planning_display_->addBackgroundJob(
         boost::bind(&MotionPlanningFrame::computeImportFromText, this, path.toStdString()), "import from text");
 }
-}  // namespace moveit_rviz_plugin
+}

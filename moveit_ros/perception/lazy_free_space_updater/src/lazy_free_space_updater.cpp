@@ -45,8 +45,8 @@ LazyFreeSpaceUpdater::LazyFreeSpaceUpdater(const OccMapTreePtr& tree, unsigned i
   , max_batch_size_(max_batch_size)
   , max_sensor_delta_(1e-3)
   ,  // 1mm
-  process_occupied_cells_set_(nullptr)
-  , process_model_cells_set_(nullptr)
+  process_occupied_cells_set_(NULL)
+  , process_model_cells_set_(NULL)
   , update_thread_(boost::bind(&LazyFreeSpaceUpdater::lazyUpdateThread, this))
   , process_thread_(boost::bind(&LazyFreeSpaceUpdater::processThread, this))
 {
@@ -195,16 +195,16 @@ void LazyFreeSpaceUpdater::processThread()
     ROS_DEBUG("Marked free cells in %lf ms", (ros::WallTime::now() - start).toSec() * 1000.0);
 
     delete process_occupied_cells_set_;
-    process_occupied_cells_set_ = nullptr;
+    process_occupied_cells_set_ = NULL;
     delete process_model_cells_set_;
-    process_model_cells_set_ = nullptr;
+    process_model_cells_set_ = NULL;
   }
 }
 
 void LazyFreeSpaceUpdater::lazyUpdateThread()
 {
-  OcTreeKeyCountMap* occupied_cells_set = nullptr;
-  octomap::KeySet* model_cells_set = nullptr;
+  OcTreeKeyCountMap* occupied_cells_set = NULL;
+  octomap::KeySet* model_cells_set = NULL;
   octomap::point3d sensor_origin;
   unsigned int batch_size = 0;
 
@@ -259,9 +259,9 @@ void LazyFreeSpaceUpdater::lazyUpdateThread()
     {
       ROS_DEBUG("Pushing %u sets of occupied/model cells to free cells update thread", batch_size);
       pushBatchToProcess(occupied_cells_set, model_cells_set, sensor_origin);
-      occupied_cells_set = nullptr;
+      occupied_cells_set = NULL;
       batch_size = 0;
     }
   }
 }
-}  // namespace occupancy_map_monitor
+}

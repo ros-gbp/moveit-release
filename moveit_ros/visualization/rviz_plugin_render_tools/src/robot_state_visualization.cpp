@@ -82,13 +82,13 @@ void RobotStateVisualization::setDefaultAttachedObjectColor(const std_msgs::Colo
 
 void RobotStateVisualization::update(const robot_state::RobotStateConstPtr& kinematic_state)
 {
-  updateHelper(kinematic_state, default_attached_object_color_, nullptr);
+  updateHelper(kinematic_state, default_attached_object_color_, NULL);
 }
 
 void RobotStateVisualization::update(const robot_state::RobotStateConstPtr& kinematic_state,
                                      const std_msgs::ColorRGBA& default_attached_object_color)
 {
-  updateHelper(kinematic_state, default_attached_object_color, nullptr);
+  updateHelper(kinematic_state, default_attached_object_color, NULL);
 }
 
 void RobotStateVisualization::update(const robot_state::RobotStateConstPtr& kinematic_state,
@@ -123,7 +123,7 @@ void RobotStateVisualization::updateHelper(const robot_state::RobotStateConstPtr
       }
     }
     rviz::Color rcolor(color.r, color.g, color.b);
-    const EigenSTL::vector_Isometry3d& ab_t = attached_bodies[i]->getGlobalCollisionBodyTransforms();
+    const EigenSTL::vector_Affine3d& ab_t = attached_bodies[i]->getGlobalCollisionBodyTransforms();
     const std::vector<shapes::ShapeConstPtr>& ab_shapes = attached_bodies[i]->getShapes();
     for (std::size_t j = 0; j < ab_shapes.size(); ++j)
     {
@@ -160,4 +160,4 @@ void RobotStateVisualization::setAlpha(float alpha)
 {
   robot_.setAlpha(alpha);
 }
-}  // namespace moveit_rviz_plugin
+}

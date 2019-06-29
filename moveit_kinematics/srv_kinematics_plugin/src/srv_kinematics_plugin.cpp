@@ -36,7 +36,13 @@
 
 #include <moveit/srv_kinematics_plugin/srv_kinematics_plugin.h>
 #include <class_loader/class_loader.hpp>
+
+// URDF, SRDF
+#include <urdf_model/model.h>
+#include <srdfdom/model.h>
+
 #include <moveit/robot_state/conversions.h>
+#include <moveit/rdf_loader/rdf_loader.h>
 
 // Eigen
 #include <Eigen/Core>
@@ -51,7 +57,7 @@ SrvKinematicsPlugin::SrvKinematicsPlugin() : active_(false)
 {
 }
 
-bool SrvKinematicsPlugin::initialize(const moveit::core::RobotModel& robot_model, const std::string& group_name,
+bool SrvKinematicsPlugin::initialize(const std::string& robot_description, const std::string& group_name,
                                      const std::string& base_frame, const std::vector<std::string>& tip_frames,
                                      double search_discretization)
 {
@@ -59,7 +65,20 @@ bool SrvKinematicsPlugin::initialize(const moveit::core::RobotModel& robot_model
 
   ROS_INFO_STREAM_NAMED("srv", "SrvKinematicsPlugin initializing");
 
-  storeValues(robot_model, group_name, base_frame, tip_frames, search_discretization);
+  setValues(robot_description, group_name, base_frame, tip_frames, search_discretization);
+
+  rdf_loader::RDFLoader rdf_loader(robot_description_);
+  const srdf::ModelSharedPtr& srdf = rdf_loader.getSRDF();
+  const urdf::ModelInterfaceSharedPtr& urdf_model = rdf_loader.getURDF();
+
+  if (!urdf_model || !srdf)
+  {
+    ROS_ERROR_NAMED("srv", "URDF and SRDF must be loaded for SRV kinematics solver to work.");  // TODO: is this true?
+    return false;
+  }
+
+  robot_model_.reset(new robot_model::RobotModel(urdf_model, srdf));
+
   joint_model_group_ = robot_model_->getJointModelGroup(group_name);
   if (!joint_model_group_)
     return false;
@@ -171,9 +190,10 @@ bool SrvKinematicsPlugin::getPositionIK(const geometry_msgs::Pose& ik_pose, cons
                                         std::vector<double>& solution, moveit_msgs::MoveItErrorCodes& error_code,
                                         const kinematics::KinematicsQueryOptions& options) const
 {
+  const IKCallbackFn solution_callback = 0;
   std::vector<double> consistency_limits;
 
-  return searchPositionIK(ik_pose, ik_seed_state, default_timeout_, solution, IKCallbackFn(), error_code,
+  return searchPositionIK(ik_pose, ik_seed_state, default_timeout_, solution, solution_callback, error_code,
                           consistency_limits, options);
 }
 
@@ -182,9 +202,10 @@ bool SrvKinematicsPlugin::searchPositionIK(const geometry_msgs::Pose& ik_pose, c
                                            moveit_msgs::MoveItErrorCodes& error_code,
                                            const kinematics::KinematicsQueryOptions& options) const
 {
+  const IKCallbackFn solution_callback = 0;
   std::vector<double> consistency_limits;
 
-  return searchPositionIK(ik_pose, ik_seed_state, timeout, solution, IKCallbackFn(), error_code, consistency_limits,
+  return searchPositionIK(ik_pose, ik_seed_state, timeout, solution, solution_callback, error_code, consistency_limits,
                           options);
 }
 
@@ -193,7 +214,8 @@ bool SrvKinematicsPlugin::searchPositionIK(const geometry_msgs::Pose& ik_pose, c
                                            std::vector<double>& solution, moveit_msgs::MoveItErrorCodes& error_code,
                                            const kinematics::KinematicsQueryOptions& options) const
 {
-  return searchPositionIK(ik_pose, ik_seed_state, timeout, solution, IKCallbackFn(), error_code, consistency_limits,
+  const IKCallbackFn solution_callback = 0;
+  return searchPositionIK(ik_pose, ik_seed_state, timeout, solution, solution_callback, error_code, consistency_limits,
                           options);
 }
 
@@ -408,4 +430,4 @@ const std::vector<std::string>& SrvKinematicsPlugin::getVariableNames() const
   return joint_model_group_->getVariableNames();
 }
 
-}  // namespace srv_kinematics_plugin
+}  // namespace

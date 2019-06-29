@@ -47,7 +47,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 
 // Eigen
-#include <tf2_eigen/tf2_eigen.h>
+#include <eigen_conversions/eigen_msg.h>
 #include <Eigen/Geometry>
 
 namespace moveit
@@ -246,9 +246,9 @@ SemanticWorld::generatePlacePoses(const object_recognition_msgs::Table& chosen_t
   double z_min(std::numeric_limits<double>::max()), z_max(-std::numeric_limits<double>::max());
 
   Eigen::Quaterniond rotation(object_orientation.x, object_orientation.y, object_orientation.z, object_orientation.w);
-  Eigen::Isometry3d object_pose(rotation);
-  double min_distance_from_edge = 0;
-  double height_above_table = 0;
+  Eigen::Affine3d object_pose(rotation);
+  double min_distance_from_edge;
+  double height_above_table;
 
   if (object_shape->type == shapes::MESH)
   {
@@ -368,8 +368,8 @@ std::vector<geometry_msgs::PoseStamped> SemanticWorld::generatePlacePoses(const 
         {
           Eigen::Vector3d point((double)(point_x) / scale_factor + x_min, (double)(point_y) / scale_factor + y_min,
                                 height_above_table + mm * delta_height);
-          Eigen::Isometry3d pose;
-          tf2::fromMsg(table.pose, pose);
+          Eigen::Affine3d pose;
+          tf::poseMsgToEigen(table.pose, pose);
           point = pose * point;
           geometry_msgs::PoseStamped place_pose;
           place_pose.pose.orientation.w = 1.0;
@@ -428,11 +428,11 @@ bool SemanticWorld::isInsideTableContour(const geometry_msgs::Pose& pose, const 
   cv::findContours(src, contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
 
   Eigen::Vector3d point(pose.position.x, pose.position.y, pose.position.z);
-  Eigen::Isometry3d pose_table;
-  tf2::fromMsg(table.pose, pose_table);
+  Eigen::Affine3d pose_table;
+  tf::poseMsgToEigen(table.pose, pose_table);
 
   // Point in table frame
-  point = pose_table.inverse() * point;
+  point = pose_table.inverse(Eigen::Isometry) * point;
   // Assuming Z axis points upwards for the table
   if (point.z() < -fabs(min_vertical_offset))
   {
@@ -446,7 +446,10 @@ bool SemanticWorld::isInsideTableContour(const geometry_msgs::Pose& pose, const 
   double result = cv::pointPolygonTest(contours[0], point2f, true);
   ROS_DEBUG("table distance: %f", result);
 
-  return (int)result >= (int)(min_distance_from_edge * scale_factor);
+  if ((int)result >= (int)(min_distance_from_edge * scale_factor))
+    return true;
+
+  return false;
 }
 
 std::string SemanticWorld::findObjectTable(const geometry_msgs::Pose& pose, double min_distance_from_edge,
@@ -486,11 +489,11 @@ void SemanticWorld::transformTableArray(object_recognition_msgs::TableArray& tab
                                       << table_array.tables[i].pose.position.y << ","
                                       << table_array.tables[i].pose.position.z);
     std::string error_text;
-    const Eigen::Isometry3d& original_transform = planning_scene_->getTransforms().getTransform(original_frame);
-    Eigen::Isometry3d original_pose;
-    tf2::fromMsg(table_array.tables[i].pose, original_pose);
+    const Eigen::Affine3d& original_transform = planning_scene_->getTransforms().getTransform(original_frame);
+    Eigen::Affine3d original_pose;
+    tf::poseMsgToEigen(table_array.tables[i].pose, original_pose);
     original_pose = original_transform * original_pose;
-    table_array.tables[i].pose = tf2::toMsg(original_pose);
+    tf::poseEigenToMsg(original_pose, table_array.tables[i].pose);
     table_array.tables[i].header.frame_id = planning_scene_->getTransforms().getTargetFrame();
     ROS_INFO_STREAM("Successfully transformed table array from " << original_frame << "to "
                                                                  << table_array.tables[i].header.frame_id);
@@ -503,7 +506,7 @@ void SemanticWorld::transformTableArray(object_recognition_msgs::TableArray& tab
 shapes::Mesh* SemanticWorld::orientPlanarPolygon(const shapes::Mesh& polygon) const
 {
   if (polygon.vertex_count < 3 || polygon.triangle_count < 1)
-    return nullptr;
+    return 0;
   // first get the normal of the first triangle of the input polygon
   Eigen::Vector3d vec1, vec2, vec3, normal;
 
@@ -557,7 +560,7 @@ shapes::Mesh* SemanticWorld::orientPlanarPolygon(const shapes::Mesh& polygon) co
 shapes::Mesh* SemanticWorld::createSolidMeshFromPlanarPolygon(const shapes::Mesh& polygon, double thickness) const
 {
   if (polygon.vertex_count < 3 || polygon.triangle_count < 1 || thickness <= 0)
-    return nullptr;
+    return 0;
   // first get the normal of the first triangle of the input polygon
   Eigen::Vector3d vec1, vec2, vec3, normal;
 
@@ -626,5 +629,5 @@ shapes::Mesh* SemanticWorld::createSolidMeshFromPlanarPolygon(const shapes::Mesh
 
   return solid;
 }
-}  // namespace semantic_world
-}  // namespace moveit
+}
+}

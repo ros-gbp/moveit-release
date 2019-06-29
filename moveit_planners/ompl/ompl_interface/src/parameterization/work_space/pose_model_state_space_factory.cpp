@@ -42,11 +42,11 @@ ompl_interface::PoseModelStateSpaceFactory::PoseModelStateSpaceFactory() : Model
   type_ = PoseModelStateSpace::PARAMETERIZATION_TYPE;
 }
 
-int ompl_interface::PoseModelStateSpaceFactory::canRepresentProblem(
-    const std::string& group, const moveit_msgs::MotionPlanRequest& req,
-    const robot_model::RobotModelConstPtr& robot_model) const
+int ompl_interface::PoseModelStateSpaceFactory::canRepresentProblem(const std::string& group,
+                                                                    const moveit_msgs::MotionPlanRequest& req,
+                                                                    const robot_model::RobotModelConstPtr& kmodel) const
 {
-  const robot_model::JointModelGroup* jmg = robot_model->getJointModelGroup(group);
+  const robot_model::JointModelGroup* jmg = kmodel->getJointModelGroup(group);
   if (jmg)
   {
     const std::pair<robot_model::JointModelGroup::KinematicsSolver, robot_model::JointModelGroup::KinematicsSolverMap>&
@@ -60,10 +60,11 @@ int ompl_interface::PoseModelStateSpaceFactory::canRepresentProblem(
       // or an IK solver for each of the subgroups
       unsigned int vc = 0;
       unsigned int bc = 0;
-      for (const auto& jt : slv.second)
+      for (robot_model::JointModelGroup::KinematicsSolverMap::const_iterator jt = slv.second.begin();
+           jt != slv.second.end(); ++jt)
       {
-        vc += jt.first->getVariableCount();
-        bc += jt.second.bijection_.size();
+        vc += jt->first->getVariableCount();
+        bc += jt->second.bijection_.size();
       }
       if (vc == jmg->getVariableCount() && vc == bc)
         ik = true;

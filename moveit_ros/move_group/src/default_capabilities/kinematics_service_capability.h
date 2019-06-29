@@ -48,7 +48,7 @@ class MoveGroupKinematicsService : public MoveGroupCapability
 public:
   MoveGroupKinematicsService();
 
-  void initialize() override;
+  virtual void initialize();
 
 private:
   bool computeIKService(moveit_msgs::GetPositionIK::Request& req, moveit_msgs::GetPositionIK::Response& res);

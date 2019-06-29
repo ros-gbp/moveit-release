@@ -39,6 +39,8 @@
 #include <moveit_msgs/GetMotionPlan.h>
 #include <chomp_interface/chomp_planning_context.h>
 
+#include <boost/shared_ptr.hpp>
+
 #include <pluginlib/class_list_macros.hpp>
 
 namespace chomp_interface
@@ -50,7 +52,7 @@ public:
   {
   }
 
-  bool initialize(const robot_model::RobotModelConstPtr& model, const std::string& ns) override
+  bool initialize(const robot_model::RobotModelConstPtr& model, const std::string& ns)
   {
     for (const std::string& group : model->getJointModelGroupNames())
     {
@@ -62,7 +64,7 @@ public:
 
   planning_interface::PlanningContextPtr getPlanningContext(const planning_scene::PlanningSceneConstPtr& planning_scene,
                                                             const planning_interface::MotionPlanRequest& req,
-                                                            moveit_msgs::MoveItErrorCodes& error_code) const override
+                                                            moveit_msgs::MoveItErrorCodes& error_code) const
   {
     error_code.val = moveit_msgs::MoveItErrorCodes::SUCCESS;
 
@@ -92,19 +94,19 @@ public:
     return context;
   }
 
-  bool canServiceRequest(const planning_interface::MotionPlanRequest& req) const override
+  bool canServiceRequest(const planning_interface::MotionPlanRequest& req) const
   {
     // TODO: this is a dummy implementation
     //      capabilities.dummy = false;
     return true;
   }
 
-  std::string getDescription() const override
+  std::string getDescription() const
   {
     return "CHOMP";
   }
 
-  void getPlanningAlgorithms(std::vector<std::string>& algs) const override
+  void getPlanningAlgorithms(std::vector<std::string>& algs) const
   {
     algs.resize(1);
     algs[0] = "CHOMP";
@@ -114,6 +116,6 @@ protected:
   std::map<std::string, CHOMPPlanningContextPtr> planning_contexts_;
 };
 
-}  // namespace chomp_interface
+}  // ompl_interface_ros
 
 PLUGINLIB_EXPORT_CLASS(chomp_interface::CHOMPPlannerManager, planning_interface::PlannerManager);

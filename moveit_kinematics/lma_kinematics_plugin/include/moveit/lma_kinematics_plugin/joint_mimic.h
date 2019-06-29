@@ -1,7 +1,7 @@
 /*********************************************************************
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2018, Hamburg University
+ *  Copyright (c) 2016, CRI group, NTU, Singapore
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -14,7 +14,7 @@
  *     copyright notice, this list of conditions and the following
  *     disclaimer in the documentation and/or other materials provided
  *     with the distribution.
- *   * Neither the name of Hamburg University nor the names of its
+ *   * Neither the name of CRI group nor the names of its
  *     contributors may be used to endorse or promote products derived
  *     from this software without specific prior written permission.
  *
@@ -32,33 +32,44 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-/* Author: Michael Görner, Robert Haschke */
+/* Author: Francisco Suarez-Ruiz */
 
-#pragma once
-#include <string>
-#include <xmlrpcpp/XmlRpc.h>
+#ifndef MOVEIT_LMA_KINEMATICS_PLUGIN_JOINT_MIMIC_H
+#define MOVEIT_LMA_KINEMATICS_PLUGIN_JOINT_MIMIC_H
 
-namespace moveit
+namespace lma_kinematics_plugin
 {
-namespace core
+/** \brief A model of a mimic joint. Mimic joints are typically unactuated joints
+that are constrained to follow the motion of another joint. The constraint is linear, i.e.
+joint_angle_constrained_joint = joint_angle_mimicked_joint*multiplier + offset
+*/
+class JointMimic
 {
-/// parse a double value from a scalar XmlRpc
-double parseDouble(XmlRpc::XmlRpcValue& v);
+public:
+  JointMimic()
+  {
+    this->reset(0);
+  };
 
-/** check that v is an array of given size
- *
- * @param size: check that array has given size, zero value allows for array size
- * @param name: if non-empty, print a warning message "name is not an array[size]"
- * @param description: if non-empty, serves as a descriptor for array items
- */
-bool isArray(XmlRpc::XmlRpcValue& v, size_t size = 0, const std::string& name = "",
-             const std::string& description = "");
+  /** \brief Offset for this joint value from the joint that it mimics */
+  double offset;
+  /** \brief Multiplier for this joint value from the joint that it mimics */
+  double multiplier;
+  /** \brief Index of the joint that this joint mimics in the vector of active degrees of freedom */
+  unsigned int map_index;
+  /** \brief Name of this joint */
+  std::string joint_name;
+  /** \brief If true, this joint is an active DOF and not a mimic joint*/
+  bool active;
 
-/** check that v is a struct with given keys
- *
- * @param keys: list of required keys
- * @param name: if non-empty, print a warning message "name is not a struct with keys ..."
- */
-bool isStruct(XmlRpc::XmlRpcValue& v, const std::vector<std::string>& keys = {}, const std::string& name = "");
+  void reset(unsigned int index)
+  {
+    offset = 0.0;
+    multiplier = 1.0;
+    map_index = index;
+    active = false;
+  };
+};
 }
-}
+
+#endif
