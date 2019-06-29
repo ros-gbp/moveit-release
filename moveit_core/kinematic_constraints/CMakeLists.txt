@@ -1,5 +1,6 @@
 set(MOVEIT_LIB_NAME moveit_kinematic_constraints)
 
+add_compile_options(-Wno-cast-qual)  # suppress warning in tf/Vector3.h: https://github.com/ros/geometry/pull/167
 add_library(${MOVEIT_LIB_NAME}
   src/kinematic_constraint.cpp
   src/utils.cpp)
@@ -17,7 +18,6 @@ install(TARGETS ${MOVEIT_LIB_NAME}
 install(DIRECTORY include/ DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION})
 
 if(CATKIN_ENABLE_TESTING)
-  find_package(moveit_resources REQUIRED)
   include_directories(${moveit_resources_INCLUDE_DIRS})
 
   catkin_add_gtest(test_constraints test/test_constraints.cpp)
