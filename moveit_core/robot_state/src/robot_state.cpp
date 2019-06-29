@@ -422,6 +422,15 @@ void RobotState::setVariableEffort(const std::vector<std::string>& variable_name
     effort_[robot_model_->getVariableIndex(variable_names[i])] = variable_effort[i];
 }
 
+void RobotState::invertVelocity()
+{
+  if (has_velocity_)
+  {
+    for (size_t i = 0; i < robot_model_->getVariableCount(); ++i)
+      velocity_[i] *= -1;
+  }
+}
+
 void RobotState::setJointEfforts(const JointModel* joint, const double* effort)
 {
   if (has_acceleration_)
@@ -1172,7 +1181,7 @@ bool RobotState::getJacobian(const JointModelGroup* group, const LinkModel* link
       else if (pjm->getType() == robot_model::JointModel::PRISMATIC)
       {
         joint_transform = reference_transform * getGlobalLinkTransform(link);
-        joint_axis = joint_transform * static_cast<const robot_model::PrismaticJointModel*>(pjm)->getAxis();
+        joint_axis = joint_transform.rotation() * static_cast<const robot_model::PrismaticJointModel*>(pjm)->getAxis();
         jacobian.block<3, 1>(0, joint_index) = jacobian.block<3, 1>(0, joint_index) + joint_axis;
       }
       else if (pjm->getType() == robot_model::JointModel::PLANAR)
@@ -1361,7 +1370,10 @@ bool RobotState::setToIKSolverFrame(Eigen::Affine3d& pose, const std::string& ik
   {
     const LinkModel* lm = getLinkModel((!ik_frame.empty() && ik_frame[0] == '/') ? ik_frame.substr(1) : ik_frame);
     if (!lm)
+    {
+      ROS_ERROR_STREAM_NAMED(LOGNAME, "IK frame '" << ik_frame << "' does not exist.");
       return false;
+    }
     pose = getGlobalLinkTransform(lm).inverse(Eigen::Isometry) * pose;
   }
   return true;
@@ -1515,7 +1527,10 @@ bool RobotState::setFromIK(const JointModelGroup* jmg, const EigenSTL::vector_Af
         {
           const robot_model::LinkModel* lm = getLinkModel(pose_frame);
           if (!lm)
+          {
+            ROS_ERROR_STREAM_NAMED(LOGNAME, "Pose frame '" << pose_frame << "' does not exist.");
             return false;
+          }
           const robot_model::LinkTransformMap& fixed_links = lm->getAssociatedFixedTransforms();
           for (robot_model::LinkTransformMap::const_iterator it = fixed_links.begin(); it != fixed_links.end(); ++it)
             if (Transforms::sameFrame(it->first->getName(), solver_tip_frame))
