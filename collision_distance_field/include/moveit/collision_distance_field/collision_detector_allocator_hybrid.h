@@ -1,7 +1,7 @@
 /*********************************************************************
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2011, Willow Garage, Inc.
+ *  Copyright (c) 2013, Willow Garage, Inc.
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -14,7 +14,7 @@
  *     copyright notice, this list of conditions and the following
  *     disclaimer in the documentation and/or other materials provided
  *     with the distribution.
- *   * Neither the name of Willow Garage nor the names of its
+ *   * Neither the name of the Willow Garage nor the names of its
  *     contributors may be used to endorse or promote products derived
  *     from this software without specific prior written permission.
  *
@@ -32,22 +32,25 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-/* Author: Ioan Sucan */
+/* Author: Acorn Pooley, Ioan Sucan */
 
-#include <moveit/constraint_samplers/constraint_sampler.h>
+#ifndef MOVEIT_COLLISION_DETECTION_COLLISION_DETECTOR_HYBRID_H_
+#define MOVEIT_COLLISION_DETECTION_COLLISION_DETECTOR_HYBRID_H_
 
-constraint_samplers::ConstraintSampler::ConstraintSampler(const planning_scene::PlanningSceneConstPtr& scene,
-                                                          const std::string& group_name)
-  : is_valid_(false), scene_(scene), jmg_(scene->getRobotModel()->getJointModelGroup(group_name)), verbose_(false)
+#include <moveit/collision_detection/collision_detector_allocator.h>
+#include <moveit/collision_distance_field/collision_robot_hybrid.h>
+#include <moveit/collision_distance_field/collision_world_hybrid.h>
+
+namespace collision_detection
 {
-  if (!jmg_)
-  {
-    ROS_ERROR_NAMED("constraint_samplers", "A JointModelGroup should have been specified for the constraint sampler");
-  }
+/** \brief An allocator for Hybrid collision detectors */
+class CollisionDetectorAllocatorHybrid
+    : public CollisionDetectorAllocatorTemplate<CollisionWorldHybrid, CollisionRobotHybrid,
+                                                CollisionDetectorAllocatorHybrid>
+{
+public:
+  static const std::string NAME_;  // defined in collision_world_hybrid.cpp
+};
 }
 
-void constraint_samplers::ConstraintSampler::clear()
-{
-  is_valid_ = false;
-  frame_depends_.clear();
-}
+#endif
