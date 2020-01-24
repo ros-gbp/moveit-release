@@ -2,7 +2,7 @@
   <name>moveit_planners_chomp</name>
   <description>The interface for using CHOMP within MoveIt!</description>
 
-  <version>0.9.17</version>
+  <version>0.9.18</version>
   <author email="gjones@willowgarage.com">Gil Jones</author>
 
   <maintainer email="chitt@live.in">Chittaranjan Srinivas Swaminathan</maintainer>
@@ -17,6 +17,7 @@
   <depend>moveit_core</depend>
   <depend version_gte="1.11.2">pluginlib</depend>
   <depend>chomp_motion_planner</depend>
+  <depend>tf</depend>
 
   <test_depend>moveit_ros_planning_interface</test_depend>
   <test_depend>rostest</test_depend>
