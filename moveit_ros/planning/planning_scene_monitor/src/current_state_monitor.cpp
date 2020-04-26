@@ -364,22 +364,6 @@ void planning_scene_monitor::CurrentStateMonitor::jointStateCallback(const senso
         update = true;
         robot_state_.setJointPositions(jm, &(joint_state->position[i]));
 
-        // optionally copy velocities and effort
-        if (copy_dynamics_)
-        {
-          // check if velocities exist
-          if (joint_state->name.size() == joint_state->velocity.size())
-          {
-            robot_state_.setJointVelocities(jm, &(joint_state->velocity[i]));
-
-            // check if effort exist. assume they are not useful if no velocities were passed in
-            if (joint_state->name.size() == joint_state->effort.size())
-            {
-              robot_state_.setJointEfforts(jm, &(joint_state->effort[i]));
-            }
-          }
-        }
-
         // continuous joints wrap, so we don't modify them (even if they are outside bounds!)
         if (jm->getType() == moveit::core::JointModel::REVOLUTE)
           if (static_cast<const moveit::core::RevoluteJointModel*>(jm)->isContinuous())
@@ -394,6 +378,26 @@ void planning_scene_monitor::CurrentStateMonitor::jointStateCallback(const senso
           robot_state_.setJointPositions(jm, &b.min_position_);
         else if (joint_state->position[i] > b.max_position_ && joint_state->position[i] <= b.max_position_ + error_)
           robot_state_.setJointPositions(jm, &b.max_position_);
+      }
+
+      // optionally copy velocities and effort
+      if (copy_dynamics_)
+      {
+        // update joint velocities
+        if (joint_state->name.size() == joint_state->velocity.size() &&
+            (!robot_state_.hasVelocities() || robot_state_.getJointVelocities(jm)[0] != joint_state->velocity[i]))
+        {
+          update = true;
+          robot_state_.setJointVelocities(jm, &(joint_state->velocity[i]));
+        }
+
+        // update joint efforts
+        if (joint_state->name.size() == joint_state->effort.size() &&
+            (!robot_state_.hasEffort() || robot_state_.getJointEffort(jm)[0] != joint_state->effort[i]))
+        {
+          update = true;
+          robot_state_.setJointEfforts(jm, &(joint_state->effort[i]));
+        }
       }
     }
   }
@@ -444,20 +448,20 @@ void planning_scene_monitor::CurrentStateMonitor::tfCallback()
         continue;
       joint_time_[joint] = latest_common_time;
 
-      double new_values[joint->getStateSpaceDimension()];
+      std::vector<double> new_values(joint->getStateSpaceDimension());
       const robot_model::LinkModel* link = joint->getChildLinkModel();
       if (link->jointOriginTransformIsIdentity())
-        joint->computeVariablePositions(tf2::transformToEigen(transf), new_values);
+        joint->computeVariablePositions(tf2::transformToEigen(transf), new_values.data());
       else
         joint->computeVariablePositions(link->getJointOriginTransform().inverse() * tf2::transformToEigen(transf),
-                                        new_values);
+                                        new_values.data());
 
-      if (joint->distance(new_values, robot_state_.getJointPositions(joint)) > 1e-5)
+      if (joint->distance(new_values.data(), robot_state_.getJointPositions(joint)) > 1e-5)
       {
         changes = true;
       }
 
-      robot_state_.setJointPositions(joint, new_values);
+      robot_state_.setJointPositions(joint, new_values.data());
       update = true;
     }
   }
