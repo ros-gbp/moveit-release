@@ -40,7 +40,6 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <moveit_msgs/MoveItErrorCodes.h>
 #include <moveit/macros/class_forward.h>
-#include <moveit/macros/deprecation.h>
 #include <ros/node_handle.h>
 
 #include <boost/function.hpp>
@@ -174,12 +173,18 @@ public:
   /**
    * @brief Given the desired poses of all end-effectors, compute joint angles that are able to reach it.
    *
-   * This is a default implementation that returns only one solution and so its result is equivalent to calling
+   * The default implementation returns only one solution and so its result is equivalent to calling
    * 'getPositionIK(...)' with a zero initialized seed.
+   *
+   * Some planners (e.g. IKFast) support getting multiple joint solutions for a single pose.
+   * This can be enabled using the |DiscretizationMethods| enum and choosing an option that is not |NO_DISCRETIZATION|.
    *
    * @param ik_poses  The desired pose of each tip link
    * @param ik_seed_state an initial guess solution for the inverse kinematics
-   * @param solutions A vector of vectors where each entry is a valid joint solution
+   * @param solutions A vector of valid joint vectors. This return has two variant behaviors:
+   *                  1) Return a joint solution for every input |ik_poses|, e.g. multi-arm support
+   *                  2) Return multiple joint solutions for a single |ik_poses| input, e.g. underconstrained IK
+   *                  TODO(dave): This dual behavior is confusing and should be changed in a future refactor of this API
    * @param result A struct that reports the results of the query
    * @param options An option struct which contains the type of redundancy discretization used. This default
    *                implementation only supports the KinematicSearches::NO_DISCRETIZATION method; requesting any
@@ -336,9 +341,9 @@ public:
    * @param search_discretization The discretization of the search when the solver steps through the redundancy
    */
   /* Replace by tip_frames-based method! */
-  MOVEIT_DEPRECATED virtual void setValues(const std::string& robot_description, const std::string& group_name,
-                                           const std::string& base_frame, const std::string& tip_frame,
-                                           double search_discretization);
+  [[deprecated]] virtual void setValues(const std::string& robot_description, const std::string& group_name,
+                                        const std::string& base_frame, const std::string& tip_frame,
+                                        double search_discretization);
 
   /**
    * @brief Set the parameters for the solver, for use with non-chain IK solvers
@@ -368,9 +373,9 @@ public:
    * Instead of this method, use the method passing in a RobotModel!
    * Default implementation returns false, indicating that this API is not supported.
    */
-  MOVEIT_DEPRECATED virtual bool initialize(const std::string& robot_description, const std::string& group_name,
-                                            const std::string& base_frame, const std::string& tip_frame,
-                                            double search_discretization);
+  [[deprecated]] virtual bool initialize(const std::string& robot_description, const std::string& group_name,
+                                         const std::string& base_frame, const std::string& tip_frame,
+                                         double search_discretization);
 
   /**
    * @brief  Initialization function for the kinematics, for use with non-chain IK solvers
@@ -588,8 +593,8 @@ protected:
   // The next two variables still exists for backwards compatibility
   // with previously generated custom ik solvers like IKFast
   // Replace tip_frame_ -> tip_frames_[0], search_discretization_ -> redundant_joint_discretization_
-  MOVEIT_DEPRECATED std::string tip_frame_;
-  MOVEIT_DEPRECATED double search_discretization_;
+  [[deprecated]] std::string tip_frame_;
+  [[deprecated]] double search_discretization_;
 
   double default_timeout_;
   std::vector<unsigned int> redundant_joint_indices_;
