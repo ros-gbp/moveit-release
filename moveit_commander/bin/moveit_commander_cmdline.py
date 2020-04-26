@@ -4,7 +4,10 @@ from __future__ import print_function
 
 import roslib
 import rospy
-import readline
+try:
+    import readline
+except ImportError:
+    import pyreadline as readline # for Windows
 import sys
 import os
 import signal
@@ -42,7 +45,7 @@ class SimpleCompleter(object):
         prefix = ""
         if len(cmds) > 0:
             prefix = cmds[0]
-            if not self.options.has_key(prefix):
+            if not prefix in self.options:
                 prefix = ""
 
         if state == 0:
