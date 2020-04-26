@@ -33,13 +33,13 @@
 # Author: Ioan Sucan, Felix Messmer
 
 import rospy
-import conversions
+from . import conversions
 
 from moveit_msgs.msg import PlanningScene, CollisionObject, AttachedCollisionObject
 from moveit_ros_planning_interface import _moveit_planning_scene_interface
 from geometry_msgs.msg import Pose, Point
 from shape_msgs.msg import SolidPrimitive, Plane, Mesh, MeshTriangle
-from exception import MoveItCommanderException
+from .exception import MoveItCommanderException
 from moveit_msgs.srv import ApplyPlanningScene, ApplyPlanningSceneRequest
 
 try:
@@ -60,16 +60,16 @@ class PlanningSceneInterface(object):
         """ Create a planning scene interface; it uses both C++ wrapped methods and scene manipulation topics. """
         self._psi = _moveit_planning_scene_interface.PlanningSceneInterface(ns)
 
-        self._pub_co = rospy.Publisher('/collision_object', CollisionObject, queue_size=100)
-        self._pub_aco = rospy.Publisher('/attached_collision_object', AttachedCollisionObject, queue_size=100)
+        self._pub_co = rospy.Publisher(ns + '/collision_object', CollisionObject, queue_size=100)
+        self._pub_aco = rospy.Publisher(ns + '/attached_collision_object', AttachedCollisionObject, queue_size=100)
         self.__synchronous = synchronous
         if self.__synchronous:
-            self._apply_planning_scene_diff = rospy.ServiceProxy('apply_planning_scene', ApplyPlanningScene)
+            self._apply_planning_scene_diff = rospy.ServiceProxy(ns + '/apply_planning_scene', ApplyPlanningScene)
             self._apply_planning_scene_diff.wait_for_service(service_timeout)
 
     def __submit(self, collision_object, attach=False):
         if self.__synchronous:
-            diff_req = self.__make_planning_scene_diff_req(collision_object)
+            diff_req = self.__make_planning_scene_diff_req(collision_object, attach)
             self._apply_planning_scene_diff.call(diff_req)
         else:
             if attach:
@@ -306,10 +306,14 @@ class PlanningSceneInterface(object):
         return co
 
     @staticmethod
-    def __make_planning_scene_diff_req(collision_object):
+    def __make_planning_scene_diff_req(collision_object, attach=False):
         scene = PlanningScene()
         scene.is_diff = True
-        scene.world.collision_objects = [collision_object]
+        scene.robot_state.is_diff = True
+        if attach:
+            scene.robot_state.attached_collision_objects = [collision_object]
+        else:
+            scene.world.collision_objects = [collision_object]
         planning_scene_diff_req = ApplyPlanningSceneRequest()
         planning_scene_diff_req.scene = scene
         return planning_scene_diff_req
