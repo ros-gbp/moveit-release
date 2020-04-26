@@ -36,6 +36,7 @@
 
 #include <moveit/common_planning_interface_objects/common_objects.h>
 #include <moveit/motion_planning_rviz_plugin/motion_planning_frame.h>
+#include <moveit/motion_planning_rviz_plugin/motion_planning_frame_joints_widget.h>
 #include <moveit/motion_planning_rviz_plugin/motion_planning_display.h>
 #include <moveit/move_group/capability_names.h>
 
@@ -66,6 +67,11 @@ MotionPlanningFrame::MotionPlanningFrame(MotionPlanningDisplay* pdisplay, rviz::
 {
   // set up the GUI
   ui_->setupUi(this);
+  // add more tabs
+  joints_tab_ = new MotionPlanningFrameJointsWidget(planning_display_, ui_->tabWidget);
+  ui_->tabWidget->addTab(joints_tab_, "Joints");
+  connect(planning_display_, SIGNAL(queryStartStateChanged()), joints_tab_, SLOT(queryStartStateChanged()));
+  connect(planning_display_, SIGNAL(queryGoalStateChanged()), joints_tab_, SLOT(queryGoalStateChanged()));
 
   // connect bottons to actions; each action usually registers the function pointer for the actual computation,
   // to keep the GUI more responsive (using the background job processing)
@@ -136,6 +142,31 @@ MotionPlanningFrame::MotionPlanningFrame(MotionPlanningDisplay* pdisplay, rviz::
 
   connect(ui_->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(tabChanged(int)));
 
+  /* Notice changes to be safed in config file */
+  connect(ui_->database_host, SIGNAL(textChanged(QString)), this, SIGNAL(configChanged()));
+  connect(ui_->database_port, SIGNAL(valueChanged(int)), this, SIGNAL(configChanged()));
+
+  connect(ui_->goal_tolerance, SIGNAL(valueChanged(double)), this, SIGNAL(configChanged()));
+
+  connect(ui_->planning_time, SIGNAL(valueChanged(double)), this, SIGNAL(configChanged()));
+  connect(ui_->planning_attempts, SIGNAL(valueChanged(double)), this, SIGNAL(configChanged()));
+  connect(ui_->velocity_scaling_factor, SIGNAL(valueChanged(double)), this, SIGNAL(configChanged()));
+  connect(ui_->acceleration_scaling_factor, SIGNAL(valueChanged(double)), this, SIGNAL(configChanged()));
+
+  connect(ui_->allow_replanning, SIGNAL(stateChanged(int)), this, SIGNAL(configChanged()));
+  connect(ui_->allow_looking, SIGNAL(stateChanged(int)), this, SIGNAL(configChanged()));
+  connect(ui_->allow_external_program, SIGNAL(stateChanged(int)), this, SIGNAL(configChanged()));
+  connect(ui_->use_cartesian_path, SIGNAL(stateChanged(int)), this, SIGNAL(configChanged()));
+  connect(ui_->collision_aware_ik, SIGNAL(stateChanged(int)), this, SIGNAL(configChanged()));
+  connect(ui_->approximate_ik, SIGNAL(stateChanged(int)), this, SIGNAL(configChanged()));
+
+  connect(ui_->wcenter_x, SIGNAL(valueChanged(double)), this, SIGNAL(configChanged()));
+  connect(ui_->wcenter_y, SIGNAL(valueChanged(double)), this, SIGNAL(configChanged()));
+  connect(ui_->wcenter_z, SIGNAL(valueChanged(double)), this, SIGNAL(configChanged()));
+  connect(ui_->wsize_x, SIGNAL(valueChanged(double)), this, SIGNAL(configChanged()));
+  connect(ui_->wsize_y, SIGNAL(valueChanged(double)), this, SIGNAL(configChanged()));
+  connect(ui_->wsize_z, SIGNAL(valueChanged(double)), this, SIGNAL(configChanged()));
+
   QShortcut* copy_object_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_C), ui_->collision_objects_list);
   connect(copy_object_shortcut, SIGNAL(activated()), this, SLOT(copySelectedCollisionObject()));
 
@@ -167,14 +198,6 @@ MotionPlanningFrame::MotionPlanningFrame(MotionPlanningDisplay* pdisplay, rviz::
       // ROS_ERROR("Object recognition action: %s", ex.what());
       object_recognition_client_.reset();
     }
-  }
-  try
-  {
-    planning_scene_interface_.reset(new moveit::planning_interface::PlanningSceneInterface());
-  }
-  catch (std::exception& ex)
-  {
-    ROS_ERROR("%s", ex.what());
   }
 
   try
@@ -281,11 +304,13 @@ void MotionPlanningFrame::fillStateSelectionOptions()
     ui_->start_state_combo_box->addItem(QString("<random>"));
     ui_->start_state_combo_box->addItem(QString("<current>"));
     ui_->start_state_combo_box->addItem(QString("<same as goal>"));
+    ui_->start_state_combo_box->addItem(QString("<previous>"));
 
     ui_->goal_state_combo_box->addItem(QString("<random valid>"));
     ui_->goal_state_combo_box->addItem(QString("<random>"));
     ui_->goal_state_combo_box->addItem(QString("<current>"));
     ui_->goal_state_combo_box->addItem(QString("<same as start>"));
+    ui_->goal_state_combo_box->addItem(QString("<previous>"));
 
     const std::vector<std::string>& known_states = jmg->getDefaultStateNames();
     if (!known_states.empty())
@@ -352,8 +377,8 @@ void MotionPlanningFrame::changePlanningGroupHelper()
     {
       move_group_->allowLooking(ui_->allow_looking->isChecked());
       move_group_->allowReplanning(ui_->allow_replanning->isChecked());
-      bool hasUniqueEndeffector = !move_group_->getEndEffectorLink().empty();
-      planning_display_->addMainLoopJob([=]() { ui_->use_cartesian_path->setEnabled(hasUniqueEndeffector); });
+      bool has_unique_endeffector = !move_group_->getEndEffectorLink().empty();
+      planning_display_->addMainLoopJob([=]() { ui_->use_cartesian_path->setEnabled(has_unique_endeffector); });
       moveit_msgs::PlannerInterfaceDescription desc;
       if (move_group_->getInterfaceDescription(desc))
         planning_display_->addMainLoopJob(boost::bind(&MotionPlanningFrame::populatePlannersList, this, desc));
@@ -383,6 +408,9 @@ void MotionPlanningFrame::changePlanningGroup()
 {
   planning_display_->addBackgroundJob(boost::bind(&MotionPlanningFrame::changePlanningGroupHelper, this),
                                       "Frame::changePlanningGroup");
+  joints_tab_->changePlanningGroup(planning_display_->getCurrentPlanningGroup(),
+                                   planning_display_->getQueryStartStateHandler(),
+                                   planning_display_->getQueryGoalStateHandler());
 }
 
 void MotionPlanningFrame::sceneUpdate(planning_scene_monitor::PlanningSceneMonitor::SceneUpdateType update_type)
@@ -416,12 +444,12 @@ void MotionPlanningFrame::importResource(const std::string& path)
       // If the object already exists, ask the user whether to overwrite or rename
       if (planning_display_->getPlanningSceneRO()->getWorld()->hasObject(name))
       {
-        QMessageBox msgBox;
-        msgBox.setText("There exists another object with the same name.");
-        msgBox.setInformativeText("Would you like to overwrite it?");
-        msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
-        msgBox.setDefaultButton(QMessageBox::No);
-        int ret = msgBox.exec();
+        QMessageBox msg_box;
+        msg_box.setText("There exists another object with the same name.");
+        msg_box.setInformativeText("Would you like to overwrite it?");
+        msg_box.setStandardButtons(QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+        msg_box.setDefaultButton(QMessageBox::No);
+        int ret = msg_box.exec();
 
         switch (ret)
         {
@@ -500,6 +528,7 @@ void MotionPlanningFrame::enable()
 void MotionPlanningFrame::disable()
 {
   move_group_.reset();
+  scene_marker_.reset();
   parentWidget()->hide();
 }
 
