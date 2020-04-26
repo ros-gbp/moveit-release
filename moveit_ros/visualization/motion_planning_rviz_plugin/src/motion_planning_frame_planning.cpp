@@ -172,6 +172,7 @@ void MotionPlanningFrame::computePlanButtonClicked()
   ui_->result_label->setText("Planning...");
 
   configureForPlanning();
+  planning_display_->rememberPreviousStartState();
   bool success = (ui_->use_cartesian_path->isEnabled() && ui_->use_cartesian_path->checkState()) ?
                      computeCartesianPlan() :
                      computeJointSpacePlan();
@@ -206,6 +207,7 @@ void MotionPlanningFrame::computePlanAndExecuteButtonClicked()
   if (!move_group_)
     return;
   configureForPlanning();
+  planning_display_->rememberPreviousStartState();
   // move_group::move() on the server side, will always start from the current state
   // to suppress a warning, we pass an empty state (which encodes "start from current state")
   move_group_->setStartStateToCurrentState();
@@ -242,6 +244,23 @@ void MotionPlanningFrame::onFinishedExecution(bool success)
   // update query start state to current if neccessary
   if (ui_->start_state_combo_box->currentText() == "<current>")
     startStateTextChanged(ui_->start_state_combo_box->currentText());
+
+  // auto-update goal to stored previous state (but only on success)
+  // on failure, the user must update the goal to the previous state himself
+  if (ui_->goal_state_combo_box->currentText() == "<previous>")
+    goalStateTextChanged(ui_->goal_state_combo_box->currentText());
+}
+
+void MotionPlanningFrame::onNewPlanningSceneState()
+{
+  moveit::core::RobotState current(planning_display_->getPlanningSceneRO()->getCurrentState());
+  if (ui_->start_state_combo_box->currentText() == "<current>")
+  {
+    planning_display_->setQueryStartState(current);
+    planning_display_->rememberPreviousStartState();
+  }
+  if (ui_->goal_state_combo_box->currentText() == "<current>")
+    planning_display_->setQueryGoalState(current);
 }
 
 void MotionPlanningFrame::startStateTextChanged(const QString& start_state)
@@ -344,6 +363,12 @@ void MotionPlanningFrame::updateQueryStateHelper(robot_state::RobotState& state,
     return;
   }
 
+  if (v == "<previous>")
+  {
+    state = planning_display_->getPreviousState();
+    return;
+  }
+
   // maybe it is a named state
   if (const robot_model::JointModelGroup* jmg = state.getJointModelGroup(planning_display_->getCurrentPlanningGroup()))
     state.setToDefaultValues(jmg, v);
@@ -385,10 +410,10 @@ void MotionPlanningFrame::populatePlannersList(const moveit_msgs::PlannerInterfa
 
   // retrieve default planner config from parameter server
   const std::string& default_planner_config = move_group_->getDefaultPlannerId(found_group ? group : std::string());
-  int defaultIndex = ui_->planning_algorithm_combo_box->findText(QString::fromStdString(default_planner_config));
-  if (defaultIndex < 0)
-    defaultIndex = 0;  // 0 is <unspecified> fallback
-  ui_->planning_algorithm_combo_box->setCurrentIndex(defaultIndex);
+  int default_index = ui_->planning_algorithm_combo_box->findText(QString::fromStdString(default_planner_config));
+  if (default_index < 0)
+    default_index = 0;  // 0 is <unspecified> fallback
+  ui_->planning_algorithm_combo_box->setCurrentIndex(default_index);
 }
 
 void MotionPlanningFrame::populateConstraintsList()

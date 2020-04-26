@@ -39,6 +39,7 @@
 #include <moveit/py_bindings_tools/roscpp_initializer.h>
 #include <moveit/py_bindings_tools/py_conversions.h>
 #include <moveit/py_bindings_tools/serialize_msg.h>
+#include <moveit/py_bindings_tools/gil_releaser.h>
 #include <moveit_msgs/RobotState.h>
 #include <visualization_msgs/MarkerArray.h>
 
@@ -49,6 +50,7 @@
 /** @cond IGNORE */
 
 namespace bp = boost::python;
+using moveit::py_bindings_tools::GILReleaser;
 
 namespace moveit
 {
@@ -216,6 +218,7 @@ public:
     // if needed, start the monitor and wait up to 1 second for a full robot state
     if (!current_state_monitor_->isActive())
     {
+      GILReleaser gr;
       current_state_monitor_->startStateMonitor();
       if (!current_state_monitor_->waitForCompleteState(wait))
         ROS_WARN("Joint values for monitored state are requested but the full state is not known");
@@ -223,10 +226,10 @@ public:
     return true;
   }
 
-  std::string getCurrentState()
+  py_bindings_tools::ByteString getCurrentState()
   {
     if (!ensureCurrentState())
-      return "";
+      return py_bindings_tools::ByteString("");
     robot_state::RobotStatePtr s = current_state_monitor_->getCurrentState();
     moveit_msgs::RobotState msg;
     robot_state::robotStateToRobotStateMsg(*s, msg);
@@ -244,7 +247,7 @@ public:
     return boost::python::make_tuple(parent_group.first, parent_group.second);
   }
 
-  std::string getRobotMarkersPythonDictList(bp::dict& values, bp::list& links)
+  py_bindings_tools::ByteString getRobotMarkersPythonDictList(bp::dict& values, bp::list& links)
   {
     robot_state::RobotStatePtr state;
     if (ensureCurrentState())
@@ -273,13 +276,13 @@ public:
     return py_bindings_tools::serializeMsg(msg);
   }
 
-  std::string getRobotMarkersPythonDict(bp::dict& values)
+  py_bindings_tools::ByteString getRobotMarkersPythonDict(bp::dict& values)
   {
     bp::list links = py_bindings_tools::listFromString(robot_model_->getLinkModelNames());
     return getRobotMarkersPythonDictList(values, links);
   }
 
-  std::string getRobotMarkersFromMsg(const std::string& state_str)
+  py_bindings_tools::ByteString getRobotMarkersFromMsg(const py_bindings_tools::ByteString& state_str)
   {
     moveit_msgs::RobotState state_msg;
     robot_state::RobotState state(robot_model_);
@@ -292,10 +295,10 @@ public:
     return py_bindings_tools::serializeMsg(msg);
   }
 
-  std::string getRobotMarkers()
+  py_bindings_tools::ByteString getRobotMarkers()
   {
     if (!ensureCurrentState())
-      return "";
+      return py_bindings_tools::ByteString();
     robot_state::RobotStatePtr s = current_state_monitor_->getCurrentState();
     visualization_msgs::MarkerArray msg;
     s->getRobotMarkers(msg, s->getRobotModel()->getLinkModelNames());
@@ -303,10 +306,10 @@ public:
     return py_bindings_tools::serializeMsg(msg);
   }
 
-  std::string getRobotMarkersPythonList(const bp::list& links)
+  py_bindings_tools::ByteString getRobotMarkersPythonList(const bp::list& links)
   {
     if (!ensureCurrentState())
-      return "";
+      return py_bindings_tools::ByteString("");
     robot_state::RobotStatePtr s = current_state_monitor_->getCurrentState();
     visualization_msgs::MarkerArray msg;
     s->getRobotMarkers(msg, py_bindings_tools::stringFromList(links));
@@ -314,10 +317,10 @@ public:
     return py_bindings_tools::serializeMsg(msg);
   }
 
-  std::string getRobotMarkersGroup(const std::string& group)
+  py_bindings_tools::ByteString getRobotMarkersGroup(const std::string& group)
   {
     if (!ensureCurrentState())
-      return "";
+      return py_bindings_tools::ByteString("");
     robot_state::RobotStatePtr s = current_state_monitor_->getCurrentState();
     const robot_model::JointModelGroup* jmg = robot_model_->getJointModelGroup(group);
     visualization_msgs::MarkerArray msg;
@@ -329,11 +332,11 @@ public:
     return py_bindings_tools::serializeMsg(msg);
   }
 
-  std::string getRobotMarkersGroupPythonDict(const std::string& group, bp::dict& values)
+  py_bindings_tools::ByteString getRobotMarkersGroupPythonDict(const std::string& group, bp::dict& values)
   {
     const robot_model::JointModelGroup* jmg = robot_model_->getJointModelGroup(group);
     if (!jmg)
-      return "";
+      return py_bindings_tools::ByteString("");
     bp::list links = py_bindings_tools::listFromString(jmg->getLinkModelNames());
     return getRobotMarkersPythonDictList(values, links);
   }
@@ -373,33 +376,33 @@ static void wrap_robot_interface()
 {
   using namespace moveit;
 
-  bp::class_<RobotInterfacePython> RobotClass("RobotInterface", bp::init<std::string, bp::optional<std::string>>());
+  bp::class_<RobotInterfacePython> robot_class("RobotInterface", bp::init<std::string, bp::optional<std::string>>());
 
-  RobotClass.def("get_joint_names", &RobotInterfacePython::getJointNames);
-  RobotClass.def("get_group_joint_names", &RobotInterfacePython::getGroupJointNames);
-  RobotClass.def("get_group_default_states", &RobotInterfacePython::getDefaultStateNames);
-  RobotClass.def("get_group_joint_tips", &RobotInterfacePython::getGroupJointTips);
-  RobotClass.def("get_group_names", &RobotInterfacePython::getGroupNames);
-  RobotClass.def("get_link_names", &RobotInterfacePython::getLinkNames);
-  RobotClass.def("get_group_link_names", &RobotInterfacePython::getGroupLinkNames);
-  RobotClass.def("get_joint_limits", &RobotInterfacePython::getJointLimits);
-  RobotClass.def("get_link_pose", &RobotInterfacePython::getLinkPose);
-  RobotClass.def("get_planning_frame", &RobotInterfacePython::getPlanningFrame);
-  RobotClass.def("get_current_state", &RobotInterfacePython::getCurrentState);
-  RobotClass.def("get_current_variable_values", &RobotInterfacePython::getCurrentVariableValues);
-  RobotClass.def("get_current_joint_values", &RobotInterfacePython::getCurrentJointValues);
-  RobotClass.def("get_joint_values", &RobotInterfacePython::getJointValues);
-  RobotClass.def("get_robot_root_link", &RobotInterfacePython::getRobotRootLink);
-  RobotClass.def("has_group", &RobotInterfacePython::hasGroup);
-  RobotClass.def("get_robot_name", &RobotInterfacePython::getRobotName);
-  RobotClass.def("get_robot_markers", &RobotInterfacePython::getRobotMarkers);
-  RobotClass.def("get_robot_markers", &RobotInterfacePython::getRobotMarkersPythonList);
-  RobotClass.def("get_robot_markers", &RobotInterfacePython::getRobotMarkersFromMsg);
-  RobotClass.def("get_robot_markers", &RobotInterfacePython::getRobotMarkersPythonDictList);
-  RobotClass.def("get_robot_markers", &RobotInterfacePython::getRobotMarkersPythonDict);
-  RobotClass.def("get_group_markers", &RobotInterfacePython::getRobotMarkersGroup);
-  RobotClass.def("get_group_markers", &RobotInterfacePython::getRobotMarkersGroupPythonDict);
-  RobotClass.def("get_parent_group", &RobotInterfacePython::getEndEffectorParentGroup);
+  robot_class.def("get_joint_names", &RobotInterfacePython::getJointNames);
+  robot_class.def("get_group_joint_names", &RobotInterfacePython::getGroupJointNames);
+  robot_class.def("get_group_default_states", &RobotInterfacePython::getDefaultStateNames);
+  robot_class.def("get_group_joint_tips", &RobotInterfacePython::getGroupJointTips);
+  robot_class.def("get_group_names", &RobotInterfacePython::getGroupNames);
+  robot_class.def("get_link_names", &RobotInterfacePython::getLinkNames);
+  robot_class.def("get_group_link_names", &RobotInterfacePython::getGroupLinkNames);
+  robot_class.def("get_joint_limits", &RobotInterfacePython::getJointLimits);
+  robot_class.def("get_link_pose", &RobotInterfacePython::getLinkPose);
+  robot_class.def("get_planning_frame", &RobotInterfacePython::getPlanningFrame);
+  robot_class.def("get_current_state", &RobotInterfacePython::getCurrentState);
+  robot_class.def("get_current_variable_values", &RobotInterfacePython::getCurrentVariableValues);
+  robot_class.def("get_current_joint_values", &RobotInterfacePython::getCurrentJointValues);
+  robot_class.def("get_joint_values", &RobotInterfacePython::getJointValues);
+  robot_class.def("get_robot_root_link", &RobotInterfacePython::getRobotRootLink);
+  robot_class.def("has_group", &RobotInterfacePython::hasGroup);
+  robot_class.def("get_robot_name", &RobotInterfacePython::getRobotName);
+  robot_class.def("get_robot_markers", &RobotInterfacePython::getRobotMarkers);
+  robot_class.def("get_robot_markers", &RobotInterfacePython::getRobotMarkersPythonList);
+  robot_class.def("get_robot_markers", &RobotInterfacePython::getRobotMarkersFromMsg);
+  robot_class.def("get_robot_markers", &RobotInterfacePython::getRobotMarkersPythonDictList);
+  robot_class.def("get_robot_markers", &RobotInterfacePython::getRobotMarkersPythonDict);
+  robot_class.def("get_group_markers", &RobotInterfacePython::getRobotMarkersGroup);
+  robot_class.def("get_group_markers", &RobotInterfacePython::getRobotMarkersGroupPythonDict);
+  robot_class.def("get_parent_group", &RobotInterfacePython::getEndEffectorParentGroup);
 }
 
 BOOST_PYTHON_MODULE(_moveit_robot_interface)
