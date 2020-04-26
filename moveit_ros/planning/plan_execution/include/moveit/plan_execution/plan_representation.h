@@ -53,8 +53,12 @@ struct ExecutableTrajectory
   {
   }
 
-  ExecutableTrajectory(const robot_trajectory::RobotTrajectoryPtr& trajectory, const std::string& description)
-    : trajectory_(trajectory), description_(description), trajectory_monitoring_(true)
+  ExecutableTrajectory(const robot_trajectory::RobotTrajectoryPtr& trajectory, const std::string& description,
+                       std::vector<std::string> controller_names = {})
+    : trajectory_(trajectory)
+    , description_(description)
+    , trajectory_monitoring_(true)
+    , controller_names_(std::move(controller_names))
   {
   }
 
@@ -63,6 +67,7 @@ struct ExecutableTrajectory
   bool trajectory_monitoring_;
   collision_detection::AllowedCollisionMatrixConstPtr allowed_collision_matrix_;
   boost::function<bool(const ExecutableMotionPlan*)> effect_on_success_;
+  std::vector<std::string> controller_names_;
 };
 
 /// A generic representation on what a computed motion plan looks like
@@ -73,7 +78,7 @@ struct ExecutableMotionPlan
 
   std::vector<ExecutableTrajectory> plan_components_;
 
-  // The trace of the trajectory recorded during execution
+  /// The trace of the trajectory recorded during execution
   robot_trajectory::RobotTrajectoryPtr executed_trajectory_;
 
   /// An error code reflecting what went wrong (if anything)
