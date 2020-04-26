@@ -1,7 +1,9 @@
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.1.3)
 project(moveit_ros_planning)
 
-add_compile_options(-std=c++14)
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
@@ -11,7 +13,7 @@ find_package(Boost REQUIRED system filesystem date_time program_options thread c
 find_package(catkin REQUIRED COMPONENTS
   moveit_core
   moveit_msgs
-  moveit_ros_perception
+  moveit_ros_occupancy_map_monitor
   pluginlib
   actionlib
   roscpp
@@ -61,10 +63,13 @@ catkin_package(
   INCLUDE_DIRS
     ${THIS_PACKAGE_INCLUDE_DIRS}
   CATKIN_DEPENDS
-    pluginlib
+    actionlib
+    dynamic_reconfigure
     moveit_core
-    moveit_ros_perception
+    moveit_ros_occupancy_map_monitor
     moveit_msgs
+    pluginlib
+    roscpp
     tf2_msgs
     tf2_geometry_msgs
   DEPENDS
