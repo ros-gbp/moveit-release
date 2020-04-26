@@ -45,17 +45,32 @@ namespace moveit
 {
 namespace planning_interface
 {
+static const std::string LOGNAME = "planning_scene_interface";
+
 class PlanningSceneInterface::PlanningSceneInterfaceImpl
 {
 public:
-  explicit PlanningSceneInterfaceImpl(const std::string& ns = "")
+  explicit PlanningSceneInterfaceImpl(const std::string& ns = "", bool wait = true)
   {
     node_handle_ = ros::NodeHandle(ns);
+    planning_scene_diff_publisher_ = node_handle_.advertise<moveit_msgs::PlanningScene>("planning_scene", 1);
     planning_scene_service_ =
         node_handle_.serviceClient<moveit_msgs::GetPlanningScene>(move_group::GET_PLANNING_SCENE_SERVICE_NAME);
     apply_planning_scene_service_ =
         node_handle_.serviceClient<moveit_msgs::ApplyPlanningScene>(move_group::APPLY_PLANNING_SCENE_SERVICE_NAME);
-    planning_scene_diff_publisher_ = node_handle_.advertise<moveit_msgs::PlanningScene>("planning_scene", 1);
+
+    if (wait)
+    {
+      waitForService(planning_scene_service_);
+      waitForService(apply_planning_scene_service_);
+    }
+    else
+    {
+      if (!planning_scene_service_.exists() || !apply_planning_scene_service_.exists())
+      {
+        throw std::runtime_error("ROS services not available");
+      }
+    }
   }
 
   std::vector<std::string> getKnownObjectNames(bool with_type)
@@ -89,7 +104,7 @@ public:
     request.components.components = request.components.WORLD_OBJECT_GEOMETRY;
     if (!planning_scene_service_.call(request, response))
     {
-      ROS_WARN_NAMED("planning_scene_interface", "Could not call planning scene service to get object names");
+      ROS_WARN_NAMED(LOGNAME, "Could not call planning scene service to get object names");
       return result;
     }
 
@@ -141,7 +156,7 @@ public:
     request.components.components = request.components.WORLD_OBJECT_GEOMETRY;
     if (!planning_scene_service_.call(request, response))
     {
-      ROS_WARN_NAMED("planning_scene_interface", "Could not call planning scene service to get object names");
+      ROS_WARN_NAMED(LOGNAME, "Could not call planning scene service to get object names");
       return result;
     }
 
@@ -172,7 +187,7 @@ public:
     request.components.components = request.components.WORLD_OBJECT_GEOMETRY;
     if (!planning_scene_service_.call(request, response))
     {
-      ROS_WARN_NAMED("planning_scene_interface", "Could not call planning scene service to get object geometries");
+      ROS_WARN_NAMED(LOGNAME, "Could not call planning scene service to get object geometries");
       return result;
     }
 
@@ -197,8 +212,7 @@ public:
     request.components.components = request.components.ROBOT_STATE_ATTACHED_OBJECTS;
     if (!planning_scene_service_.call(request, response))
     {
-      ROS_WARN_NAMED("planning_scene_interface",
-                     "Could not call planning scene service to get attached object geometries");
+      ROS_WARN_NAMED(LOGNAME, "Could not call planning scene service to get attached object geometries");
       return result;
     }
 
@@ -222,7 +236,7 @@ public:
     request.scene = planning_scene;
     if (!apply_planning_scene_service_.call(request, response))
     {
-      ROS_WARN_NAMED("planning_scene_interface", "Failed to call ApplyPlanningScene service");
+      ROS_WARN_NAMED(LOGNAME, "Failed to call ApplyPlanningScene service");
       return false;
     }
     return response.success;
@@ -262,6 +276,17 @@ public:
   }
 
 private:
+  void waitForService(ros::ServiceClient& srv)
+  {
+    ros::Duration time_before_warning(5.0);
+    srv.waitForExistence(time_before_warning);
+    if (!srv.exists())
+    {
+      ROS_WARN_STREAM_NAMED(LOGNAME, "service '" << srv.getService() << "' not advertised yet. Continue waiting...");
+      srv.waitForExistence();
+    }
+  }
+
   ros::NodeHandle node_handle_;
   ros::ServiceClient planning_scene_service_;
   ros::ServiceClient apply_planning_scene_service_;
@@ -269,9 +294,9 @@ private:
   robot_model::RobotModelConstPtr robot_model_;
 };
 
-PlanningSceneInterface::PlanningSceneInterface(const std::string& ns)
+PlanningSceneInterface::PlanningSceneInterface(const std::string& ns, bool wait)
 {
-  impl_ = new PlanningSceneInterfaceImpl(ns);
+  impl_ = new PlanningSceneInterfaceImpl(ns, wait);
 }
 
 PlanningSceneInterface::~PlanningSceneInterface()
