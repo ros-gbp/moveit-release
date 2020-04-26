@@ -1,12 +1,16 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.1.3)
 project(moveit_planners_chomp)
 
-add_definitions(-std=c++11)
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 # find catkin in isolation so that CATKIN_ENABLE_TESTING is defined
 find_package(catkin REQUIRED)
 if (CATKIN_ENABLE_TESTING)
   set(CHOMP_TEST_DEPS moveit_ros_planning_interface)
+else()
+  set(CHOMP_TEST_DEPS)
 endif()
 
 find_package(catkin REQUIRED COMPONENTS
@@ -14,17 +18,10 @@ find_package(catkin REQUIRED COMPONENTS
   moveit_core
   pluginlib
   chomp_motion_planner
-  tf
   ${CHOMP_TEST_DEPS}
 )
 
 find_package(Eigen3 REQUIRED)
-
-# Eigen 3.2 (Wily) only provides EIGEN3_INCLUDE_DIR, not EIGEN3_INCLUDE_DIRS
-if(NOT EIGEN3_INCLUDE_DIRS)
-  set(EIGEN3_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
-endif()
-
 find_package(Boost REQUIRED)
 
 catkin_package(
@@ -41,11 +38,11 @@ include_directories(
 )
 
 add_library(${PROJECT_NAME} src/chomp_interface.cpp src/chomp_planning_context.cpp)
-set_target_properties(${PROJECT_NAME} PROPERTIES VERSION ${${PROJECT_NAME}_VERSION})
+set_target_properties(${PROJECT_NAME} PROPERTIES VERSION "${${PROJECT_NAME}_VERSION}")
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
 
 add_library(chomp_planner_plugin src/chomp_plugin.cpp)
-set_target_properties(chomp_planner_plugin PROPERTIES VERSION ${${PROJECT_NAME}_VERSION})
+set_target_properties(chomp_planner_plugin PROPERTIES VERSION "${${PROJECT_NAME}_VERSION}")
 target_link_libraries(chomp_planner_plugin ${PROJECT_NAME} ${catkin_LIBRARIES})
 
 install(FILES chomp_interface_plugin_description.xml
@@ -58,7 +55,7 @@ install(DIRECTORY include/chomp_interface/
 install(TARGETS ${PROJECT_NAME} chomp_planner_plugin
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
 )
 
 if(CATKIN_ENABLE_TESTING)

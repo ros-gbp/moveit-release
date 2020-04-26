@@ -2,26 +2,60 @@
 Changelog for package chomp_motion_planner
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.9.18 (2020-01-24)
+1.0.3 (2020-04-26)
+------------------
+* [maint] Apply clang-tidy fix to entire code base (`#1394 <https://github.com/ros-planning/moveit/issues/1394>`_)
+* [maint] Windows build fixes
+  * Fix header inclusion and other MSVC build errors (`#1636 <https://github.com/ros-planning/moveit/issues/1636>`_)
+  * Remove GCC extensions (`#1583 <https://github.com/ros-planning/moveit/issues/1583>`_)
+  * Fix binary artifact install locations. (`#1575 <https://github.com/ros-planning/moveit/issues/1575>`_)
+* [maint] Use CMAKE_CXX_STANDARD to enforce c++14 (`#1607 <https://github.com/ros-planning/moveit/issues/1607>`_)
+* [fix]   Fix possible division-by-zero (`#1809 <https://github.com/ros-planning/moveit/issues/1809>`_)
+* Contributors: Max Krichenbauer, Robert Haschke, Sean Yen, Yu, Yan
+
+1.0.2 (2019-06-28)
+------------------
+* [fix] Fix chomp planner (`#1512 <https://github.com/ros-planning/moveit/issues/1512>`_)
+  * Fix start-state handling
+  * remove time parameterization from planning code
+* Contributors: Robert Haschke
+
+1.0.1 (2019-03-08)
+------------------
+* [improve] Apply clang tidy fix to entire code base (Part 1) (`#1366 <https://github.com/ros-planning/moveit/issues/1366>`_)
+* Contributors: Robert Haschke, Yu, Yan
+
+1.0.0 (2019-02-24)
+------------------
+* [fix] catkin_lint issues (`#1341 <https://github.com/ros-planning/moveit/issues/1341>`_)
+* Contributors: Robert Haschke
+
+0.10.8 (2018-12-24)
 -------------------
 
-0.9.17 (2019-07-09)
+0.10.7 (2018-12-13)
 -------------------
 
-0.9.16 (2019-06-29)
+0.10.6 (2018-12-09)
 -------------------
-* [maintanance] Cleanup Chomp packages (`#1282 <https://github.com/ros-planning/moveit/issues/1282>`_, `#1221 <https://github.com/ros-planning/moveit/issues/1221>`_)
-* [maintanance] Fix clang issues (`#1233 <https://github.com/ros-planning/moveit/issues/1233>`_, `#1214 <https://github.com/ros-planning/moveit/issues/1214>`_)
-* [fix]         Set last_state only for active joints in chomp_planner (`#1222 <https://github.com/ros-planning/moveit/issues/1222>`_)
-* Contributors: Michael Görner, Robert Haschke, Shingo Kitagawa
+* [fix] memory leak (ChompOptimizer)
+* [fix] Set last_state for active joints only (`#1222 <https://github.com/ros-planning/moveit/issues/1222>`_)
+* [maintenance] Rearranged CHOMP-related modules within moveit_planners/chomp (`#1251 <https://github.com/ros-planning/moveit/issues/1251>`_)
+* [maintenance] Replaced Eigen::Affine3d -> Eigen::Isometry3d (`#1096 <https://github.com/ros-planning/moveit/issues/1096>`_)
+* [maintenance] Remove ChompParameters::getNonConstParams() (`#1196 <https://github.com/ros-planning/moveit/issues/1196>`_)
+* [maintenance] Code Cleanup (`#1179 <https://github.com/ros-planning/moveit/issues/1179>`_)
+* Contributors: Dave Coleman, Michael Görner, Robert Haschke, Shingo Kitagawa
 
-0.9.15 (2018-10-29)
+0.10.5 (2018-11-01)
 -------------------
 
-0.9.14 (2018-10-24)
+0.10.4 (2018-10-29)
 -------------------
 
-0.9.13 (2018-10-24)
+0.10.3 (2018-10-29)
+-------------------
+
+0.10.2 (2018-10-24)
 -------------------
 * [fix] Eigen alignment issuses due to missing aligned allocation (`#1039 <https://github.com/ros-planning/moveit/issues/1039>`_)
 * [fix] various compiler warnings (`#1038 <https://github.com/ros-planning/moveit/issues/1038>`_)
@@ -31,9 +65,10 @@ Changelog for package chomp_motion_planner
 * [capability] cleanup of unused parameters and code + addition of trajectory initialization methods (linear, cubic, quintic-spline) (`#960 <https://github.com/ros-planning/moveit/issues/960>`_)
 * Contributors: Adrian Zwiener, Raghavender Sahdev, Robert Haschke
 
-0.9.12 (2018-05-29)
+0.10.1 (2018-05-25)
 -------------------
 * [fix] for chomp fixed base joint bug (`#870 <https://github.com/ros-planning/moveit/issues/870>`_)
+* [maintenance] MoveIt! tf2 migration (`#830 <https://github.com/ros-planning/moveit/issues/830>`_)
 * [maintenance] switch to ROS_LOGGER from CONSOLE_BRIDGE (`#874 <https://github.com/ros-planning/moveit/issues/874>`_)
 * Contributors: Bence Magyar, Dave Coleman, Ian McMahon, Mike Lautman, Xiaojian Ma
 

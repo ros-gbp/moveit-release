@@ -61,7 +61,7 @@ struct OrderGraspQuality
 
   const std::vector<moveit_msgs::Grasp>& grasps_;
 };
-}
+}  // namespace
 
 bool PickPlan::plan(const planning_scene::PlanningSceneConstPtr& planning_scene, const moveit_msgs::PickupGoal& goal)
 {
@@ -109,7 +109,7 @@ bool PickPlan::plan(const planning_scene::PlanningSceneConstPtr& planning_scene,
                                                                                              << planning_group << "'");
   }
   const robot_model::JointModelGroup* eef =
-      end_effector.empty() ? NULL : planning_scene->getRobotModel()->getEndEffector(end_effector);
+      end_effector.empty() ? nullptr : planning_scene->getRobotModel()->getEndEffector(end_effector);
   if (!eef)
   {
     ROS_ERROR_NAMED("manipulation", "No end-effector specified for pick action");
@@ -130,7 +130,7 @@ bool PickPlan::plan(const planning_scene::PlanningSceneConstPtr& planning_scene,
   plan_data->path_constraints_ = goal.path_constraints;
   plan_data->planner_id_ = goal.planner_id;
   plan_data->minimize_object_distance_ = goal.minimize_object_distance;
-  plan_data->max_goal_sampling_attempts_ = std::max(2u, plan_data->planning_group_->getDefaultIKAttempts());
+  plan_data->max_goal_sampling_attempts_ = 2;
   moveit_msgs::AttachedCollisionObject& attach_object_msg = plan_data->diff_attached_object_;
 
   // construct the attached object message that will change the world to what it would become after a pick
@@ -206,7 +206,7 @@ bool PickPlan::plan(const planning_scene::PlanningSceneConstPtr& planning_scene,
     else
     {
       error_code_.val = moveit_msgs::MoveItErrorCodes::PLANNING_FAILED;
-      if (goal.possible_grasps.size() > 0)
+      if (!goal.possible_grasps.empty())
       {
         ROS_WARN_NAMED("manipulation", "All supplied grasps failed. Retrying last grasp in verbose mode.");
         // everything failed. we now start the pipeline again in verbose mode for one grasp
@@ -252,4 +252,4 @@ PickPlanPtr PickPlace::planPick(const planning_scene::PlanningSceneConstPtr& pla
 
   return p;
 }
-}
+}  // namespace pick_place

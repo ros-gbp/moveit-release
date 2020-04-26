@@ -51,7 +51,7 @@
 
 namespace pick_place
 {
-MOVEIT_CLASS_FORWARD(ManipulationPlanSharedData);
+MOVEIT_STRUCT_FORWARD(ManipulationPlanSharedData);
 
 struct ManipulationPlanSharedData
 {
@@ -81,7 +81,7 @@ struct ManipulationPlanSharedData
   ros::WallTime timeout_;
 };
 
-MOVEIT_CLASS_FORWARD(ManipulationPlan);
+MOVEIT_STRUCT_FORWARD(ManipulationPlan);
 
 struct ManipulationPlan
 {
@@ -119,7 +119,7 @@ struct ManipulationPlan
 
   // -------------- computed data --------------------------
   geometry_msgs::PoseStamped goal_pose_;
-  Eigen::Affine3d transformed_goal_pose_;
+  Eigen::Isometry3d transformed_goal_pose_;
 
   moveit_msgs::Constraints goal_constraints_;
 

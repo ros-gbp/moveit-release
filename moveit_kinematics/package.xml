@@ -1,14 +1,14 @@
 <?xml version="1.0"?>
-<package>
+<package format="2">
   <name>moveit_kinematics</name>
-  <version>0.9.18</version>
+  <version>1.0.3</version>
   <description>Package for all inverse kinematics solvers in MoveIt!</description>
 
-  <author email="dave@dav.ee">Dave Coleman</author>
+  <author email="dave@picknik.ai">Dave Coleman</author>
   <author email="isucan@google.com">Ioan Sucan</author>
   <author email="robot.moveit@gmail.com">Sachin Chitta</author>
 
-  <maintainer email="dave@dav.ee">Dave Coleman</maintainer>
+  <maintainer email="dave@picknik.ai">Dave Coleman</maintainer>
   <maintainer email="g.a.vanderhoorn@tudelft.nl">G.A. vd. Hoorn</maintainer>
   <maintainer email="jorge.nicho@swri.org">Jorge Nicho</maintainer>
   <maintainer email="moveit_releasers@googlegroups.com">MoveIt! Release Team</maintainer>
@@ -21,21 +21,21 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <build_depend>moveit_core</build_depend>
-  <build_depend version_gte="1.11.2">pluginlib</build_depend>
-  <build_depend>eigen</build_depend>
-  <build_depend>moveit_ros_planning</build_depend>
-  <build_depend>roscpp</build_depend>
-  <build_depend>srdfdom</build_depend>
-  <build_depend>tf</build_depend>
-  <build_depend>tf_conversions</build_depend>
-  <build_depend>urdf</build_depend>
+  <depend>roscpp</depend>
+  <depend>moveit_core</depend>
+  <depend version_gte="1.11.2">pluginlib</depend>
+  <depend>eigen</depend>
+  <depend>tf2</depend>
+  <depend>tf2_kdl</depend>
+  <depend>orocos_kdl</depend>
 
-  <run_depend>moveit_core</run_depend>
-  <run_depend version_gte="1.11.2">pluginlib</run_depend>
-  <run_depend>moveit_ros_planning</run_depend>
-  <run_depend>roscpp</run_depend>
+  <exec_depend>python-lxml</exec_depend>
+  <exec_depend>liburdfdom-tools</exec_depend> <!-- provides check_urdf required by ikfast scripts -->
 
+  <test_depend>rostest</test_depend>
+  <test_depend>moveit_ros_planning</test_depend>
+  <test_depend>moveit_resources</test_depend>
+  <test_depend>xmlrpcpp</test_depend>
 
   <export>
     <moveit_core plugin="${prefix}/kdl_kinematics_plugin_description.xml"/>

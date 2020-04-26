@@ -37,11 +37,13 @@
 #include <moveit/robot_model/aabb.h>
 #include <moveit/robot_model/robot_model.h>
 #include <moveit/robot_state/robot_state.h>
-#include <moveit_resources/config.h>
 #include <urdf_parser/urdf_parser.h>
 #include <fstream>
 #include <boost/filesystem.hpp>
 #include <gtest/gtest.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <tf2/LinearMath/Vector3.h>
+#include <moveit/utils/robot_model_test_utils.h>
 
 // To visualize bbox of the PR2, set this to 1.
 #ifndef VISUALIZE_PR2_RVIZ
@@ -57,37 +59,16 @@
 class TestAABB : public testing::Test
 {
 protected:
-  std::string readFileToString(boost::filesystem::path path) const
-  {
-    std::string file_string;
-    std::fstream file(path.string().c_str(), std::fstream::in);
-    if (file.is_open())
-    {
-      std::string line;
-      while (file.good())
-      {
-        std::getline(file, line);
-        file_string += (line + "\n");
-      }
-      file.close();
-    }
-    return file_string;
-  }
-
   void SetUp() override{};
 
-  robot_state::RobotState loadModel(const std::string urdf, const std::string srdf)
+  robot_state::RobotState loadModel(const std::string& robot_name)
   {
-    urdf::ModelInterfaceSharedPtr parsed_urdf(urdf::parseURDF(urdf));
-    if (!parsed_urdf)
-      throw std::runtime_error("Cannot parse URDF.");
+    robot_model::RobotModelPtr model = moveit::core::loadTestingRobotModel(robot_name);
+    return loadModel(model);
+  }
 
-    srdf::ModelSharedPtr parsed_srdf(new srdf::Model());
-    bool srdf_ok = parsed_srdf->initString(*parsed_urdf, srdf);
-    if (!srdf_ok)
-      throw std::runtime_error("Cannot parse URDF.");
-
-    robot_model::RobotModelPtr model(new robot_model::RobotModel(parsed_urdf, parsed_srdf));
+  robot_state::RobotState loadModel(const robot_model::RobotModelPtr& model)
+  {
     robot_state::RobotState robot_state = robot_state::RobotState(model);
     robot_state.setToDefaultValues();
     robot_state.update(true);
@@ -104,38 +85,34 @@ TEST_F(TestAABB, TestPR2)
 {
   // Contains a link with mesh geometry that is not centered
 
-  boost::filesystem::path res_path(MOVEIT_TEST_RESOURCES_DIR);
+  robot_state::RobotState pr2_state = this->loadModel("pr2");
 
-  const std::string PR2_URDF = this->readFileToString(res_path / "pr2_description/urdf/robot.xml");
-  const std::string PR2_SRDF = this->readFileToString(res_path / "pr2_description/srdf/robot.xml");
-
-  robot_state::RobotState pr2_state = this->loadModel(PR2_URDF, PR2_SRDF);
-
-  const Eigen::Vector3d& extentsBaseFootprint = pr2_state.getLinkModel("base_footprint")->getShapeExtentsAtOrigin();
+  const Eigen::Vector3d& extents_base_footprint = pr2_state.getLinkModel("base_footprint")->getShapeExtentsAtOrigin();
   // values taken from moveit_resources/pr2_description/urdf/robot.xml
-  EXPECT_NEAR(extentsBaseFootprint[0], 0.001, 1e-4);
-  EXPECT_NEAR(extentsBaseFootprint[1], 0.001, 1e-4);
-  EXPECT_NEAR(extentsBaseFootprint[2], 0.001, 1e-4);
+  EXPECT_NEAR(extents_base_footprint[0], 0.001, 1e-4);
+  EXPECT_NEAR(extents_base_footprint[1], 0.001, 1e-4);
+  EXPECT_NEAR(extents_base_footprint[2], 0.001, 1e-4);
 
-  const Eigen::Vector3d& offsetBaseFootprint = pr2_state.getLinkModel("base_footprint")->getCenteredBoundingBoxOffset();
-  EXPECT_NEAR(offsetBaseFootprint[0], 0.0, 1e-4);
-  EXPECT_NEAR(offsetBaseFootprint[1], 0.0, 1e-4);
-  EXPECT_NEAR(offsetBaseFootprint[2], 0.071, 1e-4);
+  const Eigen::Vector3d& offset_base_footprint =
+      pr2_state.getLinkModel("base_footprint")->getCenteredBoundingBoxOffset();
+  EXPECT_NEAR(offset_base_footprint[0], 0.0, 1e-4);
+  EXPECT_NEAR(offset_base_footprint[1], 0.0, 1e-4);
+  EXPECT_NEAR(offset_base_footprint[2], 0.071, 1e-4);
 
-  const Eigen::Vector3d& extentsBaseLink = pr2_state.getLinkModel("base_link")->getShapeExtentsAtOrigin();
+  const Eigen::Vector3d& extents_base_link = pr2_state.getLinkModel("base_link")->getShapeExtentsAtOrigin();
   // values computed from moveit_resources/pr2_description/urdf/meshes/base_v0/base_L.stl in e.g. Meshlab
-  EXPECT_NEAR(extentsBaseLink[0], 0.668242, 1e-4);
-  EXPECT_NEAR(extentsBaseLink[1], 0.668242, 1e-4);
-  EXPECT_NEAR(extentsBaseLink[2], 0.656175, 1e-4);
+  EXPECT_NEAR(extents_base_link[0], 0.668242, 1e-4);
+  EXPECT_NEAR(extents_base_link[1], 0.668242, 1e-4);
+  EXPECT_NEAR(extents_base_link[2], 0.656175, 1e-4);
 
-  const Eigen::Vector3d& offsetBaseLink = pr2_state.getLinkModel("base_link")->getCenteredBoundingBoxOffset();
-  EXPECT_NEAR(offsetBaseLink[0], 0.0, 1e-4);
-  EXPECT_NEAR(offsetBaseLink[1], 0.0, 1e-4);
-  EXPECT_NEAR(offsetBaseLink[2], 0.656175 / 2, 1e-4);  // The 3D mesh isn't centered, but is whole above z axis
+  const Eigen::Vector3d& offset_base_link = pr2_state.getLinkModel("base_link")->getCenteredBoundingBoxOffset();
+  EXPECT_NEAR(offset_base_link[0], 0.0, 1e-4);
+  EXPECT_NEAR(offset_base_link[1], 0.0, 1e-4);
+  EXPECT_NEAR(offset_base_link[2], 0.656175 / 2, 1e-4);  // The 3D mesh isn't centered, but is whole above z axis
 
   std::vector<double> pr2_aabb;
   pr2_state.computeAABB(pr2_aabb);
-  ASSERT_EQ(pr2_aabb.size(), 6);
+  ASSERT_EQ(pr2_aabb.size(), 6u);
 
   EXPECT_NEAR(pr2_aabb[0], -0.3376, 1e-4);
   EXPECT_NEAR(pr2_aabb[1], 0.6499, 1e-4);
@@ -147,7 +124,7 @@ TEST_F(TestAABB, TestPR2)
   // Test a specific link known to have some global rotation in the default pose
 
   const moveit::core::LinkModel* link = pr2_state.getLinkModel("l_forearm_link");
-  Eigen::Affine3d transform = pr2_state.getGlobalLinkTransform(link);  // intentional copy, we will translate
+  Eigen::Isometry3d transform = pr2_state.getGlobalLinkTransform(link);  // intentional copy, we will translate
   const Eigen::Vector3d& extents = link->getShapeExtentsAtOrigin();
   transform.translate(link->getCenteredBoundingBoxOffset());
   moveit::core::AABB aabb;
@@ -204,7 +181,7 @@ TEST_F(TestAABB, TestPR2)
   std::vector<const moveit::core::LinkModel*> links = pr2_state.getRobotModel()->getLinkModelsWithCollisionGeometry();
   for (std::size_t i = 0; i < links.size(); ++i)
   {
-    Eigen::Affine3d transform = pr2_state.getGlobalLinkTransform(links[i]);  // intentional copy, we will translate
+    Eigen::Isometry3d transform = pr2_state.getGlobalLinkTransform(links[i]);  // intentional copy, we will translate
     const Eigen::Vector3d& extents = links[i]->getShapeExtentsAtOrigin();
     transform.translate(links[i]->getCenteredBoundingBoxOffset());
     moveit::core::AABB aabb;
@@ -234,7 +211,7 @@ TEST_F(TestAABB, TestPR2)
     msg.scale.z = extents[2];
     msg.color.r = 0;
     msg.color.b = 1;
-    Eigen::Quaterniond q(transform.linear());
+    Eigen::Quaterniond q(transform.rotation());
     msg.pose.orientation.x = q.x();
     msg.pose.orientation.y = q.y();
     msg.pose.orientation.z = q.z();
@@ -248,7 +225,7 @@ TEST_F(TestAABB, TestPR2)
   for (std::vector<const moveit::core::AttachedBody*>::const_iterator it = attached_bodies.begin();
        it != attached_bodies.end(); ++it)
   {
-    const EigenSTL::vector_Affine3d& transforms = (*it)->getGlobalCollisionBodyTransforms();
+    const EigenSTL::vector_Isometry3d& transforms = (*it)->getGlobalCollisionBodyTransforms();
     const std::vector<shapes::ShapeConstPtr>& shapes = (*it)->getShapes();
     for (std::size_t i = 0; i < transforms.size(); ++i)
     {
@@ -280,7 +257,7 @@ TEST_F(TestAABB, TestPR2)
       msg.scale.z = extents[2];
       msg.color.r = 0;
       msg.color.b = 1;
-      Eigen::Quaterniond q(transforms[i].linear());
+      Eigen::Quaterniond q(transforms[i].rotation());
       msg.pose.orientation.x = q.x();
       msg.pose.orientation.y = q.y();
       msg.pose.orientation.z = q.z();
@@ -294,48 +271,28 @@ TEST_F(TestAABB, TestPR2)
 TEST_F(TestAABB, TestSimple)
 {
   // Contains a link with simple geometry and an offset in the collision link
+  moveit::core::RobotModelBuilder builder("simple", "base_footprint");
+  geometry_msgs::Pose origin;
+  tf2::toMsg(tf2::Vector3(0, 0, 0.051), origin.position);
+  origin.orientation.w = 1.0;
+  builder.addChain("base_footprint->base_link", "fixed", { origin });
 
-  const std::string SIMPLE_URDF =
-      "<?xml version='1.0' ?>"
-      "<robot name='simple'>"
-      "  <link name='base_link'>"
-      "    <collision>"
-      "      <origin rpy='0 0 0' xyz='0 0 0'/>"
-      "      <geometry>"
-      "        <mesh filename='package://moveit_resources/pr2_description/urdf/meshes/base_v0/base_L.stl'/>"
-      "      </geometry>"
-      "    </collision>"
-      "  </link>"
-      "  <link name='base_footprint'>"
-      "    <collision>"
-      "      <origin rpy='0 0 0' xyz='0 0 0.071'/>"
-      "      <geometry>"
-      "        <box size='0.001 0.001 0.001'/>"
-      "      </geometry>"
-      "    </collision>"
-      "  </link>"
-      "  <joint name='base_footprint_joint' type='fixed'>"
-      "    <origin rpy='0 0 0' xyz='0 0 0.051'/>"
-      "    <child link='base_link'/>"
-      "    <parent link='base_footprint'/>"
-      "  </joint>"
-      "</robot>";
+  tf2::toMsg(tf2::Vector3(0, 0, 0), origin.position);
+  builder.addCollisionMesh("base_link", "package://moveit_resources/pr2_description/urdf/meshes/base_v0/base_L.stl",
+                           origin);
 
-  const std::string SIMPLE_SRDF =
-      "<?xml version='1.0'?>"
-      "<robot name='simple'>  "
-      "  <virtual_joint name='world_joint' type='planar' parent_frame='odom_combined' child_link='base_footprint'/>   "
-      "  <group name='base'>"
-      "    <joint name='world_joint'/>"
-      "  </group>    "
-      "</robot>";
+  tf2::toMsg(tf2::Vector3(0, 0, 0.071), origin.position);
+  builder.addCollisionBox("base_footprint", { 0.001, 0.001, 0.001 }, origin);
 
-  robot_state::RobotState simple_state = this->loadModel(SIMPLE_URDF, SIMPLE_SRDF);
+  builder.addVirtualJoint("odom_combined", "base_footprint", "planar", "world_joint");
+  builder.addGroup({}, { "world_joint" }, "base");
 
+  ASSERT_TRUE(builder.isValid());
+  robot_state::RobotState simple_state = loadModel(builder.build());
   std::vector<double> simple_aabb;
   simple_state.computeAABB(simple_aabb);
 
-  ASSERT_EQ(simple_aabb.size(), 6);
+  ASSERT_EQ(simple_aabb.size(), 6u);
   EXPECT_NEAR(simple_aabb[0], -0.6682 / 2, 1e-4);
   EXPECT_NEAR(simple_aabb[1], 0.6682 / 2, 1e-4);
   EXPECT_NEAR(simple_aabb[2], -0.6682 / 2, 1e-4);
@@ -347,48 +304,26 @@ TEST_F(TestAABB, TestSimple)
 TEST_F(TestAABB, TestComplex)
 {
   // Contains a link with simple geometry and an offset and rotation in the collision link
+  moveit::core::RobotModelBuilder builder("complex", "base_footprint");
+  geometry_msgs::Pose origin;
+  tf2::toMsg(tf2::Vector3(0, 0, 1.0), origin.position);
+  tf2::Quaternion q;
+  q.setRPY(0, 0, 1.5708);
+  origin.orientation = tf2::toMsg(q);
+  builder.addChain("base_footprint->base_link", "fixed", { origin });
+  tf2::toMsg(tf2::Vector3(5.0, 0, 1.0), origin.position);
+  builder.addCollisionBox("base_link", { 1.0, 0.1, 0.1 }, origin);
+  tf2::toMsg(tf2::Vector3(4.0, 0, 1.0), origin.position);
+  builder.addCollisionBox("base_link", { 1.0, 0.1, 0.1 }, origin);
+  tf2::toMsg(tf2::Vector3(-5.0, 0.0, -1.0), origin.position);
+  q.setRPY(0, 1.5708, 0);
+  origin.orientation = tf2::toMsg(q);
+  builder.addCollisionBox("base_footprint", { 0.1, 1.0, 0.1 }, origin);
+  builder.addVirtualJoint("odom_combined", "base_footprint", "planar", "world_joint");
+  builder.addGroup({}, { "world_joint" }, "base");
 
-  const std::string COMPLEX_URDF = "<?xml version='1.0' ?>"
-                                   "<robot name='complex'>"
-                                   "  <link name='base_link'>"
-                                   "    <collision>"
-                                   "      <origin rpy='0 0 1.5708' xyz='5.0 0 1.0'/>"
-                                   "      <geometry>"
-                                   "        <box size='1.0 0.1 0.1' />"
-                                   "      </geometry>"
-                                   "    </collision>"
-                                   "    <collision>"
-                                   "      <origin rpy='0 0 1.5708' xyz='4.0 0 1.0'/>"
-                                   "      <geometry>"
-                                   "        <box size='1.0 0.1 0.1' />"
-                                   "      </geometry>"
-                                   "    </collision>"
-                                   "  </link>"
-                                   "  <link name='base_footprint'>"
-                                   "    <collision>"
-                                   "      <origin rpy='0 1.5708 0' xyz='-5.0 0 -1.0'/>"
-                                   "      <geometry>"
-                                   "        <box size='0.1 1.0 0.1' />"
-                                   "      </geometry>"
-                                   "    </collision>"
-                                   "  </link>"
-                                   "  <joint name='base_footprint_joint' type='fixed'>"
-                                   "    <origin rpy='0 0 1.5708' xyz='0 0 1'/>"
-                                   "    <child link='base_link'/>"
-                                   "    <parent link='base_footprint'/>"
-                                   "  </joint>"
-                                   "</robot>";
-
-  const std::string COMPLEX_SRDF =
-      "<?xml version='1.0'?>"
-      "<robot name='complex'>  "
-      "  <virtual_joint name='world_joint' type='planar' parent_frame='odom_combined' child_link='base_footprint'/>   "
-      "  <group name='base'>"
-      "    <joint name='world_joint'/>"
-      "  </group>    "
-      "</robot>";
-
-  robot_state::RobotState complex_state = this->loadModel(COMPLEX_URDF, COMPLEX_SRDF);
+  ASSERT_TRUE(builder.isValid());
+  robot_state::RobotState complex_state = this->loadModel(builder.build());
 
   EXPECT_NEAR(complex_state.getLinkModel("base_footprint")->getShapeExtentsAtOrigin()[0], 0.1, 1e-4);
   EXPECT_NEAR(complex_state.getLinkModel("base_footprint")->getShapeExtentsAtOrigin()[1], 1.0, 1e-4);
@@ -407,7 +342,7 @@ TEST_F(TestAABB, TestComplex)
   std::vector<double> complex_aabb;
   complex_state.computeAABB(complex_aabb);
 
-  ASSERT_EQ(complex_aabb.size(), 6);
+  ASSERT_EQ(complex_aabb.size(), 6u);
   EXPECT_NEAR(complex_aabb[0], -5.05, 1e-4);
   EXPECT_NEAR(complex_aabb[1], 0.5, 1e-4);
   EXPECT_NEAR(complex_aabb[2], -0.5, 1e-4);

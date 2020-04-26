@@ -40,15 +40,15 @@
 #include <string>
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
-#include <boost/shared_ptr.hpp>
 #include <moveit/macros/class_forward.h>
 #include <moveit/planning_scene_monitor/planning_scene_monitor.h>
 #include <moveit/mesh_filter/mesh_filter_base.h>
 #include <map>
 
-namespace tf
+namespace tf2_ros
 {
 class TransformListener;
+class Buffer;
 }
 
 /**
@@ -75,7 +75,7 @@ public:
    * \param[out] transform pose of the mesh in camera coordinate system
    * \return true if transform available, false otherwise
    */
-  bool getTransform(mesh_filter::MeshHandle handle, Eigen::Affine3d& transform) const;
+  bool getTransform(mesh_filter::MeshHandle handle, Eigen::Isometry3d& transform) const;
 
   /**
    * \brief registers a mesh with its handle
@@ -135,7 +135,7 @@ private:
     }
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     std::string frame_id_;
-    Eigen::Affine3d transformation_;
+    Eigen::Isometry3d transformation_;
     boost::mutex mutex_;
   };
 
@@ -149,7 +149,8 @@ private:
   std::map<mesh_filter::MeshHandle, TransformContextPtr> handle2context_;
 
   /** \brief TransformListener used to listen and update transformations*/
-  boost::shared_ptr<tf::TransformListener> tf_;
+  std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
+  std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
 
   /** \brief SceneMonitor used to get current states*/
   planning_scene_monitor::PlanningSceneMonitorPtr psm_;

@@ -2,27 +2,61 @@
 Changelog for package moveit_ros_perception
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.9.18 (2020-01-24)
--------------------
+1.0.3 (2020-04-26)
+------------------
+* [maint] Apply clang-tidy fix to entire code base (`#1394 <https://github.com/ros-planning/moveit/issues/1394>`_)
+* [maint] Fix errors: catkin_lint 1.6.7 (`#1987 <https://github.com/ros-planning/moveit/issues/1987>`_)
+* [maint] Windows build fixes
+  * Fix header inclusion and other MSVC build errors (`#1636 <https://github.com/ros-planning/moveit/issues/1636>`_)
+  * Fix binary artifact install locations. (`#1575 <https://github.com/ros-planning/moveit/issues/1575>`_)
+* [maint] Use CMAKE_CXX_STANDARD to enforce c++14 (`#1607 <https://github.com/ros-planning/moveit/issues/1607>`_)
+* [maint] Allow subclassing of point_containment_filter::ShapeMask. (`#1457 <https://github.com/ros-planning/moveit/issues/1457>`_)
+* [fix]   `depth_image_octomap_updater`: reset depth transfer function to standard values (`#1661 <https://github.com/ros-planning/moveit/issues/1661>`_)
+* [fix]   `depth_image_octomap_updater`: correctly set properties of debug images (`#1652 <https://github.com/ros-planning/moveit/issues/1652>`_)
+* [maint] Move `occupancy_map_monitor` into its own package (`#1533 <https://github.com/ros-planning/moveit/issues/1533>`_)
+* Contributors: Martin Pecka, Matthias Nieuwenhuisen, Robert Haschke, Sean Yen, Yu, Yan, jschleicher
 
-0.9.17 (2019-07-09)
--------------------
+1.0.2 (2019-06-28)
+------------------
+* [maintenance] Removed unnecessary null pointer checks on deletion (`#1410 <https://github.com/ros-planning/moveit/issues/1410>`_)
+* Contributors: Mahmoud Ahmed Selim
 
-0.9.16 (2019-06-29)
--------------------
-* [maintanance] Resolve catkin lint issues (`#1137 <https://github.com/ros-planning/moveit/issues/1137>`_)
-* [maintanance] Improve clang-format (`#1214 <https://github.com/ros-planning/moveit/issues/1214>`_)
-* Contributors: Ludovic Delval, Robert Haschke
+1.0.1 (2019-03-08)
+------------------
+* [improve] Apply clang tidy fix to entire code base (Part 1) (`#1366 <https://github.com/ros-planning/moveit/issues/1366>`_)
+* Contributors: Yu, Yan
 
-0.9.15 (2018-10-29)
--------------------
-* [improvement] Exploit the fact that our transforms are isometries (instead of general affine transformations). `#1091 <https://github.com/ros-planning/moveit/issues/1091>`_
+1.0.0 (2019-02-24)
+------------------
+* [fix] catkin_lint issues (`#1341 <https://github.com/ros-planning/moveit/issues/1341>`_)
 * Contributors: Robert Haschke
 
-0.9.14 (2018-10-24)
+0.10.8 (2018-12-24)
 -------------------
 
-0.9.13 (2018-10-24)
+0.10.7 (2018-12-13)
+-------------------
+
+0.10.6 (2018-12-09)
+-------------------
+* [maintenance] Use createUniqueInstance() (`#1104 <https://github.com/ros-planning/moveit/issues/1104>`_)
+* [maintenance] Enforce OpenMP support for perception (`#1234 <https://github.com/ros-planning/moveit/issues/1234>`_)
+* [maintenance] Replaced Eigen::Affine3d -> Eigen::Isometry3d (`#1096 <https://github.com/ros-planning/moveit/issues/1096>`_)
+* [maintenance] Use C++14 (`#1146 <https://github.com/ros-planning/moveit/issues/1146>`_)
+* Contributors: Alex Moriarty, Michael Görner, Robert Haschke
+
+0.10.5 (2018-11-01)
+-------------------
+
+0.10.4 (2018-10-29)
+-------------------
+
+0.10.3 (2018-10-29)
+-------------------
+* [fix] compiler warnings (`#1089 <https://github.com/ros-planning/moveit/issues/1089>`_)
+* Contributors: Robert Haschke
+
+0.10.2 (2018-10-24)
 -------------------
 * [fix] Eigen alignment issuses due to missing aligned allocation (`#1039 <https://github.com/ros-planning/moveit/issues/1039>`_)
 * [fix] DepthImageOctomapUpdater not found error (`#954 <https://github.com/ros-planning/moveit/issues/954>`_)
@@ -33,9 +67,10 @@ Changelog for package moveit_ros_perception
 * [maintenance] add minimum required pluginlib version (`#927 <https://github.com/ros-planning/moveit/issues/927>`_)
 * Contributors: Adrian Zwiener, Martin Günther, Michael Görner, Mikael Arguedas, Mohmmad Ayman, Ridhwan Luthra, Robert Haschke, mike lautman
 
-0.9.12 (2018-05-29)
+0.10.1 (2018-05-25)
 -------------------
 * boost::shared_ptr -> std::shared_ptr
+* migration from tf to tf2 API (`#830 <https://github.com/ros-planning/moveit/issues/830>`_)
 * [fix] make OpenGL parts optional (`#698 <https://github.com/ros-planning/moveit/issues/698>`_)
 * Contributors: Bence Magyar, Ian McMahon, Lukas Bulwahn, Michael Görner, Mikael Arguedas, Robert Haschke
 

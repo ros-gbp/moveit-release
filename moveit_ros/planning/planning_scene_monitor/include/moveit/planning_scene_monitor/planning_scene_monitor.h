@@ -39,15 +39,14 @@
 
 #include <ros/ros.h>
 #include <ros/callback_queue.h>
-#include <tf/tf.h>
-#include <tf/message_filter.h>
-#include <message_filters/subscriber.h>
+#include <tf2_ros/buffer.h>
 #include <moveit/macros/class_forward.h>
 #include <moveit/planning_scene/planning_scene.h>
 #include <moveit/robot_model_loader/robot_model_loader.h>
 #include <moveit/occupancy_map_monitor/occupancy_map_monitor.h>
 #include <moveit/planning_scene_monitor/current_state_monitor.h>
 #include <moveit/collision_plugin_loader/collision_plugin_loader.h>
+#include <moveit_msgs/GetPlanningScene.h>
 #include <boost/noncopyable.hpp>
 #include <boost/thread/shared_mutex.hpp>
 #include <boost/thread/recursive_mutex.hpp>
@@ -107,41 +106,41 @@ public:
 
   /** @brief Constructor
    *  @param robot_description The name of the ROS parameter that contains the URDF (in string format)
-   *  @param tf A pointer to a tf::Transformer
+   *  @param tf_buffer A pointer to a tf2_ros::Buffer
    *  @param name A name identifying this planning scene monitor
    */
   PlanningSceneMonitor(const std::string& robot_description,
-                       const boost::shared_ptr<tf::Transformer>& tf = boost::shared_ptr<tf::Transformer>(),
+                       const std::shared_ptr<tf2_ros::Buffer>& tf_buffer = std::shared_ptr<tf2_ros::Buffer>(),
                        const std::string& name = "");
 
   /** @brief Constructor
    *  @param rml A pointer to a kinematic model loader
-   *  @param tf A pointer to a tf::Transformer
+   *  @param tf_buffer A pointer to a tf2_ros::Buffer
    *  @param name A name identifying this planning scene monitor
    */
   PlanningSceneMonitor(const robot_model_loader::RobotModelLoaderPtr& rml,
-                       const boost::shared_ptr<tf::Transformer>& tf = boost::shared_ptr<tf::Transformer>(),
+                       const std::shared_ptr<tf2_ros::Buffer>& tf_buffer = std::shared_ptr<tf2_ros::Buffer>(),
                        const std::string& name = "");
 
   /** @brief Constructor
    *  @param scene The scene instance to maintain up to date with monitored information
    *  @param robot_description The name of the ROS parameter that contains the URDF (in string format)
-   *  @param tf A pointer to a tf::Transformer
+   *  @param tf_buffer A pointer to a tf2_ros::Buffer
    *  @param name A name identifying this planning scene monitor
    */
   PlanningSceneMonitor(const planning_scene::PlanningScenePtr& scene, const std::string& robot_description,
-                       const boost::shared_ptr<tf::Transformer>& tf = boost::shared_ptr<tf::Transformer>(),
+                       const std::shared_ptr<tf2_ros::Buffer>& tf_buffer = std::shared_ptr<tf2_ros::Buffer>(),
                        const std::string& name = "");
 
   /** @brief Constructor
    *  @param scene The scene instance to maintain up to date with monitored information
    *  @param rml A pointer to a kinematic model loader
-   *  @param tf A pointer to a tf::Transformer
+   *  @param tf_buffer A pointer to a tf2_ros::Buffer
    *  @param name A name identifying this planning scene monitor
    */
   PlanningSceneMonitor(const planning_scene::PlanningScenePtr& scene,
                        const robot_model_loader::RobotModelLoaderPtr& rml,
-                       const boost::shared_ptr<tf::Transformer>& tf = boost::shared_ptr<tf::Transformer>(),
+                       const std::shared_ptr<tf2_ros::Buffer>& tf_buffer = std::shared_ptr<tf2_ros::Buffer>(),
                        const std::string& name = "");
 
   /** @brief Constructor
@@ -150,12 +149,12 @@ public:
    *  @param nh external parent NodeHandle
    *         The monitors will use this NodeHandle's CallbackQueue for updates.
    *         Usually, this should be a different queue than the global queue, otherwise you might run into timeouts.
-   *  @param tf A pointer to a tf::Transformer
+   *  @param tf_buffer A pointer to a tf2_ros::Buffer
    *  @param name A name identifying this planning scene monitor
    */
   PlanningSceneMonitor(const planning_scene::PlanningScenePtr& scene,
                        const robot_model_loader::RobotModelLoaderPtr& rml, const ros::NodeHandle& nh,
-                       const boost::shared_ptr<tf::Transformer>& tf = boost::shared_ptr<tf::Transformer>(),
+                       const std::shared_ptr<tf2_ros::Buffer>& tf_buffer = std::shared_ptr<tf2_ros::Buffer>(),
                        const std::string& name = "");
 
   ~PlanningSceneMonitor();
@@ -248,9 +247,9 @@ public:
   }
 
   /** @brief Get the instance of the TF client that was passed to the constructor of this class. */
-  const boost::shared_ptr<tf::Transformer>& getTFClient() const
+  const std::shared_ptr<tf2_ros::Buffer>& getTFClient() const
   {
-    return tf_;
+    return tf_buffer_;
   }
 
   /** \brief By default, the maintained planning scene does not reason about diffs. When the flag passed in is true, the
@@ -327,24 +326,36 @@ public:
       return 0.0;
   }
 
-  /** @brief Start the scene monitor
+  /** @brief Start the scene monitor (ROS topic-based)
    *  @param scene_topic The name of the planning scene topic
    */
   void startSceneMonitor(const std::string& scene_topic = DEFAULT_PLANNING_SCENE_TOPIC);
 
-  /** @brief Request planning scene state using a service call
-   *  @param service_name The name of the service to use for requesting the
-   *     planning scene.  This must be a service of type
-   *     moveit_msgs::GetPlanningScene and is usually called
-   *     "/get_planning_scene".
+  /** @brief Request a full planning scene state using a service call
+   *         Be careful not to use this in conjunction with providePlanningSceneService(),
+   *         as it will create a pointless feedback loop.
+   *  @param service_name The name of the service to use for requesting the planning scene.
+   *         This must be a service of type moveit_msgs::GetPlanningScene and is usually called
+   *         "/get_planning_scene".
    */
   bool requestPlanningSceneState(const std::string& service_name = DEFAULT_PLANNING_SCENE_SERVICE);
+
+  /** @brief Create an optional service for getting the complete planning scene
+   *         This is useful for satisfying the Rviz PlanningScene display's need for a service
+   *         without having to use a move_group node.
+   *         Be careful not to use this in conjunction with requestPlanningSceneState(),
+   *         as it will create a pointless feedback loop.
+   *  @param service_name The topic to provide the service
+   */
+  void providePlanningSceneService(const std::string& service_name = DEFAULT_PLANNING_SCENE_SERVICE);
 
   /** @brief Stop the scene monitor*/
   void stopSceneMonitor();
 
-  /** @brief Start listening for objects in the world, the collision map and attached collision objects. Additionally,
-   * this function starts the OccupancyMapMonitor as well.
+  /** @brief Start the OccupancyMapMonitor and listening for:
+   *     - Requests to add/remove/update collision objects to/from the world
+   *     - The collision map
+   *     - Requests to attached/detach collision objects
    *  @param collision_objects_topic The topic on which to listen for collision objects
    *  @param planning_scene_world_topic The topic to listen to for world scene geometry
    *  @param load_octomap_monitor Flag to disable octomap monitor if desired
@@ -417,10 +428,6 @@ protected:
   /** @brief Callback for a new collision object msg*/
   void collisionObjectCallback(const moveit_msgs::CollisionObjectConstPtr& obj);
 
-  /** @brief Callback for a new collision object msg that failed to pass the TF filter */
-  void collisionObjectFailTFCallback(const moveit_msgs::CollisionObjectConstPtr& obj,
-                                     tf::filter_failure_reasons::FilterFailureReason reason);
-
   /** @brief Callback for a new planning scene world*/
   void newPlanningSceneWorldCallback(const moveit_msgs::PlanningSceneWorldConstPtr& world);
 
@@ -467,7 +474,9 @@ protected:
   ros::NodeHandle root_nh_;
   ros::CallbackQueue queue_;
   std::shared_ptr<ros::AsyncSpinner> spinner_;
-  boost::shared_ptr<tf::Transformer> tf_;
+
+  std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
+
   std::string robot_description_;
 
   /// default robot padding
@@ -496,9 +505,11 @@ protected:
   ros::Subscriber planning_scene_world_subscriber_;
 
   ros::Subscriber attached_collision_object_subscriber_;
+  ros::Subscriber collision_object_subscriber_;
 
-  std::unique_ptr<message_filters::Subscriber<moveit_msgs::CollisionObject> > collision_object_subscriber_;
-  std::unique_ptr<tf::MessageFilter<moveit_msgs::CollisionObject> > collision_object_filter_;
+  // provide an optional service to get the full planning scene state
+  // this is used by MoveGroup and related application nodes
+  ros::ServiceServer get_scene_service_;
 
   // include a octomap monitor
   std::unique_ptr<occupancy_map_monitor::OccupancyMapMonitor> octomap_monitor_;
@@ -512,7 +523,7 @@ protected:
   typedef std::map<const robot_state::AttachedBody*,
                    std::vector<std::pair<occupancy_map_monitor::ShapeHandle, std::size_t> > >
       AttachedBodyShapeHandles;
-  typedef std::map<std::string, std::vector<std::pair<occupancy_map_monitor::ShapeHandle, const Eigen::Affine3d*> > >
+  typedef std::map<std::string, std::vector<std::pair<occupancy_map_monitor::ShapeHandle, const Eigen::Isometry3d*> > >
       CollisionBodyShapeHandles;
 
   LinkShapeHandles link_shape_handles_;
@@ -539,6 +550,10 @@ private:
 
   // Callback for a new planning scene msg
   void newPlanningSceneCallback(const moveit_msgs::PlanningSceneConstPtr& scene);
+
+  // Callback for requesting the full planning scene via service
+  bool getPlanningSceneServiceCallback(moveit_msgs::GetPlanningScene::Request& req,
+                                       moveit_msgs::GetPlanningScene::Response& res);
 
   // Lock for state_update_pending_ and dt_state_update_
   boost::mutex state_pending_mutex_;
@@ -637,7 +652,7 @@ protected:
       lock_.reset(new SingleUnlock(planning_scene_monitor_.get(), read_only));
   }
 
-  MOVEIT_CLASS_FORWARD(SingleUnlock);
+  MOVEIT_STRUCT_FORWARD(SingleUnlock);
 
   // we use this struct so that lock/unlock are called only once
   // even if the LockedPlanningScene instance is copied around

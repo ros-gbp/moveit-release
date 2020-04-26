@@ -49,14 +49,14 @@ class MoveGroupMoveAction : public MoveGroupCapability
 public:
   MoveGroupMoveAction();
 
-  virtual void initialize();
+  void initialize() override;
 
 private:
   void executeMoveCallback(const moveit_msgs::MoveGroupGoalConstPtr& goal);
-  void executeMoveCallback_PlanAndExecute(const moveit_msgs::MoveGroupGoalConstPtr& goal,
-                                          moveit_msgs::MoveGroupResult& action_res);
-  void executeMoveCallback_PlanOnly(const moveit_msgs::MoveGroupGoalConstPtr& goal,
-                                    moveit_msgs::MoveGroupResult& action_res);
+  void executeMoveCallbackPlanAndExecute(const moveit_msgs::MoveGroupGoalConstPtr& goal,
+                                         moveit_msgs::MoveGroupResult& action_res);
+  void executeMoveCallbackPlanOnly(const moveit_msgs::MoveGroupGoalConstPtr& goal,
+                                   moveit_msgs::MoveGroupResult& action_res);
   void startMoveExecutionCallback();
   void startMoveLookCallback();
   void preemptMoveCallback();

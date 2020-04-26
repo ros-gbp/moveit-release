@@ -56,7 +56,7 @@
 #include "setup_screen_widget.h"  // a base class for screens in the setup assistant
 #include "controller_edit_widget.h"
 
-namespace moveit_ros_control
+namespace moveit_setup_assistant
 {
 class ROSControllersWidget : public SetupScreenWidget
 {
@@ -67,12 +67,12 @@ public:
   // Public Functions
   // ******************************************************************************************
 
-  ROSControllersWidget(QWidget* parent, moveit_setup_assistant::MoveItConfigDataPtr config_data);
+  ROSControllersWidget(QWidget* parent, const MoveItConfigDataPtr& config_data);
 
   void changeScreen(int index);
 
   /// Received when this widget is chosen from the navigation menu
-  virtual void focusGiven();
+  void focusGiven() override;
 
 private Q_SLOTS:
 

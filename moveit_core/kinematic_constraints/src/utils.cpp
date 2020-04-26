@@ -36,11 +36,10 @@
 
 #include <moveit/kinematic_constraints/utils.h>
 #include <geometric_shapes/solid_primitive_dims.h>
-#include <eigen_conversions/eigen_msg.h>
-#include <tf/transform_datatypes.h>
-#include <xmlrpcpp/XmlRpcValue.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <moveit/utils/xmlrpc_casts.h>
 
-#include <boost/algorithm/string/join.hpp>
+using namespace moveit::core;
 
 namespace kinematic_constraints
 {
@@ -275,49 +274,6 @@ moveit_msgs::Constraints constructGoalConstraints(const std::string& link_name,
   return goal;
 }
 
-static double parseDouble(XmlRpc::XmlRpcValue& v)
-{
-  if (v.getType() == XmlRpc::XmlRpcValue::TypeDouble)
-    return static_cast<double>(v);
-  else if (v.getType() == XmlRpc::XmlRpcValue::TypeInt)
-    return static_cast<int>(v);
-  else
-    return 0.0;
-}
-
-static bool isArray(XmlRpc::XmlRpcValue& v, size_t size, const std::string& name = "",
-                    const std::string& description = "")
-{
-  if (v.getType() != XmlRpc::XmlRpcValue::TypeArray || static_cast<size_t>(v.size()) != size)
-  {
-    if (!name.empty())
-      ROS_WARN_STREAM_NAMED(LOGNAME, name << " is not an array[" << size << "] of " << description);
-    return false;
-  }
-  return true;
-}
-
-static bool isStruct(XmlRpc::XmlRpcValue& v, const std::set<std::string>& keys, const std::string& name = "")
-{
-  if (v.getType() != XmlRpc::XmlRpcValue::TypeStruct)
-  {
-    if (!name.empty())
-      ROS_WARN_STREAM_NAMED(LOGNAME, name << " is not a struct with keys " << boost::join(keys, ","));
-    return false;
-  }
-
-  for (const std::string& key : keys)
-    if (!v.hasMember(key))
-    {
-      if (!name.empty())
-        ROS_WARN_STREAM_NAMED(LOGNAME, name << " is not a struct with keys " << boost::join(keys, ",") << " (misses "
-                                            << key << ")");
-      return false;
-    }
-
-  return true;
-}
-
 static bool constructPoseStamped(XmlRpc::XmlRpcValue::iterator& it, geometry_msgs::PoseStamped& pose)
 {
   if (!isStruct(it->second, { "frame_id", "position", "orientation" }, it->first))
@@ -326,9 +282,10 @@ static bool constructPoseStamped(XmlRpc::XmlRpcValue::iterator& it, geometry_msg
 
   if (!isArray(it->second["orientation"], 3, "orientation", "RPY values"))
     return false;
-  pose.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(parseDouble(it->second["orientation"][0]),
-                                                                  parseDouble(it->second["orientation"][1]),
-                                                                  parseDouble(it->second["orientation"][2]));
+  auto& rpy = it->second["orientation"];
+  tf2::Quaternion q;
+  q.setRPY(parseDouble(rpy[0]), parseDouble(rpy[1]), parseDouble(rpy[2]));
+  pose.pose.orientation = toMsg(q);
 
   if (!isArray(it->second["position"], 3, "position", "xyz position"))
     return false;
@@ -461,8 +418,9 @@ static bool constructConstraint(XmlRpc::XmlRpcValue& params, moveit_msgs::Orient
       if (!isArray(it->second, 3, it->first, "RPY values"))
         return false;
 
-      constraint.orientation = tf::createQuaternionMsgFromRollPitchYaw(
-          parseDouble(it->second[0]), parseDouble(it->second[1]), parseDouble(it->second[2]));
+      tf2::Quaternion q;
+      q.setRPY(parseDouble(it->second[0]), parseDouble(it->second[1]), parseDouble(it->second[2]));
+      constraint.orientation = toMsg(q);
     }
     else if (it->first == "tolerances")
     {
@@ -569,4 +527,4 @@ bool constructConstraints(XmlRpc::XmlRpcValue& params, moveit_msgs::Constraints&
   constraints.name = static_cast<std::string>(params["name"]);
   return collectConstraints(params["constraints"], constraints);
 }
-}
+}  // namespace kinematic_constraints

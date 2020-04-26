@@ -37,7 +37,9 @@
 #include <cmath>
 #include <moveit/pointcloud_octomap_updater/pointcloud_octomap_updater.h>
 #include <moveit/occupancy_map_monitor/occupancy_map_monitor.h>
-#include <message_filters/subscriber.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <tf2/LinearMath/Vector3.h>
+#include <tf2/LinearMath/Transform.h>
 #include <sensor_msgs/point_cloud2_iterator.h>
 #include <XmlRpcException.h>
 
@@ -53,8 +55,8 @@ PointCloudOctomapUpdater::PointCloudOctomapUpdater()
   , max_range_(std::numeric_limits<double>::infinity())
   , point_subsample_(1)
   , max_update_rate_(0)
-  , point_cloud_subscriber_(NULL)
-  , point_cloud_filter_(NULL)
+  , point_cloud_subscriber_(nullptr)
+  , point_cloud_filter_(nullptr)
 {
 }
 
@@ -91,7 +93,8 @@ bool PointCloudOctomapUpdater::setParams(XmlRpc::XmlRpcValue& params)
 
 bool PointCloudOctomapUpdater::initialize()
 {
-  tf_ = monitor_->getTFClient();
+  tf_buffer_.reset(new tf2_ros::Buffer());
+  tf_listener_.reset(new tf2_ros::TransformListener(*tf_buffer_, root_nh_));
   shape_mask_.reset(new point_containment_filter::ShapeMask());
   shape_mask_->setTransformCallback(boost::bind(&PointCloudOctomapUpdater::getShapeTransform, this, _1, _2));
   if (!filtered_cloud_topic_.empty())
@@ -105,10 +108,10 @@ void PointCloudOctomapUpdater::start()
     return;
   /* subscribe to point cloud topic using tf filter*/
   point_cloud_subscriber_ = new message_filters::Subscriber<sensor_msgs::PointCloud2>(root_nh_, point_cloud_topic_, 5);
-  if (tf_ && !monitor_->getMapFrame().empty())
+  if (tf_listener_ && tf_buffer_ && !monitor_->getMapFrame().empty())
   {
-    point_cloud_filter_ =
-        new tf::MessageFilter<sensor_msgs::PointCloud2>(*point_cloud_subscriber_, *tf_, monitor_->getMapFrame(), 5);
+    point_cloud_filter_ = new tf2_ros::MessageFilter<sensor_msgs::PointCloud2>(*point_cloud_subscriber_, *tf_buffer_,
+                                                                               monitor_->getMapFrame(), 5, root_nh_);
     point_cloud_filter_->registerCallback(boost::bind(&PointCloudOctomapUpdater::cloudMsgCallback, this, _1));
     ROS_INFO("Listening to '%s' using message filter with target frame '%s'", point_cloud_topic_.c_str(),
              point_cloud_filter_->getTargetFramesString().c_str());
@@ -129,8 +132,8 @@ void PointCloudOctomapUpdater::stopHelper()
 void PointCloudOctomapUpdater::stop()
 {
   stopHelper();
-  point_cloud_filter_ = NULL;
-  point_cloud_subscriber_ = NULL;
+  point_cloud_filter_ = nullptr;
+  point_cloud_subscriber_ = nullptr;
 }
 
 ShapeHandle PointCloudOctomapUpdater::excludeShape(const shapes::ShapeConstPtr& shape)
@@ -149,15 +152,14 @@ void PointCloudOctomapUpdater::forgetShape(ShapeHandle handle)
     shape_mask_->removeShape(handle);
 }
 
-bool PointCloudOctomapUpdater::getShapeTransform(ShapeHandle h, Eigen::Affine3d& transform) const
+bool PointCloudOctomapUpdater::getShapeTransform(ShapeHandle h, Eigen::Isometry3d& transform) const
 {
   ShapeTransformCache::const_iterator it = transform_cache_.find(h);
-  if (it == transform_cache_.end())
+  if (it != transform_cache_.end())
   {
-    return false;
+    transform = it->second;
   }
-  transform = it->second;
-  return true;
+  return it != transform_cache_.end();
 }
 
 void PointCloudOctomapUpdater::updateMask(const sensor_msgs::PointCloud2& cloud, const Eigen::Vector3d& sensor_origin,
@@ -182,19 +184,20 @@ void PointCloudOctomapUpdater::cloudMsgCallback(const sensor_msgs::PointCloud2::
     monitor_->setMapFrame(cloud_msg->header.frame_id);
 
   /* get transform for cloud into map frame */
-  tf::StampedTransform map_H_sensor;
+  tf2::Stamped<tf2::Transform> map_h_sensor;
   if (monitor_->getMapFrame() == cloud_msg->header.frame_id)
-    map_H_sensor.setIdentity();
+    map_h_sensor.setIdentity();
   else
   {
-    if (tf_)
+    if (tf_buffer_)
     {
       try
       {
-        tf_->lookupTransform(monitor_->getMapFrame(), cloud_msg->header.frame_id, cloud_msg->header.stamp,
-                             map_H_sensor);
+        tf2::fromMsg(
+            tf_buffer_->lookupTransform(monitor_->getMapFrame(), cloud_msg->header.frame_id, cloud_msg->header.stamp),
+            map_h_sensor);
       }
-      catch (tf::TransformException& ex)
+      catch (tf2::TransformException& ex)
       {
         ROS_ERROR_STREAM("Transform error of sensor data: " << ex.what() << "; quitting callback");
         return;
@@ -205,7 +208,7 @@ void PointCloudOctomapUpdater::cloudMsgCallback(const sensor_msgs::PointCloud2::
   }
 
   /* compute sensor origin in map frame */
-  const tf::Vector3& sensor_origin_tf = map_H_sensor.getOrigin();
+  const tf2::Vector3& sensor_origin_tf = map_h_sensor.getOrigin();
   octomap::point3d sensor_origin(sensor_origin_tf.getX(), sensor_origin_tf.getY(), sensor_origin_tf.getZ());
   Eigen::Vector3d sensor_origin_eigen(sensor_origin_tf.getX(), sensor_origin_tf.getY(), sensor_origin_tf.getZ());
 
@@ -266,7 +269,7 @@ void PointCloudOctomapUpdater::cloudMsgCallback(const sensor_msgs::PointCloud2::
         if (!std::isnan(pt_iter[0]) && !std::isnan(pt_iter[1]) && !std::isnan(pt_iter[2]))
         {
           /* transform to map frame */
-          tf::Vector3 point_tf = map_H_sensor * tf::Vector3(pt_iter[0], pt_iter[1], pt_iter[2]);
+          tf2::Vector3 point_tf = map_h_sensor * tf2::Vector3(pt_iter[0], pt_iter[1], pt_iter[2]);
 
           /* occupied cell at ray endpoint if ray is shorter than max range and this point
              isn't on a part of the robot*/
@@ -356,4 +359,4 @@ void PointCloudOctomapUpdater::cloudMsgCallback(const sensor_msgs::PointCloud2::
     filtered_cloud_publisher_.publish(*filtered_cloud);
   }
 }
-}
+}  // namespace occupancy_map_monitor

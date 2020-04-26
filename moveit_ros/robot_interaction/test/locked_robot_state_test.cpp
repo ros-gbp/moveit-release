@@ -260,7 +260,7 @@ public:
   {
   }
 
-  virtual void robotStateChanged()
+  void robotStateChanged() override
   {
     cnt_++;
   }
@@ -523,7 +523,7 @@ static void runThreads(int ncheck, int nset, int nmod)
   }
 
   ASSERT_EQ(p, num);
-  counters[p] = NULL;
+  counters[p] = nullptr;
 
   // this thread waits for all the other threads to make progress, then stops
   // everything.
@@ -614,7 +614,5 @@ TEST(LockedRobotState, set3mod3c3)
 int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);
-  int arg;
-
   return RUN_ALL_TESTS();
 }

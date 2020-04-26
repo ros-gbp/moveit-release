@@ -37,7 +37,6 @@
 #ifndef MOVEIT_MOVEIT_SETUP_ASSISTANT_WIDGETS_DEFAULT_COLLISIONS_WIDGET__
 #define MOVEIT_MOVEIT_SETUP_ASSISTANT_WIDGETS_DEFAULT_COLLISIONS_WIDGET__
 
-#include <QWidget>
 #include <QLabel>
 #include <QVBoxLayout>
 #include <QTableView>
@@ -53,13 +52,11 @@
 #include <QAction>
 
 #ifndef Q_MOC_RUN
-#include <boost/thread.hpp>
-#include <boost/function.hpp>
-#include <moveit/setup_assistant/tools/compute_default_collisions.h>
+#include <boost/thread/thread.hpp>
+#include <boost/function/function_fwd.hpp>
 #include <moveit/setup_assistant/tools/moveit_config_data.h>
 #endif
 
-#include "header_widget.h"
 #include "setup_screen_widget.h"  // a base class for screens in the setup assistant
 
 namespace moveit_setup_assistant
@@ -88,8 +85,8 @@ public:
    * \brief User interface for editing the default collision matrix list in an SRDF
    * \param urdf_file String srdf file location. It will create a new file or will edit an existing one
    */
-  DefaultCollisionsWidget(QWidget* parent, moveit_setup_assistant::MoveItConfigDataPtr config_data);
-  ~DefaultCollisionsWidget();
+  DefaultCollisionsWidget(QWidget* parent, const MoveItConfigDataPtr& config_data);
+  ~DefaultCollisionsWidget() override;
 
   /**
    * \brief Output Link Pairs to SRDF Format
@@ -151,12 +148,12 @@ private Q_SLOTS:
   /**
    * \brief Called when setup assistant navigation switches to this screen
    */
-  void focusGiven();
+  void focusGiven() override;
 
   /**
    * \brief Called when setup assistant navigation switches away from this screen
    */
-  bool focusLost();
+  bool focusLost() override;
 
   void showHeaderContextMenu(const QPoint& p);
   void hideSections();
@@ -220,7 +217,7 @@ private:
   /**
    * \brief Allow toggling of all checkboxes in selection by filtering <space> keypresses
    */
-  bool eventFilter(QObject* object, QEvent* event);
+  bool eventFilter(QObject* object, QEvent* event) override;
 
   /**
    * \brief Show header's sections in logicalIndexes and everything in between
@@ -241,7 +238,7 @@ class MonitorThread : public QThread
 
 public:
   MonitorThread(const boost::function<void(unsigned int*)>& f, QProgressBar* progress_bar = NULL);
-  void run();
+  void run() override;
   void cancel()
   {
     canceled_ = true;

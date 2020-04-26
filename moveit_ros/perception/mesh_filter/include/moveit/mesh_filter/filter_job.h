@@ -56,6 +56,8 @@ public:
   Job() : done_(false)
   {
   }
+  virtual ~Job() = default;
+
   inline void wait() const;
   virtual void execute() = 0;
   inline void cancel();
@@ -93,7 +95,7 @@ public:
   FilterJob(const boost::function<ReturnType()>& exec) : Job(), exec_(exec)
   {
   }
-  virtual void execute();
+  void execute() override;
   const ReturnType& getResult() const;
 
 private:
@@ -126,7 +128,7 @@ public:
   FilterJob(const boost::function<void()>& exec) : Job(), exec_(exec)
   {
   }
-  virtual void execute()
+  void execute() override
   {
     boost::unique_lock<boost::mutex> lock(mutex_);
     if (!done_)  // not canceled !

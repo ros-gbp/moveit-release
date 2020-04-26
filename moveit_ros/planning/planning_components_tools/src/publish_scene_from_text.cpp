@@ -73,10 +73,9 @@ int main(int argc, char** argv)
     planning_scene::PlanningScene ps(rml->getModel());
 
     std::ifstream f(argv[filename_index]);
-    if (f.good() && !f.eof())
+    if (ps.loadGeometryFromStream(f))
     {
       ROS_INFO("Publishing geometry from '%s' ...", argv[filename_index]);
-      ps.loadGeometryFromStream(f);
       moveit_msgs::PlanningScene ps_msg;
       ps.getPlanningSceneMsg(ps_msg);
       ps_msg.is_diff = true;
@@ -91,10 +90,8 @@ int main(int argc, char** argv)
       else
         pub_scene.publish(ps_msg.world);
 
-      sleep(1);
+      ros::Duration(1).sleep();
     }
-    else
-      ROS_WARN("Unable to load '%s'.", argv[filename_index]);
   }
   else
     ROS_WARN("A filename was expected as argument. That file should be a text representation of the geometry in a "

@@ -36,46 +36,16 @@
 
 #include <gtest/gtest.h>
 #include <fstream>
-#include <boost/filesystem/path.hpp>
-#include <urdf_parser/urdf_parser.h>
-#include <moveit_resources/config.h>
 #include <moveit/robot_state/robot_state.h>
 #include <moveit/robot_model/robot_model.h>
 #include <moveit/robot_trajectory/robot_trajectory.h>
 #include <moveit/trajectory_processing/iterative_spline_parameterization.h>
 #include <moveit/trajectory_processing/iterative_time_parameterization.h>
-
-// Function declarations
-moveit::core::RobotModelConstPtr loadModel();
+#include <moveit/utils/robot_model_test_utils.h>
 
 // Static variables used in all tests
-moveit::core::RobotModelConstPtr rmodel = loadModel();
-robot_trajectory::RobotTrajectory trajectory(rmodel, "right_arm");
-
-// Load pr2.  Take a look at test/ in planning_scene, robot_mode,
-// and robot_state for inspiration.
-moveit::core::RobotModelConstPtr loadModel()
-{
-  moveit::core::RobotModelConstPtr robot_model;
-  urdf::ModelInterfaceSharedPtr urdf_model;
-  srdf::ModelSharedPtr srdf_model;
-  boost::filesystem::path res_path(MOVEIT_TEST_RESOURCES_DIR);
-  std::string xml_string;
-  std::fstream xml_file((res_path / "pr2_description/urdf/robot.xml").string().c_str(), std::fstream::in);
-  EXPECT_TRUE(xml_file.is_open());
-  while (xml_file.good())
-  {
-    std::string line;
-    std::getline(xml_file, line);
-    xml_string += (line + "\n");
-  }
-  xml_file.close();
-  urdf_model = urdf::parseURDF(xml_string);
-  srdf_model.reset(new srdf::Model());
-  srdf_model->initFile(*urdf_model, (res_path / "pr2_description/srdf/robot.xml").string());
-  robot_model.reset(new moveit::core::RobotModel(urdf_model, srdf_model));
-  return robot_model;
-}
+moveit::core::RobotModelConstPtr RMODEL = moveit::core::loadTestingRobotModel("pr2");
+robot_trajectory::RobotTrajectory TRAJECTORY(RMODEL, "right_arm");
 
 // Initialize one-joint, 3 points exactly the same.
 int initRepeatedPointTrajectory(robot_trajectory::RobotTrajectory& trajectory)
@@ -166,48 +136,48 @@ void printTrajectory(robot_trajectory::RobotTrajectory& trajectory)
 TEST(TestTimeParameterization, TestIterativeParabolic)
 {
   trajectory_processing::IterativeParabolicTimeParameterization time_parameterization;
-  EXPECT_EQ(initStraightTrajectory(trajectory), 0);
+  EXPECT_EQ(initStraightTrajectory(TRAJECTORY), 0);
 
   ros::WallTime wt = ros::WallTime::now();
-  EXPECT_TRUE(time_parameterization.computeTimeStamps(trajectory));
+  EXPECT_TRUE(time_parameterization.computeTimeStamps(TRAJECTORY));
   std::cout << "IterativeParabolicTimeParameterization  took " << (ros::WallTime::now() - wt).toSec() << std::endl;
-  printTrajectory(trajectory);
-  ASSERT_LT(trajectory.getWayPointDurationFromStart(trajectory.getWayPointCount() - 1), 3.0);
+  printTrajectory(TRAJECTORY);
+  ASSERT_LT(TRAJECTORY.getWayPointDurationFromStart(TRAJECTORY.getWayPointCount() - 1), 3.0);
 }
 
 TEST(TestTimeParameterization, TestIterativeSpline)
 {
   trajectory_processing::IterativeSplineParameterization time_parameterization(false);
-  EXPECT_EQ(initStraightTrajectory(trajectory), 0);
+  EXPECT_EQ(initStraightTrajectory(TRAJECTORY), 0);
 
   ros::WallTime wt = ros::WallTime::now();
-  EXPECT_TRUE(time_parameterization.computeTimeStamps(trajectory));
+  EXPECT_TRUE(time_parameterization.computeTimeStamps(TRAJECTORY));
   std::cout << "IterativeSplineParameterization took " << (ros::WallTime::now() - wt).toSec() << std::endl;
-  printTrajectory(trajectory);
-  ASSERT_LT(trajectory.getWayPointDurationFromStart(trajectory.getWayPointCount() - 1), 5.0);
+  printTrajectory(TRAJECTORY);
+  ASSERT_LT(TRAJECTORY.getWayPointDurationFromStart(TRAJECTORY.getWayPointCount() - 1), 5.0);
 }
 
 TEST(TestTimeParameterization, TestIterativeSplineAddPoints)
 {
   trajectory_processing::IterativeSplineParameterization time_parameterization(true);
-  EXPECT_EQ(initStraightTrajectory(trajectory), 0);
+  EXPECT_EQ(initStraightTrajectory(TRAJECTORY), 0);
 
   ros::WallTime wt = ros::WallTime::now();
-  EXPECT_TRUE(time_parameterization.computeTimeStamps(trajectory));
+  EXPECT_TRUE(time_parameterization.computeTimeStamps(TRAJECTORY));
   std::cout << "IterativeSplineParameterization with added points took " << (ros::WallTime::now() - wt).toSec()
             << std::endl;
-  printTrajectory(trajectory);
-  ASSERT_LT(trajectory.getWayPointDurationFromStart(trajectory.getWayPointCount() - 1), 5.0);
+  printTrajectory(TRAJECTORY);
+  ASSERT_LT(TRAJECTORY.getWayPointDurationFromStart(TRAJECTORY.getWayPointCount() - 1), 5.0);
 }
 
 TEST(TestTimeParameterization, TestRepeatedPoint)
 {
   trajectory_processing::IterativeSplineParameterization time_parameterization(true);
-  EXPECT_EQ(initRepeatedPointTrajectory(trajectory), 0);
+  EXPECT_EQ(initRepeatedPointTrajectory(TRAJECTORY), 0);
 
-  EXPECT_TRUE(time_parameterization.computeTimeStamps(trajectory));
-  printTrajectory(trajectory);
-  ASSERT_LT(trajectory.getWayPointDurationFromStart(trajectory.getWayPointCount() - 1), 0.001);
+  EXPECT_TRUE(time_parameterization.computeTimeStamps(TRAJECTORY));
+  printTrajectory(TRAJECTORY);
+  ASSERT_LT(TRAJECTORY.getWayPointDurationFromStart(TRAJECTORY.getWayPointCount() - 1), 0.001);
 }
 
 int main(int argc, char** argv)

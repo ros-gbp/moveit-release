@@ -35,7 +35,7 @@
 /* Author: Ioan Sucan */
 
 #include <moveit/planning_scene_monitor/planning_scene_monitor.h>
-#include <tf/transform_listener.h>
+#include <tf2_ros/transform_listener.h>
 #include <moveit/move_group/capability_names.h>
 #include <moveit/move_group/move_group_capability.h>
 #include <boost/tokenizer.hpp>
@@ -150,10 +150,10 @@ private:
       try
       {
         printf(MOVEIT_CONSOLE_COLOR_CYAN "Loading '%s'...\n" MOVEIT_CONSOLE_COLOR_RESET, plugin->c_str());
-        MoveGroupCapability* cap = capability_plugin_loader_->createUnmanagedInstance(*plugin);
+        MoveGroupCapabilityPtr cap = capability_plugin_loader_->createUniqueInstance(*plugin);
         cap->setContext(context_);
         cap->initialize();
-        capabilities_.push_back(MoveGroupCapabilityPtr(cap));
+        capabilities_.push_back(cap);
       }
       catch (pluginlib::PluginlibException& ex)
       {
@@ -177,7 +177,7 @@ private:
   std::shared_ptr<pluginlib::ClassLoader<MoveGroupCapability> > capability_plugin_loader_;
   std::vector<MoveGroupCapabilityPtr> capabilities_;
 };
-}
+}  // namespace move_group
 
 int main(int argc, char** argv)
 {
@@ -185,11 +185,13 @@ int main(int argc, char** argv)
 
   ros::AsyncSpinner spinner(1);
   spinner.start();
+  ros::NodeHandle nh;
 
-  boost::shared_ptr<tf::TransformListener> tf(new tf::TransformListener(ros::Duration(10.0)));
+  std::shared_ptr<tf2_ros::Buffer> tf_buffer = std::make_shared<tf2_ros::Buffer>(ros::Duration(10.0));
+  std::shared_ptr<tf2_ros::TransformListener> tfl = std::make_shared<tf2_ros::TransformListener>(*tf_buffer, nh);
 
   planning_scene_monitor::PlanningSceneMonitorPtr planning_scene_monitor(
-      new planning_scene_monitor::PlanningSceneMonitor(ROBOT_DESCRIPTION, tf));
+      new planning_scene_monitor::PlanningSceneMonitor(ROBOT_DESCRIPTION, tf_buffer));
 
   if (planning_scene_monitor->getPlanningScene())
   {
@@ -205,11 +207,11 @@ int main(int argc, char** argv)
     else
       ROS_INFO("MoveGroup debug mode is OFF");
 
-    printf(MOVEIT_CONSOLE_COLOR_CYAN "Starting context monitors...\n" MOVEIT_CONSOLE_COLOR_RESET);
+    printf(MOVEIT_CONSOLE_COLOR_CYAN "Starting planning scene monitors...\n" MOVEIT_CONSOLE_COLOR_RESET);
     planning_scene_monitor->startSceneMonitor();
     planning_scene_monitor->startWorldGeometryMonitor();
     planning_scene_monitor->startStateMonitor();
-    printf(MOVEIT_CONSOLE_COLOR_CYAN "Context monitors started.\n" MOVEIT_CONSOLE_COLOR_RESET);
+    printf(MOVEIT_CONSOLE_COLOR_CYAN "Planning scene monitors started.\n" MOVEIT_CONSOLE_COLOR_RESET);
 
     move_group::MoveGroupExe mge(planning_scene_monitor, debug);
 

@@ -55,14 +55,14 @@ World::~World()
 }
 
 inline void World::addToObjectInternal(const ObjectPtr& obj, const shapes::ShapeConstPtr& shape,
-                                       const Eigen::Affine3d& pose)
+                                       const Eigen::Isometry3d& pose)
 {
   obj->shapes_.push_back(shape);
   obj->shape_poses_.push_back(pose);
 }
 
 void World::addToObject(const std::string& id, const std::vector<shapes::ShapeConstPtr>& shapes,
-                        const EigenSTL::vector_Affine3d& poses)
+                        const EigenSTL::vector_Isometry3d& poses)
 {
   if (shapes.size() != poses.size())
   {
@@ -91,7 +91,7 @@ void World::addToObject(const std::string& id, const std::vector<shapes::ShapeCo
   notify(obj, Action(action));
 }
 
-void World::addToObject(const std::string& id, const shapes::ShapeConstPtr& shape, const Eigen::Affine3d& pose)
+void World::addToObject(const std::string& id, const shapes::ShapeConstPtr& shape, const Eigen::Isometry3d& pose)
 {
   int action = ADD_SHAPE;
 
@@ -116,9 +116,9 @@ std::vector<std::string> World::getObjectIds() const
   return id;
 }
 
-World::ObjectConstPtr World::getObject(const std::string& id) const
+World::ObjectConstPtr World::getObject(const std::string& object_id) const
 {
-  auto it = objects_.find(id);
+  auto it = objects_.find(object_id);
   if (it == objects_.end())
     return ObjectConstPtr();
   else
@@ -131,14 +131,15 @@ void World::ensureUnique(ObjectPtr& obj)
     obj.reset(new Object(*obj));
 }
 
-bool World::hasObject(const std::string& id) const
+bool World::hasObject(const std::string& object_id) const
 {
-  return objects_.find(id) != objects_.end();
+  return objects_.find(object_id) != objects_.end();
 }
 
-bool World::moveShapeInObject(const std::string& id, const shapes::ShapeConstPtr& shape, const Eigen::Affine3d& pose)
+bool World::moveShapeInObject(const std::string& object_id, const shapes::ShapeConstPtr& shape,
+                              const Eigen::Isometry3d& pose)
 {
-  auto it = objects_.find(id);
+  auto it = objects_.find(object_id);
   if (it != objects_.end())
   {
     unsigned int n = it->second->shapes_.size();
@@ -155,12 +156,12 @@ bool World::moveShapeInObject(const std::string& id, const shapes::ShapeConstPtr
   return false;
 }
 
-bool World::moveObject(const std::string& id, const Eigen::Affine3d& transform)
+bool World::moveObject(const std::string& object_id, const Eigen::Isometry3d& transform)
 {
-  auto it = objects_.find(id);
+  auto it = objects_.find(object_id);
   if (it == objects_.end())
     return false;
-  if (transform.isApprox(Eigen::Affine3d::Identity()))
+  if (transform.isApprox(Eigen::Isometry3d::Identity()))
     return true;  // object already at correct location
   ensureUnique(it->second);
   for (size_t i = 0, n = it->second->shapes_.size(); i < n; ++i)
@@ -171,9 +172,9 @@ bool World::moveObject(const std::string& id, const Eigen::Affine3d& transform)
   return true;
 }
 
-bool World::removeShapeFromObject(const std::string& id, const shapes::ShapeConstPtr& shape)
+bool World::removeShapeFromObject(const std::string& object_id, const shapes::ShapeConstPtr& shape)
 {
-  auto it = objects_.find(id);
+  auto it = objects_.find(object_id);
   if (it != objects_.end())
   {
     unsigned int n = it->second->shapes_.size();
@@ -199,9 +200,9 @@ bool World::removeShapeFromObject(const std::string& id, const shapes::ShapeCons
   return false;
 }
 
-bool World::removeObject(const std::string& id)
+bool World::removeObject(const std::string& object_id)
 {
-  auto it = objects_.find(id);
+  auto it = objects_.find(object_id);
   if (it != objects_.end())
   {
     notify(it->second, DESTROY);

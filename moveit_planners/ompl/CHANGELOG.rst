@@ -2,38 +2,69 @@
 Changelog for package moveit_planners_ompl
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.9.18 (2020-01-24)
+1.0.3 (2020-04-26)
+------------------
+* [maint] Cleanup OMPL dynamic reconfigure config (`#1649 <https://github.com/ros-planning/moveit/issues/1649>`_)
+  * Reduce minimum number of waypoints in solution to 2
+* [maint] Apply clang-tidy fix to entire code base (`#1394 <https://github.com/ros-planning/moveit/issues/1394>`_)
+* [maint] Fix errors: catkin_lint 1.6.7 (`#1987 <https://github.com/ros-planning/moveit/issues/1987>`_)
+* [maint] Windows build: Fix binary artifact install locations. (`#1575 <https://github.com/ros-planning/moveit/issues/1575>`_)
+* [maint] Use CMAKE_CXX_STANDARD to enforce c++14 (`#1607 <https://github.com/ros-planning/moveit/issues/1607>`_)
+* Contributors: Michael Görner, Robert Haschke, Sean Yen, Yu, Yan
+
+1.0.2 (2019-06-28)
+------------------
+
+1.0.1 (2019-03-08)
+------------------
+* [improve] Apply clang tidy fix to entire code base (Part 1) (`#1366 <https://github.com/ros-planning/moveit/issues/1366>`_)
+* Contributors: Robert Haschke, Yu, Yan
+
+1.0.0 (2019-02-24)
+------------------
+* [fix] catkin_lint issues (`#1341 <https://github.com/ros-planning/moveit/issues/1341>`_)
+* Contributors: Dave Coleman, Robert Haschke
+
+0.10.8 (2018-12-24)
 -------------------
 
-0.9.17 (2019-07-09)
+0.10.7 (2018-12-13)
 -------------------
 
-0.9.16 (2019-06-29)
+0.10.6 (2018-12-09)
 -------------------
-* [feature]     Helper function to construct constraints from ROS params (`#1253 <https://github.com/ros-planning/moveit/issues/1253>`_)
-* [maintanance] Resolve catkin lint issues (`#1137 <https://github.com/ros-planning/moveit/issues/1137>`_)
-* [maintanance] Improve clang format (`#1214 <https://github.com/ros-planning/moveit/issues/1214>`_)
-* Contributors: Ludovic Delval, Robert Haschke, v4hn
+* [fix] Fixed memory leak in OMPL planner (`#1104 <https://github.com/ros-planning/moveit/issues/1104>`_)
+  * Resolve circular reference to ompl::geometric::SimpleSetupPtr
+* [maintenance] Use C++14 (`#1146 <https://github.com/ros-planning/moveit/issues/1146>`_)
+* [maintenance] Code Cleanup
+  * `#1179 <https://github.com/ros-planning/moveit/issues/1179>`_
+  * `#1196 <https://github.com/ros-planning/moveit/issues/1196>`_
+* Contributors: Alex Moriarty, Dave Coleman, Robert Haschke
 
-0.9.15 (2018-10-29)
+0.10.5 (2018-11-01)
 -------------------
-* [code] cleanup, improvements (`#1099 <https://github.com/ros-planning/moveit/issues/1099>`_)
+* [fix] Build regression (`#1174 <https://github.com/ros-planning/moveit/issues/1174>`_)
+* Contributors: Chris Lalancette
+
+0.10.4 (2018-10-29)
+-------------------
+
+0.10.3 (2018-10-29)
+-------------------
+* [maintenance] Use locale independent conversion from double to string (`#1099 <https://github.com/ros-planning/moveit/issues/1099>`_)
 * Contributors: Simon Schmeisser
 
-0.9.14 (2018-10-24)
--------------------
-
-0.9.13 (2018-10-24)
+0.10.2 (2018-10-24)
 -------------------
 * [capability] adaptions for OMPL 1.4 (`#903 <https://github.com/ros-planning/moveit/issues/903>`_)
 * Contributors: Dave Coleman, Michael Görner, Mikael Arguedas, Mohmmad Ayman, Robert Haschke, mike lautman
 
-0.9.12 (2018-05-29)
+0.10.1 (2018-05-25)
 -------------------
-* forward OMPL logging to rosconsole (`#916 <https://github.com/ros-planning/moveit/issues/916>`_)
+* migration from tf to tf2 API (`#830 <https://github.com/ros-planning/moveit/issues/830>`_)
 * switch to ROS_LOGGER from CONSOLE_BRIDGE (`#874 <https://github.com/ros-planning/moveit/issues/874>`_)
 * Make trajectory interpolation in MoveIt consistent to OMPL (`#869 <https://github.com/ros-planning/moveit/issues/869>`_)
-* Contributors: Bryce Willey, Ian McMahon, Mikael Arguedas, Robert Haschke, Xiaojian Ma, Zachary Kingston
+* Contributors: Bryce Willey, Ian McMahon, Mikael Arguedas, Robert Haschke, Xiaojian Ma
 
 0.9.11 (2017-12-25)
 -------------------

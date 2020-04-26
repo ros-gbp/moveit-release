@@ -41,7 +41,7 @@
 #include <moveit/collision_detection_fcl/collision_robot_fcl.h>
 #include <moveit/collision_detection_fcl/collision_world_fcl.h>
 #include <boost/math/constants/constants.hpp>
-#include <eigen_conversions/eigen_msg.h>
+#include <tf2_eigen/tf2_eigen.h>
 #include <boost/bind.hpp>
 #include <limits>
 #include <memory>
@@ -84,7 +84,7 @@ bool JointConstraint::configure(const moveit_msgs::JointConstraint& jc)
     joint_model_ = robot_model_->getJointModel(joint_variable_name_);
   else
   {
-    std::size_t pos = jc.joint_name.find_last_of("/");
+    std::size_t pos = jc.joint_name.find_last_of('/');
     if (pos != std::string::npos)
     {
       joint_model_ = robot_model_->getJointModel(jc.joint_name.substr(0, pos));
@@ -316,8 +316,8 @@ bool PositionConstraint::configure(const moveit_msgs::PositionConstraint& pc, co
         continue;
       }
       constraint_region_.push_back(bodies::BodyPtr(bodies::createBodyFromShape(shape.get())));
-      Eigen::Affine3d t;
-      tf::poseMsgToEigen(pc.constraint_region.primitive_poses[i], t);
+      Eigen::Isometry3d t;
+      tf2::fromMsg(pc.constraint_region.primitive_poses[i], t);
       constraint_region_pose_.push_back(t);
       if (mobile_frame_)
         constraint_region_.back()->setPose(constraint_region_pose_.back());
@@ -343,8 +343,8 @@ bool PositionConstraint::configure(const moveit_msgs::PositionConstraint& pc, co
         continue;
       }
       constraint_region_.push_back(bodies::BodyPtr(bodies::createBodyFromShape(shape.get())));
-      Eigen::Affine3d t;
-      tf::poseMsgToEigen(pc.constraint_region.mesh_poses[i], t);
+      Eigen::Isometry3d t;
+      tf2::fromMsg(pc.constraint_region.mesh_poses[i], t);
       constraint_region_pose_.push_back(t);
       if (mobile_frame_)
         constraint_region_.back()->setPose(constraint_region_pose_.back());
@@ -390,8 +390,8 @@ bool PositionConstraint::equal(const KinematicConstraint& other, double margin) 
       // need to check against all other regions
       for (std::size_t j = 0; j < o.constraint_region_.size(); ++j)
       {
-        Eigen::Affine3d diff = constraint_region_pose_[i].inverse(Eigen::Isometry) * o.constraint_region_pose_[j];
-        if (diff.translation().norm() < margin && diff.linear().isIdentity(margin) &&
+        Eigen::Isometry3d diff = constraint_region_pose_[i].inverse() * o.constraint_region_pose_[j];
+        if (diff.translation().norm() < margin && diff.rotation().isIdentity(margin) &&
             constraint_region_[i]->getType() == o.constraint_region_[j]->getType() &&
             fabs(constraint_region_[i]->computeVolume() - o.constraint_region_[j]->computeVolume()) < margin)
         {
@@ -440,7 +440,7 @@ ConstraintEvaluationResult PositionConstraint::decide(const robot_state::RobotSt
   {
     for (std::size_t i = 0; i < constraint_region_.size(); ++i)
     {
-      Eigen::Affine3d tmp = state.getFrameTransform(constraint_frame_id_) * constraint_region_pose_[i];
+      Eigen::Isometry3d tmp = state.getFrameTransform(constraint_frame_id_) * constraint_region_pose_[i];
       bool result = constraint_region_[i]->cloneAt(tmp)->containsPoint(pt, verbose);
       if (result || (i + 1 == constraint_region_pose_.size()))
         return finishPositionConstraintDecision(pt, tmp.translation(), link_model_->getName(), constraint_weight_,
@@ -502,7 +502,7 @@ bool OrientationConstraint::configure(const moveit_msgs::OrientationConstraint& 
     return false;
   }
   Eigen::Quaterniond q;
-  tf::quaternionMsgToEigen(oc.orientation, q);
+  tf2::fromMsg(oc.orientation, q);
   if (fabs(q.norm() - 1.0) > 1e-3)
   {
     ROS_WARN_NAMED("kinematic_constraints", "Orientation constraint for link '%s' is probably incorrect: %f, %f, %f, "
@@ -597,15 +597,16 @@ ConstraintEvaluationResult OrientationConstraint::decide(const robot_state::Robo
   Eigen::Vector3d xyz;
   if (mobile_frame_)
   {
-    Eigen::Matrix3d tmp = state.getFrameTransform(desired_rotation_frame_id_).linear() * desired_rotation_matrix_;
-    Eigen::Affine3d diff(tmp.transpose() * state.getGlobalLinkTransform(link_model_).linear());
-    xyz = diff.linear().eulerAngles(0, 1, 2);
+    Eigen::Matrix3d tmp = state.getFrameTransform(desired_rotation_frame_id_).rotation() * desired_rotation_matrix_;
+    Eigen::Isometry3d diff(tmp.transpose() * state.getGlobalLinkTransform(link_model_).rotation());
+    xyz = diff.rotation().eulerAngles(0, 1, 2);
     // 0,1,2 corresponds to XYZ, the convention used in sampling constraints
   }
   else
   {
-    Eigen::Affine3d diff(desired_rotation_matrix_inv_ * state.getGlobalLinkTransform(link_model_).linear());
-    xyz = diff.linear().eulerAngles(0, 1, 2);  // 0,1,2 corresponds to XYZ, the convention used in sampling constraints
+    Eigen::Isometry3d diff(desired_rotation_matrix_inv_ * state.getGlobalLinkTransform(link_model_).rotation());
+    xyz =
+        diff.rotation().eulerAngles(0, 1, 2);  // 0,1,2 corresponds to XYZ, the convention used in sampling constraints
   }
 
   xyz(0) = std::min(fabs(xyz(0)), boost::math::constants::pi<double>() - fabs(xyz(0)));
@@ -617,7 +618,7 @@ ConstraintEvaluationResult OrientationConstraint::decide(const robot_state::Robo
 
   if (verbose)
   {
-    Eigen::Quaterniond q_act(state.getGlobalLinkTransform(link_model_).linear());
+    Eigen::Quaterniond q_act(state.getGlobalLinkTransform(link_model_).rotation());
     Eigen::Quaterniond q_des(desired_rotation_matrix_);
     ROS_INFO_NAMED("kinematic_constraints",
                    "Orientation constraint %s for link '%s'. Quaternion desired: %f %f %f %f, quaternion "
@@ -654,9 +655,9 @@ void VisibilityConstraint::clear()
   mobile_target_frame_ = false;
   target_frame_id_ = "";
   sensor_frame_id_ = "";
-  sensor_pose_ = Eigen::Affine3d::Identity();
+  sensor_pose_ = Eigen::Isometry3d::Identity();
   sensor_view_direction_ = 0;
-  target_pose_ = Eigen::Affine3d::Identity();
+  target_pose_ = Eigen::Isometry3d::Identity();
   cone_sides_ = 0;
   points_.clear();
   target_radius_ = -1.0;
@@ -694,7 +695,7 @@ bool VisibilityConstraint::configure(const moveit_msgs::VisibilityConstraint& vc
     points_.push_back(Eigen::Vector3d(x, y, 0.0));
   }
 
-  tf::poseMsgToEigen(vc.target_pose.pose, target_pose_);
+  tf2::fromMsg(vc.target_pose.pose, target_pose_);
 
   if (tf.isFixedFrame(vc.target_pose.header.frame_id))
   {
@@ -711,7 +712,7 @@ bool VisibilityConstraint::configure(const moveit_msgs::VisibilityConstraint& vc
     mobile_target_frame_ = true;
   }
 
-  tf::poseMsgToEigen(vc.sensor_pose.pose, sensor_pose_);
+  tf2::fromMsg(vc.sensor_pose.pose, sensor_pose_);
 
   if (tf.isFixedFrame(vc.sensor_pose.header.frame_id))
   {
@@ -752,15 +753,15 @@ bool VisibilityConstraint::equal(const KinematicConstraint& other, double margin
   {
     if (fabs(max_view_angle_ - o.max_view_angle_) > margin || fabs(target_radius_ - o.target_radius_) > margin)
       return false;
-    Eigen::Affine3d diff = sensor_pose_.inverse(Eigen::Isometry) * o.sensor_pose_;
+    Eigen::Isometry3d diff = sensor_pose_.inverse() * o.sensor_pose_;
     if (diff.translation().norm() > margin)
       return false;
-    if (!diff.linear().isIdentity(margin))
+    if (!diff.rotation().isIdentity(margin))
       return false;
-    diff = target_pose_.inverse(Eigen::Isometry) * o.target_pose_;
+    diff = target_pose_.inverse() * o.target_pose_;
     if (diff.translation().norm() > margin)
       return false;
-    if (!diff.linear().isIdentity(margin))
+    if (!diff.rotation().isIdentity(margin))
       return false;
     return true;
   }
@@ -776,20 +777,20 @@ shapes::Mesh* VisibilityConstraint::getVisibilityCone(const robot_state::RobotSt
 {
   // the current pose of the sensor
 
-  const Eigen::Affine3d& sp =
+  const Eigen::Isometry3d& sp =
       mobile_sensor_frame_ ? state.getFrameTransform(sensor_frame_id_) * sensor_pose_ : sensor_pose_;
-  const Eigen::Affine3d& tp =
+  const Eigen::Isometry3d& tp =
       mobile_target_frame_ ? state.getFrameTransform(target_frame_id_) * target_pose_ : target_pose_;
 
   // transform the points on the disc to the desired target frame
   const EigenSTL::vector_Vector3d* points = &points_;
-  std::unique_ptr<EigenSTL::vector_Vector3d> tempPoints;
+  std::unique_ptr<EigenSTL::vector_Vector3d> temp_points;
   if (mobile_target_frame_)
   {
-    tempPoints.reset(new EigenSTL::vector_Vector3d(points_.size()));
+    temp_points.reset(new EigenSTL::vector_Vector3d(points_.size()));
     for (std::size_t i = 0; i < points_.size(); ++i)
-      tempPoints->at(i) = tp * points_[i];
-    points = tempPoints.get();
+      temp_points->at(i) = tp * points_[i];
+    points = temp_points.get();
   }
 
   // allocate memory for a mesh to represent the visibility cone
@@ -875,9 +876,9 @@ void VisibilityConstraint::getMarkers(const robot_state::RobotState& state,
 
   markers.markers.push_back(mk);
 
-  const Eigen::Affine3d& sp =
+  const Eigen::Isometry3d& sp =
       mobile_sensor_frame_ ? state.getFrameTransform(sensor_frame_id_) * sensor_pose_ : sensor_pose_;
-  const Eigen::Affine3d& tp =
+  const Eigen::Isometry3d& tp =
       mobile_target_frame_ ? state.getFrameTransform(target_frame_id_) * target_pose_ : target_pose_;
 
   visualization_msgs::Marker mka;
@@ -894,7 +895,7 @@ void VisibilityConstraint::getMarkers(const robot_state::RobotState& state,
   mka.scale.y = .15;
   mka.scale.z = 0.0;
   mka.points.resize(2);
-  Eigen::Vector3d d = tp.translation() + tp.linear().col(2) * 0.5;
+  Eigen::Vector3d d = tp.translation() + tp.rotation().col(2) * 0.5;
   mka.points[0].x = tp.translation().x();
   mka.points[0].y = tp.translation().y();
   mka.points[0].z = tp.translation().z();
@@ -907,7 +908,7 @@ void VisibilityConstraint::getMarkers(const robot_state::RobotState& state,
   mka.color.b = 1.0;
   mka.color.r = 0.0;
 
-  d = sp.translation() + sp.linear().col(2 - sensor_view_direction_) * 0.5;
+  d = sp.translation() + sp.rotation().col(2 - sensor_view_direction_) * 0.5;
   mka.points[0].x = sp.translation().x();
   mka.points[0].y = sp.translation().y();
   mka.points[0].z = sp.translation().z();
@@ -925,17 +926,17 @@ ConstraintEvaluationResult VisibilityConstraint::decide(const robot_state::Robot
 
   if (max_view_angle_ > 0.0 || max_range_angle_ > 0.0)
   {
-    const Eigen::Affine3d& sp =
+    const Eigen::Isometry3d& sp =
         mobile_sensor_frame_ ? state.getFrameTransform(sensor_frame_id_) * sensor_pose_ : sensor_pose_;
-    const Eigen::Affine3d& tp =
+    const Eigen::Isometry3d& tp =
         mobile_target_frame_ ? state.getFrameTransform(target_frame_id_) * target_pose_ : target_pose_;
 
     // necessary to do subtraction as SENSOR_Z is 0 and SENSOR_X is 2
-    const Eigen::Vector3d& normal2 = sp.linear().col(2 - sensor_view_direction_);
+    const Eigen::Vector3d& normal2 = sp.rotation().col(2 - sensor_view_direction_);
 
     if (max_view_angle_ > 0.0)
     {
-      const Eigen::Vector3d& normal1 = tp.linear().col(2) * -1.0;  // along Z axis and inverted
+      const Eigen::Vector3d& normal1 = tp.rotation().col(2) * -1.0;  // along Z axis and inverted
       double dp = normal2.dot(normal1);
       double ang = acos(dp);
       if (dp < 0.0)
@@ -984,7 +985,7 @@ ConstraintEvaluationResult VisibilityConstraint::decide(const robot_state::Robot
 
   // add the visibility cone as an object
   collision_detection::CollisionWorldFCL collision_world;
-  collision_world.getWorld()->addToObject("cone", shapes::ShapeConstPtr(m), Eigen::Affine3d::Identity());
+  collision_world.getWorld()->addToObject("cone", shapes::ShapeConstPtr(m), Eigen::Isometry3d::Identity());
 
   // check for collisions between the robot and the cone
   collision_detection::CollisionRequest req;

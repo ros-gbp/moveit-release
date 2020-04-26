@@ -40,7 +40,7 @@
 #include <moveit/robot_model/robot_model.h>
 #include <moveit/planning_scene/planning_scene.h>
 #include <Eigen/Geometry.h>
-#include <eigen_conversions/eigen_msg.h>
+#include <tf2_eigen/tf2_eigen.h>
 #include <boost/bind.hpp>
 
 namespace kinematics_constraint_aware
@@ -158,7 +158,7 @@ bool KinematicsConstraintAware::getIK(const planning_scene::PlanningSceneConstPt
   }
 
   // Transform the requests to the base frame of the kinematic model
-  EigenSTL::vector_Affine3d goals =
+  EigenSTL::vector_Isometry3d goals =
       transformPoses(planning_scene, kinematic_state, request.pose_stamped_vector_, kinematic_model_->getModelFrame());
 
   robot_state::StateValidityCallbackFn constraint_callback_fn =
@@ -335,22 +335,22 @@ bool KinematicsConstraintAware::convertServiceRequest(
   return true;
 }
 
-EigenSTL::vector_Affine3d KinematicsConstraintAware::transformPoses(
+EigenSTL::vector_Isometry3d KinematicsConstraintAware::transformPoses(
     const planning_scene::PlanningSceneConstPtr& planning_scene, const robot_state::RobotState& kinematic_state,
     const std::vector<geometry_msgs::PoseStamped>& poses, const std::string& target_frame) const
 {
-  Eigen::Affine3d eigen_pose, eigen_pose_2;
-  EigenSTL::vector_Affine3d result(poses.size());
+  Eigen::Isometry3d eigen_pose, eigen_pose_2;
+  EigenSTL::vector_Isometry3d result(poses.size());
   bool target_frame_is_root_frame = (target_frame == kinematic_state.getRobotModel()->getModelFrame());
   for (std::size_t i = 0; i < poses.size(); ++i)
   {
     geometry_msgs::Pose pose = poses[i].pose;
-    tf::poseMsgToEigen(pose, eigen_pose_2);
+    tf2::fromMsg(pose, eigen_pose_2);
     planning_scene->getTransforms()->transformPose(kinematic_state, poses[i].header.frame_id, eigen_pose_2, eigen_pose);
     if (!target_frame_is_root_frame)
     {
       eigen_pose_2 = planning_scene->getTransforms()->getTransform(kinematic_state, target_frame);
-      eigen_pose = eigen_pose_2.inverse(Eigen::Isometry) * eigen_pose;
+      eigen_pose = eigen_pose_2.inverse() * eigen_pose;
     }
     result[i] = eigen_pose;
   }
@@ -362,14 +362,14 @@ geometry_msgs::Pose KinematicsConstraintAware::getTipFramePose(
     const geometry_msgs::Pose& pose, const std::string& link_name, unsigned int sub_group_index) const
 {
   geometry_msgs::Pose result;
-  Eigen::Affine3d eigen_pose_in, eigen_pose_link, eigen_pose_tip;
+  Eigen::Isometry3d eigen_pose_in, eigen_pose_link, eigen_pose_tip;
   std::string tip_name =
       kinematic_model_->getJointModelGroup(sub_groups_names_[sub_group_index])->getSolverInstance()->getTipFrame();
-  tf::poseMsgToEigen(pose, eigen_pose_in);
+  tf2::fromMsg(pose, eigen_pose_in);
   eigen_pose_link = planning_scene->getTransforms()->getTransform(kinematic_state, link_name);
   eigen_pose_tip = planning_scene->getTransforms()->getTransform(kinematic_state, tip_name);
-  eigen_pose_in = eigen_pose_in * (eigen_pose_link.inverse(Eigen::Isometry) * eigen_pose_tip);
-  tf::poseEigenToMsg(eigen_pose_in, result);
+  eigen_pose_in = eigen_pose_in * (eigen_pose_link.inverse() * eigen_pose_tip);
+  result = tf2::toMsg(eigen_pose_in, result);
   return result;
 }
 }

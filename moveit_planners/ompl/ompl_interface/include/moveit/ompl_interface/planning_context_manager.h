@@ -51,8 +51,8 @@ namespace ompl_interface
 class PlanningContextManager
 {
 public:
-  PlanningContextManager(const robot_model::RobotModelConstPtr& kmodel,
-                         const constraint_samplers::ConstraintSamplerManagerPtr& csm);
+  PlanningContextManager(robot_model::RobotModelConstPtr robot_model,
+                         constraint_samplers::ConstraintSamplerManagerPtr csm);
   ~PlanningContextManager();
 
   /** @brief Specify configurations for the planners.
@@ -138,10 +138,8 @@ public:
 
   const robot_model::RobotModelConstPtr& getRobotModel() const
   {
-    return kmodel_;
+    return robot_model_;
   }
-
-  ModelBasedPlanningContextPtr getLastPlanningContext() const;
 
   ModelBasedPlanningContextPtr getPlanningContext(const std::string& config,
                                                   const std::string& factory_type = "") const;
@@ -173,7 +171,7 @@ public:
   ConfiguredPlannerSelector getPlannerSelector() const;
 
 protected:
-  typedef boost::function<const ModelBasedStateSpaceFactoryPtr&(const std::string&)> StateSpaceFactoryTypeSelector;
+  typedef std::function<const ModelBasedStateSpaceFactoryPtr&(const std::string&)> StateSpaceFactoryTypeSelector;
 
   ConfiguredPlannerAllocator plannerSelector(const std::string& planner) const;
 
@@ -191,7 +189,7 @@ protected:
                                                               const moveit_msgs::MotionPlanRequest& req) const;
 
   /** \brief The kinematic model for which motion plans are computed */
-  robot_model::RobotModelConstPtr kmodel_;
+  robot_model::RobotModelConstPtr robot_model_;
 
   constraint_samplers::ConstraintSamplerManagerPtr constraint_sampler_manager_;
 
@@ -227,10 +225,7 @@ protected:
   unsigned int minimum_waypoint_count_;
 
 private:
-  MOVEIT_CLASS_FORWARD(LastPlanningContext);
-  LastPlanningContextPtr last_planning_context_;
-
-  MOVEIT_CLASS_FORWARD(CachedContexts);
+  MOVEIT_STRUCT_FORWARD(CachedContexts);
   CachedContextsPtr cached_contexts_;
 };
 }

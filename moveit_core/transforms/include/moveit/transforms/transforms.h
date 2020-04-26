@@ -51,8 +51,8 @@ MOVEIT_CLASS_FORWARD(Transforms);
 
 /// @brief Map frame names to the transformation matrix that can transform objects from the frame name to the planning
 /// frame
-typedef std::map<std::string, Eigen::Affine3d, std::less<std::string>,
-                 Eigen::aligned_allocator<std::pair<const std::string, Eigen::Affine3d> > >
+typedef std::map<std::string, Eigen::Isometry3d, std::less<std::string>,
+                 Eigen::aligned_allocator<std::pair<const std::string, Eigen::Isometry3d> > >
     FixedTransformsMap;
 
 /** @brief Provides an implementation of a snapshot of a transform tree that can be easily queried for
@@ -87,7 +87,7 @@ public:
 
   /**
    * @brief Return all the transforms
-   * @return A map from string names of frames to corresponding Eigen::Affine3d (w.r.t the planning frame)
+   * @return A map from string names of frames to corresponding Eigen::Isometry3d (w.r.t the planning frame)
    */
   const FixedTransformsMap& getAllTransforms() const;
 
@@ -102,7 +102,7 @@ public:
    * @param t The input transform (w.r.t the target frame)
    * @param from_frame The frame for which the input transform is specified
    */
-  void setTransform(const Eigen::Affine3d& t, const std::string& from_frame);
+  void setTransform(const Eigen::Isometry3d& t, const std::string& from_frame);
 
   /**
    * @brief Set a transform in the transform tree (adding it if necessary)
@@ -117,7 +117,7 @@ public:
   void setTransforms(const std::vector<geometry_msgs::TransformStamped>& transforms);
 
   /**
-   * @brief Set all the transforms: a map from string names of frames to corresponding Eigen::Affine3d (w.r.t the
+   * @brief Set all the transforms: a map from string names of frames to corresponding Eigen::Isometry3d (w.r.t the
    * planning frame)
    */
   void setAllTransforms(const FixedTransformsMap& transforms);
@@ -138,7 +138,7 @@ public:
    */
   void transformVector3(const std::string& from_frame, const Eigen::Vector3d& v_in, Eigen::Vector3d& v_out) const
   {
-    v_out = getTransform(from_frame).linear() * v_in;
+    v_out = getTransform(from_frame).rotation() * v_in;
   }
 
   /**
@@ -150,7 +150,7 @@ public:
   void transformQuaternion(const std::string& from_frame, const Eigen::Quaterniond& q_in,
                            Eigen::Quaterniond& q_out) const
   {
-    q_out = getTransform(from_frame).linear() * q_in;
+    q_out = getTransform(from_frame).rotation() * q_in;
   }
 
   /**
@@ -161,7 +161,7 @@ public:
    */
   void transformRotationMatrix(const std::string& from_frame, const Eigen::Matrix3d& m_in, Eigen::Matrix3d& m_out) const
   {
-    m_out = getTransform(from_frame).linear() * m_in;
+    m_out = getTransform(from_frame).rotation() * m_in;
   }
 
   /**
@@ -170,7 +170,7 @@ public:
    * @param t_in The input pose (in from_frame)
    * @param t_out The resultant (transformed) pose
    */
-  void transformPose(const std::string& from_frame, const Eigen::Affine3d& t_in, Eigen::Affine3d& t_out) const
+  void transformPose(const std::string& from_frame, const Eigen::Isometry3d& t_in, Eigen::Isometry3d& t_out) const
   {
     t_out = getTransform(from_frame) * t_in;
   }
@@ -192,11 +192,11 @@ public:
    * @param from_frame The string id of the frame for which the transform is being computed
    * @return The required transform
    */
-  virtual const Eigen::Affine3d& getTransform(const std::string& from_frame) const;
+  virtual const Eigen::Isometry3d& getTransform(const std::string& from_frame) const;
 
 protected:
   std::string target_frame_;
-  FixedTransformsMap transforms_;
+  FixedTransformsMap transforms_map_;
 };
 }
 }

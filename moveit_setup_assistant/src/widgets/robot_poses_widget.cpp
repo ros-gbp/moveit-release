@@ -51,11 +51,11 @@ namespace moveit_setup_assistant
 // ******************************************************************************************
 // Outer User Interface for MoveIt! Configuration Assistant
 // ******************************************************************************************
-RobotPosesWidget::RobotPosesWidget(QWidget* parent, moveit_setup_assistant::MoveItConfigDataPtr config_data)
+RobotPosesWidget::RobotPosesWidget(QWidget* parent, const MoveItConfigDataPtr& config_data)
   : SetupScreenWidget(parent), config_data_(config_data)
 {
   // Set pointer to null so later we can tell if we need to delete it
-  joint_list_layout_ = NULL;
+  joint_list_layout_ = nullptr;
 
   // Basic widget container
   QVBoxLayout* layout = new QVBoxLayout();
@@ -64,7 +64,8 @@ RobotPosesWidget::RobotPosesWidget(QWidget* parent, moveit_setup_assistant::Move
 
   HeaderWidget* header = new HeaderWidget(
       "Define Robot Poses", "Create poses for the robot. Poses are defined as sets of joint values for "
-                            "particular planning groups. This is useful for things like <i>home position</i>.",
+                            "particular planning groups. This is useful for things like <i>home position</i>."
+                            "The first pose for each robot will be its initial pose in simulation.",
       this);
   layout->addWidget(header);
 
@@ -122,7 +123,7 @@ QWidget* RobotPosesWidget::createContentsWidget()
   data_table_->setSortingEnabled(true);
   data_table_->setSelectionBehavior(QAbstractItemView::SelectRows);
   connect(data_table_, SIGNAL(cellDoubleClicked(int, int)), this, SLOT(editDoubleClicked(int, int)));
-  connect(data_table_, SIGNAL(cellClicked(int, int)), this, SLOT(previewClicked(int, int)));
+  connect(data_table_, SIGNAL(currentCellChanged(int, int, int, int)), this, SLOT(previewClicked(int, int, int, int)));
   layout->addWidget(data_table_);
 
   // Set header labels
@@ -261,14 +262,14 @@ QWidget* RobotPosesWidget::createEditWidget()
   controls_layout->addWidget(spacer);
 
   // Save
-  QPushButton* btn_save_ = new QPushButton("&Save", this);
+  btn_save_ = new QPushButton("&Save", this);
   btn_save_->setMaximumWidth(200);
   connect(btn_save_, SIGNAL(clicked()), this, SLOT(doneEditing()));
   controls_layout->addWidget(btn_save_);
   controls_layout->setAlignment(btn_save_, Qt::AlignRight);
 
   // Cancel
-  QPushButton* btn_cancel_ = new QPushButton("&Cancel", this);
+  btn_cancel_ = new QPushButton("&Cancel", this);
   btn_cancel_->setMaximumWidth(200);
   connect(btn_cancel_, SIGNAL(clicked()), this, SLOT(cancelEditing()));
   controls_layout->addWidget(btn_cancel_);
@@ -317,7 +318,7 @@ void RobotPosesWidget::editDoubleClicked(int row, int column)
 // ******************************************************************************************
 // Preview whatever element is selected
 // ******************************************************************************************
-void RobotPosesWidget::previewClicked(int row, int column)
+void RobotPosesWidget::previewClicked(int row, int /*column*/, int /*previous_row*/, int /*previous_column*/)
 {
   const std::string& name = data_table_->item(row, 0)->text().toStdString();
   const std::string& group = data_table_->item(row, 1)->text().toStdString();
@@ -406,7 +407,7 @@ void RobotPosesWidget::playPoses()
 void RobotPosesWidget::editSelected()
 {
   const auto& ranges = data_table_->selectedRanges();
-  if (!ranges.size())
+  if (ranges.empty())
     return;
   edit(ranges[0].bottomRow());
 }
@@ -563,7 +564,7 @@ void RobotPosesWidget::loadJointSliders(const QString& selected)
 srdf::Model::GroupState* RobotPosesWidget::findPoseByName(const std::string& name, const std::string& group)
 {
   // Find the group state we are editing based on the pose name
-  srdf::Model::GroupState* searched_state = NULL;  // used for holding our search results
+  srdf::Model::GroupState* searched_state = nullptr;  // used for holding our search results
 
   for (srdf::Model::GroupState& state : config_data_->srdf_->group_states_)
   {
@@ -583,7 +584,7 @@ srdf::Model::GroupState* RobotPosesWidget::findPoseByName(const std::string& nam
 void RobotPosesWidget::deleteSelected()
 {
   const auto& ranges = data_table_->selectedRanges();
-  if (!ranges.size())
+  if (ranges.empty())
     return;
   int row = ranges[0].bottomRow();
 
@@ -625,7 +626,7 @@ void RobotPosesWidget::doneEditing()
   const std::string& group = group_name_field_->currentText().toStdString();
 
   // Used for editing existing groups
-  srdf::Model::GroupState* searched_data = NULL;
+  srdf::Model::GroupState* searched_data = nullptr;
 
   // Check that name field is not empty
   if (name.empty())
@@ -659,11 +660,11 @@ void RobotPosesWidget::doneEditing()
   config_data_->changes |= MoveItConfigData::POSES;
 
   // Save the new pose name or create the new pose ----------------------------
-  bool isNew = false;
+  bool is_new = false;
 
-  if (searched_data == NULL)  // create new
+  if (searched_data == nullptr)  // create new
   {
-    isNew = true;
+    is_new = true;
     searched_data = new srdf::Model::GroupState();
   }
 
@@ -693,9 +694,10 @@ void RobotPosesWidget::doneEditing()
   }
 
   // Insert new poses into group state vector --------------------------
-  if (isNew)
+  if (is_new)
   {
     config_data_->srdf_->group_states_.push_back(*searched_data);
+    delete searched_data;
   }
 
   // Finish up ------------------------------------------------------
@@ -763,7 +765,7 @@ void RobotPosesWidget::loadDataTable()
   data_table_->resizeColumnToContents(1);
 
   // Show edit button if applicable
-  if (config_data_->srdf_->group_states_.size())
+  if (!config_data_->srdf_->group_states_.empty())
     btn_edit_->show();
 }
 
@@ -821,7 +823,7 @@ void RobotPosesWidget::publishJoints()
   config_data_->getPlanningScene()->checkSelfCollision(
       request, result, config_data_->getPlanningScene()->getCurrentState(), config_data_->allowed_collision_matrix_);
   // Show result notification
-  if (result.contacts.size())
+  if (!result.contacts.empty())
   {
     collision_warning_->show();
   }
@@ -908,9 +910,7 @@ SliderWidget::SliderWidget(QWidget* parent, const robot_model::JointModel* joint
 // ******************************************************************************************
 // Deconstructor
 // ******************************************************************************************
-SliderWidget::~SliderWidget()
-{
-}
+SliderWidget::~SliderWidget() = default;
 
 // ******************************************************************************************
 // Called when the joint value slider is changed
@@ -948,4 +948,4 @@ void SliderWidget::changeJointSlider()
   Q_EMIT jointValueChanged(joint_model_->getName(), value);
 }
 
-}  // namespace
+}  // namespace moveit_setup_assistant

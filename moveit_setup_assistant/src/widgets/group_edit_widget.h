@@ -59,7 +59,7 @@ public:
   // ******************************************************************************************
 
   /// Constructor
-  GroupEditWidget(QWidget* parent, moveit_setup_assistant::MoveItConfigDataPtr config_data);
+  GroupEditWidget(QWidget* parent, const MoveItConfigDataPtr& config_data);
 
   /// Set the previous data
   void setSelected(const std::string& group_name);
@@ -76,7 +76,7 @@ public:
   QComboBox* kinematics_solver_field_;
   QLineEdit* kinematics_resolution_field_;
   QLineEdit* kinematics_timeout_field_;
-  QLineEdit* kinematics_attempts_field_;
+  QLineEdit* kinematics_parameters_file_field_;
   QComboBox* default_planner_field_;
   QPushButton* btn_delete_;      // this button is hidden for new groups
   QPushButton* btn_save_;        // this button is hidden for new groups
@@ -87,6 +87,9 @@ private Q_SLOTS:
   // ******************************************************************************************
   // Slot Event Functions
   // ******************************************************************************************
+
+  /// Shows a file dialog to select an additional parameter file for kinematics
+  void selectKinematicsFile();
 
 Q_SIGNALS:
 

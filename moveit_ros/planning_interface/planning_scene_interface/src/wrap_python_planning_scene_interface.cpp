@@ -71,21 +71,21 @@ public:
     return py_bindings_tools::listFromString(getKnownObjectNamesInROI(minx, miny, minz, maxx, maxy, maxz, with_type));
   }
 
-  bp::dict getObjectPosesPython(bp::list object_ids)
+  bp::dict getObjectPosesPython(const bp::list& object_ids)
   {
     std::map<std::string, geometry_msgs::Pose> ops = getObjectPoses(py_bindings_tools::stringFromList(object_ids));
-    std::map<std::string, std::string> ser_ops;
+    std::map<std::string, py_bindings_tools::ByteString> ser_ops;
     for (std::map<std::string, geometry_msgs::Pose>::const_iterator it = ops.begin(); it != ops.end(); ++it)
       ser_ops[it->first] = py_bindings_tools::serializeMsg(it->second);
 
     return py_bindings_tools::dictFromType(ser_ops);
   }
 
-  bp::dict getObjectsPython(bp::list object_ids)
+  bp::dict getObjectsPython(const bp::list& object_ids)
   {
     std::map<std::string, moveit_msgs::CollisionObject> objs =
         getObjects(py_bindings_tools::stringFromList(object_ids));
-    std::map<std::string, std::string> ser_objs;
+    std::map<std::string, py_bindings_tools::ByteString> ser_objs;
     for (std::map<std::string, moveit_msgs::CollisionObject>::const_iterator it = objs.begin(); it != objs.end(); ++it)
       ser_objs[it->first] = py_bindings_tools::serializeMsg(it->second);
 
@@ -96,7 +96,7 @@ public:
   {
     std::map<std::string, moveit_msgs::AttachedCollisionObject> aobjs =
         getAttachedObjects(py_bindings_tools::stringFromList(object_ids));
-    std::map<std::string, std::string> ser_aobjs;
+    std::map<std::string, py_bindings_tools::ByteString> ser_aobjs;
     for (std::map<std::string, moveit_msgs::AttachedCollisionObject>::const_iterator it = aobjs.begin();
          it != aobjs.end(); ++it)
       ser_aobjs[it->first] = py_bindings_tools::serializeMsg(it->second);
@@ -104,7 +104,7 @@ public:
     return py_bindings_tools::dictFromType(ser_aobjs);
   }
 
-  bool applyPlanningScenePython(const std::string& ps_str)
+  bool applyPlanningScenePython(const py_bindings_tools::ByteString& ps_str)
   {
     moveit_msgs::PlanningScene ps_msg;
     py_bindings_tools::deserializeMsg(ps_str, ps_msg);
@@ -114,19 +114,19 @@ public:
 
 static void wrap_planning_scene_interface()
 {
-  bp::class_<PlanningSceneInterfaceWrapper> PlanningSceneClass("PlanningSceneInterface",
-                                                               bp::init<bp::optional<std::string>>());
+  bp::class_<PlanningSceneInterfaceWrapper> planning_scene_class("PlanningSceneInterface",
+                                                                 bp::init<bp::optional<std::string>>());
 
-  PlanningSceneClass.def("get_known_object_names", &PlanningSceneInterfaceWrapper::getKnownObjectNamesPython);
-  PlanningSceneClass.def("get_known_object_names_in_roi",
-                         &PlanningSceneInterfaceWrapper::getKnownObjectNamesInROIPython);
-  PlanningSceneClass.def("get_object_poses", &PlanningSceneInterfaceWrapper::getObjectPosesPython);
-  PlanningSceneClass.def("get_objects", &PlanningSceneInterfaceWrapper::getObjectsPython);
-  PlanningSceneClass.def("get_attached_objects", &PlanningSceneInterfaceWrapper::getAttachedObjectsPython);
-  PlanningSceneClass.def("apply_planning_scene", &PlanningSceneInterfaceWrapper::applyPlanningScenePython);
+  planning_scene_class.def("get_known_object_names", &PlanningSceneInterfaceWrapper::getKnownObjectNamesPython);
+  planning_scene_class.def("get_known_object_names_in_roi",
+                           &PlanningSceneInterfaceWrapper::getKnownObjectNamesInROIPython);
+  planning_scene_class.def("get_object_poses", &PlanningSceneInterfaceWrapper::getObjectPosesPython);
+  planning_scene_class.def("get_objects", &PlanningSceneInterfaceWrapper::getObjectsPython);
+  planning_scene_class.def("get_attached_objects", &PlanningSceneInterfaceWrapper::getAttachedObjectsPython);
+  planning_scene_class.def("apply_planning_scene", &PlanningSceneInterfaceWrapper::applyPlanningScenePython);
 }
-}
-}
+}  // namespace planning_interface
+}  // namespace moveit
 
 BOOST_PYTHON_MODULE(_moveit_planning_scene_interface)
 {

@@ -39,8 +39,6 @@
 #include <moveit/plan_execution/plan_with_sensing.h>
 #include <moveit/move_group_pick_place_capability/capability_names.h>
 
-#include <eigen_conversions/eigen_msg.h>
-
 move_group::MoveGroupPickPlaceAction::MoveGroupPickPlaceAction()
   : MoveGroupCapability("PickPlaceAction"), pickup_state_(IDLE)
 {
@@ -88,8 +86,8 @@ void move_group::MoveGroupPickPlaceAction::startPlaceLookCallback()
   setPlaceState(LOOK);
 }
 
-void move_group::MoveGroupPickPlaceAction::executePickupCallback_PlanOnly(const moveit_msgs::PickupGoalConstPtr& goal,
-                                                                          moveit_msgs::PickupResult& action_res)
+void move_group::MoveGroupPickPlaceAction::executePickupCallbackPlanOnly(const moveit_msgs::PickupGoalConstPtr& goal,
+                                                                         moveit_msgs::PickupResult& action_res)
 {
   pick_place::PickPlanPtr plan;
   try
@@ -119,6 +117,7 @@ void move_group::MoveGroupPickPlaceAction::executePickupCallback_PlanOnly(const 
       if (result->id_ < goal->possible_grasps.size())
         action_res.grasp = goal->possible_grasps[result->id_];
       action_res.error_code.val = moveit_msgs::MoveItErrorCodes::SUCCESS;
+      action_res.planning_time = plan->getLastPlanTime();
     }
   }
   else
@@ -127,8 +126,8 @@ void move_group::MoveGroupPickPlaceAction::executePickupCallback_PlanOnly(const 
   }
 }
 
-void move_group::MoveGroupPickPlaceAction::executePlaceCallback_PlanOnly(const moveit_msgs::PlaceGoalConstPtr& goal,
-                                                                         moveit_msgs::PlaceResult& action_res)
+void move_group::MoveGroupPickPlaceAction::executePlaceCallbackPlanOnly(const moveit_msgs::PlaceGoalConstPtr& goal,
+                                                                        moveit_msgs::PlaceResult& action_res)
 {
   pick_place::PlacePlanPtr plan;
   try
@@ -158,6 +157,7 @@ void move_group::MoveGroupPickPlaceAction::executePlaceCallback_PlanOnly(const m
       if (result->id_ < goal->place_locations.size())
         action_res.place_location = goal->place_locations[result->id_];
       action_res.error_code.val = moveit_msgs::MoveItErrorCodes::SUCCESS;
+      action_res.planning_time = plan->getLastPlanTime();
     }
   }
   else
@@ -166,9 +166,9 @@ void move_group::MoveGroupPickPlaceAction::executePlaceCallback_PlanOnly(const m
   }
 }
 
-bool move_group::MoveGroupPickPlaceAction::planUsingPickPlace_Pickup(const moveit_msgs::PickupGoal& goal,
-                                                                     moveit_msgs::PickupResult* action_res,
-                                                                     plan_execution::ExecutableMotionPlan& plan)
+bool move_group::MoveGroupPickPlaceAction::planUsingPickPlacePickup(const moveit_msgs::PickupGoal& goal,
+                                                                    moveit_msgs::PickupResult* action_res,
+                                                                    plan_execution::ExecutableMotionPlan& plan)
 {
   setPickupState(PLANNING);
 
@@ -198,6 +198,7 @@ bool move_group::MoveGroupPickPlaceAction::planUsingPickPlace_Pickup(const movei
       if (result->id_ < goal.possible_grasps.size())
         action_res->grasp = goal.possible_grasps[result->id_];
       plan.error_code_.val = moveit_msgs::MoveItErrorCodes::SUCCESS;
+      action_res->planning_time = pick_plan->getLastPlanTime();
     }
   }
   else
@@ -208,9 +209,9 @@ bool move_group::MoveGroupPickPlaceAction::planUsingPickPlace_Pickup(const movei
   return plan.error_code_.val == moveit_msgs::MoveItErrorCodes::SUCCESS;
 }
 
-bool move_group::MoveGroupPickPlaceAction::planUsingPickPlace_Place(const moveit_msgs::PlaceGoal& goal,
-                                                                    moveit_msgs::PlaceResult* action_res,
-                                                                    plan_execution::ExecutableMotionPlan& plan)
+bool move_group::MoveGroupPickPlaceAction::planUsingPickPlacePlace(const moveit_msgs::PlaceGoal& goal,
+                                                                   moveit_msgs::PlaceResult* action_res,
+                                                                   plan_execution::ExecutableMotionPlan& plan)
 {
   setPlaceState(PLANNING);
 
@@ -240,6 +241,7 @@ bool move_group::MoveGroupPickPlaceAction::planUsingPickPlace_Place(const moveit
       if (result->id_ < goal.place_locations.size())
         action_res->place_location = goal.place_locations[result->id_];
       plan.error_code_.val = moveit_msgs::MoveItErrorCodes::SUCCESS;
+      action_res->planning_time = place_plan->getLastPlanTime();
     }
   }
   else
@@ -250,7 +252,7 @@ bool move_group::MoveGroupPickPlaceAction::planUsingPickPlace_Place(const moveit
   return plan.error_code_.val == moveit_msgs::MoveItErrorCodes::SUCCESS;
 }
 
-void move_group::MoveGroupPickPlaceAction::executePickupCallback_PlanAndExecute(
+void move_group::MoveGroupPickPlaceAction::executePickupCallbackPlanAndExecute(
     const moveit_msgs::PickupGoalConstPtr& goal, moveit_msgs::PickupResult& action_res)
 {
   plan_execution::PlanExecution::Options opt;
@@ -261,7 +263,7 @@ void move_group::MoveGroupPickPlaceAction::executePickupCallback_PlanAndExecute(
   opt.before_execution_callback_ = boost::bind(&MoveGroupPickPlaceAction::startPickupExecutionCallback, this);
 
   opt.plan_callback_ =
-      boost::bind(&MoveGroupPickPlaceAction::planUsingPickPlace_Pickup, this, boost::cref(*goal), &action_res, _1);
+      boost::bind(&MoveGroupPickPlaceAction::planUsingPickPlacePickup, this, boost::cref(*goal), &action_res, _1);
   if (goal->planning_options.look_around && context_->plan_with_sensing_)
   {
     opt.plan_callback_ = boost::bind(&plan_execution::PlanWithSensing::computePlan, context_->plan_with_sensing_.get(),
@@ -281,7 +283,7 @@ void move_group::MoveGroupPickPlaceAction::executePickupCallback_PlanAndExecute(
   action_res.error_code = plan.error_code_;
 }
 
-void move_group::MoveGroupPickPlaceAction::executePlaceCallback_PlanAndExecute(
+void move_group::MoveGroupPickPlaceAction::executePlaceCallbackPlanAndExecute(
     const moveit_msgs::PlaceGoalConstPtr& goal, moveit_msgs::PlaceResult& action_res)
 {
   plan_execution::PlanExecution::Options opt;
@@ -291,7 +293,7 @@ void move_group::MoveGroupPickPlaceAction::executePlaceCallback_PlanAndExecute(
   opt.replan_delay_ = goal->planning_options.replan_delay;
   opt.before_execution_callback_ = boost::bind(&MoveGroupPickPlaceAction::startPlaceExecutionCallback, this);
   opt.plan_callback_ =
-      boost::bind(&MoveGroupPickPlaceAction::planUsingPickPlace_Place, this, boost::cref(*goal), &action_res, _1);
+      boost::bind(&MoveGroupPickPlaceAction::planUsingPickPlacePlace, this, boost::cref(*goal), &action_res, _1);
   if (goal->planning_options.look_around && context_->plan_with_sensing_)
   {
     opt.plan_callback_ = boost::bind(&plan_execution::PlanWithSensing::computePlan, context_->plan_with_sensing_.get(),
@@ -337,10 +339,10 @@ void move_group::MoveGroupPickPlaceAction::executePickupCallback(const moveit_ms
       ROS_WARN_NAMED("manipulation", "This instance of MoveGroup is not allowed to execute trajectories but the pick "
                                      "goal request has plan_only set to false. Only a motion plan will be computed "
                                      "anyway.");
-    executePickupCallback_PlanOnly(goal, action_res);
+    executePickupCallbackPlanOnly(goal, action_res);
   }
   else
-    executePickupCallback_PlanAndExecute(goal, action_res);
+    executePickupCallbackPlanAndExecute(goal, action_res);
 
   bool planned_trajectory_empty = action_res.trajectory_stages.empty();
   std::string response =
@@ -374,10 +376,10 @@ void move_group::MoveGroupPickPlaceAction::executePlaceCallback(const moveit_msg
       ROS_WARN_NAMED("manipulation", "This instance of MoveGroup is not allowed to execute trajectories but the place "
                                      "goal request has plan_only set to false. Only a motion plan will be computed "
                                      "anyway.");
-    executePlaceCallback_PlanOnly(goal, action_res);
+    executePlaceCallbackPlanOnly(goal, action_res);
   }
   else
-    executePlaceCallback_PlanAndExecute(goal, action_res);
+    executePlaceCallbackPlanAndExecute(goal, action_res);
 
   bool planned_trajectory_empty = action_res.trajectory_stages.empty();
   std::string response =

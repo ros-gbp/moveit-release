@@ -1,7 +1,9 @@
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.1.3)
 project(moveit_ros_perception)
 
-add_compile_options(-std=c++11)
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 option(WITH_OPENGL "Build the parts that depend on OpenGL" ON)
 
@@ -9,7 +11,7 @@ if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
-find_package(Boost REQUIRED thread signals)
+find_package(Boost REQUIRED thread)
 
 if(WITH_OPENGL)
   find_package(OpenGL REQUIRED)
@@ -31,54 +33,49 @@ find_package(catkin REQUIRED COMPONENTS
   rosconsole
   urdf
   message_filters
-  tf
-  tf_conversions
+  tf2
+  tf2_eigen
+  tf2_geometry_msgs
+  tf2_ros
   pluginlib
   image_transport
   object_recognition_msgs
   sensor_msgs
   moveit_msgs
+  moveit_ros_occupancy_map_monitor
 )
 
 find_package(Eigen3 REQUIRED)
-
-# Eigen 3.2 (Wily) only provides EIGEN3_INCLUDE_DIR, not EIGEN3_INCLUDE_DIRS
-if(NOT EIGEN3_INCLUDE_DIRS)
-  set(EIGEN3_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
-endif()
-
-find_package(OpenMP)
-find_package(octomap REQUIRED)
+find_package(OpenMP REQUIRED)
 find_package(OpenCV)
 
 catkin_package(
   INCLUDE_DIRS
     lazy_free_space_updater/include
     point_containment_filter/include
-    occupancy_map_monitor/include
     pointcloud_octomap_updater/include
     semantic_world/include
     ${perception_GL_INCLUDE_DIRS}
-    ${OCTOMAP_INCLUDE_DIRS}
   LIBRARIES
     moveit_lazy_free_space_updater
     moveit_point_containment_filter
-    moveit_occupancy_map_monitor
     moveit_pointcloud_octomap_updater_core
     moveit_semantic_world
-    ${OCTOMAP_LIBRARIES}
   CATKIN_DEPENDS
-    moveit_core
     image_transport
-    sensor_msgs
+    moveit_core
     moveit_msgs
+    moveit_ros_occupancy_map_monitor
+    object_recognition_msgs
+    roscpp
+    sensor_msgs
+    tf2_geometry_msgs
   DEPENDS
     EIGEN3
 )
 
 include_directories(lazy_free_space_updater/include
                     point_containment_filter/include
-                    occupancy_map_monitor/include
                     pointcloud_octomap_updater/include
                     semantic_world/include
                     ${perception_GL_INCLUDE_DIRS}
@@ -92,11 +89,8 @@ include_directories(SYSTEM
                     ${X11_INCLUDE_DIR}
                     )
 
-link_directories(${X11_LIBRARY_DIR})
-
 add_subdirectory(lazy_free_space_updater)
 add_subdirectory(point_containment_filter)
-add_subdirectory(occupancy_map_monitor)
 add_subdirectory(pointcloud_octomap_updater)
 if (WITH_OPENGL)
   add_subdirectory(mesh_filter)

@@ -42,19 +42,18 @@ namespace default_planner_request_adapters
 class Empty : public planning_request_adapter::PlanningRequestAdapter
 {
 public:
-  virtual std::string getDescription() const
+  std::string getDescription() const override
   {
     return "No Op";
   }
 
-  virtual bool adaptAndPlan(const PlannerFn& planner, const planning_scene::PlanningSceneConstPtr& planning_scene,
-                            const planning_interface::MotionPlanRequest& req,
-                            planning_interface::MotionPlanResponse& res,
-                            std::vector<std::size_t>& added_path_index) const
+  bool adaptAndPlan(const PlannerFn& planner, const planning_scene::PlanningSceneConstPtr& planning_scene,
+                    const planning_interface::MotionPlanRequest& req, planning_interface::MotionPlanResponse& res,
+                    std::vector<std::size_t>& added_path_index) const override
   {
     return planner(planning_scene, req, res);
   }
 };
-}
+}  // namespace default_planner_request_adapters
 
 CLASS_LOADER_REGISTER_CLASS(default_planner_request_adapters::Empty, planning_request_adapter::PlanningRequestAdapter);

@@ -54,11 +54,17 @@
 #include <fstream>  // for reading in urdf
 #include <streambuf>
 // Boost
-#include <boost/algorithm/string.hpp>  // for trimming whitespace from user input
-#include <boost/filesystem.hpp>        // for reading folders/files
-#include <boost/algorithm/string.hpp>  // for string find and replace in paths
+#include <boost/filesystem/path.hpp>        // for reading folders/files
+#include <boost/filesystem/operations.hpp>  // for reading folders/files
 // MoveIt
 #include <moveit/rdf_loader/rdf_loader.h>
+
+// chdir
+#ifdef _WIN32
+#include <direct.h>
+#else
+#include <unistd.h>
+#endif
 
 namespace moveit_setup_assistant
 {
@@ -68,7 +74,7 @@ namespace fs = boost::filesystem;
 // ******************************************************************************************
 // Start screen user interface for MoveIt! Configuration Assistant
 // ******************************************************************************************
-StartScreenWidget::StartScreenWidget(QWidget* parent, moveit_setup_assistant::MoveItConfigDataPtr config_data)
+StartScreenWidget::StartScreenWidget(QWidget* parent, const MoveItConfigDataPtr& config_data)
   : SetupScreenWidget(parent), config_data_(config_data)
 {
   // Basic widget container
@@ -127,7 +133,7 @@ StartScreenWidget::StartScreenWidget(QWidget* parent, moveit_setup_assistant::Mo
                              "optional xacro arguments:", this, true);  // directory
   // user needs to select option before this is shown
   stack_path_->hide();
-  stack_path_->setArgs("--inorder ");
+  stack_path_->setArgs("");
   connect(stack_path_, SIGNAL(pathChanged(QString)), this, SLOT(onPackagePathChanged(QString)));
   left_layout->addWidget(stack_path_);
 
@@ -138,7 +144,7 @@ StartScreenWidget::StartScreenWidget(QWidget* parent, moveit_setup_assistant::Mo
                                       "optional xacro arguments:", this, false, true);  // no directory, load only
   // user needs to select option before this is shown
   urdf_file_->hide();
-  urdf_file_->setArgs("--inorder ");
+  urdf_file_->setArgs("");
   connect(urdf_file_, SIGNAL(pathChanged(QString)), this, SLOT(onUrdfPathChanged(QString)));
   left_layout->addWidget(urdf_file_);
 
@@ -401,14 +407,20 @@ bool StartScreenWidget::loadExistingFiles()
   fs::path kinematics_yaml_path = config_data_->config_pkg_path_;
   kinematics_yaml_path /= "config/kinematics.yaml";
 
-  if (!config_data_->inputKinematicsYAML(kinematics_yaml_path.make_preferred().native().c_str()))
+  if (!config_data_->inputKinematicsYAML(kinematics_yaml_path.make_preferred().string()))
   {
     QMessageBox::warning(this, "No Kinematic YAML File",
                          QString("Failed to parse kinematics yaml file. This file is not critical but any previous "
                                  "kinematic solver settings have been lost. To re-populate this file edit each "
                                  "existing planning group and choose a solver, then save each change. \n\nFile error "
                                  "at location ")
-                             .append(kinematics_yaml_path.make_preferred().native().c_str()));
+                             .append(kinematics_yaml_path.make_preferred().string().c_str()));
+  }
+  else
+  {
+    fs::path planning_context_launch_path = config_data_->config_pkg_path_;
+    planning_context_launch_path /= "launch/planning_context.launch";
+    config_data_->inputPlanningContextLaunch(planning_context_launch_path.make_preferred().string());
   }
 
   // Load 3d_sensors config file
@@ -417,11 +429,11 @@ bool StartScreenWidget::loadExistingFiles()
   // Load ros controllers yaml file if available-----------------------------------------------
   fs::path ros_controllers_yaml_path = config_data_->config_pkg_path_;
   ros_controllers_yaml_path /= "config/ros_controllers.yaml";
-  config_data_->inputROSControllersYAML(ros_controllers_yaml_path.make_preferred().native().c_str());
+  config_data_->inputROSControllersYAML(ros_controllers_yaml_path.make_preferred().string());
 
   fs::path ompl_yaml_path = config_data_->config_pkg_path_;
   ompl_yaml_path /= "config/ompl_planning.yaml";
-  config_data_->inputOMPLYAML(ompl_yaml_path.make_preferred().native().c_str());
+  config_data_->inputOMPLYAML(ompl_yaml_path.make_preferred().string());
 
   // DONE LOADING --------------------------------------------------------------------------
 
@@ -456,7 +468,7 @@ bool StartScreenWidget::loadNewFiles()
   // Check that box is filled out
   if (config_data_->urdf_path_.empty())
   {
-    QMessageBox::warning(this, "Error Loading Files", "No robot model file specefied");
+    QMessageBox::warning(this, "Error Loading Files", "No robot model file specified");
     return false;
   }
 
@@ -531,9 +543,9 @@ bool StartScreenWidget::loadNewFiles()
 // ******************************************************************************************
 bool StartScreenWidget::loadURDFFile(const std::string& urdf_file_path, const std::string& xacro_args)
 {
-  const std::vector<std::string> xacro_args_ = { xacro_args };
+  const std::vector<std::string> vec_xacro_args = { xacro_args };
 
-  if (!rdf_loader::RDFLoader::loadXmlFileToString(config_data_->urdf_string_, urdf_file_path, xacro_args_))
+  if (!rdf_loader::RDFLoader::loadXmlFileToString(config_data_->urdf_string_, urdf_file_path, vec_xacro_args))
   {
     QMessageBox::warning(this, "Error Loading Files",
                          QString("URDF/COLLADA file not found: ").append(urdf_file_path.c_str()));
@@ -562,7 +574,7 @@ bool StartScreenWidget::loadURDFFile(const std::string& urdf_file_path, const st
   while (!nh.ok() && steps < 4)
   {
     ROS_WARN("Waiting for node handle");
-    sleep(1);
+    ros::Duration(1).sleep();
     steps++;
     ros::spinOnce();
   }
@@ -611,7 +623,7 @@ bool StartScreenWidget::setSRDFFile(const std::string& srdf_string)
   while (!nh.ok() && steps < 4)
   {
     ROS_WARN("Waiting for node handle");
-    sleep(1);
+    ros::Duration(1).sleep();
     steps++;
     ros::spinOnce();
   }
@@ -630,68 +642,13 @@ bool StartScreenWidget::setSRDFFile(const std::string& srdf_string)
 // ******************************************************************************************
 bool StartScreenWidget::extractPackageNameFromPath()
 {
-  // Get the path to urdf, save filename
-  fs::path urdf_path = config_data_->urdf_path_;
-  fs::path urdf_directory = urdf_path;
-  urdf_directory.remove_filename();
+  std::string relative_path;  // holds the path after the sub_path
+  std::string package_name;   // result
 
-  fs::path sub_path;         // holds the directory less one folder
-  fs::path relative_path;    // holds the path after the sub_path
-  std::string package_name;  // result
-
-  // Paths for testing if files exist
-  fs::path package_path;
-
-  std::vector<std::string> path_parts;  // holds each folder name in vector
-
-  // Copy path into vector of parts
-  for (fs::path::iterator it = urdf_directory.begin(); it != urdf_directory.end(); ++it)
-    path_parts.push_back(it->native());
-
-  bool packageFound = false;
-
-  // reduce the generated directoy path's folder count by 1 each loop
-  for (int segment_length = path_parts.size(); segment_length > 0; --segment_length)
-  {
-    // Reset the sub_path
-    sub_path.clear();
-
-    // Create a subpath based on the outer loops length
-    for (int segment_count = 0; segment_count < segment_length; ++segment_count)
-    {
-      sub_path /= path_parts[segment_count];
-
-      // decide if we should remember this directory name because it is topmost, in case it is the package/stack name
-      if (segment_count == segment_length - 1)
-      {
-        package_name = path_parts[segment_count];
-      }
-    }
-
-    // check if this directory has a package.xml
-    package_path = sub_path;
-    package_path /= "package.xml";
-    ROS_DEBUG_STREAM("Checking for " << package_path.make_preferred().native());
-
-    // Check if the files exist
-    if (fs::is_regular_file(package_path) || fs::is_regular_file(sub_path / "manifest.xml"))
-    {
-      // now generate the relative path
-      for (std::size_t relative_count = segment_length; relative_count < path_parts.size(); ++relative_count)
-        relative_path /= path_parts[relative_count];
-
-      // add the URDF filename at end of relative path
-      relative_path /= urdf_path.filename();
-
-      // end the search
-      segment_length = 0;
-      packageFound = true;
-      break;
-    }
-  }
+  bool package_found = config_data_->extractPackageNameFromPath(config_data_->urdf_path_, package_name, relative_path);
 
   // Assign data to moveit_config_data
-  if (!packageFound)
+  if (!package_found)
   {
     // No package name found, we must be outside ROS
     config_data_->urdf_pkg_name_ = "";
@@ -700,7 +657,7 @@ bool StartScreenWidget::extractPackageNameFromPath()
   else
   {
     // Check that ROS can find the package
-    const std::string robot_desc_pkg_path = ros::package::getPath(config_data_->urdf_pkg_name_) + "/";
+    const std::string robot_desc_pkg_path = ros::package::getPath(package_name);
 
     if (robot_desc_pkg_path.empty())
     {
@@ -712,7 +669,7 @@ bool StartScreenWidget::extractPackageNameFromPath()
 
     // Success
     config_data_->urdf_pkg_name_ = package_name;
-    config_data_->urdf_pkg_relative_path_ = relative_path.make_preferred().native();
+    config_data_->urdf_pkg_relative_path_ = relative_path;
   }
 
   ROS_DEBUG_STREAM("URDF Package Name: " << config_data_->urdf_pkg_name_);
@@ -782,12 +739,12 @@ bool StartScreenWidget::load3DSensorsFile()
 
   if (!fs::is_regular_file(sensors_3d_yaml_path))
   {
-    return config_data_->input3DSensorsYAML(default_sensors_3d_yaml_path.make_preferred().native().c_str());
+    return config_data_->input3DSensorsYAML(default_sensors_3d_yaml_path.make_preferred().string());
   }
   else
   {
-    return config_data_->input3DSensorsYAML(default_sensors_3d_yaml_path.make_preferred().native().c_str(),
-                                            sensors_3d_yaml_path.make_preferred().native().c_str());
+    return config_data_->input3DSensorsYAML(default_sensors_3d_yaml_path.make_preferred().string(),
+                                            sensors_3d_yaml_path.make_preferred().string());
   }
 }
 
@@ -823,24 +780,15 @@ SelectModeWidget::SelectModeWidget(QWidget* parent) : QFrame(parent)
   layout->setAlignment(widget_title, Qt::AlignTop);
 
   // Widget Instructions
-  widget_instructions_ = new QTextEdit(this);
+  widget_instructions_ = new QLabel(this);
+  widget_instructions_->setAlignment(Qt::AlignLeft | Qt::AlignTop);
+  widget_instructions_->setWordWrap(true);
+  widget_instructions_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
   widget_instructions_->setText(
       "All settings for MoveIt! are stored in the MoveIt! configuration package. Here you have "
       "the option to create a new configuration package or load an existing one. Note: "
       "changes to a MoveIt! configuration package outside this Setup Assistant are likely to be "
       "overwritten by this tool.");
-
-  // Change color of TextEdit
-  QPalette p = widget_instructions_->palette();
-  p.setColor(QPalette::Active, QPalette::Base, this->palette().color(QWidget::backgroundRole()));
-  p.setColor(QPalette::Inactive, QPalette::Base, this->palette().color(QWidget::backgroundRole()));
-  widget_instructions_->setPalette(p);
-
-  // Make TextEdit behave like QLabel
-  widget_instructions_->setWordWrapMode(QTextOption::WrapAtWordBoundaryOrAnywhere);
-  widget_instructions_->setReadOnly(true);
-  widget_instructions_->setFrameShape(QFrame::NoFrame);
-  widget_instructions_->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
   layout->addWidget(widget_instructions_);
   layout->setAlignment(widget_instructions_, Qt::AlignTop);
@@ -862,4 +810,4 @@ SelectModeWidget::SelectModeWidget(QWidget* parent) : QFrame(parent)
   btn_new_->setCheckable(true);
 }
 
-}  // namespace
+}  // namespace moveit_setup_assistant

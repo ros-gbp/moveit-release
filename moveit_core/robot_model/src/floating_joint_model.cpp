@@ -158,17 +158,17 @@ bool FloatingJointModel::satisfiesPositionBounds(const double* values, const Bou
     return false;
   if (values[2] < bounds[2].min_position_ - margin || values[2] > bounds[2].max_position_ + margin)
     return false;
-  double normSqr = values[3] * values[3] + values[4] * values[4] + values[5] * values[5] + values[6] * values[6];
-  return fabs(normSqr - 1.0) <= std::numeric_limits<float>::epsilon() * 10.0;
+  double norm_sqr = values[3] * values[3] + values[4] * values[4] + values[5] * values[5] + values[6] * values[6];
+  return fabs(norm_sqr - 1.0) <= std::numeric_limits<float>::epsilon() * 10.0;
 }
 
 bool FloatingJointModel::normalizeRotation(double* values) const
 {
   // normalize the quaternion if we need to
-  double normSqr = values[3] * values[3] + values[4] * values[4] + values[5] * values[5] + values[6] * values[6];
-  if (fabs(normSqr - 1.0) > std::numeric_limits<double>::epsilon() * 100.0)
+  double norm_sqr = values[3] * values[3] + values[4] * values[4] + values[5] * values[5] + values[6] * values[6];
+  if (fabs(norm_sqr - 1.0) > std::numeric_limits<double>::epsilon() * 100.0)
   {
-    double norm = sqrt(normSqr);
+    double norm = sqrt(norm_sqr);
     if (norm < std::numeric_limits<double>::epsilon() * 100.0)
     {
       ROS_WARN_NAMED("robot_model", "Quaternion is zero in RobotState representation. Setting to identity");
@@ -214,19 +214,18 @@ bool FloatingJointModel::enforcePositionBounds(double* values, const Bounds& bou
   return result;
 }
 
-void FloatingJointModel::computeTransform(const double* joint_values, Eigen::Affine3d& transf) const
+void FloatingJointModel::computeTransform(const double* joint_values, Eigen::Isometry3d& transf) const
 {
-  transf = Eigen::Affine3d(
-      Eigen::Translation3d(joint_values[0], joint_values[1], joint_values[2]) *
-      Eigen::Quaterniond(joint_values[6], joint_values[3], joint_values[4], joint_values[5]).toRotationMatrix());
+  transf = Eigen::Isometry3d(Eigen::Translation3d(joint_values[0], joint_values[1], joint_values[2]) *
+                             Eigen::Quaterniond(joint_values[6], joint_values[3], joint_values[4], joint_values[5]));
 }
 
-void FloatingJointModel::computeVariablePositions(const Eigen::Affine3d& transf, double* joint_values) const
+void FloatingJointModel::computeVariablePositions(const Eigen::Isometry3d& transf, double* joint_values) const
 {
   joint_values[0] = transf.translation().x();
   joint_values[1] = transf.translation().y();
   joint_values[2] = transf.translation().z();
-  Eigen::Quaterniond q(transf.linear());
+  Eigen::Quaterniond q(transf.rotation());
   joint_values[3] = q.x();
   joint_values[4] = q.y();
   joint_values[5] = q.z();

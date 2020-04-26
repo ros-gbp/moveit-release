@@ -49,13 +49,9 @@
 #include <moveit_msgs/MoveItErrorCodes.h>
 
 // KDL
-#include <kdl/jntarray.hpp>
-#include <kdl/chainiksolvervel_pinv.hpp>
-#include <kdl/chainiksolverpos_nr_jl.hpp>
-#include <kdl/chainfksolverpos_recursive.hpp>
-#include <moveit/lma_kinematics_plugin/chainiksolver_pos_lma_jl_mimic.h>
-#include <moveit/lma_kinematics_plugin/chainiksolver_vel_pinv_mimic.h>
-#include <moveit/lma_kinematics_plugin/joint_mimic.h>
+#include <kdl/config.h>
+#include <kdl/chainfksolver.hpp>
+#include <kdl/chainiksolver.hpp>
 
 // MoveIt!
 #include <moveit/kinematics_base/kinematics_base.h>
@@ -65,8 +61,8 @@
 namespace lma_kinematics_plugin
 {
 /**
- * @brief Specific implementation of kinematics using Levenberg-Marquardt method available at KDL.
- * This version can be used with any robot.
+ * @brief Implementation of kinematics using Levenberg-Marquardt (LMA) solver from KDL.
+ * This version supports any kinematic chain without mimic joints.
  */
 class LMAKinematicsPlugin : public kinematics::KinematicsBase
 {
@@ -76,65 +72,61 @@ public:
    */
   LMAKinematicsPlugin();
 
-  virtual bool
-  getPositionIK(const geometry_msgs::Pose& ik_pose, const std::vector<double>& ik_seed_state,
-                std::vector<double>& solution, moveit_msgs::MoveItErrorCodes& error_code,
-                const kinematics::KinematicsQueryOptions& options = kinematics::KinematicsQueryOptions()) const;
+  bool getPositionIK(
+      const geometry_msgs::Pose& ik_pose, const std::vector<double>& ik_seed_state, std::vector<double>& solution,
+      moveit_msgs::MoveItErrorCodes& error_code,
+      const kinematics::KinematicsQueryOptions& options = kinematics::KinematicsQueryOptions()) const override;
 
-  virtual bool
-  searchPositionIK(const geometry_msgs::Pose& ik_pose, const std::vector<double>& ik_seed_state, double timeout,
-                   std::vector<double>& solution, moveit_msgs::MoveItErrorCodes& error_code,
-                   const kinematics::KinematicsQueryOptions& options = kinematics::KinematicsQueryOptions()) const;
+  bool searchPositionIK(
+      const geometry_msgs::Pose& ik_pose, const std::vector<double>& ik_seed_state, double timeout,
+      std::vector<double>& solution, moveit_msgs::MoveItErrorCodes& error_code,
+      const kinematics::KinematicsQueryOptions& options = kinematics::KinematicsQueryOptions()) const override;
 
-  virtual bool
-  searchPositionIK(const geometry_msgs::Pose& ik_pose, const std::vector<double>& ik_seed_state, double timeout,
-                   const std::vector<double>& consistency_limits, std::vector<double>& solution,
-                   moveit_msgs::MoveItErrorCodes& error_code,
-                   const kinematics::KinematicsQueryOptions& options = kinematics::KinematicsQueryOptions()) const;
+  bool searchPositionIK(
+      const geometry_msgs::Pose& ik_pose, const std::vector<double>& ik_seed_state, double timeout,
+      const std::vector<double>& consistency_limits, std::vector<double>& solution,
+      moveit_msgs::MoveItErrorCodes& error_code,
+      const kinematics::KinematicsQueryOptions& options = kinematics::KinematicsQueryOptions()) const override;
 
-  virtual bool
-  searchPositionIK(const geometry_msgs::Pose& ik_pose, const std::vector<double>& ik_seed_state, double timeout,
-                   std::vector<double>& solution, const IKCallbackFn& solution_callback,
-                   moveit_msgs::MoveItErrorCodes& error_code,
-                   const kinematics::KinematicsQueryOptions& options = kinematics::KinematicsQueryOptions()) const;
+  bool searchPositionIK(
+      const geometry_msgs::Pose& ik_pose, const std::vector<double>& ik_seed_state, double timeout,
+      std::vector<double>& solution, const IKCallbackFn& solution_callback, moveit_msgs::MoveItErrorCodes& error_code,
+      const kinematics::KinematicsQueryOptions& options = kinematics::KinematicsQueryOptions()) const override;
 
-  virtual bool
-  searchPositionIK(const geometry_msgs::Pose& ik_pose, const std::vector<double>& ik_seed_state, double timeout,
-                   const std::vector<double>& consistency_limits, std::vector<double>& solution,
-                   const IKCallbackFn& solution_callback, moveit_msgs::MoveItErrorCodes& error_code,
-                   const kinematics::KinematicsQueryOptions& options = kinematics::KinematicsQueryOptions()) const;
+  bool searchPositionIK(
+      const geometry_msgs::Pose& ik_pose, const std::vector<double>& ik_seed_state, double timeout,
+      const std::vector<double>& consistency_limits, std::vector<double>& solution,
+      const IKCallbackFn& solution_callback, moveit_msgs::MoveItErrorCodes& error_code,
+      const kinematics::KinematicsQueryOptions& options = kinematics::KinematicsQueryOptions()) const override;
 
-  virtual bool getPositionFK(const std::vector<std::string>& link_names, const std::vector<double>& joint_angles,
-                             std::vector<geometry_msgs::Pose>& poses) const;
+  bool getPositionFK(const std::vector<std::string>& link_names, const std::vector<double>& joint_angles,
+                     std::vector<geometry_msgs::Pose>& poses) const override;
 
-  virtual bool initialize(const std::string& robot_description, const std::string& group_name,
-                          const std::string& base_name, const std::string& tip_name, double search_discretization);
+  bool initialize(const moveit::core::RobotModel& robot_model, const std::string& group_name,
+                  const std::string& base_frame, const std::vector<std::string>& tip_frames,
+                  double search_discretization) override;
 
   /**
    * @brief  Return all the joint names in the order they are used internally
    */
-  const std::vector<std::string>& getJointNames() const;
+  const std::vector<std::string>& getJointNames() const override;
 
   /**
    * @brief  Return all the link names in the order they are represented internally
    */
-  const std::vector<std::string>& getLinkNames() const;
+  const std::vector<std::string>& getLinkNames() const override;
 
 protected:
   /**
    * @brief Given a desired pose of the end-effector, search for the joint angles required to reach it.
-   * This particular method is intended for "searching" for a solutions by stepping through the redundancy
-   * (or other numerical routines).
+   * This particular method is intended for "searching" for a solutions by randomly re-seeding on failure.
    * @param ik_pose the desired pose of the link
    * @param ik_seed_state an initial guess solution for the inverse kinematics
    * @param timeout The amount of time (in seconds) available to the solver
    * @param solution the solution vector
-   * @param solution_callback A callback solution for the IK solution
+   * @param solution_callback A callback to validate an IK solution
    * @param error_code an error code that encodes the reason for failure or success
-   * @param check_consistency Set to true if consistency check needs to be performed
-   * @param redundancy The index of the redundant joint
-   * @param consistency_limit The returned solutuion will contain a value for the redundant joint in the range
-   * [seed_state(redundancy_limit)-consistency_limit,seed_state(redundancy_limit)+consistency_limit]
+   * @param consistency_limits The returned solutuion will not deviate more than these from the seed
    * @return True if a valid solution was found, false otherwise
    */
   bool searchPositionIK(const geometry_msgs::Pose& ik_pose, const std::vector<double>& ik_seed_state, double timeout,
@@ -142,67 +134,52 @@ protected:
                         moveit_msgs::MoveItErrorCodes& error_code, const std::vector<double>& consistency_limits,
                         const kinematics::KinematicsQueryOptions& options = kinematics::KinematicsQueryOptions()) const;
 
-  virtual bool setRedundantJoints(const std::vector<unsigned int>& redundant_joint_indices);
-
 private:
   bool timedOut(const ros::WallTime& start_time, double duration) const;
 
-  /** @brief Check whether the solution lies within the consistency limit of the seed state
+  /** @brief Check whether the solution lies within the consistency limits of the seed state
    *  @param seed_state Seed state
-   *  @param redundancy Index of the redundant joint within the chain
-   *  @param consistency_limit The returned state for redundant joint should be in the range
-   * [seed_state(redundancy_limit)-consistency_limit,seed_state(redundancy_limit)+consistency_limit]
+   *  @param consistency_limits
    *  @param solution solution configuration
    *  @return true if check succeeds
    */
-  bool checkConsistency(const KDL::JntArray& seed_state, const std::vector<double>& consistency_limit,
-                        const KDL::JntArray& solution) const;
+  bool checkConsistency(const Eigen::VectorXd& seed_state, const std::vector<double>& consistency_limits,
+                        const Eigen::VectorXd& solution) const;
+  /** Check whether joint values satisfy joint limits */
+  bool obeysLimits(const Eigen::VectorXd& values) const;
+  /** Harmonize revolute joint values into the range -2 Pi .. 2 Pi */
+  void harmonize(Eigen::VectorXd& values) const;
 
-  int getJointIndex(const std::string& name) const;
+  void getRandomConfiguration(Eigen::VectorXd& jnt_array) const;
 
-  int getKDLSegmentIndex(const std::string& name) const;
-
-  void getRandomConfiguration(KDL::JntArray& jnt_array, bool lock_redundancy) const;
-
-  /** @brief Get a random configuration within joint limits close to the seed state
+  /** @brief Get a random configuration within consistency limits close to the seed state
    *  @param seed_state Seed state
-   *  @param redundancy Index of the redundant joint within the chain
-   *  @param consistency_limit The returned state will contain a value for the redundant joint in the range
-   * [seed_state(redundancy_limit)-consistency_limit,seed_state(redundancy_limit)+consistency_limit]
+   *  @param consistency_limits
    *  @param jnt_array Returned random configuration
    */
-  void getRandomConfiguration(const KDL::JntArray& seed_state, const std::vector<double>& consistency_limits,
-                              KDL::JntArray& jnt_array, bool lock_redundancy) const;
+  void getRandomConfiguration(const Eigen::VectorXd& seed_state, const std::vector<double>& consistency_limits,
+                              Eigen::VectorXd& jnt_array) const;
 
-  bool isRedundantJoint(unsigned int index) const;
+  bool initialized_;  ///< Internal variable that indicates whether solver is configured and ready
 
-  bool active_; /** Internal variable that indicates whether solvers are configured and ready */
+  unsigned int dimension_;                        ///< Dimension of the group
+  moveit_msgs::KinematicSolverInfo solver_info_;  ///< Stores information for the inverse kinematics solver
 
-  moveit_msgs::KinematicSolverInfo ik_chain_info_; /** Stores information for the inverse kinematics solver */
-
-  moveit_msgs::KinematicSolverInfo fk_chain_info_; /** Store information for the forward kinematics solver */
-
+  const robot_model::JointModelGroup* joint_model_group_;
+  robot_state::RobotStatePtr state_;
   KDL::Chain kdl_chain_;
+  std::unique_ptr<KDL::ChainFkSolverPos> fk_solver_;
+  std::vector<const robot_model::JointModel*> joints_;
+  std::vector<std::string> joint_names_;
 
-  unsigned int dimension_; /** Dimension of the group */
-
-  KDL::JntArray joint_min_, joint_max_; /** Joint limits */
-
-  mutable random_numbers::RandomNumberGenerator random_number_generator_;
-
-  robot_model::RobotModelPtr robot_model_;
-
-  robot_state::RobotStatePtr state_, state_2_;
-
-  int num_possible_redundant_joints_;
-  std::vector<unsigned int> redundant_joints_map_index_;
-
-  // Storage required for when the set of redundant joints is reset
-  bool position_ik_;  // whether this solver is only being used for position ik
-  robot_model::JointModelGroup* joint_model_group_;
-  double max_solver_iterations_;
+  int max_solver_iterations_;
   double epsilon_;
-  std::vector<JointMimic> mimic_joints_;
+  /** weight of orientation error vs position error
+   *
+   * < 1.0: orientation has less importance than position
+   * > 1.0: orientation has more importance than position
+   * = 0.0: perform position-only IK */
+  double orientation_vs_position_weight_;
 };
 }
 

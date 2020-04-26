@@ -2,27 +2,44 @@
 Changelog for package moveit_ros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.9.18 (2020-01-24)
+1.0.3 (2020-04-26)
+------------------
+
+1.0.2 (2019-06-28)
+------------------
+
+1.0.1 (2019-03-08)
+------------------
+
+1.0.0 (2019-02-24)
+------------------
+* [fix] catkin_lint issues (`#1341 <https://github.com/ros-planning/moveit/issues/1341>`_)
+* Contributors: Dave Coleman, Robert Haschke
+
+0.10.8 (2018-12-24)
 -------------------
 
-0.9.17 (2019-07-09)
+0.10.7 (2018-12-13)
 -------------------
 
-0.9.16 (2019-06-29)
+0.10.6 (2018-12-09)
 -------------------
 
-0.9.15 (2018-10-29)
+0.10.5 (2018-11-01)
 -------------------
 
-0.9.14 (2018-10-24)
+0.10.4 (2018-10-29)
 -------------------
 
-0.9.13 (2018-10-24)
+0.10.3 (2018-10-29)
 -------------------
-* fix refrences to moveit! (`#1020 <https://github.com/ros-planning/moveit/issues/1020>`_)
+
+0.10.2 (2018-10-24)
+-------------------
+* Fix references to MoveIt! (`#1020 <https://github.com/ros-planning/moveit/issues/1020>`_)
 * Contributors: Mohmmad Ayman
 
-0.9.12 (2018-05-29)
+0.10.1 (2018-05-25)
 -------------------
 
 0.9.11 (2017-12-25)
@@ -65,7 +82,7 @@ Changelog for package moveit_ros
 
 0.6.5 (2015-01-24)
 ------------------
-* update maintainers
+* Update maintainers
 * Contributors: Michael Ferguson
 
 0.6.4 (2014-12-20)
@@ -112,8 +129,8 @@ Changelog for package moveit_ros
 
 0.5.9 (2013-12-03)
 ------------------
-* update email addresses
-* correcting maintainer email
+* Update email addresses
+* Correcting maintainer email
 
 0.5.8 (2013-10-11)
 ------------------

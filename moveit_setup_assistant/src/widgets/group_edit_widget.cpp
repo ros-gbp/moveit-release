@@ -37,6 +37,7 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QMessageBox>
+#include <QFileDialog>
 #include <QFormLayout>
 #include <QString>
 #include <QGroupBox>
@@ -48,7 +49,7 @@ namespace moveit_setup_assistant
 // ******************************************************************************************
 //
 // ******************************************************************************************
-GroupEditWidget::GroupEditWidget(QWidget* parent, moveit_setup_assistant::MoveItConfigDataPtr config_data)
+GroupEditWidget::GroupEditWidget(QWidget* parent, const MoveItConfigDataPtr& config_data)
   : QWidget(parent), config_data_(config_data)
 {
   // Basic widget container
@@ -88,10 +89,19 @@ GroupEditWidget::GroupEditWidget(QWidget* parent, moveit_setup_assistant::MoveIt
   kinematics_timeout_field_->setMaximumWidth(400);
   form_layout->addRow("Kin. Search Timeout (sec):", kinematics_timeout_field_);
 
-  // number of IK attempts
-  kinematics_attempts_field_ = new QLineEdit(this);
-  kinematics_attempts_field_->setMaximumWidth(400);
-  form_layout->addRow("Kin. Solver Attempts:", kinematics_attempts_field_);
+  // file to load additional parameters from
+  kinematics_parameters_file_field_ = new QLineEdit(this);
+  kinematics_parameters_file_field_->setMaximumWidth(400);
+  QPushButton* kinematics_parameters_file_button = new QPushButton("...", this);
+  kinematics_parameters_file_button->setMaximumWidth(50);
+  connect(kinematics_parameters_file_button, SIGNAL(clicked()), this, SLOT(selectKinematicsFile()));
+  QBoxLayout* kinematics_parameters_file_layout = new QHBoxLayout(this);
+  kinematics_parameters_file_layout->addWidget(kinematics_parameters_file_field_);
+  kinematics_parameters_file_layout->addWidget(kinematics_parameters_file_button);
+  kinematics_parameters_file_layout->setContentsMargins(0, 0, 0, 0);
+  QWidget* container = new QWidget(this);
+  container->setLayout(kinematics_parameters_file_layout);
+  form_layout->addRow("Kin. parameters file:", container);
 
   group1->setLayout(form_layout);
 
@@ -238,15 +248,6 @@ void GroupEditWidget::setSelected(const std::string& group_name)
   }
   kinematics_timeout_field_->setText(QString::number(*timeout));
 
-  // Load attempts
-  int* attempts = &config_data_->group_meta_data_[group_name].kinematics_solver_attempts_;
-  if (*attempts == 0)
-  {
-    // Set default value
-    *attempts = DEFAULT_KIN_SOLVER_ATTEMPTS_;
-  }
-  kinematics_attempts_field_->setText(QString::number(*attempts));
-
   // Set kin solver
   std::string kin_solver = config_data_->group_meta_data_[group_name].kinematics_solver_;
 
@@ -271,6 +272,9 @@ void GroupEditWidget::setSelected(const std::string& group_name)
   {
     kinematics_solver_field_->setCurrentIndex(index);
   }
+
+  kinematics_parameters_file_field_->setText(
+      config_data_->group_meta_data_[group_name].kinematics_parameters_file_.c_str());
 
   // Set default planner
   std::string default_planner = config_data_->group_meta_data_[group_name].default_planner_;
@@ -299,10 +303,10 @@ void GroupEditWidget::setSelected(const std::string& group_name)
 void GroupEditWidget::loadKinematicPlannersComboBox()
 {
   // Only load this combo box once
-  static bool hasLoaded = false;
-  if (hasLoaded)
+  static bool has_loaded = false;
+  if (has_loaded)
     return;
-  hasLoaded = true;
+  has_loaded = true;
 
   // Remove all old items
   kinematics_solver_field_->clear();
@@ -352,4 +356,26 @@ void GroupEditWidget::loadKinematicPlannersComboBox()
   }
 }
 
-}  // namespace
+void GroupEditWidget::selectKinematicsFile()
+{
+  QString filename = QFileDialog::getOpenFileName(this, "Select a parameter file", "", "YAML files (*.yaml)");
+
+  if (filename.isEmpty())
+  {
+    return;
+  }
+
+  std::string package_name;
+  std::string relative_filename;
+  bool package_found =
+      config_data_->extractPackageNameFromPath(filename.toStdString(), package_name, relative_filename);
+
+  QString lookup_path = filename;
+  if (package_found)
+  {
+    lookup_path = QString("$(find %1)/%2").arg(package_name.c_str()).arg(relative_filename.c_str());
+  }
+  kinematics_parameters_file_field_->setText(lookup_path);
+}
+
+}  // namespace moveit_setup_assistant

@@ -68,12 +68,16 @@ class PythonMoveGroupTest(unittest.TestCase):
                              [ 1.  ,  0.  ,  0.  ,  0.  ,  0.  ,  0.  ]])
         self.assertTrue(np.allclose(result, expected))
 
+        result = self.group.get_jacobian_matrix(current, [1.0, 1.0, 1.0])
+        expected = np.array([[ 1.  ,  1.8 , -1.2 ,  0.  , -1.  ,  0.  ],
+                             [ 1.89,  0.  ,  0.  ,  1.  ,  0.  ,  1.  ],
+                             [ 0.  , -1.74,  1.74,  1.  ,  1.1 ,  1.  ],
+                             [ 0.  ,  0.  ,  0.  , -1.  ,  0.  , -1.  ],
+                             [ 0.  ,  1.  , -1.  ,  0.  , -1.  ,  0.  ],
+                             [ 1.  ,  0.  ,  0.  ,  0.  ,  0.  ,  0.  ]])
 
 if __name__ == '__main__':
     PKGNAME = 'moveit_ros_planning_interface'
     NODENAME = 'moveit_test_python_move_group'
     rospy.init_node(NODENAME)
     rostest.rosrun(PKGNAME, NODENAME, PythonMoveGroupTest)
-
-    # suppress cleanup segfault
-    os._exit(0)

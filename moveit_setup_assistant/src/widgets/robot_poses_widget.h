@@ -71,10 +71,10 @@ public:
   // Public Functions
   // ******************************************************************************************
 
-  RobotPosesWidget(QWidget* parent, moveit_setup_assistant::MoveItConfigDataPtr config_data);
+  RobotPosesWidget(QWidget* parent, const MoveItConfigDataPtr& config_data);
 
   /// Received when this widget is chosen from the navigation menu
-  virtual void focusGiven();
+  void focusGiven() override;
 
   // ******************************************************************************************
   // Qt Components
@@ -111,7 +111,7 @@ private Q_SLOTS:
   void editDoubleClicked(int row, int column);
 
   /// Preview whatever element is selected
-  void previewClicked(int row, int column);
+  void previewClicked(int row, int column, int previous_row, int previous_column);
 
   /// Delete currently editing ite
   void deleteSelected();
@@ -243,7 +243,7 @@ public:
   /**
    * Deconstructor
    */
-  ~SliderWidget();
+  ~SliderWidget() override;
 
   // ******************************************************************************************
   // Qt Components

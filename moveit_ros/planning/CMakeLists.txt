@@ -1,37 +1,35 @@
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.1.3)
 project(moveit_ros_planning)
 
-add_compile_options(-std=c++11)
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
-find_package(Boost REQUIRED system filesystem date_time program_options signals thread chrono)
+find_package(Boost REQUIRED system filesystem date_time program_options thread chrono)
 find_package(catkin REQUIRED COMPONENTS
-  cmake_modules
-  chomp_motion_planner
   moveit_core
   moveit_msgs
-  moveit_ros_perception
+  moveit_ros_occupancy_map_monitor
   pluginlib
   actionlib
   roscpp
+  rosconsole
   dynamic_reconfigure
   message_filters
   srdfdom
   urdf
-  tf
-  tf_conversions
-  eigen_conversions
+  tf2
+  tf2_geometry_msgs
+  tf2_eigen
+  tf2_msgs
+  tf2_ros
 )
 
 find_package(Eigen3 REQUIRED)
-
-# Eigen 3.2 (Wily) only provides EIGEN3_INCLUDE_DIR, not EIGEN3_INCLUDE_DIRS
-if(NOT EIGEN3_INCLUDE_DIRS)
-  set(EIGEN3_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
-endif()
 
 generate_dynamic_reconfigure_options(
   "planning_scene_monitor/cfg/PlanningSceneMonitorDynamicReconfigure.cfg"
@@ -65,11 +63,15 @@ catkin_package(
   INCLUDE_DIRS
     ${THIS_PACKAGE_INCLUDE_DIRS}
   CATKIN_DEPENDS
-    chomp_motion_planner
-    pluginlib
+    actionlib
+    dynamic_reconfigure
     moveit_core
+    moveit_ros_occupancy_map_monitor
     moveit_msgs
-    moveit_ros_perception
+    pluginlib
+    roscpp
+    tf2_msgs
+    tf2_geometry_msgs
   DEPENDS
     EIGEN3
 )

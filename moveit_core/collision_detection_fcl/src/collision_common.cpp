@@ -36,15 +36,23 @@
 
 #include <moveit/collision_detection_fcl/collision_common.h>
 #include <geometric_shapes/shapes.h>
+#include <moveit/collision_detection_fcl/fcl_compat.h>
+
+#if (MOVEIT_FCL_VERSION >= FCL_VERSION_CHECK(0, 6, 0))
+#include <fcl/geometry/bvh/BVH_model.h>
+#include <fcl/geometry/octree/octree.h>
+#else
 #include <fcl/BVH/BVH_model.h>
 #include <fcl/shape/geometric_shapes.h>
 #include <fcl/octree.h>
+#endif
+
 #include <boost/thread/mutex.hpp>
 #include <memory>
 
 namespace collision_detection
 {
-bool collisionCallback(fcl::CollisionObject* o1, fcl::CollisionObject* o2, void* data)
+bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void* data)
 {
   CollisionData* cdata = reinterpret_cast<CollisionData*>(data);
   if (cdata->done_)
@@ -170,9 +178,9 @@ bool collisionCallback(fcl::CollisionObject* o1, fcl::CollisionObject* o2, void*
     bool enable_cost = cdata->req_->cost;
     std::size_t num_max_cost_sources = cdata->req_->max_cost_sources;
     bool enable_contact = true;
-    fcl::CollisionResult col_result;
-    int num_contacts = fcl::collide(o1, o2, fcl::CollisionRequest(std::numeric_limits<size_t>::max(), enable_contact,
-                                                                  num_max_cost_sources, enable_cost),
+    fcl::CollisionResultd col_result;
+    int num_contacts = fcl::collide(o1, o2, fcl::CollisionRequestd(std::numeric_limits<size_t>::max(), enable_contact,
+                                                                   num_max_cost_sources, enable_cost),
                                     col_result);
     if (num_contacts > 0)
     {
@@ -216,7 +224,7 @@ bool collisionCallback(fcl::CollisionObject* o1, fcl::CollisionObject* o2, void*
 
     if (enable_cost)
     {
-      std::vector<fcl::CostSource> cost_sources;
+      std::vector<fcl::CostSourced> cost_sources;
       col_result.getCostSources(cost_sources);
 
       CostSource cs;
@@ -238,9 +246,9 @@ bool collisionCallback(fcl::CollisionObject* o1, fcl::CollisionObject* o2, void*
       std::size_t num_max_cost_sources = cdata->req_->max_cost_sources;
       bool enable_contact = true;
 
-      fcl::CollisionResult col_result;
+      fcl::CollisionResultd col_result;
       int num_contacts = fcl::collide(
-          o1, o2, fcl::CollisionRequest(want_contact_count, enable_contact, num_max_cost_sources, enable_cost),
+          o1, o2, fcl::CollisionRequestd(want_contact_count, enable_contact, num_max_cost_sources, enable_cost),
           col_result);
       if (num_contacts > 0)
       {
@@ -276,7 +284,7 @@ bool collisionCallback(fcl::CollisionObject* o1, fcl::CollisionObject* o2, void*
 
       if (enable_cost)
       {
-        std::vector<fcl::CostSource> cost_sources;
+        std::vector<fcl::CostSourced> cost_sources;
         col_result.getCostSources(cost_sources);
 
         CostSource cs;
@@ -294,9 +302,9 @@ bool collisionCallback(fcl::CollisionObject* o1, fcl::CollisionObject* o2, void*
       bool enable_cost = cdata->req_->cost;
       std::size_t num_max_cost_sources = cdata->req_->max_cost_sources;
       bool enable_contact = false;
-      fcl::CollisionResult col_result;
-      int num_contacts =
-          fcl::collide(o1, o2, fcl::CollisionRequest(1, enable_contact, num_max_cost_sources, enable_cost), col_result);
+      fcl::CollisionResultd col_result;
+      int num_contacts = fcl::collide(
+          o1, o2, fcl::CollisionRequestd(1, enable_contact, num_max_cost_sources, enable_cost), col_result);
       if (num_contacts > 0)
       {
         cdata->res_->collision = true;
@@ -310,7 +318,7 @@ bool collisionCallback(fcl::CollisionObject* o1, fcl::CollisionObject* o2, void*
 
       if (enable_cost)
       {
-        std::vector<fcl::CostSource> cost_sources;
+        std::vector<fcl::CostSourced> cost_sources;
         col_result.getCostSources(cost_sources);
 
         CostSource cs;
@@ -348,9 +356,12 @@ bool collisionCallback(fcl::CollisionObject* o1, fcl::CollisionObject* o2, void*
   return cdata->done_;
 }
 
+/** \brief Cache for an arbitrary type of shape. It is assigned during the execution of \e createCollisionGeometry().
+ *
+ *  Only a single cache per thread and object type is created as it is a quasi-singleton instance. */
 struct FCLShapeCache
 {
-  using ShapeKey = std::weak_ptr<const shapes::Shape>;
+  using ShapeKey = shapes::ShapeConstWeakPtr;
   using ShapeMap = std::map<ShapeKey, FCLGeometryConstPtr, std::owner_less<ShapeKey>>;
 
   FCLShapeCache() : clean_count_(0)
@@ -382,12 +393,14 @@ struct FCLShapeCache
 
   static const unsigned int MAX_CLEAN_COUNT = 100;  // every this many uses of the cache, a cleaning operation is
                                                     // executed (this is only removal of expired entries)
+  /** \brief Map of weak pointers to the FCLGeometry. */
   ShapeMap map_;
+
+  /** \brief Counts cache usage and triggers clearing of cache when \m MAX_CLEAN_COUNT is exceeded. */
   unsigned int clean_count_;
-  boost::mutex lock_;
 };
 
-bool distanceCallback(fcl::CollisionObject* o1, fcl::CollisionObject* o2, void* data, double& min_dist)
+bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void* data, double& min_dist)
 {
   DistanceData* cdata = reinterpret_cast<DistanceData*>(data);
 
@@ -476,7 +489,7 @@ bool distanceCallback(fcl::CollisionObject* o1, fcl::CollisionObject* o2, void* 
     ROS_DEBUG_NAMED("collision_detection.fcl", "Actually checking collisions between %s and %s", cd1->getID().c_str(),
                     cd2->getID().c_str());
 
-  fcl::DistanceResult fcl_result;
+  fcl::DistanceResultd fcl_result;
   DistanceResultsData dist_result;
   double dist_threshold = cdata->req->distance_threshold;
 
@@ -507,7 +520,7 @@ bool distanceCallback(fcl::CollisionObject* o1, fcl::CollisionObject* o2, void* 
   }
 
   fcl_result.min_distance = dist_threshold;
-  double d = fcl::distance(o1, o2, fcl::DistanceRequest(cdata->req->enable_nearest_points), fcl_result);
+  double d = fcl::distance(o1, o2, fcl::DistanceRequestd(cdata->req->enable_nearest_points), fcl_result);
 
   // Check if either object is already in the map. If not add it or if present
   // check to see if the new distance is closer. If closer remove the existing
@@ -515,8 +528,13 @@ bool distanceCallback(fcl::CollisionObject* o1, fcl::CollisionObject* o2, void* 
   if (d < dist_threshold)
   {
     dist_result.distance = fcl_result.min_distance;
+#if (MOVEIT_FCL_VERSION >= FCL_VERSION_CHECK(0, 6, 0))
+    dist_result.nearest_points[0] = fcl_result.nearest_points[0];
+    dist_result.nearest_points[1] = fcl_result.nearest_points[1];
+#else
     dist_result.nearest_points[0] = Eigen::Vector3d(fcl_result.nearest_points[0].data.vs);
     dist_result.nearest_points[1] = Eigen::Vector3d(fcl_result.nearest_points[1].data.vs);
+#endif
     dist_result.link_names[0] = cd1->getID();
     dist_result.link_names[1] = cd2->getID();
     dist_result.body_types[0] = cd1->type;
@@ -532,8 +550,8 @@ bool distanceCallback(fcl::CollisionObject* o1, fcl::CollisionObject* o2, void* 
       dist_result.nearest_points[1].setZero();
       dist_result.normal.setZero();
 
-      fcl::CollisionRequest coll_req;
-      fcl::CollisionResult coll_res;
+      fcl::CollisionRequestd coll_req;
+      fcl::CollisionResultd coll_res;
       coll_req.enable_contact = true;
       coll_req.num_max_contacts = 200;
       std::size_t contacts = fcl::collide(o1, o2, coll_req, coll_res);
@@ -543,7 +561,7 @@ bool distanceCallback(fcl::CollisionObject* o1, fcl::CollisionObject* o2, void* 
         int max_index = 0;
         for (std::size_t i = 0; i < contacts; ++i)
         {
-          const fcl::Contact& contact = coll_res.getContact(i);
+          const fcl::Contactd& contact = coll_res.getContact(i);
           if (contact.penetration_depth > max_dist)
           {
             max_dist = contact.penetration_depth;
@@ -551,11 +569,17 @@ bool distanceCallback(fcl::CollisionObject* o1, fcl::CollisionObject* o2, void* 
           }
         }
 
-        const fcl::Contact& contact = coll_res.getContact(max_index);
+        const fcl::Contactd& contact = coll_res.getContact(max_index);
         dist_result.distance = -contact.penetration_depth;
+#if (MOVEIT_FCL_VERSION >= FCL_VERSION_CHECK(0, 6, 0))
+        dist_result.nearest_points[0] = contact.pos;
+        dist_result.nearest_points[1] = contact.pos;
+        dist_result.normal = contact.normal;
+#else
         dist_result.nearest_points[0] = Eigen::Vector3d(contact.pos.data.vs);
         dist_result.nearest_points[1] = Eigen::Vector3d(contact.pos.data.vs);
         dist_result.normal = Eigen::Vector3d(contact.normal.data.vs);
+#endif
       }
     }
 
@@ -586,7 +610,7 @@ bool distanceCallback(fcl::CollisionObject* o1, fcl::CollisionObject* o2, void* 
         }
         else if (cdata->req->type == DistanceRequestType::SINGLE)
         {
-          if (it->second[0].distance < dist_result.distance)
+          if (dist_result.distance < it->second[0].distance)
             it->second[0] = dist_result;
         }
         else if (cdata->req->type == DistanceRequestType::LIMITED)
@@ -606,11 +630,22 @@ bool distanceCallback(fcl::CollisionObject* o1, fcl::CollisionObject* o2, void* 
   return cdata->done;
 }
 
-/* We template the function so we get a different cache for each of the template arguments combinations */
+/* Templated function to get a different cache for each of the template arguments combinations.
+ *
+ * The returned cache is a quasi-singleton for each thread as it is created \e thread_local. */
 template <typename BV, typename T>
 FCLShapeCache& GetShapeCache()
 {
-  static FCLShapeCache cache;
+  /* The cache is created thread_local, that is each thread calling
+   * this quasi-singleton function will get its own instance. Once
+   * the thread joins/exits, the cache gets deleted.
+   * Reasoning is that multi-threaded planners (eg OMPL) or user-code
+   * will often need to do collision checks with the same object
+   * simultaneously (especially true for attached objects). Having only
+   * one global cache leads to many cache misses. Also as the cache can
+   * only be accessed by one thread we don't need any locking.
+   */
+  static thread_local FCLShapeCache cache;
   return cache;
 }
 
@@ -632,17 +667,21 @@ struct IfSameType<T, T>
   };
 };
 
+/** \brief Templated helper function creating new collision geometry out of general object using an arbitrary bounding
+ *  volume (BV).
+ *
+ *  It assigns a thread-local cache for each type of shape and minimizes memory usage and copying through utilizing the
+ *  cache. */
 template <typename BV, typename T>
 FCLGeometryConstPtr createCollisionGeometry(const shapes::ShapeConstPtr& shape, const T* data, int shape_index)
 {
-  using ShapeKey = std::weak_ptr<const shapes::Shape>;
+  using ShapeKey = shapes::ShapeConstWeakPtr;
   using ShapeMap = std::map<ShapeKey, FCLGeometryConstPtr, std::owner_less<ShapeKey>>;
 
   FCLShapeCache& cache = GetShapeCache<BV, T>();
 
-  std::weak_ptr<const shapes::Shape> wptr(shape);
+  shapes::ShapeConstWeakPtr wptr(shape);
   {
-    boost::mutex::scoped_lock slock(cache.lock_);
     ShapeMap::const_iterator cache_it = cache.map_.find(wptr);
     if (cache_it != cache.map_.end())
     {
@@ -674,7 +713,6 @@ FCLGeometryConstPtr createCollisionGeometry(const shapes::ShapeConstPtr& shape, 
     FCLShapeCache& othercache = GetShapeCache<BV, World::Object>();
 
     // attached bodies could be just moved from the environment.
-    othercache.lock_.lock();  // lock manually to avoid having 2 simultaneous locks active (avoids possible deadlock)
     auto cache_it = othercache.map_.find(wptr);
     if (cache_it != othercache.map_.end())
     {
@@ -683,8 +721,6 @@ FCLGeometryConstPtr createCollisionGeometry(const shapes::ShapeConstPtr& shape, 
         // remove from old cache
         FCLGeometryConstPtr obj_cache = cache_it->second;
         othercache.map_.erase(cache_it);
-        othercache.lock_.unlock();
-
         // update the CollisionGeometryData; nobody has a pointer to this, so we can safely modify it
         const_cast<FCLGeometry*>(obj_cache.get())->updateCollisionGeometryData(data, shape_index, true);
 
@@ -694,13 +730,11 @@ FCLGeometryConstPtr createCollisionGeometry(const shapes::ShapeConstPtr& shape, 
         //        obj_cache->collision_geometry_data_->getID().c_str());
 
         // add to the new cache
-        boost::mutex::scoped_lock slock(cache.lock_);
         cache.map_[wptr] = obj_cache;
         cache.bumpUseCount();
         return obj_cache;
       }
     }
-    othercache.lock_.unlock();
   }
   else
       // world objects could have previously been attached objects; we try to move them
@@ -712,7 +746,6 @@ FCLGeometryConstPtr createCollisionGeometry(const shapes::ShapeConstPtr& shape, 
     FCLShapeCache& othercache = GetShapeCache<BV, robot_state::AttachedBody>();
 
     // attached bodies could be just moved from the environment.
-    othercache.lock_.lock();  // lock manually to avoid having 2 simultaneous locks active (avoids possible deadlock)
     auto cache_it = othercache.map_.find(wptr);
     if (cache_it != othercache.map_.end())
     {
@@ -721,7 +754,6 @@ FCLGeometryConstPtr createCollisionGeometry(const shapes::ShapeConstPtr& shape, 
         // remove from old cache
         FCLGeometryConstPtr obj_cache = cache_it->second;
         othercache.map_.erase(cache_it);
-        othercache.lock_.unlock();
 
         // update the CollisionGeometryData; nobody has a pointer to this, so we can safely modify it
         const_cast<FCLGeometry*>(obj_cache.get())->updateCollisionGeometryData(data, shape_index, true);
@@ -733,99 +765,86 @@ FCLGeometryConstPtr createCollisionGeometry(const shapes::ShapeConstPtr& shape, 
         //                   obj_cache->collision_geometry_data_->getID().c_str());
 
         // add to the new cache
-        boost::mutex::scoped_lock slock(cache.lock_);
         cache.map_[wptr] = obj_cache;
         cache.bumpUseCount();
         return obj_cache;
       }
     }
-    othercache.lock_.unlock();
   }
 
-  fcl::CollisionGeometry* cg_g = nullptr;
-  if (shape->type == shapes::PLANE)  // shapes that directly produce CollisionGeometry
+  fcl::CollisionGeometryd* cg_g = nullptr;
+  // handle cases individually
+  switch (shape->type)
   {
-    // handle cases individually
-    switch (shape->type)
+    case shapes::PLANE:
     {
-      case shapes::PLANE:
-      {
-        const shapes::Plane* p = static_cast<const shapes::Plane*>(shape.get());
-        cg_g = new fcl::Plane(p->a, p->b, p->c, p->d);
-      }
-      break;
-      default:
-        break;
+      const shapes::Plane* p = static_cast<const shapes::Plane*>(shape.get());
+      cg_g = new fcl::Planed(p->a, p->b, p->c, p->d);
     }
-  }
-  else
-  {
-    switch (shape->type)
+    break;
+    case shapes::SPHERE:
     {
-      case shapes::SPHERE:
-      {
-        const shapes::Sphere* s = static_cast<const shapes::Sphere*>(shape.get());
-        cg_g = new fcl::Sphere(s->radius);
-      }
-      break;
-      case shapes::BOX:
-      {
-        const shapes::Box* s = static_cast<const shapes::Box*>(shape.get());
-        const double* size = s->size;
-        cg_g = new fcl::Box(size[0], size[1], size[2]);
-      }
-      break;
-      case shapes::CYLINDER:
-      {
-        const shapes::Cylinder* s = static_cast<const shapes::Cylinder*>(shape.get());
-        cg_g = new fcl::Cylinder(s->radius, s->length);
-      }
-      break;
-      case shapes::CONE:
-      {
-        const shapes::Cone* s = static_cast<const shapes::Cone*>(shape.get());
-        cg_g = new fcl::Cone(s->radius, s->length);
-      }
-      break;
-      case shapes::MESH:
-      {
-        auto g = new fcl::BVHModel<BV>();
-        const shapes::Mesh* mesh = static_cast<const shapes::Mesh*>(shape.get());
-        if (mesh->vertex_count > 0 && mesh->triangle_count > 0)
-        {
-          std::vector<fcl::Triangle> tri_indices(mesh->triangle_count);
-          for (unsigned int i = 0; i < mesh->triangle_count; ++i)
-            tri_indices[i] =
-                fcl::Triangle(mesh->triangles[3 * i], mesh->triangles[3 * i + 1], mesh->triangles[3 * i + 2]);
-
-          std::vector<fcl::Vec3f> points(mesh->vertex_count);
-          for (unsigned int i = 0; i < mesh->vertex_count; ++i)
-            points[i] = fcl::Vec3f(mesh->vertices[3 * i], mesh->vertices[3 * i + 1], mesh->vertices[3 * i + 2]);
-
-          g->beginModel();
-          g->addSubModel(points, tri_indices);
-          g->endModel();
-        }
-        cg_g = g;
-      }
-      break;
-      case shapes::OCTREE:
-      {
-        const shapes::OcTree* g = static_cast<const shapes::OcTree*>(shape.get());
-        cg_g = new fcl::OcTree(g->octree);
-      }
-      break;
-      default:
-        ROS_ERROR_NAMED("collision_detection.fcl", "This shape type (%d) is not supported using FCL yet",
-                        (int)shape->type);
-        cg_g = nullptr;
+      const shapes::Sphere* s = static_cast<const shapes::Sphere*>(shape.get());
+      cg_g = new fcl::Sphered(s->radius);
     }
+    break;
+    case shapes::BOX:
+    {
+      const shapes::Box* s = static_cast<const shapes::Box*>(shape.get());
+      const double* size = s->size;
+      cg_g = new fcl::Boxd(size[0], size[1], size[2]);
+    }
+    break;
+    case shapes::CYLINDER:
+    {
+      const shapes::Cylinder* s = static_cast<const shapes::Cylinder*>(shape.get());
+      cg_g = new fcl::Cylinderd(s->radius, s->length);
+    }
+    break;
+    case shapes::CONE:
+    {
+      const shapes::Cone* s = static_cast<const shapes::Cone*>(shape.get());
+      cg_g = new fcl::Coned(s->radius, s->length);
+    }
+    break;
+    case shapes::MESH:
+    {
+      auto g = new fcl::BVHModel<BV>();
+      const shapes::Mesh* mesh = static_cast<const shapes::Mesh*>(shape.get());
+      if (mesh->vertex_count > 0 && mesh->triangle_count > 0)
+      {
+        std::vector<fcl::Triangle> tri_indices(mesh->triangle_count);
+        for (unsigned int i = 0; i < mesh->triangle_count; ++i)
+          tri_indices[i] =
+              fcl::Triangle(mesh->triangles[3 * i], mesh->triangles[3 * i + 1], mesh->triangles[3 * i + 2]);
+
+        std::vector<fcl::Vector3d> points(mesh->vertex_count);
+        for (unsigned int i = 0; i < mesh->vertex_count; ++i)
+          points[i] = fcl::Vector3d(mesh->vertices[3 * i], mesh->vertices[3 * i + 1], mesh->vertices[3 * i + 2]);
+
+        g->beginModel();
+        g->addSubModel(points, tri_indices);
+        g->endModel();
+      }
+      cg_g = g;
+    }
+    break;
+    case shapes::OCTREE:
+    {
+      const shapes::OcTree* g = static_cast<const shapes::OcTree*>(shape.get());
+      cg_g = new fcl::OcTreed(g->octree);
+    }
+    break;
+    default:
+      ROS_ERROR_NAMED("collision_detection.fcl", "This shape type (%d) is not supported using FCL yet",
+                      (int)shape->type);
+      cg_g = nullptr;
   }
+
   if (cg_g)
   {
     cg_g->computeLocalAABB();
     FCLGeometryConstPtr res(new FCLGeometry(cg_g, data, shape_index));
-    boost::mutex::scoped_lock slock(cache.lock_);
     cache.map_[wptr] = res;
     cache.bumpUseCount();
     return res;
@@ -833,24 +852,25 @@ FCLGeometryConstPtr createCollisionGeometry(const shapes::ShapeConstPtr& shape, 
   return FCLGeometryConstPtr();
 }
 
-/////////////////////////////////////////////////////
 FCLGeometryConstPtr createCollisionGeometry(const shapes::ShapeConstPtr& shape, const robot_model::LinkModel* link,
                                             int shape_index)
 {
-  return createCollisionGeometry<fcl::OBBRSS, robot_model::LinkModel>(shape, link, shape_index);
+  return createCollisionGeometry<fcl::OBBRSSd, robot_model::LinkModel>(shape, link, shape_index);
 }
 
 FCLGeometryConstPtr createCollisionGeometry(const shapes::ShapeConstPtr& shape, const robot_state::AttachedBody* ab,
                                             int shape_index)
 {
-  return createCollisionGeometry<fcl::OBBRSS, robot_state::AttachedBody>(shape, ab, shape_index);
+  return createCollisionGeometry<fcl::OBBRSSd, robot_state::AttachedBody>(shape, ab, shape_index);
 }
 
 FCLGeometryConstPtr createCollisionGeometry(const shapes::ShapeConstPtr& shape, const World::Object* obj)
 {
-  return createCollisionGeometry<fcl::OBBRSS, World::Object>(shape, obj, 0);
+  return createCollisionGeometry<fcl::OBBRSSd, World::Object>(shape, obj, 0);
 }
 
+/** \brief Templated helper function creating new collision geometry out of general object using an arbitrary bounding
+ *  volume (BV). This can include padding and scaling. */
 template <typename BV, typename T>
 FCLGeometryConstPtr createCollisionGeometry(const shapes::ShapeConstPtr& shape, double scale, double padding,
                                             const T* data, int shape_index)
@@ -869,61 +889,59 @@ FCLGeometryConstPtr createCollisionGeometry(const shapes::ShapeConstPtr& shape, 
 FCLGeometryConstPtr createCollisionGeometry(const shapes::ShapeConstPtr& shape, double scale, double padding,
                                             const robot_model::LinkModel* link, int shape_index)
 {
-  return createCollisionGeometry<fcl::OBBRSS, robot_model::LinkModel>(shape, scale, padding, link, shape_index);
+  return createCollisionGeometry<fcl::OBBRSSd, robot_model::LinkModel>(shape, scale, padding, link, shape_index);
 }
 
 FCLGeometryConstPtr createCollisionGeometry(const shapes::ShapeConstPtr& shape, double scale, double padding,
                                             const robot_state::AttachedBody* ab, int shape_index)
 {
-  return createCollisionGeometry<fcl::OBBRSS, robot_state::AttachedBody>(shape, scale, padding, ab, shape_index);
+  return createCollisionGeometry<fcl::OBBRSSd, robot_state::AttachedBody>(shape, scale, padding, ab, shape_index);
 }
 
 FCLGeometryConstPtr createCollisionGeometry(const shapes::ShapeConstPtr& shape, double scale, double padding,
                                             const World::Object* obj)
 {
-  return createCollisionGeometry<fcl::OBBRSS, World::Object>(shape, scale, padding, obj, 0);
+  return createCollisionGeometry<fcl::OBBRSSd, World::Object>(shape, scale, padding, obj, 0);
 }
 
 void cleanCollisionGeometryCache()
 {
-  FCLShapeCache& cache1 = GetShapeCache<fcl::OBBRSS, World::Object>();
+  FCLShapeCache& cache1 = GetShapeCache<fcl::OBBRSSd, World::Object>();
   {
-    boost::mutex::scoped_lock slock(cache1.lock_);
     cache1.bumpUseCount(true);
   }
-  FCLShapeCache& cache2 = GetShapeCache<fcl::OBBRSS, robot_state::AttachedBody>();
+  FCLShapeCache& cache2 = GetShapeCache<fcl::OBBRSSd, robot_state::AttachedBody>();
   {
-    boost::mutex::scoped_lock slock(cache2.lock_);
     cache2.bumpUseCount(true);
   }
 }
-}
 
-void collision_detection::CollisionData::enableGroup(const robot_model::RobotModelConstPtr& kmodel)
+void CollisionData::enableGroup(const robot_model::RobotModelConstPtr& robot_model)
 {
-  if (kmodel->hasJointModelGroup(req_->group_name))
-    active_components_only_ = &kmodel->getJointModelGroup(req_->group_name)->getUpdatedLinkModelsSet();
+  if (robot_model->hasJointModelGroup(req_->group_name))
+    active_components_only_ = &robot_model->getJointModelGroup(req_->group_name)->getUpdatedLinkModelsSet();
   else
     active_components_only_ = nullptr;
 }
 
-void collision_detection::FCLObject::registerTo(fcl::BroadPhaseCollisionManager* manager)
+void FCLObject::registerTo(fcl::BroadPhaseCollisionManagerd* manager)
 {
-  std::vector<fcl::CollisionObject*> collision_objects(collision_objects_.size());
+  std::vector<fcl::CollisionObjectd*> collision_objects(collision_objects_.size());
   for (std::size_t i = 0; i < collision_objects_.size(); ++i)
     collision_objects[i] = collision_objects_[i].get();
   if (!collision_objects.empty())
     manager->registerObjects(collision_objects);
 }
 
-void collision_detection::FCLObject::unregisterFrom(fcl::BroadPhaseCollisionManager* manager)
+void FCLObject::unregisterFrom(fcl::BroadPhaseCollisionManagerd* manager)
 {
   for (auto& collision_object : collision_objects_)
     manager->unregisterObject(collision_object.get());
 }
 
-void collision_detection::FCLObject::clear()
+void FCLObject::clear()
 {
   collision_objects_.clear();
   collision_geometry_.clear();
 }
+}  // namespace collision_detection

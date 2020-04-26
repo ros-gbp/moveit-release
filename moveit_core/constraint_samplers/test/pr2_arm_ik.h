@@ -140,7 +140,7 @@ public:
      @param Input pose for end-effector
      @param Initial guess for shoulder pan angle
   */
-  void computeIKShoulderPan(const Eigen::Affine3f& g_in, const double& shoulder_pan_initial_guess,
+  void computeIKShoulderPan(const Eigen::Isometry3f& g_in, const double& shoulder_pan_initial_guess,
                             std::vector<std::vector<double> >& solution) const;
 
   /**
@@ -148,7 +148,7 @@ public:
      h       @param Input pose for end-effector
      @param Initial guess for shoulder roll angle
   */
-  void computeIKShoulderRoll(const Eigen::Affine3f& g_in, const double& shoulder_roll_initial_guess,
+  void computeIKShoulderRoll(const Eigen::Isometry3f& g_in, const double& shoulder_roll_initial_guess,
                              std::vector<std::vector<double> >& solution) const;
 
   //  std::vector<std::vector<double> > solution_ik_;/// a vector of ik solutions
@@ -168,13 +168,13 @@ public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 private:
-  void addJointToChainInfo(urdf::JointConstSharedPtr joint, moveit_msgs::KinematicSolverInfo& info);
+  void addJointToChainInfo(const urdf::JointConstSharedPtr& joint, moveit_msgs::KinematicSolverInfo& info);
 
   bool checkJointLimits(const std::vector<double>& joint_values) const;
 
   bool checkJointLimits(const double& joint_value, const int& joint_num) const;
 
-  Eigen::Affine3f grhs_, gf_, home_inv_;
+  Eigen::Isometry3f grhs_, gf_, home_inv_;
 
   std::vector<double> angle_multipliers_;
 

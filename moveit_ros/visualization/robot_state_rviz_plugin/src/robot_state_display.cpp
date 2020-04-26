@@ -49,7 +49,6 @@
 #include <rviz/properties/color_property.h>
 #include <rviz/display_context.h>
 #include <rviz/frame_manager.h>
-#include <tf/transform_listener.h>
 
 #include <OgreSceneManager.h>
 #include <OgreSceneNode.h>
@@ -67,8 +66,8 @@ RobotStateDisplay::RobotStateDisplay() : Display(), update_state_(false), load_r
 
   robot_state_topic_property_ = new rviz::RosTopicProperty(
       "Robot State Topic", "display_robot_state", ros::message_traits::datatype<moveit_msgs::DisplayRobotState>(),
-      "The topic on which the moveit_msgs::RobotState messages are received", this, SLOT(changedRobotStateTopic()),
-      this);
+      "The topic on which the moveit_msgs::DisplayRobotState messages are received", this,
+      SLOT(changedRobotStateTopic()), this);
 
   // Planning scene category -------------------------------------------------------------------------------------------
   root_link_name_property_ =
@@ -102,9 +101,7 @@ RobotStateDisplay::RobotStateDisplay() : Display(), update_state_(false), load_r
 // ******************************************************************************************
 // Deconstructor
 // ******************************************************************************************
-RobotStateDisplay::~RobotStateDisplay()
-{
-}
+RobotStateDisplay::~RobotStateDisplay() = default;
 
 void RobotStateDisplay::onInitialize()
 {
@@ -290,8 +287,8 @@ void RobotStateDisplay::changedRobotStateTopic()
   robot_state_subscriber_.shutdown();
 
   // reset model to default state, we don't want to show previous messages
-  if (static_cast<bool>(kstate_))
-    kstate_->setToDefaultValues();
+  if (static_cast<bool>(robot_state_))
+    robot_state_->setToDefaultValues();
   update_state_ = true;
 
   robot_state_subscriber_ = root_nh_.subscribe(robot_state_topic_property_->getStdString(), 10,
@@ -300,13 +297,24 @@ void RobotStateDisplay::changedRobotStateTopic()
 
 void RobotStateDisplay::newRobotStateCallback(const moveit_msgs::DisplayRobotStateConstPtr& state_msg)
 {
-  if (!kmodel_)
+  if (!robot_model_)
     return;
-  if (!kstate_)
-    kstate_.reset(new robot_state::RobotState(kmodel_));
-  // possibly use TF to construct a robot_state::Transforms object to pass in to the conversion functio?
-  robot_state::robotStateMsgToRobotState(state_msg->state, *kstate_);
-  setRobotHighlights(state_msg->highlight_links);
+  if (!robot_state_)
+    robot_state_.reset(new robot_state::RobotState(robot_model_));
+  // possibly use TF to construct a robot_state::Transforms object to pass in to the conversion function?
+  try
+  {
+    robot_state::robotStateMsgToRobotState(state_msg->state, *robot_state_);
+    setRobotHighlights(state_msg->highlight_links);
+    setStatus(rviz::StatusProperty::Ok, "RobotState", "");
+  }
+  catch (const moveit::Exception& e)
+  {
+    robot_state_->setToDefaultValues();
+    setRobotHighlights(moveit_msgs::DisplayRobotState::_highlight_links_type());
+    setStatus(rviz::StatusProperty::Error, "RobotState", e.what());
+    return;
+  }
   update_state_ = true;
 }
 
@@ -351,13 +359,13 @@ void RobotStateDisplay::loadRobotModel()
   {
     const srdf::ModelSharedPtr& srdf =
         rdf_loader_->getSRDF() ? rdf_loader_->getSRDF() : srdf::ModelSharedPtr(new srdf::Model());
-    kmodel_.reset(new robot_model::RobotModel(rdf_loader_->getURDF(), srdf));
-    robot_->load(*kmodel_->getURDF());
-    kstate_.reset(new robot_state::RobotState(kmodel_));
-    kstate_->setToDefaultValues();
-    bool oldState = root_link_name_property_->blockSignals(true);
+    robot_model_.reset(new robot_model::RobotModel(rdf_loader_->getURDF(), srdf));
+    robot_->load(*robot_model_->getURDF());
+    robot_state_.reset(new robot_state::RobotState(robot_model_));
+    robot_state_->setToDefaultValues();
+    bool old_state = root_link_name_property_->blockSignals(true);
     root_link_name_property_->setStdString(getRobotModel()->getRootLinkName());
-    root_link_name_property_->blockSignals(oldState);
+    root_link_name_property_->blockSignals(old_state);
     update_state_ = true;
     setStatus(rviz::StatusProperty::Ok, "RobotState", "Planning Model Loaded Successfully");
 
@@ -400,11 +408,11 @@ void RobotStateDisplay::update(float wall_dt, float ros_dt)
   }
 
   calculateOffsetPosition();
-  if (robot_ && update_state_ && kstate_)
+  if (robot_ && update_state_ && robot_state_)
   {
     update_state_ = false;
-    kstate_->update();
-    robot_->update(kstate_);
+    robot_state_->update();
+    robot_->update(robot_state_);
   }
 }
 

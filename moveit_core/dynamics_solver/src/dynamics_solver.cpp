@@ -49,11 +49,11 @@ namespace dynamics_solver
 {
 namespace
 {
-inline geometry_msgs::Vector3 transformVector(const Eigen::Affine3d& transform, const geometry_msgs::Vector3& vector)
+inline geometry_msgs::Vector3 transformVector(const Eigen::Isometry3d& transform, const geometry_msgs::Vector3& vector)
 {
   Eigen::Vector3d p;
   p = Eigen::Vector3d(vector.x, vector.y, vector.z);
-  p = transform.linear() * p;
+  p = transform.rotation() * p;
 
   geometry_msgs::Vector3 result;
   result.x = p.x();
@@ -62,7 +62,7 @@ inline geometry_msgs::Vector3 transformVector(const Eigen::Affine3d& transform, 
 
   return result;
 }
-}
+}  // namespace
 
 DynamicsSolver::DynamicsSolver(const robot_model::RobotModelConstPtr& robot_model, const std::string& group_name,
                                const geometry_msgs::Vector3& gravity_vector)
@@ -243,9 +243,9 @@ bool DynamicsSolver::getMaxPayload(const std::vector<double>& joint_angles, doub
   }
 
   state_->setJointGroupPositions(joint_model_group_, joint_angles);
-  const Eigen::Affine3d& base_frame = state_->getFrameTransform(base_name_);
-  const Eigen::Affine3d& tip_frame = state_->getFrameTransform(tip_name_);
-  Eigen::Affine3d transform = tip_frame.inverse(Eigen::Isometry) * base_frame;
+  const Eigen::Isometry3d& base_frame = state_->getFrameTransform(base_name_);
+  const Eigen::Isometry3d& tip_frame = state_->getFrameTransform(tip_name_);
+  Eigen::Isometry3d transform = tip_frame.inverse() * base_frame;
   wrenches.back().force.z = 1.0;
   wrenches.back().force = transformVector(transform, wrenches.back().force);
   wrenches.back().torque = transformVector(transform, wrenches.back().torque);
@@ -299,9 +299,9 @@ bool DynamicsSolver::getPayloadTorques(const std::vector<double>& joint_angles, 
   std::vector<geometry_msgs::Wrench> wrenches(num_segments_);
   state_->setJointGroupPositions(joint_model_group_, joint_angles);
 
-  const Eigen::Affine3d& base_frame = state_->getFrameTransform(base_name_);
-  const Eigen::Affine3d& tip_frame = state_->getFrameTransform(tip_name_);
-  Eigen::Affine3d transform = tip_frame.inverse(Eigen::Isometry) * base_frame;
+  const Eigen::Isometry3d& base_frame = state_->getFrameTransform(base_name_);
+  const Eigen::Isometry3d& tip_frame = state_->getFrameTransform(tip_name_);
+  Eigen::Isometry3d transform = tip_frame.inverse() * base_frame;
   wrenches.back().force.z = payload * gravity_;
   wrenches.back().force = transformVector(transform, wrenches.back().force);
   wrenches.back().torque = transformVector(transform, wrenches.back().torque);

@@ -1,7 +1,7 @@
-# moveit/moveit:kinetic-ci
+# moveit/moveit:melodic-ci
 # Sets up a base image to use for running Continuous Integration on Travis
 
-FROM ros:kinetic-ros-base
+FROM ros:melodic-ros-base
 MAINTAINER Dave Coleman dave@picknik.ai
 
 ENV TERM xterm
@@ -28,11 +28,9 @@ RUN \
         wget \
         # Required for rosdep command
         sudo \
-        # Required for installing dependencies
-        python-rosdep \
         # Preferred build tools
         python-catkin-tools \
-        clang-6.0 clang-format-3.9 clang-tidy-6.0 clang-tools-6.0 \
+        clang clang-format-3.9 clang-tidy clang-tools \
         ccache && \
     #
     # Download all dependencies of MoveIt!
@@ -40,6 +38,7 @@ RUN \
     rosdep install -y --from-paths . --ignore-src --rosdistro ${ROS_DISTRO} --as-root=apt:false && \
     #
     # Remove the source code from this container
+    # TODO: in the future we may want to keep this here for further optimization of later containers
     cd .. && \
     rm -rf src/ && \
     #

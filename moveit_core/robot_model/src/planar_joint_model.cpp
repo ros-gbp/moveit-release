@@ -213,18 +213,18 @@ bool PlanarJointModel::enforcePositionBounds(double* values, const Bounds& bound
   return result;
 }
 
-void PlanarJointModel::computeTransform(const double* joint_values, Eigen::Affine3d& transf) const
+void PlanarJointModel::computeTransform(const double* joint_values, Eigen::Isometry3d& transf) const
 {
-  transf = Eigen::Affine3d(Eigen::Translation3d(joint_values[0], joint_values[1], 0.0) *
-                           Eigen::AngleAxisd(joint_values[2], Eigen::Vector3d::UnitZ()));
+  transf = Eigen::Isometry3d(Eigen::Translation3d(joint_values[0], joint_values[1], 0.0) *
+                             Eigen::AngleAxisd(joint_values[2], Eigen::Vector3d::UnitZ()));
 }
 
-void PlanarJointModel::computeVariablePositions(const Eigen::Affine3d& transf, double* joint_values) const
+void PlanarJointModel::computeVariablePositions(const Eigen::Isometry3d& transf, double* joint_values) const
 {
   joint_values[0] = transf.translation().x();
   joint_values[1] = transf.translation().y();
 
-  Eigen::Quaterniond q(transf.linear());
+  Eigen::Quaterniond q(transf.rotation());
   // taken from Bullet
   double s_squared = 1.0 - (q.w() * q.w());
   if (s_squared < 10.0 * std::numeric_limits<double>::epsilon())

@@ -2,36 +2,71 @@
 Changelog for package moveit_ros_benchmarks
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.9.18 (2020-01-24)
--------------------
-* [maintanance] Fix plot details, correcting xlabels positions and cleaning the graph (`#1658 <https://github.com/ros-planning/moveit/issues/1658>`_)
-* Contributors: Kaike W. Reis
+1.0.3 (2020-04-26)
+------------------
+* [feature] MoveIt benchmark improvements (`#1510 <https://github.com/ros-planning/moveit/issues/1510>`_)
+  * Add pseudo experiment all_experiments to allow comparing all entries
+  * Expose loadBenchmarkQueryData() for setting up custom queries
+  * Add benchmark entry for comparing the 'final' result trajectory
+  * Add trajectory similarity function to measure repeatability
+  * Address requested changes
+  * Fill empty fields in all_experiments
+  * Improve variable and function names
+  * Add helper function computeTrajectoryDistance()
+* [maint]   Apply clang-tidy fix to entire code base (`#1394 <https://github.com/ros-planning/moveit/issues/1394>`_)
+* [maint]   Windows build fixes
+  * Fix header inclusion and other MSVC build errors (`#1636 <https://github.com/ros-planning/moveit/issues/1636>`_)
+  * Fix binary artifact install locations. (`#1575 <https://github.com/ros-planning/moveit/issues/1575>`_)
+* [maint]   Use CMAKE_CXX_STANDARD to enforce c++14 (`#1607 <https://github.com/ros-planning/moveit/issues/1607>`_)
+* Contributors: Henning Kayser, Michael Görner, Robert Haschke, Sean Yen, Yu, Yan
 
-0.9.17 (2019-07-09)
+1.0.2 (2019-06-28)
+------------------
+* [maintenance] Removed unnecessary null pointer checks on deletion (`#1410 <https://github.com/ros-planning/moveit/issues/1410>`_)
+* Contributors: Mahmoud Ahmed Selim
+
+1.0.1 (2019-03-08)
+------------------
+* [improve] Apply clang tidy fix to entire code base (Part 1) (`#1366 <https://github.com/ros-planning/moveit/issues/1366>`_)
+* Contributors: Robert Haschke, Yu, Yan
+
+1.0.0 (2019-02-24)
+------------------
+* [fix] catkin_lint issues (`#1341 <https://github.com/ros-planning/moveit/issues/1341>`_)
+* Contributors: Dave Coleman, Robert Haschke
+
+0.10.8 (2018-12-24)
 -------------------
 
-0.9.16 (2019-06-29)
+0.10.7 (2018-12-13)
 -------------------
-* [maintanance] Resolve catkin lint issues (`#1137 <https://github.com/ros-planning/moveit/issues/1137>`_)
-* [maintanance] Improve clang-format (`#1214 <https://github.com/ros-planning/moveit/issues/1214>`_)
-* Contributors: Ludovic Delval, Robert Haschke
 
-0.9.15 (2018-10-29)
+0.10.6 (2018-12-09)
 -------------------
-* [code] cleanup, improvements (`#1099 <https://github.com/ros-planning/moveit/issues/1099>`_)
+* [maintenance] Replaced Eigen::Affine3d -> Eigen::Isometry3d (`#1096 <https://github.com/ros-planning/moveit/issues/1096>`_)
+* Contributors: Robert Haschke
+
+0.10.5 (2018-11-01)
+-------------------
+
+0.10.4 (2018-10-29)
+-------------------
+
+0.10.3 (2018-10-29)
+-------------------
+* [maintenance] Use locale independent conversion from double to string (`#1099 <https://github.com/ros-planning/moveit/issues/1099>`_)
 * Contributors: Simon Schmeisser
 
-0.9.14 (2018-10-24)
--------------------
-
-0.9.13 (2018-10-24)
+0.10.2 (2018-10-24)
 -------------------
 * [capability] Benchmarking with different Motion Planners (STOMP, CHOMP, OMPL) (`#992 <https://github.com/ros-planning/moveit/issues/992>`_)
 * [maintenance] various compiler warnings (`#1038 <https://github.com/ros-planning/moveit/issues/1038>`_)
 * Contributors: Mohmmad Ayman, Raghavender Sahdev, Robert Haschke, mike lautman
 
-0.9.12 (2018-05-29)
+0.10.1 (2018-05-25)
 -------------------
+* migration from tf to tf2 API (`#830 <https://github.com/ros-planning/moveit/issues/830>`_)
+* Contributors: Ian McMahon
 
 0.9.11 (2017-12-25)
 -------------------

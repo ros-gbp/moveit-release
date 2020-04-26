@@ -35,6 +35,7 @@
 
 /* Author: Ioan Sucan */
 
+#include <moveit/common_planning_interface_objects/common_objects.h>
 #include <moveit/planning_scene_rviz_plugin/planning_scene_display.h>
 #include <moveit/rviz_plugin_render_tools/robot_state_visualization.h>
 #include <moveit/rviz_plugin_render_tools/octomap_render.h>
@@ -52,7 +53,7 @@
 #include <rviz/properties/enum_property.h>
 #include <rviz/display_context.h>
 #include <rviz/frame_manager.h>
-#include <tf/transform_listener.h>
+#include <tf2_ros/buffer.h>
 
 #include <OgreSceneManager.h>
 #include <OgreSceneNode.h>
@@ -79,7 +80,7 @@ PlanningSceneDisplay::PlanningSceneDisplay(bool listen_to_planning_scene, bool s
                                    "The topic on which the moveit_msgs::PlanningScene messages are received", this,
                                    SLOT(changedPlanningSceneTopic()), this);
   else
-    planning_scene_topic_property_ = NULL;
+    planning_scene_topic_property_ = nullptr;
 
   // Planning scene category -------------------------------------------------------------------------------------------
   scene_category_ = new rviz::Property("Scene Geometry", QVariant(), "", this);
@@ -144,11 +145,11 @@ PlanningSceneDisplay::PlanningSceneDisplay(bool listen_to_planning_scene, bool s
   }
   else
   {
-    robot_category_ = NULL;
-    scene_robot_visual_enabled_property_ = NULL;
-    scene_robot_collision_enabled_property_ = NULL;
-    robot_alpha_property_ = NULL;
-    attached_body_color_property_ = NULL;
+    robot_category_ = nullptr;
+    scene_robot_visual_enabled_property_ = nullptr;
+    scene_robot_collision_enabled_property_ = nullptr;
+    robot_alpha_property_ = nullptr;
+    attached_body_color_property_ = nullptr;
   }
 }
 
@@ -369,7 +370,13 @@ void PlanningSceneDisplay::changedPlanningSceneTopic()
     std::string service_name = planning_scene_monitor::PlanningSceneMonitor::DEFAULT_PLANNING_SCENE_SERVICE;
     if (!getMoveGroupNS().empty())
       service_name = ros::names::append(getMoveGroupNS(), service_name);
-    planning_scene_monitor_->requestPlanningSceneState(service_name);
+    auto bg_func = [=]() {
+      if (planning_scene_monitor_->requestPlanningSceneState(service_name))
+        addMainLoopJob(boost::bind(&PlanningSceneDisplay::onNewPlanningSceneState, this));
+      else
+        setStatus(rviz::StatusProperty::Warn, "PlanningScene", "Requesting initial scene failed");
+    };
+    addBackgroundJob(bg_func, "requestPlanningSceneState");
   }
 }
 
@@ -484,9 +491,13 @@ void PlanningSceneDisplay::unsetLinkColor(rviz::Robot* robot, const std::string&
 // ******************************************************************************************
 planning_scene_monitor::PlanningSceneMonitorPtr PlanningSceneDisplay::createPlanningSceneMonitor()
 {
+#ifdef RVIZ_TF1
+  std::shared_ptr<tf2_ros::Buffer> tf_buffer = moveit::planning_interface::getSharedTF();
+#else
+  std::shared_ptr<tf2_ros::Buffer> tf_buffer = context_->getFrameManager()->getTF2BufferPtr();
+#endif
   return planning_scene_monitor::PlanningSceneMonitorPtr(new planning_scene_monitor::PlanningSceneMonitor(
-      robot_description_property_->getStdString(), context_->getFrameManager()->getTFClientPtr(),
-      getNameStd() + "_planning_scene_monitor"));
+      robot_description_property_->getStdString(), tf_buffer, getNameStd() + "_planning_scene_monitor"));
 }
 
 void PlanningSceneDisplay::clearRobotModel()
@@ -513,6 +524,8 @@ void PlanningSceneDisplay::loadRobotModel()
   if (psm->getPlanningScene())
   {
     planning_scene_monitor_.swap(psm);
+    planning_scene_monitor_->addUpdateCallback(
+        boost::bind(&PlanningSceneDisplay::sceneMonitorReceivedUpdate, this, _1));
     addMainLoopJob(boost::bind(&PlanningSceneDisplay::onRobotModelLoaded, this));
     setStatus(rviz::StatusProperty::Ok, "PlanningScene", "Planning Scene Loaded Successfully");
     waitForAllMainLoopJobs();
@@ -522,13 +535,10 @@ void PlanningSceneDisplay::loadRobotModel()
     setStatus(rviz::StatusProperty::Error, "PlanningScene", "No Planning Scene Loaded");
   }
 
-  if (planning_scene_monitor_)
-    planning_scene_monitor_->addUpdateCallback(
-        boost::bind(&PlanningSceneDisplay::sceneMonitorReceivedUpdate, this, _1));
-
   model_is_loading_ = false;
 }
 
+// This should always run in the main GUI thread!
 void PlanningSceneDisplay::onRobotModelLoaded()
 {
   changedPlanningSceneTopic();
@@ -544,9 +554,13 @@ void PlanningSceneDisplay::onRobotModelLoaded()
     planning_scene_robot_->update(robot_state::RobotStateConstPtr(rs));
   }
 
-  bool oldState = scene_name_property_->blockSignals(true);
+  bool old_state = scene_name_property_->blockSignals(true);
   scene_name_property_->setStdString(ps->getName());
-  scene_name_property_->blockSignals(oldState);
+  scene_name_property_->blockSignals(old_state);
+}
+
+void PlanningSceneDisplay::onNewPlanningSceneState()
+{
 }
 
 void PlanningSceneDisplay::sceneMonitorReceivedUpdate(
@@ -558,10 +572,10 @@ void PlanningSceneDisplay::sceneMonitorReceivedUpdate(
 void PlanningSceneDisplay::onSceneMonitorReceivedUpdate(
     planning_scene_monitor::PlanningSceneMonitor::SceneUpdateType update_type)
 {
-  bool oldState = scene_name_property_->blockSignals(true);
+  bool old_state = scene_name_property_->blockSignals(true);
   getPlanningSceneRW()->getCurrentStateNonConst().update();
   scene_name_property_->setStdString(getPlanningSceneRO()->getName());
-  scene_name_property_->blockSignals(oldState);
+  scene_name_property_->blockSignals(old_state);
 
   planning_scene_needs_render_ = true;
 }

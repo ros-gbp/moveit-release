@@ -49,15 +49,14 @@ public:
   {
   }
 
-  virtual std::string getDescription() const
+  std::string getDescription() const override
   {
     return "Add Time Parameterization";
   }
 
-  virtual bool adaptAndPlan(const PlannerFn& planner, const planning_scene::PlanningSceneConstPtr& planning_scene,
-                            const planning_interface::MotionPlanRequest& req,
-                            planning_interface::MotionPlanResponse& res,
-                            std::vector<std::size_t>& added_path_index) const
+  bool adaptAndPlan(const PlannerFn& planner, const planning_scene::PlanningSceneConstPtr& planning_scene,
+                    const planning_interface::MotionPlanRequest& req, planning_interface::MotionPlanResponse& res,
+                    std::vector<std::size_t>& added_path_index) const override
   {
     bool result = planner(planning_scene, req, res);
     if (result && res.trajectory_)
@@ -65,7 +64,10 @@ public:
       ROS_DEBUG("Running '%s'", getDescription().c_str());
       if (!time_param_.computeTimeStamps(*res.trajectory_, req.max_velocity_scaling_factor,
                                          req.max_acceleration_scaling_factor))
-        ROS_WARN("Time parametrization for the solution path failed.");
+      {
+        ROS_ERROR("Time parametrization for the solution path failed.");
+        result = false;
+      }
     }
 
     return result;
@@ -74,7 +76,7 @@ public:
 private:
   trajectory_processing::IterativeSplineParameterization time_param_;
 };
-}
+}  // namespace default_planner_request_adapters
 
 CLASS_LOADER_REGISTER_CLASS(default_planner_request_adapters::AddIterativeSplineParameterization,
                             planning_request_adapter::PlanningRequestAdapter);

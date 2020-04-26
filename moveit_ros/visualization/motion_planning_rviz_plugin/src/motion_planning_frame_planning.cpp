@@ -43,6 +43,8 @@
 
 #include <std_srvs/Empty.h>
 #include <moveit_msgs/RobotState.h>
+#include <tf2_eigen/tf2_eigen.h>
+#include <moveit/trajectory_processing/iterative_time_parameterization.h>
 
 #include "ui_motion_planning_rviz_plugin_frame.h"
 
@@ -108,6 +110,59 @@ void MotionPlanningFrame::onClearOctomapClicked()
   clear_octomap_service_client_.call(srv);
 }
 
+bool MotionPlanningFrame::computeCartesianPlan()
+{
+  ros::WallTime start = ros::WallTime::now();
+  // get goal pose
+  robot_state::RobotState goal = *planning_display_->getQueryGoalState();
+  std::vector<geometry_msgs::Pose> waypoints;
+  const std::string& link_name = move_group_->getEndEffectorLink();
+  const robot_model::LinkModel* link = move_group_->getRobotModel()->getLinkModel(link_name);
+  if (!link)
+  {
+    ROS_ERROR_STREAM("Failed to determine unique end-effector link: " << link_name);
+    return false;
+  }
+  waypoints.push_back(tf2::toMsg(goal.getGlobalLinkTransform(link)));
+
+  // setup default params
+  double cart_step_size = 0.01;
+  double cart_jump_thresh = 0.0;
+  bool avoid_collisions = true;
+
+  // compute trajectory
+  moveit_msgs::RobotTrajectory trajectory;
+  double fraction =
+      move_group_->computeCartesianPath(waypoints, cart_step_size, cart_jump_thresh, trajectory, avoid_collisions);
+
+  if (fraction >= 1.0)
+  {
+    ROS_INFO("Achieved %f %% of Cartesian path", fraction * 100.);
+
+    // Compute time parameterization to also provide velocities
+    // https://groups.google.com/forum/#!topic/moveit-users/MOoFxy2exT4
+    robot_trajectory::RobotTrajectory rt(move_group_->getRobotModel(), move_group_->getName());
+    rt.setRobotTrajectoryMsg(*move_group_->getCurrentState(), trajectory);
+    trajectory_processing::IterativeParabolicTimeParameterization iptp;
+    bool success =
+        iptp.computeTimeStamps(rt, ui_->velocity_scaling_factor->value(), ui_->acceleration_scaling_factor->value());
+    ROS_INFO("Computing time stamps %s", success ? "SUCCEDED" : "FAILED");
+
+    // Store trajectory in current_plan_
+    current_plan_.reset(new moveit::planning_interface::MoveGroupInterface::Plan());
+    rt.getRobotTrajectoryMsg(current_plan_->trajectory_);
+    current_plan_->planning_time_ = (ros::WallTime::now() - start).toSec();
+    return success;
+  }
+  return false;
+}
+
+bool MotionPlanningFrame::computeJointSpacePlan()
+{
+  current_plan_.reset(new moveit::planning_interface::MoveGroupInterface::Plan());
+  return move_group_->plan(*current_plan_) == moveit::planning_interface::MoveItErrorCode::SUCCESS;
+}
+
 void MotionPlanningFrame::computePlanButtonClicked()
 {
   if (!move_group_)
@@ -117,19 +172,19 @@ void MotionPlanningFrame::computePlanButtonClicked()
   ui_->result_label->setText("Planning...");
 
   configureForPlanning();
-  current_plan_.reset(new moveit::planning_interface::MoveGroupInterface::Plan());
-  if (move_group_->plan(*current_plan_))
+  planning_display_->rememberPreviousStartState();
+  bool success = (ui_->use_cartesian_path->isEnabled() && ui_->use_cartesian_path->checkState()) ?
+                     computeCartesianPlan() :
+                     computeJointSpacePlan();
+
+  if (success)
   {
     ui_->execute_button->setEnabled(true);
-
-    // Success
     ui_->result_label->setText(QString("Time: ").append(QString::number(current_plan_->planning_time_, 'f', 3)));
   }
   else
   {
     current_plan_.reset();
-
-    // Failure
     ui_->result_label->setText("Failed");
   }
   Q_EMIT planningFinished();
@@ -137,10 +192,12 @@ void MotionPlanningFrame::computePlanButtonClicked()
 
 void MotionPlanningFrame::computeExecuteButtonClicked()
 {
-  if (move_group_ && current_plan_)
+  // ensures the MoveGroupInterface is not destroyed while executing
+  moveit::planning_interface::MoveGroupInterfacePtr mgi(move_group_);
+  if (mgi && current_plan_)
   {
     ui_->stop_button->setEnabled(true);  // enable stopping
-    bool success = move_group_->execute(*current_plan_) == moveit::planning_interface::MoveItErrorCode::SUCCESS;
+    bool success = mgi->execute(*current_plan_) == moveit::planning_interface::MoveItErrorCode::SUCCESS;
     onFinishedExecution(success);
   }
 }
@@ -150,12 +207,21 @@ void MotionPlanningFrame::computePlanAndExecuteButtonClicked()
   if (!move_group_)
     return;
   configureForPlanning();
+  planning_display_->rememberPreviousStartState();
   // move_group::move() on the server side, will always start from the current state
   // to suppress a warning, we pass an empty state (which encodes "start from current state")
   move_group_->setStartStateToCurrentState();
   ui_->stop_button->setEnabled(true);
-  bool success = move_group_->move() == moveit::planning_interface::MoveItErrorCode::SUCCESS;
-  onFinishedExecution(success);
+  if (ui_->use_cartesian_path->isEnabled() && ui_->use_cartesian_path->checkState())
+  {
+    if (computeCartesianPlan())
+      computeExecuteButtonClicked();
+  }
+  else
+  {
+    bool success = move_group_->move() == moveit::planning_interface::MoveItErrorCode::SUCCESS;
+    onFinishedExecution(success);
+  }
   ui_->plan_and_execute_button->setEnabled(true);
 }
 
@@ -176,36 +242,59 @@ void MotionPlanningFrame::onFinishedExecution(bool success)
   ui_->stop_button->setEnabled(false);
 
   // update query start state to current if neccessary
-  if (ui_->start_state_selection->currentText() == "<current>")
-    useStartStateButtonClicked();
+  if (ui_->start_state_combo_box->currentText() == "<current>")
+    startStateTextChanged(ui_->start_state_combo_box->currentText());
+
+  // auto-update goal to stored previous state (but only on success)
+  // on failure, the user must update the goal to the previous state himself
+  if (ui_->goal_state_combo_box->currentText() == "<previous>")
+    goalStateTextChanged(ui_->goal_state_combo_box->currentText());
 }
 
-void MotionPlanningFrame::useStartStateButtonClicked()
+void MotionPlanningFrame::onNewPlanningSceneState()
+{
+  moveit::core::RobotState current(planning_display_->getPlanningSceneRO()->getCurrentState());
+  if (ui_->start_state_combo_box->currentText() == "<current>")
+  {
+    planning_display_->setQueryStartState(current);
+    planning_display_->rememberPreviousStartState();
+  }
+  if (ui_->goal_state_combo_box->currentText() == "<current>")
+    planning_display_->setQueryGoalState(current);
+}
+
+void MotionPlanningFrame::startStateTextChanged(const QString& start_state)
 {
   // use background job: fetching the current state might take up to a second
-  planning_display_->addBackgroundJob(boost::bind(&MotionPlanningFrame::useStartStateButtonExec, this),  //
-                                      "update start state");
+  planning_display_->addBackgroundJob(
+      boost::bind(&MotionPlanningFrame::startStateTextChangedExec, this, start_state.toStdString()),
+      "update start state");
 }
 
-void MotionPlanningFrame::useStartStateButtonExec()
+void MotionPlanningFrame::startStateTextChangedExec(const std::string& start_state)
 {
   robot_state::RobotState start = *planning_display_->getQueryStartState();
-  updateQueryStateHelper(start, ui_->start_state_selection->currentText().toStdString());
+  updateQueryStateHelper(start, start_state);
   planning_display_->setQueryStartState(start);
 }
 
-void MotionPlanningFrame::useGoalStateButtonClicked()
+void MotionPlanningFrame::goalStateTextChanged(const QString& goal_state)
 {
   // use background job: fetching the current state might take up to a second
-  planning_display_->addBackgroundJob(boost::bind(&MotionPlanningFrame::useGoalStateButtonExec, this),  //
-                                      "update goal state");
+  planning_display_->addBackgroundJob(
+      boost::bind(&MotionPlanningFrame::goalStateTextChangedExec, this, goal_state.toStdString()), "update goal state");
 }
 
-void MotionPlanningFrame::useGoalStateButtonExec()
+void MotionPlanningFrame::goalStateTextChangedExec(const std::string& goal_state)
 {
   robot_state::RobotState goal = *planning_display_->getQueryGoalState();
-  updateQueryStateHelper(goal, ui_->goal_state_selection->currentText().toStdString());
+  updateQueryStateHelper(goal, goal_state);
   planning_display_->setQueryGoalState(goal);
+}
+
+void MotionPlanningFrame::planningGroupTextChanged(const QString& planning_group)
+{
+  planning_display_->changePlanningGroup(planning_group.toStdString());
 }
 
 void MotionPlanningFrame::updateQueryStateHelper(robot_state::RobotState& state, const std::string& v)
@@ -274,6 +363,12 @@ void MotionPlanningFrame::updateQueryStateHelper(robot_state::RobotState& state,
     return;
   }
 
+  if (v == "<previous>")
+  {
+    state = planning_display_->getPreviousState();
+    return;
+  }
+
   // maybe it is a named state
   if (const robot_model::JointModelGroup* jmg = state.getJointModelGroup(planning_display_->getCurrentPlanningGroup()))
     state.setToDefaultValues(jmg, v);
@@ -315,10 +410,10 @@ void MotionPlanningFrame::populatePlannersList(const moveit_msgs::PlannerInterfa
 
   // retrieve default planner config from parameter server
   const std::string& default_planner_config = move_group_->getDefaultPlannerId(found_group ? group : std::string());
-  int defaultIndex = ui_->planning_algorithm_combo_box->findText(QString::fromStdString(default_planner_config));
-  if (defaultIndex < 0)
-    defaultIndex = 0;  // 0 is <unspecified> fallback
-  ui_->planning_algorithm_combo_box->setCurrentIndex(defaultIndex);
+  int default_index = ui_->planning_algorithm_combo_box->findText(QString::fromStdString(default_planner_config));
+  if (default_index < 0)
+    default_index = 0;  // 0 is <unspecified> fallback
+  ui_->planning_algorithm_combo_box->setCurrentIndex(default_index);
 }
 
 void MotionPlanningFrame::populateConstraintsList()
@@ -376,11 +471,11 @@ void MotionPlanningFrame::configureWorkspace()
     move_group_->setWorkspace(bx.min_position_, by.min_position_, bz.min_position_, bx.max_position_, by.max_position_,
                               bz.max_position_);
   planning_scene_monitor::PlanningSceneMonitorPtr psm = planning_display_->getPlanningSceneMonitor();
-  // get non-const access to the kmodel and update planar & floating joints as indicated by the workspace settings
+  // get non-const access to the robot_model and update planar & floating joints as indicated by the workspace settings
   if (psm && psm->getRobotModelLoader() && psm->getRobotModelLoader()->getModel())
   {
-    const robot_model::RobotModelPtr& kmodel = psm->getRobotModelLoader()->getModel();
-    const std::vector<robot_model::JointModel*>& jm = kmodel->getJointModels();
+    const robot_model::RobotModelPtr& robot_model = psm->getRobotModelLoader()->getModel();
+    const std::vector<robot_model::JointModel*>& jm = robot_model->getJointModels();
     for (std::size_t i = 0; i < jm.size(); ++i)
       if (jm[i]->getType() == robot_model::JointModel::PLANAR)
       {
@@ -487,4 +582,4 @@ void MotionPlanningFrame::remoteUpdateCustomGoalStateCallback(const moveit_msgs:
     }
   }
 }
-}
+}  // namespace moveit_rviz_plugin

@@ -88,15 +88,15 @@ class MotionPlanningDisplay : public PlanningSceneDisplay
 public:
   MotionPlanningDisplay();
 
-  virtual ~MotionPlanningDisplay();
+  ~MotionPlanningDisplay() override;
 
-  virtual void load(const rviz::Config& config);
-  virtual void save(rviz::Config config) const;
+  void load(const rviz::Config& config) override;
+  void save(rviz::Config config) const override;
 
-  virtual void update(float wall_dt, float ros_dt);
-  virtual void reset();
+  void update(float wall_dt, float ros_dt) override;
+  void reset() override;
 
-  void setName(const QString& name);
+  void setName(const QString& name) override;
 
   robot_state::RobotStateConstPtr getQueryStartState() const
   {
@@ -108,17 +108,22 @@ public:
     return query_goal_state_->getState();
   }
 
+  const robot_state::RobotState& getPreviousState() const
+  {
+    return *previous_state_;
+  }
+
   const robot_interaction::RobotInteractionPtr& getRobotInteraction() const
   {
     return robot_interaction_;
   }
 
-  const robot_interaction::RobotInteraction::InteractionHandlerPtr& getQueryStartStateHandler() const
+  const robot_interaction::InteractionHandlerPtr& getQueryStartStateHandler() const
   {
     return query_start_state_;
   }
 
-  const robot_interaction::RobotInteraction::InteractionHandlerPtr& getQueryGoalStateHandler() const
+  const robot_interaction::InteractionHandlerPtr& getQueryGoalStateHandler() const
   {
     return query_goal_state_;
   }
@@ -133,6 +138,7 @@ public:
 
   void updateQueryStartState();
   void updateQueryGoalState();
+  void rememberPreviousStartState();
 
   void useApproximateIK(bool flag);
 
@@ -151,6 +157,11 @@ public:
   void resetStatusTextColor();
 
   void toggleSelectPlanningGroupSubscription(bool enable);
+
+Q_SIGNALS:
+  // signals issued when start/goal states of a query changed
+  void queryStartStateChanged();
+  void queryGoalStateChanged();
 
 private Q_SLOTS:
 
@@ -186,9 +197,10 @@ protected:
     OUTSIDE_BOUNDS_LINK
   };
 
-  virtual void onRobotModelLoaded();
-  virtual void onSceneMonitorReceivedUpdate(planning_scene_monitor::PlanningSceneMonitor::SceneUpdateType update_type);
-  virtual void updateInternal(float wall_dt, float ros_dt);
+  void onRobotModelLoaded() override;
+  void onNewPlanningSceneState() override;
+  void onSceneMonitorReceivedUpdate(planning_scene_monitor::PlanningSceneMonitor::SceneUpdateType update_type) override;
+  void updateInternal(float wall_dt, float ros_dt) override;
 
   void renderWorkspaceBox();
   void updateLinkColors();
@@ -204,17 +216,15 @@ protected:
   void recomputeQueryGoalStateMetrics();
   void drawQueryStartState();
   void drawQueryGoalState();
-  void scheduleDrawQueryStartState(robot_interaction::RobotInteraction::InteractionHandler* handler,
-                                   bool error_state_changed);
-  void scheduleDrawQueryGoalState(robot_interaction::RobotInteraction::InteractionHandler* handler,
-                                  bool error_state_changed);
+  void scheduleDrawQueryStartState(robot_interaction::InteractionHandler* handler, bool error_state_changed);
+  void scheduleDrawQueryGoalState(robot_interaction::InteractionHandler* handler, bool error_state_changed);
 
   bool isIKSolutionCollisionFree(robot_state::RobotState* state, const robot_state::JointModelGroup* group,
                                  const double* ik_solution) const;
 
   void computeMetrics(bool start, const std::string& group, double payload);
   void computeMetricsInternal(std::map<std::string, double>& metrics,
-                              const robot_interaction::RobotInteraction::EndEffector& eef,
+                              const robot_interaction::EndEffectorInteraction& eef,
                               const robot_state::RobotState& state, double payload);
   void updateStateExceptModified(robot_state::RobotState& dest, const robot_state::RobotState& src);
   void updateBackgroundJobProgressBar();
@@ -226,10 +236,10 @@ protected:
   void selectPlanningGroupCallback(const std_msgs::StringConstPtr& msg);
 
   // overrides from Display
-  virtual void onInitialize();
-  virtual void onEnable();
-  virtual void onDisable();
-  virtual void fixedFrameChanged();
+  void onInitialize() override;
+  void onEnable() override;
+  void onDisable() override;
+  void fixedFrameChanged() override;
 
   RobotStateVisualizationPtr query_robot_start_;  ///< Handles drawing the robot at the start configuration
   RobotStateVisualizationPtr query_robot_goal_;   ///< Handles drawing the robot at the goal configuration
@@ -250,12 +260,14 @@ protected:
 
   // robot interaction
   robot_interaction::RobotInteractionPtr robot_interaction_;
-  robot_interaction::RobotInteraction::InteractionHandlerPtr query_start_state_;
-  robot_interaction::RobotInteraction::InteractionHandlerPtr query_goal_state_;
+  robot_interaction::InteractionHandlerPtr query_start_state_;
+  robot_interaction::InteractionHandlerPtr query_goal_state_;
   std::shared_ptr<interactive_markers::MenuHandler> menu_handler_start_;
   std::shared_ptr<interactive_markers::MenuHandler> menu_handler_goal_;
   std::map<std::string, LinkDisplayStatus> status_links_start_;
   std::map<std::string, LinkDisplayStatus> status_links_goal_;
+  /// remember previous start state (updated before starting execution)
+  robot_state::RobotStatePtr previous_state_;
 
   /// Hold the names of the groups for which the query states have been updated (and should not be altered when new info
   /// is received from the planning scene)

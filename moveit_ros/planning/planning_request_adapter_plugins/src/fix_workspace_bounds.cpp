@@ -57,15 +57,14 @@ public:
     workspace_extent_ /= 2.0;
   }
 
-  virtual std::string getDescription() const
+  std::string getDescription() const override
   {
     return "Fix Workspace Bounds";
   }
 
-  virtual bool adaptAndPlan(const PlannerFn& planner, const planning_scene::PlanningSceneConstPtr& planning_scene,
-                            const planning_interface::MotionPlanRequest& req,
-                            planning_interface::MotionPlanResponse& res,
-                            std::vector<std::size_t>& added_path_index) const
+  bool adaptAndPlan(const PlannerFn& planner, const planning_scene::PlanningSceneConstPtr& planning_scene,
+                    const planning_interface::MotionPlanRequest& req, planning_interface::MotionPlanResponse& res,
+                    std::vector<std::size_t>& added_path_index) const override
   {
     ROS_DEBUG("Running '%s'", getDescription().c_str());
     const moveit_msgs::WorkspaceParameters& wparams = req.workspace_parameters;
@@ -90,7 +89,7 @@ private:
 };
 
 const std::string FixWorkspaceBounds::WBOUNDS_PARAM_NAME = "default_workspace_bounds";
-}
+}  // namespace default_planner_request_adapters
 
 CLASS_LOADER_REGISTER_CLASS(default_planner_request_adapters::FixWorkspaceBounds,
                             planning_request_adapter::PlanningRequestAdapter);

@@ -46,7 +46,7 @@ namespace cached_ik_kinematics_plugin
 IKCache::IKCache()
 {
   // set distance function for nearest-neighbor queries
-  ik_nn_.setDistanceFunction([this](const IKEntry* entry1, const IKEntry* entry2) {
+  ik_nn_.setDistanceFunction([](const IKEntry* entry1, const IKEntry* entry2) {
     double dist = 0.;
     for (unsigned int i = 0; i < entry1->first.size(); ++i)
       dist += entry1->first[i].distance(entry2->first[i]);
@@ -60,8 +60,8 @@ IKCache::~IKCache()
     saveCache();
 }
 
-void IKCache::initializeCache(const std::string& robot_description, const std::string& group_name,
-                              const std::string& cache_name, const unsigned int num_joints, Options opts)
+void IKCache::initializeCache(const std::string& robot_id, const std::string& group_name, const std::string& cache_name,
+                              const unsigned int num_joints, Options opts)
 {
   // read ROS parameters
   max_cache_size_ = opts.max_cache_size;
@@ -78,8 +78,8 @@ void IKCache::initializeCache(const std::string& robot_description, const std::s
   // create cache directory if necessary
   boost::filesystem::create_directories(prefix);
 
-  cache_file_name_ = prefix / (robot_description + group_name + "_" + cache_name + "_" +
-                               std::to_string(max_cache_size_) + "_" + std::to_string(min_pose_distance_) + "_" +
+  cache_file_name_ = prefix / (robot_id + group_name + "_" + cache_name + "_" + std::to_string(max_cache_size_) + "_" +
+                               std::to_string(min_pose_distance_) + "_" +
                                std::to_string(std::sqrt(min_config_distance2_)) + ".ikcache");
 
   ik_cache_.clear();
@@ -251,7 +251,7 @@ void IKCache::saveCache() const
 
 void IKCache::verifyCache(kdl_kinematics_plugin::KDLKinematicsPlugin& fk) const
 {
-  std::vector<std::string> tip_names(fk.getTipFrames());
+  const std::vector<std::string>& tip_names(fk.getTipFrames());
   std::vector<geometry_msgs::Pose> poses(tip_names.size());
   double error, max_error = 0.;
 
@@ -335,4 +335,4 @@ std::string IKCacheMap::getKey(const std::vector<std::string>& fixed, const std:
   std::accumulate(active.begin(), active.end(), key);
   return key;
 }
-}
+}  // namespace cached_ik_kinematics_plugin

@@ -52,7 +52,7 @@ planning_pipeline::PlanningPipeline::PlanningPipeline(const robot_model::RobotMo
                                                       const ros::NodeHandle& nh,
                                                       const std::string& planner_plugin_param_name,
                                                       const std::string& adapter_plugins_param_name)
-  : nh_(nh), kmodel_(model)
+  : nh_(nh), robot_model_(model)
 {
   std::string planner;
   if (nh_.getParam(planner_plugin_param_name, planner))
@@ -73,7 +73,7 @@ planning_pipeline::PlanningPipeline::PlanningPipeline(const robot_model::RobotMo
 planning_pipeline::PlanningPipeline::PlanningPipeline(const robot_model::RobotModelConstPtr& model,
                                                       const ros::NodeHandle& nh, const std::string& planner_plugin_name,
                                                       const std::vector<std::string>& adapter_plugin_names)
-  : nh_(nh), planner_plugin_name_(planner_plugin_name), adapter_plugin_names_(adapter_plugin_names), kmodel_(model)
+  : nh_(nh), planner_plugin_name_(planner_plugin_name), adapter_plugin_names_(adapter_plugin_names), robot_model_(model)
 {
   configure();
 }
@@ -113,8 +113,8 @@ void planning_pipeline::PlanningPipeline::configure()
   }
   try
   {
-    planner_instance_.reset(planner_plugin_loader_->createUnmanagedInstance(planner_plugin_name_));
-    if (!planner_instance_->initialize(kmodel_, nh_.getNamespace()))
+    planner_instance_ = planner_plugin_loader_->createUniqueInstance(planner_plugin_name_);
+    if (!planner_instance_->initialize(robot_model_, nh_.getNamespace()))
       throw std::runtime_error("Unable to initialize planning plugin");
     ROS_INFO_STREAM("Using planning interface '" << planner_instance_->getDescription() << "'");
   }
@@ -145,7 +145,7 @@ void planning_pipeline::PlanningPipeline::configure()
         planning_request_adapter::PlanningRequestAdapterConstPtr ad;
         try
         {
-          ad.reset(adapter_plugin_loader_->createUnmanagedInstance(adapter_plugin_names_[i]));
+          ad = adapter_plugin_loader_->createUniqueInstance(adapter_plugin_names_[i]);
         }
         catch (pluginlib::PluginlibException& ex)
         {
@@ -295,8 +295,8 @@ bool planning_pipeline::PlanningPipeline::generatePlan(const planning_scene::Pla
             for (std::size_t i = 0; i < index.size(); ++i)
             {
               // check validity with verbose on
-              const robot_state::RobotState& kstate = res.trajectory_->getWayPoint(index[i]);
-              planning_scene->isStateValid(kstate, req.path_constraints, req.group_name, true);
+              const robot_state::RobotState& robot_state = res.trajectory_->getWayPoint(index[i]);
+              planning_scene->isStateValid(robot_state, req.path_constraints, req.group_name, true);
 
               // compute the contacts if any
               collision_detection::CollisionRequest c_req;
@@ -305,7 +305,7 @@ bool planning_pipeline::PlanningPipeline::generatePlan(const planning_scene::Pla
               c_req.max_contacts = 10;
               c_req.max_contacts_per_pair = 3;
               c_req.verbose = false;
-              planning_scene->checkCollision(c_req, c_res, kstate);
+              planning_scene->checkCollision(c_req, c_res, robot_state);
               if (c_res.contact_count > 0)
               {
                 visualization_msgs::MarkerArray arr_i;
@@ -332,11 +332,29 @@ bool planning_pipeline::PlanningPipeline::generatePlan(const planning_scene::Pla
   if (display_computed_motion_plans_ && solved)
   {
     moveit_msgs::DisplayTrajectory disp;
-    disp.model_id = kmodel_->getName();
+    disp.model_id = robot_model_->getName();
     disp.trajectory.resize(1);
     res.trajectory_->getRobotTrajectoryMsg(disp.trajectory[0]);
     robot_state::robotStateToRobotStateMsg(res.trajectory_->getFirstWayPoint(), disp.trajectory_start);
     display_path_publisher_.publish(disp);
+  }
+
+  if (!solved)
+  {
+    // This should alert the user if planning failed because of contradicting constraints.
+    // Could be checked more thoroughly, but it is probably not worth going to that length.
+    bool stacked_constraints = false;
+    if (req.path_constraints.position_constraints.size() > 1 || req.path_constraints.orientation_constraints.size() > 1)
+      stacked_constraints = true;
+    for (auto constraint : req.goal_constraints)
+    {
+      if (constraint.position_constraints.size() > 1 || constraint.orientation_constraints.size() > 1)
+        stacked_constraints = true;
+    }
+    if (stacked_constraints)
+      ROS_WARN("More than one constraint is set. If your move_group does not have multiple end effectors/arms, this is "
+               "unusual. Are you using a move_group_interface and forgetting to call clearPoseTargets() or "
+               "equivalent?");
   }
 
   return solved && valid;

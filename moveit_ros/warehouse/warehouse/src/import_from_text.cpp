@@ -40,7 +40,7 @@
 #include <moveit/planning_scene_monitor/planning_scene_monitor.h>
 #include <moveit/kinematic_constraints/utils.h>
 #include <moveit/robot_state/conversions.h>
-#include <eigen_conversions/eigen_msg.h>
+#include <tf2_eigen/tf2_eigen.h>
 #include <boost/program_options/cmdline.hpp>
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/parsers.hpp>
@@ -73,8 +73,10 @@ void parseStart(std::istream& in, planning_scene_monitor::PlanningSceneMonitor* 
           if (marker != "=")
             joint = ".";
           else
+          {
             in >> value;
-          v[joint] = value;
+            v[joint] = value;
+          }
           if (joint != ".")
             in >> joint;
         }
@@ -95,8 +97,8 @@ void parseStart(std::istream& in, planning_scene_monitor::PlanningSceneMonitor* 
 void parseLinkConstraint(std::istream& in, planning_scene_monitor::PlanningSceneMonitor* psm,
                          moveit_warehouse::ConstraintsStorage* cs)
 {
-  Eigen::Translation3d pos;
-  Eigen::Quaterniond rot;
+  Eigen::Translation3d pos(Eigen::Vector3d::Zero());
+  Eigen::Quaterniond rot(Eigen::Quaterniond::Identity());
 
   bool have_position = false;
   bool have_orientation = false;
@@ -141,7 +143,7 @@ void parseLinkConstraint(std::istream& in, planning_scene_monitor::PlanningScene
   if (have_position && have_orientation)
   {
     geometry_msgs::PoseStamped pose;
-    tf::poseEigenToMsg(pos * rot, pose.pose);
+    pose.pose = tf2::toMsg(pos * rot);
     pose.header.frame_id = psm->getRobotModel()->getModelFrame();
     moveit_msgs::Constraints constr = kinematic_constraints::constructGoalConstraints(link_name, pose);
     constr.name = name;

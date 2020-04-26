@@ -1,7 +1,9 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.1.3)
 project(moveit_ros_control_interface)
 
-add_compile_options(-std=c++11)
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 find_package(catkin REQUIRED COMPONENTS
   actionlib
@@ -17,7 +19,13 @@ find_package(Boost REQUIRED COMPONENTS system thread)
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES
-  CATKIN_DEPENDS moveit_core
+    ${PROJECT_NAME}_plugin
+    ${PROJECT_NAME}_trajectory_plugin
+  CATKIN_DEPENDS
+    actionlib
+    controller_manager_msgs
+    moveit_core
+    trajectory_msgs
   DEPENDS Boost
 )
 
@@ -31,7 +39,7 @@ include_directories(include ${Boost_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS})
 add_library(${PROJECT_NAME}_plugin
   src/controller_manager_plugin.cpp
 )
-set_target_properties(${PROJECT_NAME}_plugin PROPERTIES VERSION ${${PROJECT_NAME}_VERSION})
+set_target_properties(${PROJECT_NAME}_plugin PROPERTIES VERSION "${${PROJECT_NAME}_VERSION}")
 target_link_libraries(${PROJECT_NAME}_plugin
   ${catkin_LIBRARIES} ${Boost_LIBRARIES}
 )
@@ -39,7 +47,7 @@ target_link_libraries(${PROJECT_NAME}_plugin
 add_library(${PROJECT_NAME}_trajectory_plugin
   src/joint_trajectory_controller_plugin.cpp
 )
-set_target_properties(${PROJECT_NAME}_trajectory_plugin PROPERTIES VERSION ${${PROJECT_NAME}_VERSION})
+set_target_properties(${PROJECT_NAME}_trajectory_plugin PROPERTIES VERSION "${${PROJECT_NAME}_VERSION}")
 target_link_libraries(${PROJECT_NAME}_trajectory_plugin
   ${catkin_LIBRARIES} ${Boost_LIBRARIES}
 )
@@ -63,7 +71,7 @@ target_link_libraries(${PROJECT_NAME}_trajectory_plugin
 install(TARGETS ${PROJECT_NAME}_plugin ${PROJECT_NAME}_trajectory_plugin
 ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
 )
 
 ## Mark cpp header files for installation

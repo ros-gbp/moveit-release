@@ -45,8 +45,8 @@
 
 namespace collision_detection
 {
-MOVEIT_CLASS_FORWARD(GroupStateRepresentation);
-MOVEIT_CLASS_FORWARD(DistanceFieldCacheEntry);
+MOVEIT_STRUCT_FORWARD(GroupStateRepresentation)
+MOVEIT_STRUCT_FORWARD(DistanceFieldCacheEntry)
 
 /** collision volume representation for a particular pose and link group
  *
@@ -177,7 +177,7 @@ PosedBodySphereDecompositionVectorPtr getAttachedBodySphereDecomposition(const r
 PosedBodyPointDecompositionVectorPtr getAttachedBodyPointDecomposition(const robot_state::AttachedBody* att,
                                                                        double resolution);
 
-void getBodySphereVisualizationMarkers(GroupStateRepresentationPtr& gsr, std::string reference_frame,
+void getBodySphereVisualizationMarkers(const GroupStateRepresentationPtr& gsr, const std::string& reference_frame,
                                        visualization_msgs::MarkerArray& body_marker_array);
 }
 #endif

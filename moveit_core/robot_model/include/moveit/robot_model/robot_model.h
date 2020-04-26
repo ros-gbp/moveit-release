@@ -437,7 +437,7 @@ public:
 
 protected:
   /** \brief Get the transforms between link and all its rigidly attached descendants */
-  void computeFixedTransforms(const LinkModel* link, const Eigen::Affine3d& transform,
+  void computeFixedTransforms(const LinkModel* link, const Eigen::Isometry3d& transform,
                               LinkTransformMap& associated_transforms);
 
   /** \brief Given two joints, find their common root */
@@ -448,10 +448,11 @@ protected:
 
   // GENERIC INFO
 
-  /** \brief The name of the model */
+  /** \brief The name of the robot */
   std::string model_name_;
 
-  /** \brief The reference frame for this model */
+  /** \brief The reference (base) frame for this model. The frame is either extracted from the SRDF as a virtual joint,
+   * or it is assumed to be the name of the root link in the URDF */
   std::string model_frame_;
 
   srdf::ModelConstSharedPtr srdf_;
@@ -575,10 +576,10 @@ protected:
   void buildGroups(const srdf::Model& srdf_model);
 
   /** \brief Compute helpful information about groups (that can be queried later) */
-  void buildGroupsInfo_Subgroups(const srdf::Model& srdf_model);
+  void buildGroupsInfoSubgroups(const srdf::Model& srdf_model);
 
   /** \brief Compute helpful information about groups (that can be queried later) */
-  void buildGroupsInfo_EndEffectors(const srdf::Model& srdf_model);
+  void buildGroupsInfoEndEffectors(const srdf::Model& srdf_model);
 
   /** \brief Given the URDF model, build up the mimic joints (mutually constrained joints) */
   void buildMimic(const urdf::ModelInterface& urdf_model);

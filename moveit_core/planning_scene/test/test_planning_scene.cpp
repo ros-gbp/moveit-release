@@ -38,15 +38,16 @@
 #include <moveit/planning_scene/planning_scene.h>
 #include <urdf_parser/urdf_parser.h>
 #include <fstream>
+#include <sstream>
 #include <string>
 #include <boost/filesystem/path.hpp>
-#include <moveit_resources/config.h>
+#include <ros/package.h>
 
 // This function needs to return void so the gtest FAIL() macro inside
 // it works right.
 void loadModelFile(std::string filename, std::string& file_content)
 {
-  boost::filesystem::path res_path(MOVEIT_TEST_RESOURCES_DIR);
+  boost::filesystem::path res_path(ros::package::getPath("moveit_resources"));
   std::string xml_string;
   std::fstream xml_file((res_path / filename).string().c_str(), std::fstream::in);
   EXPECT_TRUE(xml_file.is_open());
@@ -98,7 +99,7 @@ TEST(PlanningScene, LoadRestoreDiff)
   planning_scene::PlanningScenePtr ps(new planning_scene::PlanningScene(urdf_model, srdf_model));
 
   collision_detection::World& world = *ps->getWorldNonConst();
-  Eigen::Affine3d id = Eigen::Affine3d::Identity();
+  Eigen::Isometry3d id = Eigen::Isometry3d::Identity();
   world.addToObject("sphere", shapes::ShapeConstPtr(new shapes::Sphere(0.4)), id);
 
   moveit_msgs::PlanningScene ps_msg;
@@ -112,18 +113,18 @@ TEST(PlanningScene, LoadRestoreDiff)
   planning_scene::PlanningScenePtr next = ps->diff();
   EXPECT_TRUE(next->getWorld()->hasObject("sphere"));
   next->getWorldNonConst()->addToObject("sphere2", shapes::ShapeConstPtr(new shapes::Sphere(0.5)), id);
-  EXPECT_EQ(next->getWorld()->size(), 2);
-  EXPECT_EQ(ps->getWorld()->size(), 1);
+  EXPECT_EQ(next->getWorld()->size(), 2u);
+  EXPECT_EQ(ps->getWorld()->size(), 1u);
   next->getPlanningSceneDiffMsg(ps_msg);
-  EXPECT_EQ(ps_msg.world.collision_objects.size(), 1);
+  EXPECT_EQ(ps_msg.world.collision_objects.size(), 1u);
   next->decoupleParent();
   moveit_msgs::PlanningScene ps_msg2;
   next->getPlanningSceneDiffMsg(ps_msg2);
-  EXPECT_EQ(ps_msg2.world.collision_objects.size(), 0);
+  EXPECT_EQ(ps_msg2.world.collision_objects.size(), 0u);
   next->getPlanningSceneMsg(ps_msg);
-  EXPECT_EQ(ps_msg.world.collision_objects.size(), 2);
+  EXPECT_EQ(ps_msg.world.collision_objects.size(), 2u);
   ps->setPlanningSceneMsg(ps_msg);
-  EXPECT_EQ(ps->getWorld()->size(), 2);
+  EXPECT_EQ(ps->getWorld()->size(), 2u);
 }
 
 TEST(PlanningScene, MakeAttachedDiff)
@@ -135,7 +136,7 @@ TEST(PlanningScene, MakeAttachedDiff)
   planning_scene::PlanningScenePtr ps(new planning_scene::PlanningScene(urdf_model, srdf_model));
 
   collision_detection::World& world = *ps->getWorldNonConst();
-  Eigen::Affine3d id = Eigen::Affine3d::Identity();
+  Eigen::Isometry3d id = Eigen::Isometry3d::Identity();
   world.addToObject("sphere", shapes::ShapeConstPtr(new shapes::Sphere(0.4)), id);
 
   planning_scene::PlanningScenePtr attached_object_diff_scene = ps->diff();
@@ -165,6 +166,61 @@ TEST(PlanningScene, isStateValid)
   {
     EXPECT_FALSE(ps->isStateValid(current_state, "left_arm"));
   }
+}
+
+TEST(PlanningScene, loadGoodSceneGeometry)
+{
+  srdf::ModelSharedPtr srdf_model(new srdf::Model());
+  urdf::ModelInterfaceSharedPtr urdf_model;
+  loadRobotModels(urdf_model, srdf_model);
+  planning_scene::PlanningScenePtr ps(new planning_scene::PlanningScene(urdf_model, srdf_model));
+
+  std::istringstream good_scene_geometry;
+  good_scene_geometry.str("foobar_scene\n"
+                          "* foo\n"
+                          "1\n"
+                          "box\n"
+                          "2.58 1.36 0.31\n"
+                          "1.49257 1.00222 0.170051\n"
+                          "0 0 4.16377e-05 1\n"
+                          "0 0 1 0.3\n"
+                          "* bar\n"
+                          "1\n"
+                          "cylinder\n"
+                          "0.02 0.0001\n"
+                          "0.453709 0.499136 0.355051\n"
+                          "0 0 4.16377e-05 1\n"
+                          "1 0 0 1\n"
+                          ".\n");
+  EXPECT_TRUE(ps->loadGeometryFromStream(good_scene_geometry));
+  EXPECT_EQ(ps->getName(), "foobar_scene");
+  EXPECT_TRUE(ps->getWorld()->hasObject("foo"));
+  EXPECT_TRUE(ps->getWorld()->hasObject("bar"));
+  EXPECT_FALSE(ps->getWorld()->hasObject("baz"));  // Sanity check.
+}
+
+TEST(PlanningScene, loadBadSceneGeometry)
+{
+  srdf::ModelSharedPtr srdf_model(new srdf::Model());
+  urdf::ModelInterfaceSharedPtr urdf_model;
+  loadRobotModels(urdf_model, srdf_model);
+  planning_scene::PlanningScenePtr ps(new planning_scene::PlanningScene(urdf_model, srdf_model));
+  std::istringstream empty_scene_geometry;
+
+  // This should fail since there is no planning scene name and no end of geometry marker.
+  EXPECT_FALSE(ps->loadGeometryFromStream(empty_scene_geometry));
+
+  std::istringstream malformed_scene_geometry;
+  malformed_scene_geometry.str("malformed_scene_geometry\n"
+                               "* foo\n"
+                               "1\n"
+                               "box\n"
+                               "2.58 1.36\n" /* Only two tokens; should be 3 */
+                               "1.49257 1.00222 0.170051\n"
+                               "0 0 4.16377e-05 1\n"
+                               "0 0 1 0.3\n"
+                               ".\n");
+  EXPECT_FALSE(ps->loadGeometryFromStream(malformed_scene_geometry));
 }
 
 int main(int argc, char** argv)

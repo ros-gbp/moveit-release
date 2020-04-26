@@ -71,14 +71,14 @@ void RenderShapes::clear()
   octree_voxel_grids_.clear();
 }
 
-void RenderShapes::renderShape(Ogre::SceneNode* node, const shapes::Shape* s, const Eigen::Affine3d& p,
+void RenderShapes::renderShape(Ogre::SceneNode* node, const shapes::Shape* s, const Eigen::Isometry3d& p,
                                OctreeVoxelRenderMode octree_voxel_rendering, OctreeVoxelColorMode octree_color_mode,
                                const rviz::Color& color, float alpha)
 {
-  rviz::Shape* ogre_shape = NULL;
+  rviz::Shape* ogre_shape = nullptr;
   Eigen::Vector3d translation = p.translation();
   Ogre::Vector3 position(translation.x(), translation.y(), translation.z());
-  Eigen::Quaterniond q(p.linear());
+  Eigen::Quaterniond q(p.rotation());
   Ogre::Quaternion orientation(q.w(), q.x(), q.y(), q.z());
 
   // we don't know how to render cones directly, but we can convert them to a mesh
@@ -186,4 +186,11 @@ void RenderShapes::renderShape(Ogre::SceneNode* node, const shapes::Shape* s, co
     scene_shapes_.emplace_back(ogre_shape);
   }
 }
+
+void RenderShapes::updateShapeColors(float r, float g, float b, float a)
+{
+  for (auto it = scene_shapes_.begin(), end = scene_shapes_.end(); it != end; ++it)
+    (**it).setColor(r, g, b, a);
 }
+
+}  // namespace moveit_rviz_plugin

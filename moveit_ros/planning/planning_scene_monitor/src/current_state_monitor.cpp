@@ -36,21 +36,22 @@
 
 #include <moveit/planning_scene_monitor/current_state_monitor.h>
 
-#include <tf_conversions/tf_eigen.h>
+#include <tf2_eigen/tf2_eigen.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 #include <limits>
 
 planning_scene_monitor::CurrentStateMonitor::CurrentStateMonitor(const robot_model::RobotModelConstPtr& robot_model,
-                                                                 const boost::shared_ptr<tf::Transformer>& tf)
-  : CurrentStateMonitor(robot_model, tf, ros::NodeHandle())
+                                                                 const std::shared_ptr<tf2_ros::Buffer>& tf_buffer)
+  : CurrentStateMonitor(robot_model, tf_buffer, ros::NodeHandle())
 {
 }
 
 planning_scene_monitor::CurrentStateMonitor::CurrentStateMonitor(const robot_model::RobotModelConstPtr& robot_model,
-                                                                 const boost::shared_ptr<tf::Transformer>& tf,
-                                                                 ros::NodeHandle nh)
+                                                                 const std::shared_ptr<tf2_ros::Buffer>& tf_buffer,
+                                                                 const ros::NodeHandle& nh)
   : nh_(nh)
-  , tf_(tf)
+  , tf_buffer_(tf_buffer)
   , robot_model_(robot_model)
   , robot_state_(robot_model)
   , state_monitor_started_(false)
@@ -142,10 +143,10 @@ void planning_scene_monitor::CurrentStateMonitor::startStateMonitor(const std::s
       ROS_ERROR("The joint states topic cannot be an empty string");
     else
       joint_state_subscriber_ = nh_.subscribe(joint_states_topic, 25, &CurrentStateMonitor::jointStateCallback, this);
-    if (tf_ && robot_model_->getMultiDOFJointModels().size() > 0)
+    if (tf_buffer_ && !robot_model_->getMultiDOFJointModels().empty())
     {
-      tf_connection_.reset(
-          new TFConnection(tf_->addTransformsChangedListener(boost::bind(&CurrentStateMonitor::tfCallback, this))));
+      tf_connection_.reset(new TFConnection(
+          tf_buffer_->_addTransformsChangedListener(boost::bind(&CurrentStateMonitor::tfCallback, this))));
     }
     state_monitor_started_ = true;
     monitor_start_time_ = ros::Time::now();
@@ -163,9 +164,9 @@ void planning_scene_monitor::CurrentStateMonitor::stopStateMonitor()
   if (state_monitor_started_)
   {
     joint_state_subscriber_.shutdown();
-    if (tf_ && tf_connection_)
+    if (tf_buffer_ && tf_connection_)
     {
-      tf_->removeTransformsChangedListener(*tf_connection_);
+      tf_buffer_->_removeTransformsChangedListener(*tf_connection_);
       tf_connection_.reset();
     }
     ROS_DEBUG("No longer listening for joint states");
@@ -304,10 +305,6 @@ bool planning_scene_monitor::CurrentStateMonitor::waitForCompleteState(double wa
   }
   return haveCompleteState();
 }
-bool planning_scene_monitor::CurrentStateMonitor::waitForCurrentState(double wait_time) const
-{
-  return waitForCompleteState(wait_time);
-}
 
 bool planning_scene_monitor::CurrentStateMonitor::waitForCompleteState(const std::string& group, double wait_time) const
 {
@@ -334,11 +331,6 @@ bool planning_scene_monitor::CurrentStateMonitor::waitForCompleteState(const std
       ok = false;
   }
   return ok;
-}
-
-bool planning_scene_monitor::CurrentStateMonitor::waitForCurrentState(const std::string& group, double wait_time) const
-{
-  waitForCompleteState(group, wait_time);
 }
 
 void planning_scene_monitor::CurrentStateMonitor::jointStateCallback(const sensor_msgs::JointStateConstPtr& joint_state)
@@ -372,22 +364,6 @@ void planning_scene_monitor::CurrentStateMonitor::jointStateCallback(const senso
         update = true;
         robot_state_.setJointPositions(jm, &(joint_state->position[i]));
 
-        // optionally copy velocities and effort
-        if (copy_dynamics_)
-        {
-          // check if velocities exist
-          if (joint_state->name.size() == joint_state->velocity.size())
-          {
-            robot_state_.setJointVelocities(jm, &(joint_state->velocity[i]));
-
-            // check if effort exist. assume they are not useful if no velocities were passed in
-            if (joint_state->name.size() == joint_state->effort.size())
-            {
-              robot_state_.setJointEfforts(jm, &(joint_state->effort[i]));
-            }
-          }
-        }
-
         // continuous joints wrap, so we don't modify them (even if they are outside bounds!)
         if (jm->getType() == moveit::core::JointModel::REVOLUTE)
           if (static_cast<const moveit::core::RevoluteJointModel*>(jm)->isContinuous())
@@ -402,6 +378,26 @@ void planning_scene_monitor::CurrentStateMonitor::jointStateCallback(const senso
           robot_state_.setJointPositions(jm, &b.min_position_);
         else if (joint_state->position[i] > b.max_position_ && joint_state->position[i] <= b.max_position_ + error_)
           robot_state_.setJointPositions(jm, &b.max_position_);
+      }
+
+      // optionally copy velocities and effort
+      if (copy_dynamics_)
+      {
+        // update joint velocities
+        if (joint_state->name.size() == joint_state->velocity.size() &&
+            (!robot_state_.hasVelocities() || robot_state_.getJointVelocities(jm)[0] != joint_state->velocity[i]))
+        {
+          update = true;
+          robot_state_.setJointVelocities(jm, &(joint_state->velocity[i]));
+        }
+
+        // update joint efforts
+        if (joint_state->name.size() == joint_state->effort.size() &&
+            (!robot_state_.hasEffort() || robot_state_.getJointEffort(jm)[0] != joint_state->effort[i]))
+        {
+          update = true;
+          robot_state_.setJointEfforts(jm, &(joint_state->effort[i]));
+        }
       }
     }
   }
@@ -433,49 +429,39 @@ void planning_scene_monitor::CurrentStateMonitor::tfCallback()
           joint->getParentLinkModel() ? joint->getParentLinkModel()->getName() : robot_model_->getModelFrame();
 
       ros::Time latest_common_time;
-      std::string err;
-      if (tf_->getLatestCommonTime(parent_frame, child_frame, latest_common_time, &err) != tf::NO_ERROR)
+      geometry_msgs::TransformStamped transf;
+      try
+      {
+        transf = tf_buffer_->lookupTransform(parent_frame, child_frame, ros::Time(0.0));
+        latest_common_time = transf.header.stamp;
+      }
+      catch (tf2::TransformException& ex)
       {
         ROS_WARN_STREAM_ONCE("Unable to update multi-DOF joint '"
-                             << joint->getName() << "': TF has no common time between '" << parent_frame.c_str()
-                             << "' and '" << child_frame.c_str() << "': " << err);
+                             << joint->getName() << "': Failure to lookup transform between '" << parent_frame.c_str()
+                             << "' and '" << child_frame.c_str() << "' with TF exception: " << ex.what());
         continue;
       }
 
       // allow update if time is more recent or if it is a static transform (time = 0)
       if (latest_common_time <= joint_time_[joint] && latest_common_time > ros::Time(0))
         continue;
-
-      tf::StampedTransform transf;
-      try
-      {
-        tf_->lookupTransform(parent_frame, child_frame, latest_common_time, transf);
-      }
-      catch (tf::TransformException& ex)
-      {
-        ROS_ERROR_STREAM_THROTTLE(1, "Unable to update multi-dof joint '" << joint->getName()
-                                                                          << "'. TF exception: " << ex.what());
-        continue;
-      }
       joint_time_[joint] = latest_common_time;
 
-      Eigen::Affine3d eigen_transf;
-      tf::transformTFToEigen(transf, eigen_transf);
-
-      double new_values[joint->getStateSpaceDimension()];
+      std::vector<double> new_values(joint->getStateSpaceDimension());
       const robot_model::LinkModel* link = joint->getChildLinkModel();
       if (link->jointOriginTransformIsIdentity())
-        joint->computeVariablePositions(eigen_transf, new_values);
+        joint->computeVariablePositions(tf2::transformToEigen(transf), new_values.data());
       else
-        joint->computeVariablePositions(link->getJointOriginTransform().inverse(Eigen::Isometry) * eigen_transf,
-                                        new_values);
+        joint->computeVariablePositions(link->getJointOriginTransform().inverse() * tf2::transformToEigen(transf),
+                                        new_values.data());
 
-      if (joint->distance(new_values, robot_state_.getJointPositions(joint)) > 1e-5)
+      if (joint->distance(new_values.data(), robot_state_.getJointPositions(joint)) > 1e-5)
       {
         changes = true;
       }
 
-      robot_state_.setJointPositions(joint, new_values);
+      robot_state_.setJointPositions(joint, new_values.data());
       update = true;
     }
   }

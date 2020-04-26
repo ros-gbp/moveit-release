@@ -102,12 +102,12 @@ public:
   // given set of classes
   void initialize(const std::vector<std::string>& plugin_classes);
 
-  void addPreRunEvent(PreRunEventFunction func);
-  void addPostRunEvent(PostRunEventFunction func);
-  void addPlannerStartEvent(PlannerStartEventFunction func);
-  void addPlannerCompletionEvent(PlannerCompletionEventFunction func);
-  void addQueryStartEvent(QueryStartEventFunction func);
-  void addQueryCompletionEvent(QueryCompletionEventFunction func);
+  void addPreRunEvent(const PreRunEventFunction& func);
+  void addPostRunEvent(const PostRunEventFunction& func);
+  void addPlannerStartEvent(const PlannerStartEventFunction& func);
+  void addPlannerCompletionEvent(const PlannerCompletionEventFunction& func);
+  void addQueryStartEvent(const QueryStartEventFunction& func);
+  void addQueryCompletionEvent(const QueryCompletionEventFunction& func);
 
   virtual void clear();
 
@@ -141,12 +141,33 @@ protected:
   virtual bool initializeBenchmarks(const BenchmarkOptions& opts, moveit_msgs::PlanningScene& scene_msg,
                                     std::vector<BenchmarkRequest>& queries);
 
+  /// Initialize benchmark query data from start states and constraints
+  virtual bool loadBenchmarkQueryData(const BenchmarkOptions& opts, moveit_msgs::PlanningScene& scene_msg,
+                                      std::vector<StartState>& start_states,
+                                      std::vector<PathConstraints>& path_constraints,
+                                      std::vector<PathConstraints>& goal_constraints,
+                                      std::vector<TrajectoryConstraints>& traj_constraints,
+                                      std::vector<BenchmarkRequest>& queries);
+
   virtual void collectMetrics(PlannerRunData& metrics, const planning_interface::MotionPlanDetailedResponse& mp_res,
                               bool solved, double total_time);
 
+  /// Compute the similarity of each (final) trajectory to all other (final) trajectories in the experiment and write
+  /// the results to planner_data metrics
+  void computeAveragePathSimilarities(PlannerBenchmarkData& planner_data,
+                                      const std::vector<planning_interface::MotionPlanDetailedResponse>& responses,
+                                      const std::vector<bool>& solved);
+
+  /// Helper function used by computeAveragePathSimilarities() for computing a heuristic distance metric between two
+  /// robot trajectories. This function aligns both trajectories in a greedy fashion and computes the mean waypoint
+  /// distance averaged over all aligned waypoints. Using a greedy approach is more efficient than dynamic time warping,
+  /// and seems to be sufficient for similar trajectories.
+  bool computeTrajectoryDistance(const robot_trajectory::RobotTrajectory& traj_first,
+                                 const robot_trajectory::RobotTrajectory& traj_second, double& result_distance);
+
   virtual void writeOutput(const BenchmarkRequest& brequest, const std::string& start_time, double benchmark_duration);
 
-  void shiftConstraintsByOffset(moveit_msgs::Constraints& constraints, const std::vector<double> offset);
+  void shiftConstraintsByOffset(moveit_msgs::Constraints& constraints, const std::vector<double>& offset);
 
   /// Check that the desired planner plugins and algorithms exist for the given group
   bool plannerConfigurationsExist(const std::map<std::string, std::vector<std::string>>& planners,

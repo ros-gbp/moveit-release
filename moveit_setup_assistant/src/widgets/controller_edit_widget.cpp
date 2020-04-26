@@ -41,12 +41,12 @@
 #include <QGroupBox>
 #include "controller_edit_widget.h"
 
-namespace moveit_ros_control
+namespace moveit_setup_assistant
 {
 // ******************************************************************************************
 //  ControllerEditWidget constructor, create controller edit screen GUI
 // ******************************************************************************************
-ControllerEditWidget::ControllerEditWidget(QWidget* parent, moveit_setup_assistant::MoveItConfigDataPtr config_data)
+ControllerEditWidget::ControllerEditWidget(QWidget* parent, const MoveItConfigDataPtr& config_data)
   : QWidget(parent), config_data_(config_data)
 {
   // Basic widget container
@@ -163,7 +163,7 @@ void ControllerEditWidget::setSelected(const std::string& controller_name)
   controller_name_field_->setText(QString(controller_name.c_str()));
   moveit_setup_assistant::ROSControlConfig* searched_controller =
       config_data_->findROSControllerByName(controller_name);
-  if (searched_controller != NULL)
+  if (searched_controller != nullptr)
   {
     const std::string controller_type = searched_controller->type_;
     int type_index = controller_type_field_->findText(controller_type.c_str());
@@ -195,11 +195,12 @@ void ControllerEditWidget::loadControllersTypesComboBox()
     return;
   has_loaded_ = true;
 
-  const std::array<std::string, 8> default_types = {
+  const std::array<std::string, 10> default_types = {
     "effort_controllers/JointTrajectoryController",   "effort_controllers/JointPositionController",
     "effort_controllers/JointVelocityController",     "effort_controllers/JointEffortController",
     "position_controllers/JointPositionController",   "position_controllers/JointTrajectoryController",
-    "velocity_controllers/JointTrajectoryController", "velocity_controllers/JointVelocityController"
+    "velocity_controllers/JointTrajectoryController", "velocity_controllers/JointVelocityController",
+    "pos_vel_controllers/JointTrajectoryController",  "pos_vel_acc_controllers/JointTrajectoryController"
   };
 
   // Remove all old items
@@ -258,4 +259,4 @@ std::string ControllerEditWidget::getControllerType()
   return controller_type_field_->currentText().toStdString();
 }
 
-}  // namespace
+}  // namespace moveit_setup_assistant

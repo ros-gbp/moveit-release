@@ -43,11 +43,11 @@
 #include <QRegExp>
 // ROS
 #include "configuration_files_widget.h"
-#include <srdfdom/model.h>  // use their struct datastructures
 #include <ros/ros.h>
 // Boost
-#include <boost/algorithm/string.hpp>  // for trimming whitespace from user input
-#include <boost/filesystem.hpp>        // for creating folders/files
+#include <boost/algorithm/string.hpp>       // for string find and replace in templates
+#include <boost/filesystem/path.hpp>        // for creating folders/files
+#include <boost/filesystem/operations.hpp>  // is_regular_file, is_directory, etc.
 // Read write files
 #include <iostream>  // For writing yaml and launch files
 #include <fstream>
@@ -62,8 +62,7 @@ const std::string SETUP_ASSISTANT_FILE = ".setup_assistant";
 // ******************************************************************************************
 // Outer User Interface for MoveIt! Configuration Assistant
 // ******************************************************************************************
-ConfigurationFilesWidget::ConfigurationFilesWidget(QWidget* parent,
-                                                   moveit_setup_assistant::MoveItConfigDataPtr config_data)
+ConfigurationFilesWidget::ConfigurationFilesWidget(QWidget* parent, const MoveItConfigDataPtr& config_data)
   : SetupScreenWidget(parent), config_data_(config_data), has_generated_pkg_(false), first_focusGiven_(true)
 {
   // Basic widget container
@@ -85,7 +84,7 @@ ConfigurationFilesWidget::ConfigurationFilesWidget(QWidget* parent,
   stack_path_ = new LoadPathWidget("Configuration Package Save Path",
                                    "Specify the desired directory for the MoveIt! configuration package to be "
                                    "generated. Overwriting an existing configuration package directory is acceptable. "
-                                   "Example: <i>/u/robot/ros/pr2_moveit_config</i>",
+                                   "Example: <i>/u/robot/ros/panda_moveit_config</i>",
                                    this, true);  // is directory
   layout->addWidget(stack_path_);
 
@@ -184,7 +183,7 @@ bool ConfigurationFilesWidget::loadGenFiles()
   fs::path template_package_path = config_data_->setup_assistant_path_;
   template_package_path /= "templates";
   template_package_path /= "moveit_config_pkg_template";
-  config_data_->template_package_path_ = template_package_path.make_preferred().native().c_str();
+  config_data_->template_package_path_ = template_package_path.make_preferred().string();
 
   if (!fs::is_directory(config_data_->template_package_path_))
   {
@@ -567,28 +566,28 @@ bool ConfigurationFilesWidget::loadGenFiles()
 bool ConfigurationFilesWidget::checkDependencies()
 {
   QStringList dependencies;
-  bool requiredActions = false;
+  bool required_actions = false;
 
   // Check that at least 1 planning group exists
-  if (!config_data_->srdf_->groups_.size())
+  if (config_data_->srdf_->groups_.empty())
   {
     dependencies << "No robot model planning groups have been created";
   }
 
   // Check that at least 1 link pair is disabled from collision checking
-  if (!config_data_->srdf_->disabled_collisions_.size())
+  if (config_data_->srdf_->disabled_collisions_.empty())
   {
     dependencies << "No self-collisions have been disabled";
   }
 
   // Check that there is at least 1 end effector added
-  if (!config_data_->srdf_->end_effectors_.size())
+  if (config_data_->srdf_->end_effectors_.empty())
   {
     dependencies << "No end effectors have been added";
   }
 
   // Check that there is at least 1 virtual joint added
-  if (!config_data_->srdf_->virtual_joints_.size())
+  if (config_data_->srdf_->virtual_joints_.empty())
   {
     dependencies << "No virtual joints have been added";
   }
@@ -598,26 +597,26 @@ bool ConfigurationFilesWidget::checkDependencies()
   {
     // There is no name or it consists of whitespaces only
     dependencies << "<b>No author name added</b>";
-    requiredActions = true;
+    required_actions = true;
   }
 
   // Check that email information is filled
-  QRegExp mailRegex("\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}\\b");
-  mailRegex.setCaseSensitivity(Qt::CaseInsensitive);
-  mailRegex.setPatternSyntax(QRegExp::RegExp);
-  QString testEmail = QString::fromStdString(config_data_->author_email_);
-  if (!mailRegex.exactMatch(testEmail))
+  QRegExp mail_regex("\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}\\b");
+  mail_regex.setCaseSensitivity(Qt::CaseInsensitive);
+  mail_regex.setPatternSyntax(QRegExp::RegExp);
+  QString test_email = QString::fromStdString(config_data_->author_email_);
+  if (!mail_regex.exactMatch(test_email))
   {
     dependencies << "<b>No valid email address added</b>";
-    requiredActions = true;
+    required_actions = true;
   }
 
   // Display all accumumlated errors:
-  if (dependencies.size())
+  if (!dependencies.empty())
   {
     // Create a dependency message
     QString dep_message;
-    if (!requiredActions)
+    if (!required_actions)
     {
       dep_message = "Some setup steps have not been completed. None of the steps are required, but here is a reminder "
                     "of what was not filled in, just in case something was forgotten:<br /><ul>";
@@ -633,7 +632,7 @@ bool ConfigurationFilesWidget::checkDependencies()
       dep_message.append("<li>").append(dependencies.at(i)).append("</li>");
     }
 
-    if (!requiredActions)
+    if (!required_actions)
     {
       dep_message.append("</ul><br/>Press Ok to continue generating files.");
       if (QMessageBox::question(this, "Incomplete MoveIt! Setup Assistant Steps", dep_message,
@@ -964,6 +963,9 @@ bool ConfigurationFilesWidget::generatePackage()
     absolute_path = config_data_->appendPaths(new_package_path, file->rel_path_);
     ROS_DEBUG_STREAM("Creating file " << absolute_path);
 
+    // Clear template strings in case export is run multiple times with changes in between
+    template_strings_.clear();
+
     // Run the generate function
     if (!file->gen_func_(absolute_path))
     {
@@ -1009,7 +1011,7 @@ const std::string ConfigurationFilesWidget::getPackageName(std::string package_p
   std::string package_name;
   fs::path fs_package_path = package_path;
 
-  package_name = fs_package_path.filename().c_str();
+  package_name = fs_package_path.filename().string();
 
   // check for empty
   if (package_name.empty())
@@ -1028,13 +1030,13 @@ bool ConfigurationFilesWidget::noGroupsEmpty()
        group_it != config_data_->srdf_->groups_.end(); ++group_it)
   {
     // Whenever 1 of the 4 component types are found, stop checking this group
-    if (group_it->joints_.size())
+    if (!group_it->joints_.empty())
       continue;
-    if (group_it->links_.size())
+    if (!group_it->links_.empty())
       continue;
-    if (group_it->chains_.size())
+    if (!group_it->chains_.empty())
       continue;
-    if (group_it->subgroups_.size())
+    if (!group_it->subgroups_.empty())
       continue;
 
     // This group has no contents, bad
@@ -1086,8 +1088,8 @@ void ConfigurationFilesWidget::loadTemplateStrings()
   {
     const srdf::Model::VirtualJoint& vj = config_data_->srdf_->virtual_joints_[i];
     if (vj.type_ != "fixed")
-      vjb << "  <node pkg=\"tf\" type=\"static_transform_publisher\" name=\"virtual_joint_broadcaster_" << i
-          << "\" args=\"0 0 0 0 0 0 " << vj.parent_frame_ << " " << vj.child_link_ << " 100\" />" << std::endl;
+      vjb << "  <node pkg=\"tf2_ros\" type=\"static_transform_publisher\" name=\"virtual_joint_broadcaster_" << i
+          << "\" args=\"0 0 0 0 0 0 " << vj.parent_frame_ << " " << vj.child_link_ << "\" />" << std::endl;
   }
   addTemplateString("[VIRTUAL_JOINT_BROADCASTER]", vjb.str());
 
@@ -1121,6 +1123,24 @@ void ConfigurationFilesWidget::loadTemplateStrings()
     }
     addTemplateString("[ROS_CONTROLLERS]", controllers.str());
   }
+
+  // Pair 10 - Add parameter files for the kinematics solvers that should be loaded
+  // in addition to kinematics.yaml by planning_context.launch
+  std::string kinematics_parameters_files_block;
+  for (const auto& groups : config_data_->group_meta_data_)
+  {
+    if (groups.second.kinematics_parameters_file_.empty())
+      continue;
+
+    // add a linebreak if we have more than one entry
+    if (!kinematics_parameters_files_block.empty())
+      kinematics_parameters_files_block += "\n";
+
+    std::string line = "    <rosparam command=\"load\" ns=\"" + groups.first + "\" file=\"" +
+                       groups.second.kinematics_parameters_file_ + "\"/>";
+    kinematics_parameters_files_block += line;
+  }
+  addTemplateString("[KINEMATICS_PARAMETERS_FILE_NAMES_BLOCK]", kinematics_parameters_files_block);
 
   addTemplateString("[AUTHOR_NAME]", config_data_->author_name_);
   addTemplateString("[AUTHOR_EMAIL]", config_data_->author_email_);
@@ -1207,4 +1227,4 @@ bool ConfigurationFilesWidget::createFolder(const std::string& output_path)
   return true;
 }
 
-}  // namespace
+}  // namespace moveit_setup_assistant

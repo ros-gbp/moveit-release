@@ -2,42 +2,99 @@
 Changelog for package moveit_core
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.9.18 (2020-01-24)
--------------------
-* [maintanance] Removed dependency moveit_core -> moveit_experimental again
-* Contributors: Robert Haschke
+1.0.3 (2020-04-26)
+------------------
+* [feature] Allow to filter for joint when creating a RobotTrajectory message (`#1927 <https://github.com/ros-planning/moveit/issues/1927>`_)
+* [fix]     Fix RobotState::copyFrom()
+* [fix]     Fix segfault in totg (`#1861 <https://github.com/ros-planning/moveit/issues/1861>`_)
+* [fix]     Handle incomplete group states
+* [fix]     Fix issue in totg giving invalid accelerations (`#1729 <https://github.com/ros-planning/moveit/issues/1729>`_)
+* [feature] New isValidVelocityMove() for checking time between two waypoints given velocity (`#684 <https://github.com/ros-planning/moveit/issues/684>`_)
+* [maint]   Apply clang-tidy fix to entire code base (`#1394 <https://github.com/ros-planning/moveit/issues/1394>`_)
+* [fix]     Fix Condition for adding current DistanceResultData to DistanceMap (`#1968 <https://github.com/ros-planning/moveit/issues/1968>`_)
+* [maint]   Fix various build issues on Windows (`#1880 <https://github.com/ros-planning/moveit/issues/1880>`_)
+  * remove GCC extensions (`#1583 <https://github.com/ros-planning/moveit/issues/1583>`_)
+  * Fix binary artifact install locations. (`#1575 <https://github.com/ros-planning/moveit/issues/1575>`_)
+* [maint]   Use CMAKE_CXX_STANDARD to enforce c++14 (`#1607 <https://github.com/ros-planning/moveit/issues/1607>`_)
+* [fix]     Delete attached body before adding a new one with same id (`#1821 <https://github.com/ros-planning/moveit/issues/1821>`_)
+* [maint]   Provide UniquePtr macros (`#1771 <https://github.com/ros-planning/moveit/issues/1771>`_)
+* [maint]   Updated deprecation method: MOVEIT_DEPRECATED -> [[deprecated]] (`#1748 <https://github.com/ros-planning/moveit/issues/1748>`_)
+* [feature] Add RobotTrajectory::getDuration() (`#1554 <https://github.com/ros-planning/moveit/issues/1554>`_)
+* Contributors: Ayush Garg, Dale Koenig, Dave Coleman, Felix von Drigalski, Jafar Abdi, Jeroen, Michael Görner, Mike Lautman, Niklas Fiedler, Robert Haschke, Sean Yen, Yu, Yan
 
-0.9.17 (2019-07-09)
+1.0.2 (2019-06-28)
+------------------
+* [fix] Removed MessageFilter for /collision_object messages (`#1406 <https://github.com/ros-planning/moveit/issues/1406>`_)
+* [fix] Update robot state transforms when initializing a planning scene (`#1474 <https://github.com/ros-planning/moveit/issues/1474>`_)
+* [fix] Fix segfault when detaching attached collision object (`#1438 <https://github.com/ros-planning/moveit/issues/1438>`_)
+* [fix] Normalize quaternions when adding new or moving collision objects (`#1420 <https://github.com/ros-planning/moveit/issues/1420>`_)
+* [fix] Minor bug fixes in (collision) distance field (`#1392 <https://github.com/ros-planning/moveit/issues/1392>`_)
+* [fix] Remove obsolete moveit_resources/config.h ()
+* [fix] Fix test utilities in moveit_core (`#1391 <https://github.com/ros-planning/moveit/issues/1391>`_, `#1409 <https://github.com/ros-planning/moveit/issues/1409>`_, `#1412 <https://github.com/ros-planning/moveit/issues/1412>`_)
+* Contributors: Bryce Willey, Henning Kayser, Mike Lautman, Robert Haschke, tsijs
+
+1.0.1 (2019-03-08)
+------------------
+* [capability] Graphically print current robot joint states with joint limits (`#1358 <https://github.com/ros-planning/moveit/issues/1358>`_)
+* [improve] Apply clang tidy fix to entire code base (Part 1) (`#1366 <https://github.com/ros-planning/moveit/issues/1366>`_)
+* Contributors: Dave Coleman, Robert Haschke, Yu, Yan
+
+1.0.0 (2019-02-24)
+------------------
+* [fix] catkin_lint issues (`#1341 <https://github.com/ros-planning/moveit/issues/1341>`_)
+* [fix] invert waypoint velocities on reverse (`#1335 <https://github.com/ros-planning/moveit/issues/1335>`_)
+* [fix] Added missing robot state update to iterative spline parameterization to prevent warnings. (`#1298 <https://github.com/ros-planning/moveit/issues/1298>`_)
+* [fix] robot_model_test_utils depends on message generation (`#1286 <https://github.com/ros-planning/moveit/issues/1286>`_)
+* [improve] cleanup LMA kinematics solver `#1318 <https://github.com/ros-planning/moveit/issues/1318>`_
+* [improve] Remove (redundant) random seeding and #attempts from RobotState::setFromIK() as the IK solver perform random seeding themselves. `#1288 <https://github.com/ros-planning/moveit/issues/1288>`_
+* [improve] Make FCL shape cache thread-local (`#1316 <https://github.com/ros-planning/moveit/issues/1316>`_)
+* [improve] Kinematics tests, kdl cleanup `#1272 <https://github.com/ros-planning/moveit/issues/1272>`_, `#1294 <https://github.com/ros-planning/moveit/issues/1294>`_
+* [maintenance] Add coverage analysis for moveit_core (`#1133 <https://github.com/ros-planning/moveit/issues/1133>`_)
+* [improve] computeCartesianPath: limit joint-space jumps with IK consistency limits (`#1293 <https://github.com/ros-planning/moveit/issues/1293>`_)
+* Contributors: Alexander Gutenkunst, Dave Coleman, Jonathan Binney, Martin Oehler, Michael Görner, Mike Lautman, Robert Haschke, Simon Schmeisser
+
+0.10.8 (2018-12-24)
+-------------------
+* [enhancement] Tool to generate constraint approximation databases (`#1253 <https://github.com/ros-planning/moveit/issues/1253>`_)
+* [fix] Fixed uninitialized RobotState transforms (`#1271 <https://github.com/ros-planning/moveit/issues/1271>`_)
+* Contributors: Michael Görner, Robert Haschke
+
+0.10.7 (2018-12-13)
 -------------------
 
-0.9.16 (2019-06-29)
+0.10.6 (2018-12-09)
 -------------------
-* [fix]         Invert waypoint velocities on reverse (`#1335 <https://github.com/ros-planning/moveit/issues/1335>`_)
-* [fix]         Added missing robot state update to iterative spline parameterization (`#1298 <https://github.com/ros-planning/moveit/issues/1298>`_)
-* [fix]         Fix race condition when world object was removed (`#1306 <https://github.com/ros-planning/moveit/issues/1306>`_)
-* [fix]         Fixed calculation of Jacobian for prismatic joints (`#1192 <https://github.com/ros-planning/moveit/issues/1192>`_)
-* [maintanance] Improve code quality (`#1340 <https://github.com/ros-planning/moveit/issues/1340>`_)
-* [maintanance] Resolve catkin lint issues (`#1137 <https://github.com/ros-planning/moveit/issues/1137>`_)
-* [maintanance] Cleanup Chomp packages (`#1282 <https://github.com/ros-planning/moveit/issues/1282>`_)
-                Moved collision_distance_field to moveit_core
-                Add dependency moveit_core -> moveit_experimental
-* [maintanance] Add (manual) coverage analysis (`#1133 <https://github.com/ros-planning/moveit/issues/1133>`_)
-* [maintanance] ConstraintSampler cleanup (`#1247 <https://github.com/ros-planning/moveit/issues/1247>`_)
-* [maintanance] Fix clang issues (`#1233 <https://github.com/ros-planning/moveit/issues/1233>`_, `#1214 <https://github.com/ros-planning/moveit/issues/1214>`_)
-* [feature]     Helper function to construct constraints from ROS params (`#1253 <https://github.com/ros-planning/moveit/issues/1253>`_)
-* [feature]     Allow appending of only a part of a trajectory (`#1213 <https://github.com/ros-planning/moveit/issues/1213>`_)
-* Contributors: Alexander Gutenkunst, Ludovic Delval, Martin Oehler, Michael Görner, Mike Lautman, Milutin Nikolic, Robert Haschke
+* [fix] Fixed various memory leaks (`#1104 <https://github.com/ros-planning/moveit/issues/1104>`_)
+* [fix] Fixed computation of Jacobian for prismatic joints (`#1192 <https://github.com/ros-planning/moveit/issues/1192>`_)
+* [enhancement] Add support for FCL 0.6 (`#1156 <https://github.com/ros-planning/moveit/issues/1156>`_)
+* [enhancement] Pass RobotModel to IK, avoiding multiple loading (`#1166 <https://github.com/ros-planning/moveit/issues/1166>`_)
+* [enhancement] RobotTrajectory: Allow appending part of other trajectory (`#1213 <https://github.com/ros-planning/moveit/issues/1213>`_)
+* [maintenance] Rearranged CHOMP-related modules within moveit_planners/chomp (`#1251 <https://github.com/ros-planning/moveit/issues/1251>`_)
+* [maintenance] Replaced Eigen::Affine3d -> Eigen::Isometry3d (`#1096 <https://github.com/ros-planning/moveit/issues/1096>`_)
+* [maintenance] Use C++14 (`#1146 <https://github.com/ros-planning/moveit/issues/1146>`_)
+* [maintenance] Code Cleanup
+  * `#1179 <https://github.com/ros-planning/moveit/issues/1179>`_
+  * `#1180 <https://github.com/ros-planning/moveit/issues/1180>`_
+  * `#1185 <https://github.com/ros-planning/moveit/issues/1185>`_
+  * `#1193 <https://github.com/ros-planning/moveit/issues/1193>`_
+  * `#1194 <https://github.com/ros-planning/moveit/issues/1194>`_
+  * `#1196 <https://github.com/ros-planning/moveit/issues/1196>`_
+* [maintenance] RobotModelBuilder to facilitate testing (`#1176 <https://github.com/ros-planning/moveit/issues/1176>`_)
+* Contributors: Robert Haschke, 2scholz, Alex Moriarty, Bryce Willey, Dave Coleman, Immanuel Martini, Michael Görner, Milutin Nikolic
 
-0.9.15 (2018-10-29)
+0.10.5 (2018-11-01)
 -------------------
-* [improvement] Exploit the fact that our transforms are isometries (instead of general affine transformations). `#1091 <https://github.com/ros-planning/moveit/issues/1091>`_
-* [code] cleanup, improvements (`#1099 <https://github.com/ros-planning/moveit/issues/1099>`_, `#1108 <https://github.com/ros-planning/moveit/issues/1108>`_)
+
+0.10.4 (2018-10-29)
+-------------------
+
+0.10.3 (2018-10-29)
+-------------------
+* [fix] compiler warnings (`#1089 <https://github.com/ros-planning/moveit/issues/1089>`_)
+* [code] cleanup (`#1107 <https://github.com/ros-planning/moveit/issues/1107>`_, `#1099 <https://github.com/ros-planning/moveit/issues/1099>`_, `#1108 <https://github.com/ros-planning/moveit/issues/1108>`_)
 * Contributors: Robert Haschke, Simon Schmeisser
 
-0.9.14 (2018-10-24)
--------------------
-
-0.9.13 (2018-10-24)
+0.10.2 (2018-10-24)
 -------------------
 * [fix] TFs in subgroups of rigidly-connected links (`#912 <https://github.com/ros-planning/moveit/issues/912>`_)
 * [fix] Chomp package handling issue `#1086 <https://github.com/ros-planning/moveit/issues/1086>`_ that was introduced in `ubi-agni/hotfix-#1012 <https://github.com/ubi-agni/hotfix-/issues/1012>`_
@@ -54,11 +111,11 @@ Changelog for package moveit_core
 * [doc] Document why to use only one IK attempt in computeCartesianPath (`#1076 <https://github.com/ros-planning/moveit/issues/1076>`_)
 * Contributors: Adrian Zwiener, Andrey Troitskiy, Dave Coleman, Jonathan Binney, Michael Görner, Mike Lautman, Mohmmad Ayman, Raghavender Sahdev, Robert Haschke, Simon Schmeisser, dcconner, mike lautman
 
-0.9.12 (2018-05-29)
+0.10.1 (2018-05-25)
 -------------------
-* consider max linear+rotational eef step in computeCartesianPath() (`#884 <https://github.com/ros-planning/moveit/issues/884>`_)
-* clang-tidy moveit_core (`#880 <https://github.com/ros-planning/moveit/issues/880>`_) (`#911 <https://github.com/ros-planning/moveit/issues/911>`_)
+* Clang tidy moveit_core (`#880 <https://github.com/ros-planning/moveit/issues/880>`_) (`#911 <https://github.com/ros-planning/moveit/issues/911>`_)
 * Allow to retrieve Jacobian of a child link of a move group. (`#877 <https://github.com/ros-planning/moveit/issues/877>`_)
+* migration from tf to tf2 API (`#830 <https://github.com/ros-planning/moveit/issues/830>`_)
 * Switch to ROS_LOGGER from CONSOLE_BRIDGE (`#874 <https://github.com/ros-planning/moveit/issues/874>`_)
 * Add ability to request detailed distance information from fcl (`#662 <https://github.com/ros-planning/moveit/issues/662>`_)
 * allow checking for absolute joint-space jumps in Cartesian path (`#843 <https://github.com/ros-planning/moveit/issues/843>`_)
@@ -66,6 +123,7 @@ Changelog for package moveit_core
 * updateMimicJoint(group->getMimicJointModels()) -> updateMimicJoints(group)
 * improve RobotState::updateStateWithLinkAt() (`#765 <https://github.com/ros-planning/moveit/issues/765>`_)
 * fix computation of shape_extents\_ of links w/o shapes (`#766 <https://github.com/ros-planning/moveit/issues/766>`_)
+* Fix computation of axis-aligned bounding box (`#703 <https://github.com/ros-planning/moveit/issues/703>`_)
 * RobotModel::getRigidlyConnectedParentLinkModel()
   ... to compute earliest parent link that is rigidly connected to a given link
 * Iterative cubic spline interpolation (`#441 <https://github.com/ros-planning/moveit/issues/441>`_)

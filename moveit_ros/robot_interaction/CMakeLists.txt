@@ -1,7 +1,9 @@
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.1.3)
 project(moveit_ros_robot_interaction)
 
-add_compile_options(-std=c++11)
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
@@ -11,11 +13,11 @@ find_package(Boost REQUIRED thread)
 find_package(catkin REQUIRED COMPONENTS
   moveit_ros_planning
   interactive_markers
-  eigen_conversions
-  tf_conversions
-  tf
+  tf2
+  tf2_eigen
+  tf2_geometry_msgs
+  tf2_ros
   roscpp
-  pluginlib
 )
 
 set(MOVEIT_LIB_NAME moveit_robot_interaction)
@@ -26,15 +28,15 @@ catkin_package(
   INCLUDE_DIRS
     include
   CATKIN_DEPENDS
-    moveit_ros_planning
     interactive_markers
-    )
+    moveit_ros_planning
+    roscpp
+    tf2_geometry_msgs
+)
 
 include_directories(include
                     ${Boost_INCLUDE_DIRS}
                     ${catkin_INCLUDE_DIRS})
-
-link_directories(${orocos_kdl_LIBRARY_DIRS})
 
 add_library(${MOVEIT_LIB_NAME}
   src/interactive_marker_helpers.cpp
@@ -43,7 +45,7 @@ add_library(${MOVEIT_LIB_NAME}
   src/locked_robot_state.cpp
   src/interaction_handler.cpp
   src/robot_interaction.cpp)
-set_target_properties(${MOVEIT_LIB_NAME} PROPERTIES VERSION ${${PROJECT_NAME}_VERSION})
+set_target_properties(${MOVEIT_LIB_NAME} PROPERTIES VERSION "${${PROJECT_NAME}_VERSION}")
 target_link_libraries(${MOVEIT_LIB_NAME} ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 
 if (CATKIN_ENABLE_TESTING)
@@ -54,7 +56,10 @@ if (CATKIN_ENABLE_TESTING)
     ${Boost_LIBRARIES})
 endif()
 
-install(TARGETS ${MOVEIT_LIB_NAME} LIBRARY DESTINATION ${CATKIN_GLOBAL_LIB_DESTINATION})
+install(TARGETS ${MOVEIT_LIB_NAME}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION})
 install(DIRECTORY include/ DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION})
 
 install(DIRECTORY resources DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})

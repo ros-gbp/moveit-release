@@ -36,7 +36,7 @@
 
 #include <moveit/pick_place/reachable_valid_pose_filter.h>
 #include <moveit/kinematic_constraints/utils.h>
-#include <eigen_conversions/eigen_msg.h>
+#include <tf2_eigen/tf2_eigen.h>
 #include <boost/bind.hpp>
 #include <ros/console.h>
 
@@ -87,12 +87,12 @@ bool isStateCollisionFree(const planning_scene::PlanningScene* planning_scene,
     }
   return planning_scene->isStateFeasible(*state);
 }
-}
+}  // namespace
 
 bool pick_place::ReachableAndValidPoseFilter::isEndEffectorFree(const ManipulationPlanPtr& plan,
                                                                 robot_state::RobotState& token_state) const
 {
-  tf::poseMsgToEigen(plan->goal_pose_.pose, plan->transformed_goal_pose_);
+  tf2::fromMsg(plan->goal_pose_.pose, plan->transformed_goal_pose_);
   plan->transformed_goal_pose_ =
       planning_scene_->getFrameTransform(token_state, plan->goal_pose_.header.frame_id) * plan->transformed_goal_pose_;
   token_state.updateStateWithLinkAt(plan->shared_data_->ik_link_, plan->transformed_goal_pose_);
@@ -101,7 +101,7 @@ bool pick_place::ReachableAndValidPoseFilter::isEndEffectorFree(const Manipulati
   collision_detection::CollisionResult res;
   req.group_name = plan->shared_data_->end_effector_group_->getName();
   planning_scene_->checkCollision(req, res, token_state, *collision_matrix_);
-  return res.collision == false;
+  return !res.collision;
 }
 
 bool pick_place::ReachableAndValidPoseFilter::evaluate(const ManipulationPlanPtr& plan) const
@@ -116,7 +116,7 @@ bool pick_place::ReachableAndValidPoseFilter::evaluate(const ManipulationPlanPtr
     // so we convert to a frame that is certainly known
     if (!robot_state::Transforms::sameFrame(planning_scene_->getPlanningFrame(), plan->goal_pose_.header.frame_id))
     {
-      tf::poseEigenToMsg(plan->transformed_goal_pose_, plan->goal_pose_.pose);
+      plan->goal_pose_.pose = tf2::toMsg(plan->transformed_goal_pose_);
       plan->goal_pose_.header.frame_id = planning_scene_->getPlanningFrame();
     }
 

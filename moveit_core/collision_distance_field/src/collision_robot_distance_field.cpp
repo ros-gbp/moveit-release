@@ -40,14 +40,14 @@
 #include <moveit/distance_field/propagation_distance_field.h>
 #include <ros/console.h>
 #include <ros/assert.h>
-#include <eigen_conversions/eigen_msg.h>
+#include <tf2_eigen/tf2_eigen.h>
 
 namespace collision_detection
 {
 const double EPSILON = 0.001f;
 
-CollisionRobotDistanceField::CollisionRobotDistanceField(const robot_model::RobotModelConstPtr& kmodel)
-  : CollisionRobot(kmodel)
+CollisionRobotDistanceField::CollisionRobotDistanceField(const robot_model::RobotModelConstPtr& robot_model)
+  : CollisionRobot(robot_model)
 {
   // planning_scene_.reset(new planning_scene::PlanningScene(robot_model_));
 
@@ -59,11 +59,11 @@ CollisionRobotDistanceField::CollisionRobotDistanceField(const robot_model::Robo
 }
 
 CollisionRobotDistanceField::CollisionRobotDistanceField(
-    const robot_model::RobotModelConstPtr& kmodel,
+    const robot_model::RobotModelConstPtr& robot_model,
     const std::map<std::string, std::vector<CollisionSphere>>& link_body_decompositions, double size_x, double size_y,
     double size_z, bool use_signed_distance_field, double resolution, double collision_tolerance,
     double max_propogation_distance, double padding, double scale)
-  : CollisionRobot(kmodel, padding, scale)
+  : CollisionRobot(robot_model, padding, scale)
 {
   initialize(link_body_decompositions, Eigen::Vector3d(size_x, size_y, size_z), Eigen::Vector3d(0, 0, 0),
              use_signed_distance_field, resolution, collision_tolerance, max_propogation_distance);
@@ -212,7 +212,7 @@ void CollisionRobotDistanceField::checkSelfCollision(const collision_detection::
                                                      const moveit::core::RobotState& state) const
 {
   GroupStateRepresentationPtr gsr;
-  checkSelfCollisionHelper(req, res, state, NULL, gsr);
+  checkSelfCollisionHelper(req, res, state, nullptr, gsr);
 }
 
 void CollisionRobotDistanceField::checkSelfCollision(const collision_detection::CollisionRequest& req,
@@ -220,7 +220,7 @@ void CollisionRobotDistanceField::checkSelfCollision(const collision_detection::
                                                      const moveit::core::RobotState& state,
                                                      GroupStateRepresentationPtr& gsr) const
 {
-  checkSelfCollisionHelper(req, res, state, NULL, gsr);
+  checkSelfCollisionHelper(req, res, state, nullptr, gsr);
 }
 
 void CollisionRobotDistanceField::checkSelfCollision(const collision_detection::CollisionRequest& req,
@@ -703,7 +703,7 @@ DistanceFieldCacheEntryPtr CollisionRobotDistanceField::generateDistanceFieldCac
 {
   DistanceFieldCacheEntryPtr dfce(new DistanceFieldCacheEntry());
 
-  if (robot_model_->getJointModelGroup(group_name) == NULL)
+  if (robot_model_->getJointModelGroup(group_name) == nullptr)
   {
     ROS_WARN("No group %s", group_name.c_str());
     return dfce;
@@ -757,7 +757,7 @@ DistanceFieldCacheEntryPtr CollisionRobotDistanceField::generateDistanceFieldCac
       continue;
     }
 
-    if (link_state->getShapes().size() > 0)
+    if (!link_state->getShapes().empty())
     {
       dfce->link_has_geometry_.push_back(true);
       dfce->link_body_indices_.push_back(link_body_decomposition_index_map_.find(link_name)->second);
@@ -874,7 +874,7 @@ DistanceFieldCacheEntryPtr CollisionRobotDistanceField::generateDistanceFieldCac
     }
   }
 
-  const std::vector<std::string> state_variable_names = state.getVariableNames();
+  const std::vector<std::string>& state_variable_names = state.getVariableNames();
   for (std::vector<std::string>::const_iterator name_iter = state_variable_names.begin();
        name_iter != state_variable_names.end(); name_iter++)
   {
@@ -1026,7 +1026,7 @@ void CollisionRobotDistanceField::createCollisionModelMarker(const moveit::core:
     sphere_representation->updatePose(state.getGlobalLinkTransform(link_name));
     for (unsigned int j = 0; j < sphere_representation->getCollisionSpheres().size(); j++)
     {
-      tf::pointEigenToMsg(sphere_representation->getSphereCenters()[j], sphere_marker.pose.position);
+      sphere_marker.pose.position = tf2::toMsg(sphere_representation->getSphereCenters()[j]);
       sphere_marker.scale.x = sphere_marker.scale.y = sphere_marker.scale.z =
           2 * sphere_representation->getCollisionSpheres()[j].radius_;
       sphere_marker.id = id;
@@ -1060,7 +1060,7 @@ void CollisionRobotDistanceField::addLinkBodyDecompositions(
 
     if (link_spheres.find(link_models[i]->getName()) != link_spheres.end())
     {
-      bd->replaceCollisionSpheres(link_spheres.find(link_models[i]->getName())->second, Eigen::Affine3d::Identity());
+      bd->replaceCollisionSpheres(link_spheres.find(link_models[i]->getName())->second, Eigen::Isometry3d::Identity());
     }
     link_body_decomposition_vector_.push_back(bd);
     link_body_decomposition_index_map_[link_models[i]->getName()] = link_body_decomposition_vector_.size() - 1;
@@ -1372,4 +1372,4 @@ bool CollisionRobotDistanceField::compareCacheEntryToAllowedCollisionMatrix(
 //     if(dfce->acm.find
 //   }
 // }
-}
+}  // namespace collision_detection

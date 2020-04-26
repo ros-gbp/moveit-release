@@ -48,8 +48,6 @@
 
 #include <moveit/collision_distance_field/collision_detector_allocator_hybrid.h>
 
-#include <tf/transform_listener.h>
-
 #include <moveit/robot_state/conversions.h>
 
 #include <vector>
@@ -157,19 +155,19 @@ public:
     }
   }
 
-  virtual std::string getDescription() const
+  std::string getDescription() const override
   {
     return "CHOMP Optimizer";
   }
 
-  virtual bool adaptAndPlan(const PlannerFn& planner, const planning_scene::PlanningSceneConstPtr& ps,
-                            const planning_interface::MotionPlanRequest& req,
-                            planning_interface::MotionPlanResponse& res,
-                            std::vector<std::size_t>& added_path_index) const
+  bool adaptAndPlan(const PlannerFn& planner, const planning_scene::PlanningSceneConstPtr& ps,
+                    const planning_interface::MotionPlanRequest& req, planning_interface::MotionPlanResponse& res,
+                    std::vector<std::size_t>& added_path_index) const override
   {
     // following call to planner() calls the OMPL planner and stores the trajectory inside the MotionPlanResponse res
     // variable which is then used by CHOMP for optimization of the computed trajectory
-    bool solved = planner(ps, req, res);
+    if (!planner(ps, req, res))
+      return false;
 
     // create a hybrid collision detector to set the collision checker as hybrid
     collision_detection::CollisionDetectorAllocatorPtr hybrid_cd(
@@ -180,7 +178,7 @@ public:
     ROS_INFO_STREAM("Configuring Planning Scene for CHOMP ....");
     planning_scene->setActiveCollisionDetector(hybrid_cd, true);
 
-    chomp::ChompPlanner chompPlanner;
+    chomp::ChompPlanner chomp_planner;
     planning_interface::MotionPlanDetailedResponse res_detailed;
     moveit_msgs::MotionPlanDetailedResponse res_detailed_moveit_msgs;
 
@@ -192,7 +190,7 @@ public:
     res_detailed_moveit_msgs.trajectory.resize(1);
     res_detailed_moveit_msgs.trajectory[0] = trajectory_msgs_from_response;
 
-    bool planning_success = chompPlanner.solve(planning_scene, req, params_, res_detailed_moveit_msgs);
+    bool planning_success = chomp_planner.solve(planning_scene, req, params_, res_detailed_moveit_msgs);
 
     if (planning_success)
     {
@@ -200,9 +198,8 @@ public:
       res_detailed.trajectory_[0] = robot_trajectory::RobotTrajectoryPtr(
           new robot_trajectory::RobotTrajectory(res.trajectory_->getRobotModel(), res.trajectory_->getGroup()));
 
-      moveit::core::RobotState start_state(planning_scene->getRobotModel());
-      robot_state::robotStateMsgToRobotState(res_detailed_moveit_msgs.trajectory_start, start_state);
-      res_detailed.trajectory_[0]->setRobotTrajectoryMsg(start_state, res_detailed_moveit_msgs.trajectory[0]);
+      res_detailed.trajectory_[0]->setRobotTrajectoryMsg(res.trajectory_->getFirstWayPoint(),
+                                                         res_detailed_moveit_msgs.trajectory[0]);
       res_detailed.description_.push_back("plan");
       res_detailed.processing_time_ = res_detailed_moveit_msgs.processing_time;
       res_detailed.error_code_ = res_detailed_moveit_msgs.error_code;
@@ -219,13 +216,13 @@ public:
       res.planning_time_ = res_detailed.processing_time_[0];
     }
 
-    return solved;
+    return planning_success;
   }
 
 private:
   ros::NodeHandle nh_;
   chomp::ChompParameters params_;
 };
-}
+}  // namespace chomp
 
 CLASS_LOADER_REGISTER_CLASS(chomp::OptimizerAdapter, planning_request_adapter::PlanningRequestAdapter);

@@ -2,25 +2,49 @@
 Changelog for package moveit_ros_control_interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.9.18 (2020-01-24)
+1.0.3 (2020-04-26)
+------------------
+* [maint]   Fix errors: catkin_lint 1.6.7 (`#1987 <https://github.com/ros-planning/moveit/issues/1987>`_)
+* [maint]   Windows build: Fix binary artifact install locations. (`#1575 <https://github.com/ros-planning/moveit/issues/1575>`_)
+* [maint]   Use CMAKE_CXX_STANDARD to enforce c++14 (`#1607 <https://github.com/ros-planning/moveit/issues/1607>`_)
+* [feature] Add support for pos_vel_controllers and pos_vel_acc_controllers (`#1806 <https://github.com/ros-planning/moveit/issues/1806>`_)
+* Contributors: Robert Haschke, Sandro Magalhães, Sean Yen
+
+1.0.2 (2019-06-28)
+------------------
+
+1.0.1 (2019-03-08)
+------------------
+
+1.0.0 (2019-02-24)
+------------------
+* [fix] catkin_lint issues (`#1341 <https://github.com/ros-planning/moveit/issues/1341>`_)
+* Contributors: Robert Haschke
+
+0.10.8 (2018-12-24)
 -------------------
 
-0.9.17 (2019-07-09)
+0.10.7 (2018-12-13)
 -------------------
 
-0.9.16 (2019-06-29)
+0.10.6 (2018-12-09)
+-------------------
+* [maintenance] Code Cleanup (`#1196 <https://github.com/ros-planning/moveit/issues/1196>`_)
+* Contributors: Robert Haschke
+
+0.10.5 (2018-11-01)
 -------------------
 
-0.9.15 (2018-10-29)
+0.10.4 (2018-10-29)
 -------------------
 
-0.9.14 (2018-10-24)
+0.10.3 (2018-10-29)
 -------------------
 
-0.9.13 (2018-10-24)
+0.10.2 (2018-10-24)
 -------------------
 
-0.9.12 (2018-05-29)
+0.10.1 (2018-05-25)
 -------------------
 
 0.9.11 (2017-12-25)

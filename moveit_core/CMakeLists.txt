@@ -1,12 +1,21 @@
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.1.3)
 project(moveit_core)
 
-add_compile_options(-std=c++11)
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
-# Warnings
-add_definitions(-Wall -Wextra
-  -Wwrite-strings -Wunreachable-code -Wpointer-arith -Wredundant-decls -Wcast-qual
-  -Wno-unused-parameter -Wno-unused-function -Wno-maybe-uninitialized)
+if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+  # Enable warnings
+  add_compile_options(-Wall -Wextra
+    -Wwrite-strings -Wunreachable-code -Wpointer-arith -Wredundant-decls -Wcast-qual
+    -Wno-unused-parameter -Wno-unused-function)
+endif()
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  # This too often has false-positives
+  add_compile_options(-Wno-maybe-uninitialized)
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+endif()
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -15,29 +24,27 @@ if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
-find_package(Boost REQUIRED system filesystem date_time thread iostreams)
-
+# boost::iostreams on Windows depends on boost::zlib
+if(WIN32)
+  set(EXTRA_BOOST_COMPONENTS zlib)
+endif()
+find_package(Boost REQUIRED system filesystem date_time thread iostreams ${EXTRA_BOOST_COMPONENTS})
 find_package(Eigen3 REQUIRED)
 
-# Eigen 3.2 (Wily) only provides EIGEN3_INCLUDE_DIR, not EIGEN3_INCLUDE_DIRS
-if(NOT EIGEN3_INCLUDE_DIRS)
-  set(EIGEN3_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
-endif()
-
 find_package(PkgConfig REQUIRED)
-
-pkg_check_modules(LIBFCL REQUIRED fcl)
-find_library(LIBFCL_LIBRARIES_FULL ${LIBFCL_LIBRARIES} ${LIBFCL_LIBRARY_DIRS})
-set(LIBFCL_LIBRARIES "${LIBFCL_LIBRARIES_FULL}")
+pkg_check_modules(LIBFCL_PC REQUIRED fcl)
+# find *absolute* paths to LIBFCL_INCLUDE_DIRS and LIBFCL_LIBRARIES
+find_path(LIBFCL_INCLUDE_DIRS fcl/config.h HINTS ${LIBFCL_PC_INCLUDE_DIR} ${LIBFCL_PC_INCLUDE_DIRS})
+find_library(LIBFCL_LIBRARIES fcl HINTS ${LIBFCL_PC_LIBRARY_DIRS})
 
 find_package(octomap REQUIRED)
-
 find_package(urdfdom REQUIRED)
 find_package(urdfdom_headers REQUIRED)
 
 find_package(catkin REQUIRED
 COMPONENTS
-  eigen_conversions
+  tf2_eigen
+  tf2_geometry_msgs
   eigen_stl_containers
   geometric_shapes
   geometry_msgs
@@ -59,10 +66,8 @@ COMPONENTS
 )
 
 set(VERSION_FILE_PATH "${CATKIN_DEVEL_PREFIX}/include")
-# Add the folder for the generated version header to the package's
-# exported include dirs to avoid a catkin_lint error.
-# This is how gencpp adds the folder of generated message code to
-# the include dirs, see:
+# Pass the folder of the generated version.h to catkin_package() for export in devel-space
+# This is how gencpp adds the folder of generated message code to the include dirs, see:
 #   https://github.com/ros/gencpp/blob/e5acaf6/cmake/gencpp-extras.cmake.em#L51-L54
 list(APPEND ${PROJECT_NAME}_INCLUDE_DIRS ${VERSION_FILE_PATH})
 file(MAKE_DIRECTORY "${VERSION_FILE_PATH}/moveit")
@@ -120,9 +125,9 @@ catkin_package(
     moveit_kinematics_metrics
     moveit_dynamics_solver
     moveit_utils
+    moveit_test_utils
     ${OCTOMAP_LIBRARIES}
   CATKIN_DEPENDS
-    eigen_conversions
     eigen_stl_containers
     geometric_shapes
     geometry_msgs
@@ -131,8 +136,11 @@ catkin_package(
     octomap_msgs
     random_numbers
     sensor_msgs
+    shape_msgs
     srdfdom
     std_msgs
+    tf2_eigen
+    tf2_geometry_msgs
     trajectory_msgs
     visualization_msgs
   DEPENDS
@@ -146,20 +154,19 @@ catkin_package(
 
 
 # to run: catkin_make -DENABLE_COVERAGE_TESTING=ON package_name_coverage
-if(ENABLE_COVERAGE_TESTING)
+if(CATKIN_ENABLE_TESTING AND ENABLE_COVERAGE_TESTING)
   find_package(code_coverage REQUIRED)   # catkin package ros-*-code-coverage
   include(CodeCoverage)
   APPEND_COVERAGE_COMPILER_FLAGS()
   set(COVERAGE_EXCLUDES "*/test/*")
-  add_code_coverage(
-    NAME ${PROJECT_NAME}_coverage
-  )
+  add_code_coverage(NAME ${PROJECT_NAME}_coverage)
 endif()
 
 include_directories(SYSTEM ${EIGEN3_INCLUDE_DIRS}
                            ${LIBFCL_INCLUDE_DIRS}
                            )
 
+#catkin_lint: ignore_once external_directory  (${VERSION_FILE_PATH})
 include_directories(${THIS_PACKAGE_INCLUDE_DIRS}
                     ${VERSION_FILE_PATH}
                     ${Boost_INCLUDE_DIRS}
@@ -177,17 +184,15 @@ set(MOVEIT_VERSION_EXTRA "Alpha")
 set(MOVEIT_VERSION "${MOVEIT_VERSION_MAJOR}.${MOVEIT_VERSION_MINOR}.${MOVEIT_VERSION_PATCH}-${MOVEIT_VERSION_EXTRA}")
 message(STATUS " *** Building MoveIt! ${MOVEIT_VERSION} ***")
 configure_file("version/version.h.in" "${VERSION_FILE_PATH}/moveit/version.h")
+#catkin_lint: ignore_once external_file
 install(FILES "${VERSION_FILE_PATH}/moveit/version.h" DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION}/moveit)
-
-if(CATKIN_ENABLE_TESTING)
-  find_package(moveit_resources REQUIRED)
-endif()
 
 add_subdirectory(version)
 add_subdirectory(macros)
 add_subdirectory(backtrace)
 add_subdirectory(exceptions)
 add_subdirectory(profiler)
+add_subdirectory(utils)
 add_subdirectory(background_processing)
 add_subdirectory(kinematics_base)
 add_subdirectory(controller_manager)
@@ -208,4 +213,3 @@ add_subdirectory(distance_field)
 add_subdirectory(collision_distance_field)
 add_subdirectory(kinematics_metrics)
 add_subdirectory(dynamics_solver)
-add_subdirectory(utils)

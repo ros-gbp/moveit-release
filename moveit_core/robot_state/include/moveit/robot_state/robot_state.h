@@ -40,7 +40,6 @@
 
 #include <moveit/robot_model/robot_model.h>
 #include <moveit/robot_state/attached_body.h>
-#include <moveit/macros/deprecation.h>
 #include <sensor_msgs/JointState.h>
 #include <visualization_msgs/MarkerArray.h>
 #include <std_msgs/ColorRGBA.h>
@@ -521,7 +520,9 @@ public:
 
   /** @} */
 
-  /** \name Getting and setting joint positions, velocities, accelerations and effort
+  /** \name Getting and setting joint positions, velocities, accelerations and effort for a single joint
+   *  The joint might be multi-DOF, i.e. require more than one variable to set.
+   *  See setVariablePositions(), setVariableVelocities(), setVariableEffort() to handle multiple joints.
    *  @{
    */
   void setJointPositions(const std::string& joint_name, const double* position)
@@ -546,12 +547,12 @@ public:
     updateMimicJoint(joint);
   }
 
-  void setJointPositions(const std::string& joint_name, const Eigen::Affine3d& transform)
+  void setJointPositions(const std::string& joint_name, const Eigen::Isometry3d& transform)
   {
     setJointPositions(robot_model_->getJointModel(joint_name), transform);
   }
 
-  void setJointPositions(const JointModel* joint, const Eigen::Affine3d& transform)
+  void setJointPositions(const JointModel* joint, const Eigen::Isometry3d& transform)
   {
     joint->computeVariablePositions(transform, position_ + joint->getFirstVariableIndex());
     markDirtyJointTransforms(joint);
@@ -936,7 +937,7 @@ as the new values that correspond to the group */
    * @param solver - a kin solver whose base frame is important to us
    * @return true if no error
    */
-  bool setToIKSolverFrame(Eigen::Affine3d& pose, const kinematics::KinematicsBaseConstPtr& solver);
+  bool setToIKSolverFrame(Eigen::Isometry3d& pose, const kinematics::KinematicsBaseConstPtr& solver);
 
   /**
    * \brief Convert the frame of reference of the pose to that same frame as the IK solver expects
@@ -944,54 +945,77 @@ as the new values that correspond to the group */
    * @param ik_frame - the name of frame of reference of base of ik solver
    * @return true if no error
    */
-  bool setToIKSolverFrame(Eigen::Affine3d& pose, const std::string& ik_frame);
+  bool setToIKSolverFrame(Eigen::Isometry3d& pose, const std::string& ik_frame);
 
   /** \brief If the group this state corresponds to is a chain and a solver is available, then the joint values can be
      set by computing inverse kinematics.
       The pose is assumed to be in the reference frame of the kinematic model. Returns true on success.
       @param pose The pose the last link in the chain needs to achieve
-      @param attempts The number of times IK is attempted
       @param timeout The timeout passed to the kinematics solver on each attempt
       @param constraint A state validity constraint to be required for IK solutions */
-  bool setFromIK(const JointModelGroup* group, const geometry_msgs::Pose& pose, unsigned int attempts = 0,
-                 double timeout = 0.0, const GroupStateValidityCallbackFn& constraint = GroupStateValidityCallbackFn(),
+  bool setFromIK(const JointModelGroup* group, const geometry_msgs::Pose& pose, double timeout = 0.0,
+                 const GroupStateValidityCallbackFn& constraint = GroupStateValidityCallbackFn(),
                  const kinematics::KinematicsQueryOptions& options = kinematics::KinematicsQueryOptions());
+  [[deprecated("The attempts argument is not supported anymore.")]] bool
+  setFromIK(const JointModelGroup* group, const geometry_msgs::Pose& pose, unsigned int attempts, double timeout = 0.0,
+            const GroupStateValidityCallbackFn& constraint = GroupStateValidityCallbackFn(),
+            const kinematics::KinematicsQueryOptions& options = kinematics::KinematicsQueryOptions())
+  {
+    return setFromIK(group, pose, timeout, constraint, options);
+  }
 
   /** \brief If the group this state corresponds to is a chain and a solver is available, then the joint values can be
      set by computing inverse kinematics.
       The pose is assumed to be in the reference frame of the kinematic model. Returns true on success.
       @param pose The pose the \e tip  link in the chain needs to achieve
       @param tip The name of the link the pose is specified for
-      @param attempts The number of times IK is attempted
       @param timeout The timeout passed to the kinematics solver on each attempt
       @param constraint A state validity constraint to be required for IK solutions */
   bool setFromIK(const JointModelGroup* group, const geometry_msgs::Pose& pose, const std::string& tip,
-                 unsigned int attempts = 0, double timeout = 0.0,
-                 const GroupStateValidityCallbackFn& constraint = GroupStateValidityCallbackFn(),
+                 double timeout = 0.0, const GroupStateValidityCallbackFn& constraint = GroupStateValidityCallbackFn(),
                  const kinematics::KinematicsQueryOptions& options = kinematics::KinematicsQueryOptions());
+  [[deprecated("The attempts argument is not supported anymore.")]] bool
+  setFromIK(const JointModelGroup* group, const geometry_msgs::Pose& pose, const std::string& tip,
+            unsigned int attempts, double timeout = 0.0,
+            const GroupStateValidityCallbackFn& constraint = GroupStateValidityCallbackFn(),
+            const kinematics::KinematicsQueryOptions& options = kinematics::KinematicsQueryOptions())
+  {
+    return setFromIK(group, pose, tip, timeout, constraint, options);
+  }
 
   /** \brief If the group this state corresponds to is a chain and a solver is available, then the joint values can be
      set by computing inverse kinematics.
       The pose is assumed to be in the reference frame of the kinematic model. Returns true on success.
       @param pose The pose the last link in the chain needs to achieve
       @param tip The name of the link the pose is specified for
-      @param attempts The number of times IK is attempted
       @param timeout The timeout passed to the kinematics solver on each attempt */
-  bool setFromIK(const JointModelGroup* group, const Eigen::Affine3d& pose, unsigned int attempts = 0,
-                 double timeout = 0.0, const GroupStateValidityCallbackFn& constraint = GroupStateValidityCallbackFn(),
+  bool setFromIK(const JointModelGroup* group, const Eigen::Isometry3d& pose, double timeout = 0.0,
+                 const GroupStateValidityCallbackFn& constraint = GroupStateValidityCallbackFn(),
                  const kinematics::KinematicsQueryOptions& options = kinematics::KinematicsQueryOptions());
+  [[deprecated("The attempts argument is not supported anymore.")]] bool
+  setFromIK(const JointModelGroup* group, const Eigen::Isometry3d& pose, unsigned int attempts, double timeout = 0.0,
+            const GroupStateValidityCallbackFn& constraint = GroupStateValidityCallbackFn(),
+            const kinematics::KinematicsQueryOptions& options = kinematics::KinematicsQueryOptions())
+  {
+    return setFromIK(group, pose, timeout, constraint, options);
+  }
 
   /** \brief If the group this state corresponds to is a chain and a solver is available, then the joint values can be
      set by computing inverse kinematics.
       The pose is assumed to be in the reference frame of the kinematic model. Returns true on success.
       @param pose The pose the last link in the chain needs to achieve
-      @param attempts The number of times IK is attempted
       @param timeout The timeout passed to the kinematics solver on each attempt
       @param constraint A state validity constraint to be required for IK solutions */
-  bool setFromIK(const JointModelGroup* group, const Eigen::Affine3d& pose, const std::string& tip,
-                 unsigned int attempts = 0, double timeout = 0.0,
-                 const GroupStateValidityCallbackFn& constraint = GroupStateValidityCallbackFn(),
+  bool setFromIK(const JointModelGroup* group, const Eigen::Isometry3d& pose, const std::string& tip,
+                 double timeout = 0.0, const GroupStateValidityCallbackFn& constraint = GroupStateValidityCallbackFn(),
                  const kinematics::KinematicsQueryOptions& options = kinematics::KinematicsQueryOptions());
+  [[deprecated("The attempts argument is not supported anymore.")]] bool
+  setFromIK(const JointModelGroup* group, const Eigen::Isometry3d& pose, const std::string& tip, unsigned int attempts,
+            double timeout = 0.0, const GroupStateValidityCallbackFn& constraint = GroupStateValidityCallbackFn(),
+            const kinematics::KinematicsQueryOptions& options = kinematics::KinematicsQueryOptions())
+  {
+    return setFromIK(group, pose, tip, timeout, constraint, options);
+  }
 
   /** \brief If the group this state corresponds to is a chain and a solver is available, then the joint values can be
      set by computing inverse kinematics.
@@ -999,13 +1023,20 @@ as the new values that correspond to the group */
       @param pose The pose the last link in the chain needs to achieve
       @param tip The name of the frame for which IK is attempted.
       @param consistency_limits This specifies the desired distance between the solution and the seed state
-      @param attempts The number of times IK is attempted
       @param timeout The timeout passed to the kinematics solver on each attempt
       @param constraint A state validity constraint to be required for IK solutions */
-  bool setFromIK(const JointModelGroup* group, const Eigen::Affine3d& pose, const std::string& tip,
-                 const std::vector<double>& consistency_limits, unsigned int attempts = 0, double timeout = 0.0,
+  bool setFromIK(const JointModelGroup* group, const Eigen::Isometry3d& pose, const std::string& tip,
+                 const std::vector<double>& consistency_limits, double timeout = 0.0,
                  const GroupStateValidityCallbackFn& constraint = GroupStateValidityCallbackFn(),
                  const kinematics::KinematicsQueryOptions& options = kinematics::KinematicsQueryOptions());
+  [[deprecated("The attempts argument is not supported anymore.")]] bool
+  setFromIK(const JointModelGroup* group, const Eigen::Isometry3d& pose, const std::string& tip,
+            const std::vector<double>& consistency_limits, unsigned int attempts, double timeout = 0.0,
+            const GroupStateValidityCallbackFn& constraint = GroupStateValidityCallbackFn(),
+            const kinematics::KinematicsQueryOptions& options = kinematics::KinematicsQueryOptions())
+  {
+    return setFromIK(group, pose, tip, consistency_limits, timeout, constraint, options);
+  }
 
   /** \brief  Warning: This function inefficiently copies all transforms around.
       If the group consists of a set of sub-groups that are each a chain and a solver
@@ -1014,13 +1045,20 @@ as the new values that correspond to the group */
       to be in the same order as the order of the sub-groups in this group. Returns true on success.
       @param poses The poses the last link in each chain needs to achieve
       @param tips The names of the frames for which IK is attempted.
-      @param attempts The number of times IK is attempted
       @param timeout The timeout passed to the kinematics solver on each attempt
       @param constraint A state validity constraint to be required for IK solutions */
-  bool setFromIK(const JointModelGroup* group, const EigenSTL::vector_Affine3d& poses,
-                 const std::vector<std::string>& tips, unsigned int attempts = 0, double timeout = 0.0,
+  bool setFromIK(const JointModelGroup* group, const EigenSTL::vector_Isometry3d& poses,
+                 const std::vector<std::string>& tips, double timeout = 0.0,
                  const GroupStateValidityCallbackFn& constraint = GroupStateValidityCallbackFn(),
                  const kinematics::KinematicsQueryOptions& options = kinematics::KinematicsQueryOptions());
+  [[deprecated("The attempts argument is not supported anymore.")]] bool
+  setFromIK(const JointModelGroup* group, const EigenSTL::vector_Isometry3d& poses,
+            const std::vector<std::string>& tips, unsigned int attempts, double timeout = 0.0,
+            const GroupStateValidityCallbackFn& constraint = GroupStateValidityCallbackFn(),
+            const kinematics::KinematicsQueryOptions& options = kinematics::KinematicsQueryOptions())
+  {
+    return setFromIK(group, poses, tips, timeout, constraint, options);
+  }
 
   /** \brief Warning: This function inefficiently copies all transforms around.
       If the group consists of a set of sub-groups that are each a chain and a solver
@@ -1030,14 +1068,21 @@ as the new values that correspond to the group */
       @param poses The poses the last link in each chain needs to achieve
       @param tips The names of the frames for which IK is attempted.
       @param consistency_limits This specifies the desired distance between the solution and the seed state
-      @param attempts The number of times IK is attempted
       @param timeout The timeout passed to the kinematics solver on each attempt
       @param constraint A state validity constraint to be required for IK solutions */
-  bool setFromIK(const JointModelGroup* group, const EigenSTL::vector_Affine3d& poses,
+  bool setFromIK(const JointModelGroup* group, const EigenSTL::vector_Isometry3d& poses,
                  const std::vector<std::string>& tips, const std::vector<std::vector<double> >& consistency_limits,
-                 unsigned int attempts = 0, double timeout = 0.0,
-                 const GroupStateValidityCallbackFn& constraint = GroupStateValidityCallbackFn(),
+                 double timeout = 0.0, const GroupStateValidityCallbackFn& constraint = GroupStateValidityCallbackFn(),
                  const kinematics::KinematicsQueryOptions& options = kinematics::KinematicsQueryOptions());
+  [[deprecated("The attempts argument is not supported anymore.")]] bool
+  setFromIK(const JointModelGroup* group, const EigenSTL::vector_Isometry3d& poses,
+            const std::vector<std::string>& tips, const std::vector<std::vector<double> >& consistency_limits,
+            unsigned int attempts, double timeout = 0.0,
+            const GroupStateValidityCallbackFn& constraint = GroupStateValidityCallbackFn(),
+            const kinematics::KinematicsQueryOptions& options = kinematics::KinematicsQueryOptions())
+  {
+    return setFromIK(group, poses, tips, consistency_limits, timeout, constraint, options);
+  }
 
   /**
       \brief setFromIK for multiple poses and tips (end effectors) when no solver exists for the jmg that can solver for
@@ -1045,15 +1090,22 @@ as the new values that correspond to the group */
       @param poses The poses the last link in each chain needs to achieve
       @param tips The names of the frames for which IK is attempted.
       @param consistency_limits This specifies the desired distance between the solution and the seed state
-      @param attempts The number of times IK is attempted
       @param timeout The timeout passed to the kinematics solver on each attempt
       @param constraint A state validity constraint to be required for IK solutions */
-  bool setFromIKSubgroups(const JointModelGroup* group, const EigenSTL::vector_Affine3d& poses,
+  bool setFromIKSubgroups(const JointModelGroup* group, const EigenSTL::vector_Isometry3d& poses,
                           const std::vector<std::string>& tips,
-                          const std::vector<std::vector<double> >& consistency_limits, unsigned int attempts = 0,
-                          double timeout = 0.0,
+                          const std::vector<std::vector<double> >& consistency_limits, double timeout = 0.0,
                           const GroupStateValidityCallbackFn& constraint = GroupStateValidityCallbackFn(),
                           const kinematics::KinematicsQueryOptions& options = kinematics::KinematicsQueryOptions());
+  [[deprecated("The attempts argument is not supported anymore.")]] bool
+  setFromIKSubgroups(const JointModelGroup* group, const EigenSTL::vector_Isometry3d& poses,
+                     const std::vector<std::string>& tips, const std::vector<std::vector<double> >& consistency_limits,
+                     unsigned int attempts, double timeout = 0.0,
+                     const GroupStateValidityCallbackFn& constraint = GroupStateValidityCallbackFn(),
+                     const kinematics::KinematicsQueryOptions& options = kinematics::KinematicsQueryOptions())
+  {
+    return setFromIKSubgroups(group, poses, tips, consistency_limits, timeout, constraint, options);
+  }
 
   /** \brief Set the joint values from a Cartesian velocity applied during a time dt
    * @param group the group of joints this function operates on
@@ -1129,13 +1181,13 @@ as the new values that correspond to the group */
      in the local reference frame of the link. In the latter case (\e global_reference_frame is false) the \e target is
      rotated accordingly. All other comments from the previous function apply. */
   double computeCartesianPath(const JointModelGroup* group, std::vector<RobotStatePtr>& traj, const LinkModel* link,
-                              const Eigen::Affine3d& target, bool global_reference_frame, const MaxEEFStep& max_step,
+                              const Eigen::Isometry3d& target, bool global_reference_frame, const MaxEEFStep& max_step,
                               const JumpThreshold& jump_threshold,
                               const GroupStateValidityCallbackFn& validCallback = GroupStateValidityCallbackFn(),
                               const kinematics::KinematicsQueryOptions& options = kinematics::KinematicsQueryOptions());
 
   double computeCartesianPath(const JointModelGroup* group, std::vector<RobotStatePtr>& traj, const LinkModel* link,
-                              const Eigen::Affine3d& target, bool global_reference_frame, double max_step,
+                              const Eigen::Isometry3d& target, bool global_reference_frame, double max_step,
                               double jump_threshold_factor,
                               const GroupStateValidityCallbackFn& validCallback = GroupStateValidityCallbackFn(),
                               const kinematics::KinematicsQueryOptions& options = kinematics::KinematicsQueryOptions())
@@ -1151,14 +1203,14 @@ as the new values that correspond to the group */
      frame or in the local reference frame of the link at the immediately preceeding waypoint. The link needs to move
      in a straight line between two consecutive waypoints. All other comments apply. */
   double computeCartesianPath(const JointModelGroup* group, std::vector<RobotStatePtr>& traj, const LinkModel* link,
-                              const EigenSTL::vector_Affine3d& waypoints, bool global_reference_frame,
+                              const EigenSTL::vector_Isometry3d& waypoints, bool global_reference_frame,
                               const MaxEEFStep& max_step, const JumpThreshold& jump_threshold,
                               const GroupStateValidityCallbackFn& validCallback = GroupStateValidityCallbackFn(),
                               const kinematics::KinematicsQueryOptions& options = kinematics::KinematicsQueryOptions());
 
   double computeCartesianPath(const JointModelGroup* group, std::vector<RobotStatePtr>& traj, const LinkModel* link,
-                              const EigenSTL::vector_Affine3d& waypoints, bool global_reference_frame, double max_step,
-                              double jump_threshold_factor,
+                              const EigenSTL::vector_Isometry3d& waypoints, bool global_reference_frame,
+                              double max_step, double jump_threshold_factor,
                               const GroupStateValidityCallbackFn& validCallback = GroupStateValidityCallbackFn(),
                               const kinematics::KinematicsQueryOptions& options = kinematics::KinematicsQueryOptions())
   {
@@ -1357,42 +1409,42 @@ as the new values that correspond to the group */
       Collision body transforms are not yet updated, but marked dirty only.
       Use update(false) or updateCollisionBodyTransforms() to update them as well.
    */
-  void updateStateWithLinkAt(const std::string& link_name, const Eigen::Affine3d& transform, bool backward = false)
+  void updateStateWithLinkAt(const std::string& link_name, const Eigen::Isometry3d& transform, bool backward = false)
   {
     updateStateWithLinkAt(robot_model_->getLinkModel(link_name), transform, backward);
   }
 
   /** \brief Update the state after setting a particular link to the input global transform pose.*/
-  void updateStateWithLinkAt(const LinkModel* link, const Eigen::Affine3d& transform, bool backward = false);
+  void updateStateWithLinkAt(const LinkModel* link, const Eigen::Isometry3d& transform, bool backward = false);
 
-  const Eigen::Affine3d& getGlobalLinkTransform(const std::string& link_name)
+  const Eigen::Isometry3d& getGlobalLinkTransform(const std::string& link_name)
   {
     return getGlobalLinkTransform(robot_model_->getLinkModel(link_name));
   }
 
-  const Eigen::Affine3d& getGlobalLinkTransform(const LinkModel* link)
+  const Eigen::Isometry3d& getGlobalLinkTransform(const LinkModel* link)
   {
     updateLinkTransforms();
     return global_link_transforms_[link->getLinkIndex()];
   }
 
-  const Eigen::Affine3d& getCollisionBodyTransforms(const std::string& link_name, std::size_t index)
+  const Eigen::Isometry3d& getCollisionBodyTransform(const std::string& link_name, std::size_t index)
   {
     return getCollisionBodyTransform(robot_model_->getLinkModel(link_name), index);
   }
 
-  const Eigen::Affine3d& getCollisionBodyTransform(const LinkModel* link, std::size_t index)
+  const Eigen::Isometry3d& getCollisionBodyTransform(const LinkModel* link, std::size_t index)
   {
     updateCollisionBodyTransforms();
     return global_collision_body_transforms_[link->getFirstCollisionBodyTransformIndex() + index];
   }
 
-  const Eigen::Affine3d& getJointTransform(const std::string& joint_name)
+  const Eigen::Isometry3d& getJointTransform(const std::string& joint_name)
   {
     return getJointTransform(robot_model_->getJointModel(joint_name));
   }
 
-  const Eigen::Affine3d& getJointTransform(const JointModel* joint)
+  const Eigen::Isometry3d& getJointTransform(const JointModel* joint)
   {
     const int idx = joint->getJointIndex();
     unsigned char& dirty = dirty_joint_transforms_[idx];
@@ -1404,34 +1456,34 @@ as the new values that correspond to the group */
     return variable_joint_transforms_[idx];
   }
 
-  const Eigen::Affine3d& getGlobalLinkTransform(const std::string& link_name) const
+  const Eigen::Isometry3d& getGlobalLinkTransform(const std::string& link_name) const
   {
     return getGlobalLinkTransform(robot_model_->getLinkModel(link_name));
   }
 
-  const Eigen::Affine3d& getGlobalLinkTransform(const LinkModel* link) const
+  const Eigen::Isometry3d& getGlobalLinkTransform(const LinkModel* link) const
   {
     BOOST_VERIFY(checkLinkTransforms());
     return global_link_transforms_[link->getLinkIndex()];
   }
 
-  const Eigen::Affine3d& getCollisionBodyTransform(const std::string& link_name, std::size_t index) const
+  const Eigen::Isometry3d& getCollisionBodyTransform(const std::string& link_name, std::size_t index) const
   {
     return getCollisionBodyTransform(robot_model_->getLinkModel(link_name), index);
   }
 
-  const Eigen::Affine3d& getCollisionBodyTransform(const LinkModel* link, std::size_t index) const
+  const Eigen::Isometry3d& getCollisionBodyTransform(const LinkModel* link, std::size_t index) const
   {
     BOOST_VERIFY(checkCollisionTransforms());
     return global_collision_body_transforms_[link->getFirstCollisionBodyTransformIndex() + index];
   }
 
-  const Eigen::Affine3d& getJointTransform(const std::string& joint_name) const
+  const Eigen::Isometry3d& getJointTransform(const std::string& joint_name) const
   {
     return getJointTransform(robot_model_->getJointModel(joint_name));
   }
 
-  const Eigen::Affine3d& getJointTransform(const JointModel* joint) const
+  const Eigen::Isometry3d& getJointTransform(const JointModel* joint) const
   {
     BOOST_VERIFY(checkJointTransforms(joint));
     return variable_joint_transforms_[joint->getJointIndex()];
@@ -1514,6 +1566,17 @@ as the new values that correspond to the group */
       updateMimicJoint(joint);
     }
   }
+
+  /// Call harmonizePosition() for all joints / all joints in group / given joint
+  void harmonizePositions();
+  void harmonizePositions(const JointModelGroup* joint_group);
+  void harmonizePosition(const JointModel* joint)
+  {
+    if (joint->harmonizePosition(position_ + joint->getFirstVariableIndex()))
+      // no need to mark transforms dirty, as the transform hasn't changed
+      updateMimicJoint(joint);
+  }
+
   void enforceVelocityBounds(const JointModel* joint)
   {
     joint->enforceVelocityBounds(velocity_ + joint->getFirstVariableIndex());
@@ -1597,7 +1660,7 @@ as the new values that correspond to the group */
    * corresponding object from that world to avoid having collisions
    * detected against it. */
   void attachBody(const std::string& id, const std::vector<shapes::ShapeConstPtr>& shapes,
-                  const EigenSTL::vector_Affine3d& attach_trans, const std::set<std::string>& touch_links,
+                  const EigenSTL::vector_Isometry3d& attach_trans, const std::set<std::string>& touch_links,
                   const std::string& link_name,
                   const trajectory_msgs::JointTrajectory& detach_posture = trajectory_msgs::JointTrajectory());
 
@@ -1616,7 +1679,7 @@ as the new values that correspond to the group */
    * corresponding object from that world to avoid having collisions
    * detected against it. */
   void attachBody(const std::string& id, const std::vector<shapes::ShapeConstPtr>& shapes,
-                  const EigenSTL::vector_Affine3d& attach_trans, const std::vector<std::string>& touch_links,
+                  const EigenSTL::vector_Isometry3d& attach_trans, const std::vector<std::string>& touch_links,
                   const std::string& link_name,
                   const trajectory_msgs::JointTrajectory& detach_posture = trajectory_msgs::JointTrajectory())
   {
@@ -1675,14 +1738,14 @@ as the new values that correspond to the group */
     return *rng_;
   }
 
-  /** \brief Get the transformation matrix from the model frame to the frame identified by \e id */
-  const Eigen::Affine3d& getFrameTransform(const std::string& id);
+  /** \brief Get the transformation matrix from the model frame to the frame identified by \e frame_id */
+  const Eigen::Isometry3d& getFrameTransform(const std::string& frame_id);
 
-  /** \brief Get the transformation matrix from the model frame to the frame identified by \e id */
-  const Eigen::Affine3d& getFrameTransform(const std::string& id) const;
+  /** \brief Get the transformation matrix from the model frame to the frame identified by \e frame_id */
+  const Eigen::Isometry3d& getFrameTransform(const std::string& frame_id) const;
 
-  /** \brief Check if a transformation matrix from the model frame to frame \e id is known */
-  bool knowsFrameTransform(const std::string& id) const;
+  /** \brief Check if a transformation matrix from the model frame to frame \e frame_id is known */
+  bool knowsFrameTransform(const std::string& frame_id) const;
 
   /** @brief Get a MarkerArray that fully describes the robot markers for a given robot.
    *  @param arr The returned marker array
@@ -1730,11 +1793,15 @@ as the new values that correspond to the group */
 
   void printStatePositions(std::ostream& out = std::cout) const;
 
+  /** \brief Output to console the current state of the robot's joint limits */
+  void printStatePositionsWithJointLimits(const moveit::core::JointModelGroup* jmg,
+                                          std::ostream& out = std::cout) const;
+
   void printStateInfo(std::ostream& out = std::cout) const;
 
   void printTransforms(std::ostream& out = std::cout) const;
 
-  void printTransform(const Eigen::Affine3d& transform, std::ostream& out = std::cout) const;
+  void printTransform(const Eigen::Isometry3d& transform, std::ostream& out = std::cout) const;
 
   void printDirtyInfo(std::ostream& out = std::cout) const;
 
@@ -1742,7 +1809,7 @@ as the new values that correspond to the group */
 
 private:
   void allocMemory();
-
+  void initTransforms();
   void copyFrom(const RobotState& other);
 
   void markDirtyJointTransforms(const JointModel* joint)
@@ -1779,7 +1846,7 @@ private:
 
   /** \brief Update a set of joints that are certain to be mimicking other joints */
   /* use updateMimicJoints() instead, which also marks joints dirty */
-  MOVEIT_DEPRECATED void updateMimicJoint(const std::vector<const JointModel*>& mim)
+  [[deprecated]] void updateMimicJoint(const std::vector<const JointModel*>& mim)
   {
     for (std::size_t i = 0; i < mim.size(); ++i)
     {
@@ -1834,9 +1901,9 @@ private:
   const JointModel* dirty_link_transforms_;
   const JointModel* dirty_collision_body_transforms_;
 
-  Eigen::Affine3d* variable_joint_transforms_;         // this points to an element in transforms_, so it is aligned
-  Eigen::Affine3d* global_link_transforms_;            // this points to an element in transforms_, so it is aligned
-  Eigen::Affine3d* global_collision_body_transforms_;  // this points to an element in transforms_, so it is aligned
+  Eigen::Isometry3d* variable_joint_transforms_;         // this points to an element in transforms_, so it is aligned
+  Eigen::Isometry3d* global_link_transforms_;            // this points to an element in transforms_, so it is aligned
+  Eigen::Isometry3d* global_collision_body_transforms_;  // this points to an element in transforms_, so it is aligned
   unsigned char* dirty_joint_transforms_;
 
   /** \brief All attached bodies that are part of this state, indexed by their name */

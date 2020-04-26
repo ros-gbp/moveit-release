@@ -37,15 +37,12 @@
 #ifndef MOVEIT_MOVEIT_SETUP_ASSISTANT_TOOLS_MOVEIT_CONFIG_DATA_
 #define MOVEIT_MOVEIT_SETUP_ASSISTANT_TOOLS_MOVEIT_CONFIG_DATA_
 
-#include <boost/shared_ptr.hpp>
-#include <srdfdom/model.h>        // use their struct datastructures
-#include <srdfdom/srdf_writer.h>  // for writing srdf data
-#include <urdf/model.h>           // to share throughout app
-#include <yaml-cpp/yaml.h>        // outputing yaml config files
 #include <moveit/macros/class_forward.h>
 #include <moveit/planning_scene/planning_scene.h>                     // for getting kinematic model
-#include <moveit/collision_detection/collision_matrix.h>              // for figuring out if robot is in collision
 #include <moveit/setup_assistant/tools/compute_default_collisions.h>  // for LinkPairMap
+#include <yaml-cpp/yaml.h>                                            // outputing yaml config files
+#include <urdf/model.h>                                               // to share throughout app
+#include <srdfdom/srdf_writer.h>                                      // for writing srdf data
 
 namespace moveit_setup_assistant
 {
@@ -60,7 +57,6 @@ static const std::string MOVEIT_ROBOT_STATE = "moveit_robot_state";
 // Default kin solver values
 static const double DEFAULT_KIN_SOLVER_SEARCH_RESOLUTION_ = 0.005;
 static const double DEFAULT_KIN_SOLVER_TIMEOUT_ = 0.005;
-static const int DEFAULT_KIN_SOLVER_ATTEMPTS_ = 3;
 
 // ******************************************************************************************
 // Structs
@@ -74,7 +70,7 @@ struct GroupMetaData
   std::string kinematics_solver_;               // Name of kinematics plugin to use
   double kinematics_solver_search_resolution_;  // resolution to use with solver
   double kinematics_solver_timeout_;            // solver timeout
-  int kinematics_solver_attempts_;              // solver attempts
+  std::string kinematics_parameters_file_;      // file for additional kinematics parameters
   std::string default_planner_;                 // Name of the default planner to use
 };
 
@@ -283,7 +279,7 @@ public:
   // ******************************************************************************************
 
   /// Load a robot model
-  void setRobotModel(robot_model::RobotModelPtr robot_model);
+  void setRobotModel(const moveit::core::RobotModelPtr& robot_model);
 
   /// Provide a shared kinematic model loader
   robot_model::RobotModelConstPtr getRobotModel();
@@ -352,7 +348,7 @@ public:
    * \param planning_group name of group to use
    * \return string - value to insert into yaml file
    */
-  std::string decideProjectionJoints(std::string planning_group);
+  std::string decideProjectionJoints(const std::string& planning_group);
 
   /**
    * Input ompl_planning.yaml file for editing its values
@@ -367,6 +363,13 @@ public:
    * @return true if the file was read correctly
    */
   bool inputKinematicsYAML(const std::string& file_path);
+
+  /**
+   * Input planning_context.launch for editing its values
+   * @param file_path path to planning_context.launch in the input package
+   * @return true if the file was read correctly
+   */
+  bool inputPlanningContextLaunch(const std::string& file_path);
 
   /**
    * Helper function for parsing ros_controllers.yaml file
@@ -401,6 +404,16 @@ public:
    * @return true if the path was set
    */
   bool setPackagePath(const std::string& pkg_path);
+
+  /**
+   * determine the package name containing a given file path
+   * @param path to a file
+   * @param package_name holds the ros package name if found
+   * @param relative_filepath holds the relative path of the file to the package root
+   * @return whether the file belongs to a known package
+   */
+  bool extractPackageNameFromPath(const std::string& path, std::string& package_name,
+                                  std::string& relative_filepath) const;
 
   /**
    * Resolve path to .setup_assistant file
@@ -488,14 +501,9 @@ public:
   std::vector<std::map<std::string, GenericParameter> > getSensorPluginConfig();
 
   /**
-   * \brief Helper function to get the default start state group for moveit_sim_hw_interface
-   */
-  std::string getDefaultStartStateGroup();
-
-  /**
    * \brief Helper function to get the default start pose for moveit_sim_hw_interface
    */
-  std::string getDefaultStartPose();
+  srdf::Model::GroupState getDefaultStartPose();
 
   /**
    * \brief Custom std::set comparator, used for sorting the joint_limits.yaml file into alphabetical order

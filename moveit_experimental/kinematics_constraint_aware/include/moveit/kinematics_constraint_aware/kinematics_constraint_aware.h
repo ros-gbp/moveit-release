@@ -39,7 +39,6 @@
 #define MOVEIT_KINEMATICS_CONSTRAINT_AWARE_
 
 // System
-#include <boost/shared_ptr.hpp>
 #include <boost/function.hpp>
 
 // ROS msgs
@@ -62,8 +61,8 @@
 namespace kinematics_constraint_aware
 {
 class KinematicsConstraintAware;
-typedef boost::shared_ptr<KinematicsConstraintAware> KinematicsConstraintAwarePtr;
-typedef boost::shared_ptr<const KinematicsConstraintAware> KinematicsConstraintAwareConstPtr;
+typedef std::shared_ptr<KinematicsConstraintAware> KinematicsConstraintAwarePtr;
+typedef std::shared_ptr<const KinematicsConstraintAware> KinematicsConstraintAwareConstPtr;
 
 /**
  * @class A kinematics solver that can be used with multiple arms
@@ -109,10 +108,10 @@ public:
   }
 
 private:
-  EigenSTL::vector_Affine3d transformPoses(const planning_scene::PlanningSceneConstPtr& planning_scene,
-                                           const robot_state::RobotState& kinematic_state,
-                                           const std::vector<geometry_msgs::PoseStamped>& poses,
-                                           const std::string& target_frame) const;
+  EigenSTL::vector_Isometry3d transformPoses(const planning_scene::PlanningSceneConstPtr& planning_scene,
+                                             const robot_state::RobotState& kinematic_state,
+                                             const std::vector<geometry_msgs::PoseStamped>& poses,
+                                             const std::string& target_frame) const;
 
   bool convertServiceRequest(const planning_scene::PlanningSceneConstPtr& planning_scene,
                              const moveit_msgs::GetConstraintAwarePositionIK::Request& request,

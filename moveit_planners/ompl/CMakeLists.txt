@@ -1,8 +1,10 @@
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.1.3)
 project(moveit_planners_ompl)
 
-# C++ 11 required for OMPL
-add_compile_options(-std=c++11)
+# At least C++11 required for OMPL
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
@@ -15,9 +17,8 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rosconsole
   pluginlib
-  tf
+  tf2_ros
   dynamic_reconfigure
-  eigen_conversions
   )
 
 find_package(ompl REQUIRED)
@@ -27,19 +28,20 @@ generate_dynamic_reconfigure_options("ompl_interface/cfg/OMPLDynamicReconfigure.
 catkin_package(
   LIBRARIES
     moveit_ompl_interface
-    ${OMPL_LIBRARIES}
   INCLUDE_DIRS
     ompl_interface/include
   CATKIN_DEPENDS
+    dynamic_reconfigure
     moveit_core
+    roscpp
+  DEPENDS
+    OMPL
 )
 
 include_directories(ompl_interface/include
                     ${Boost_INCLUDE_DIRS}
                     ${catkin_INCLUDE_DIRS}
                     ${OMPL_INCLUDE_DIRS})
-
-link_directories(${OMPL_LIBRARY_DIRS})
 
 add_subdirectory(ompl_interface)
 

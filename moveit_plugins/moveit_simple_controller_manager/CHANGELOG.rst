@@ -2,30 +2,56 @@
 Changelog for package moveit_simple_controller_manager
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.9.18 (2020-01-24)
--------------------
+1.0.3 (2020-04-26)
+------------------
+* [fix]   Handle "default" parameter in MoveitControllerManagers
+  MoveIt{Fake|Simple}ControllerManager::getControllerState() now correctly returns current state
+* [maint] Fix errors: catkin_lint 1.6.7 (`#1987 <https://github.com/ros-planning/moveit/issues/1987>`_)
+* [maint] Windows build: Fix binary artifact install locations. (`#1575 <https://github.com/ros-planning/moveit/issues/1575>`_)
+* [maint] Use CMAKE_CXX_STANDARD to enforce c++14 (`#1607 <https://github.com/ros-planning/moveit/issues/1607>`_)
+* [fix]   `ControllerManager`: wait for done-callback (`#1783 <https://github.com/ros-planning/moveit/issues/1783>`_)
+* Contributors: Robert Haschke, Sean Yen, Luca Lach
 
-0.9.17 (2019-07-09)
--------------------
+1.0.2 (2019-06-28)
+------------------
 
-0.9.16 (2019-06-29)
--------------------
-* [maintanance] Improve clang-format (`#1214 <https://github.com/ros-planning/moveit/issues/1214>`_)
+1.0.1 (2019-03-08)
+------------------
+* [improve] Apply clang tidy fix to entire code base (Part 1) (`#1366 <https://github.com/ros-planning/moveit/issues/1366>`_)
+* Contributors: Yu, Yan
+
+1.0.0 (2019-02-24)
+------------------
+* [maintenance] cleanup SimpleControllerManager https://github.com/ros-planning/moveit/pull/1352
 * Contributors: Robert Haschke
 
-0.9.15 (2018-10-29)
+0.10.8 (2018-12-24)
 -------------------
 
-0.9.14 (2018-10-24)
+0.10.7 (2018-12-13)
 -------------------
 
-0.9.13 (2018-10-24)
+0.10.6 (2018-12-09)
+-------------------
+* [maintenance] Code Cleanup (`#1196 <https://github.com/ros-planning/moveit/issues/1196>`_)
+* Contributors: Robert Haschke
+
+0.10.5 (2018-11-01)
+-------------------
+
+0.10.4 (2018-10-29)
+-------------------
+
+0.10.3 (2018-10-29)
+-------------------
+
+0.10.2 (2018-10-24)
 -------------------
 * [maintenance] various compiler warnings (`#1038 <https://github.com/ros-planning/moveit/issues/1038>`_)
 * [maintenance] add minimum required pluginlib version (`#927 <https://github.com/ros-planning/moveit/issues/927>`_)
 * Contributors: Mikael Arguedas, Mohmmad Ayman, Robert Haschke, mike lautman
 
-0.9.12 (2018-05-29)
+0.10.1 (2018-05-25)
 -------------------
 * switch to ROS_LOGGER from CONSOLE_BRIDGE (`#874 <https://github.com/ros-planning/moveit/issues/874>`_)
 * Contributors: Mikael Arguedas, Xiaojian Ma

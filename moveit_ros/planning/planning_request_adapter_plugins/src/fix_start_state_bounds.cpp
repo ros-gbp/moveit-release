@@ -68,15 +68,14 @@ public:
       ROS_INFO_STREAM("Param '" << DT_PARAM_NAME << "' was set to " << max_dt_offset_);
   }
 
-  virtual std::string getDescription() const
+  std::string getDescription() const override
   {
     return "Fix Start State Bounds";
   }
 
-  virtual bool adaptAndPlan(const PlannerFn& planner, const planning_scene::PlanningSceneConstPtr& planning_scene,
-                            const planning_interface::MotionPlanRequest& req,
-                            planning_interface::MotionPlanResponse& res,
-                            std::vector<std::size_t>& added_path_index) const
+  bool adaptAndPlan(const PlannerFn& planner, const planning_scene::PlanningSceneConstPtr& planning_scene,
+                    const planning_interface::MotionPlanRequest& req, planning_interface::MotionPlanResponse& res,
+                    std::vector<std::size_t>& added_path_index) const override
   {
     ROS_DEBUG("Running '%s'", getDescription().c_str());
 
@@ -210,7 +209,7 @@ private:
 
 const std::string FixStartStateBounds::BOUNDS_PARAM_NAME = "start_state_max_bounds_error";
 const std::string FixStartStateBounds::DT_PARAM_NAME = "start_state_max_dt";
-}
+}  // namespace default_planner_request_adapters
 
 CLASS_LOADER_REGISTER_CLASS(default_planner_request_adapters::FixStartStateBounds,
                             planning_request_adapter::PlanningRequestAdapter);

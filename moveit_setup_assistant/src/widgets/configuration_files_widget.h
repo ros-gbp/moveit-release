@@ -82,10 +82,10 @@ public:
   // Public Functions
   // ******************************************************************************************
 
-  ConfigurationFilesWidget(QWidget* parent, moveit_setup_assistant::MoveItConfigDataPtr config_data);
+  ConfigurationFilesWidget(QWidget* parent, const MoveItConfigDataPtr& config_data);
 
   /// Received when this widget is chosen from the navigation menu
-  virtual void focusGiven();
+  void focusGiven() override;
 
   // ******************************************************************************************
   // Qt Components

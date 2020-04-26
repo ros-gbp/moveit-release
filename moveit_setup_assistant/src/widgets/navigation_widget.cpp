@@ -35,7 +35,7 @@
 /* Author: Dave Coleman */
 
 #include "navigation_widget.h"
-#include <QDebug>
+#include <QApplication>
 #include <iostream>
 
 namespace moveit_setup_assistant
@@ -71,7 +71,7 @@ NavigationWidget::NavigationWidget(QWidget* parent) : QListView(parent)
 
 void NavigationWidget::setNavs(const QList<QString>& navs)
 {
-  setModel(NULL);
+  setModel(nullptr);
   model_->clear();
 
   for (int i = 0; i < navs.size(); i++)
@@ -123,68 +123,52 @@ QSize NavDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelInde
 
 void NavDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-  const bool isSelected = option.state & QStyle::State_Selected;
+  const bool is_selected = option.state & QStyle::State_Selected;
+  const QPalette& palette = QApplication::palette();
 
-  // NavScreen tp = index.data().value<NavScreen>();
-  QString nav_name = index.data().value<QString>();
+  QString nav_name = displayText(index.data(), option.locale);
 
   painter->save();
 
-  QLinearGradient backgroundGradient(QPoint(option.rect.x(), option.rect.y()),
-                                     QPoint(option.rect.x(), option.rect.y() + option.rect.height()));
-  if (isSelected)
+  // draw background gradient
+  QLinearGradient background_gradient(option.rect.topLeft(), option.rect.bottomLeft());
+  if (is_selected)
   {
-    backgroundGradient.setColorAt(0, QColor(109, 164, 219));
-    backgroundGradient.setColorAt(1, QColor(61, 138, 212));
-    painter->fillRect(option.rect, QBrush(backgroundGradient));
+    background_gradient.setColorAt(0, palette.color(QPalette::Highlight).lighter(125));
+    background_gradient.setColorAt(1, palette.color(QPalette::Highlight));
+    painter->fillRect(option.rect, QBrush(background_gradient));
   }
   else
   {
-    backgroundGradient.setColorAt(0, QColor(245, 245, 245));
-    backgroundGradient.setColorAt(1, QColor(240, 240, 240));
-    painter->fillRect(option.rect, QBrush(backgroundGradient));
+    background_gradient.setColorAt(0, palette.color(QPalette::Light));
+    background_gradient.setColorAt(1, palette.color(QPalette::Light).darker(105));
+    painter->fillRect(option.rect, QBrush(background_gradient));
   }
 
-  painter->setPen(QColor(225, 225, 225));
-  if (isSelected)
+  if (!is_selected)  // draw shadow
   {
-    painter->setPen(QColor(37, 105, 169));
-    painter->drawLine(option.rect.bottomLeft(), option.rect.bottomRight());
-    painter->setPen(Qt::transparent);
-  }
-  painter->drawLine(option.rect.topLeft(), option.rect.topRight());
-  if (!isSelected)
-  {
-    painter->setPen(QColor(248, 248, 248));
-    painter->drawLine(QPoint(option.rect.x(), option.rect.y() + 1),
-                      QPoint(option.rect.x() + option.rect.width(), option.rect.y() + 1));
+    painter->setPen(palette.color(QPalette::Button));
+    painter->drawLine(option.rect.topLeft(), option.rect.topRight());
+    painter->setPen(palette.color(QPalette::Light));
+    const QPoint offset(0, 1);
+    painter->drawLine(option.rect.topLeft() + offset, option.rect.topRight() + offset);
   }
 
-  QRect textRect(option.rect.x() + 10, option.rect.y(), option.rect.width() - 10, option.rect.height());
-
-  QFont textFont(painter->font());
-  textFont.setPixelSize(14);  // Set font size
-  painter->setFont(textFont);
+  QRect text_rect(option.rect.x() + 10, option.rect.y(), option.rect.width() - 10, option.rect.height());
+  QFont text_font(painter->font());
+  text_font.setPixelSize(14);  // Set font size
+  painter->setFont(text_font);
 
   // Font color
-  if (isSelected)
-  {
-    // Selected
-    painter->setPen(QColor(229, 229, 229));
-  }
-  else if (index.flags().testFlag(Qt::NoItemFlags))
-  {
-    // Disabled font color if disabled
-    painter->setPen(QColor(170, 170, 170));  // TODO: make this work
-  }
+  if (is_selected)
+    painter->setPen(palette.color(QPalette::HighlightedText));
+  else if (!option.state.testFlag(QStyle::State_Enabled))
+    painter->setPen(palette.color(QPalette::Dark));
   else
-  {
-    // Normal
-    painter->setPen(QColor(69, 69, 69));
-  }
+    painter->setPen(palette.color(QPalette::ButtonText));
 
-  painter->drawText(textRect, Qt::AlignLeft | Qt::AlignVCenter, nav_name);
+  painter->drawText(text_rect, Qt::AlignLeft | Qt::AlignVCenter, nav_name);
 
   painter->restore();
 }
-}
+}  // namespace moveit_setup_assistant

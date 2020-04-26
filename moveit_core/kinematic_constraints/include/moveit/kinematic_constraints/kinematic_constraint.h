@@ -244,12 +244,12 @@ public:
    *
    * @return True if equal, otherwise false
    */
-  virtual bool equal(const KinematicConstraint& other, double margin) const;
+  bool equal(const KinematicConstraint& other, double margin) const override;
 
-  virtual ConstraintEvaluationResult decide(const robot_state::RobotState& state, bool verbose = false) const;
-  virtual bool enabled() const;
-  virtual void clear();
-  virtual void print(std::ostream& out = std::cout) const;
+  ConstraintEvaluationResult decide(const robot_state::RobotState& state, bool verbose = false) const override;
+  bool enabled() const override;
+  void clear() override;
+  void print(std::ostream& out = std::cout) const override;
 
   /**
    * \brief Get the joint model for which this constraint operates
@@ -340,7 +340,7 @@ MOVEIT_CLASS_FORWARD(OrientationConstraint);
  * This class expresses an orientation constraint on a particular
  * link.  The constraint is specified in terms of a quaternion, with
  * tolerances on X,Y, and Z axes.  The rotation difference is computed
- * based on the ZXZ Euler angle formulation.  The header on the
+ * based on the XYZ Euler angle formulation (intrinsic rotations).  The header on the
  * quaternion can be specified in terms of either a fixed frame or a
  * mobile frame.  The type value will return ORIENTATION_CONSTRAINT.
  *
@@ -392,12 +392,12 @@ public:
    *
    * @return True if equal, otherwise false
    */
-  virtual bool equal(const KinematicConstraint& other, double margin) const;
+  bool equal(const KinematicConstraint& other, double margin) const override;
 
-  virtual void clear();
-  virtual ConstraintEvaluationResult decide(const robot_state::RobotState& state, bool verbose = false) const;
-  virtual bool enabled() const;
-  virtual void print(std::ostream& out = std::cout) const;
+  void clear() override;
+  ConstraintEvaluationResult decide(const robot_state::RobotState& state, bool verbose = false) const override;
+  bool enabled() const override;
+  void print(std::ostream& out = std::cout) const override;
 
   /**
    * \brief Gets the subject link model
@@ -559,12 +559,12 @@ public:
    *
    * @return True if equal, otherwise false
    */
-  virtual bool equal(const KinematicConstraint& other, double margin) const;
+  bool equal(const KinematicConstraint& other, double margin) const override;
 
-  virtual void clear();
-  virtual ConstraintEvaluationResult decide(const robot_state::RobotState& state, bool verbose = false) const;
-  virtual bool enabled() const;
-  virtual void print(std::ostream& out = std::cout) const;
+  void clear() override;
+  ConstraintEvaluationResult decide(const robot_state::RobotState& state, bool verbose = false) const override;
+  bool enabled() const override;
+  void print(std::ostream& out = std::cout) const override;
 
   /**
    * \brief Returns the associated link model, or NULL if not enabled
@@ -642,10 +642,10 @@ protected:
   Eigen::Vector3d offset_;                         /**< \brief The target offset */
   bool has_offset_;                                /**< \brief Whether the offset is substantially different than 0.0 */
   std::vector<bodies::BodyPtr> constraint_region_; /**< \brief The constraint region vector */
-  EigenSTL::vector_Affine3d constraint_region_pose_; /**< \brief The constraint region pose vector */
-  bool mobile_frame_;                                /**< \brief Whether or not a mobile frame is employed*/
-  std::string constraint_frame_id_;                  /**< \brief The constraint frame id */
-  const robot_model::LinkModel* link_model_;         /**< \brief The link model constraint subject */
+  EigenSTL::vector_Isometry3d constraint_region_pose_; /**< \brief The constraint region pose vector */
+  bool mobile_frame_;                                  /**< \brief Whether or not a mobile frame is employed*/
+  std::string constraint_frame_id_;                    /**< \brief The constraint frame id */
+  const robot_model::LinkModel* link_model_;           /**< \brief The link model constraint subject */
 };
 
 MOVEIT_CLASS_FORWARD(VisibilityConstraint);
@@ -791,8 +791,8 @@ public:
    *
    * @return True if equal, otherwise false
    */
-  virtual bool equal(const KinematicConstraint& other, double margin) const;
-  virtual void clear();
+  bool equal(const KinematicConstraint& other, double margin) const override;
+  void clear() override;
 
   /**
    * \brief Gets a trimesh shape representing the visibility cone
@@ -816,9 +816,9 @@ public:
    */
   void getMarkers(const robot_state::RobotState& state, visualization_msgs::MarkerArray& markers) const;
 
-  virtual bool enabled() const;
-  virtual ConstraintEvaluationResult decide(const robot_state::RobotState& state, bool verbose = false) const;
-  virtual void print(std::ostream& out = std::cout) const;
+  bool enabled() const override;
+  ConstraintEvaluationResult decide(const robot_state::RobotState& state, bool verbose = false) const override;
+  void print(std::ostream& out = std::cout) const override;
 
 protected:
   /**
@@ -834,14 +834,14 @@ protected:
 
   collision_detection::CollisionRobotPtr collision_robot_; /**< \brief A copy of the collision robot maintained for
                                                               collision checking the cone against robot links */
-  bool mobile_sensor_frame_;    /**< \brief True if the sensor is a non-fixed frame relative to the transform frame */
-  bool mobile_target_frame_;    /**< \brief True if the target is a non-fixed frame relative to the transform frame */
-  std::string target_frame_id_; /**< \brief The target frame id */
-  std::string sensor_frame_id_; /**< \brief The sensor frame id */
-  Eigen::Affine3d sensor_pose_; /**< \brief The sensor pose transformed into the transform frame */
-  int sensor_view_direction_;   /**< \brief Storage for the sensor view direction */
-  Eigen::Affine3d target_pose_; /**< \brief The target pose transformed into the transform frame */
-  unsigned int cone_sides_;     /**< \brief Storage for the cone sides  */
+  bool mobile_sensor_frame_;      /**< \brief True if the sensor is a non-fixed frame relative to the transform frame */
+  bool mobile_target_frame_;      /**< \brief True if the target is a non-fixed frame relative to the transform frame */
+  std::string target_frame_id_;   /**< \brief The target frame id */
+  std::string sensor_frame_id_;   /**< \brief The sensor frame id */
+  Eigen::Isometry3d sensor_pose_; /**< \brief The sensor pose transformed into the transform frame */
+  int sensor_view_direction_;     /**< \brief Storage for the sensor view direction */
+  Eigen::Isometry3d target_pose_; /**< \brief The target pose transformed into the transform frame */
+  unsigned int cone_sides_;       /**< \brief Storage for the cone sides  */
   EigenSTL::vector_Vector3d points_; /**< \brief A set of points along the base of the circle */
   double target_radius_;             /**< \brief Storage for the target radius */
   double max_view_angle_;            /**< \brief Storage for the max view angle */

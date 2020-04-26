@@ -82,11 +82,11 @@ public:
   };
 
   /// Load the controller manager plugin, start listening for events on a topic.
-  TrajectoryExecutionManager(const robot_model::RobotModelConstPtr& kmodel,
+  TrajectoryExecutionManager(const robot_model::RobotModelConstPtr& robot_model,
                              const planning_scene_monitor::CurrentStateMonitorPtr& csm);
 
   /// Load the controller manager plugin, start listening for events on a topic.
-  TrajectoryExecutionManager(const robot_model::RobotModelConstPtr& kmodel,
+  TrajectoryExecutionManager(const robot_model::RobotModelConstPtr& robot_model,
                              const planning_scene_monitor::CurrentStateMonitorPtr& csm, bool manage_controllers);
 
   /// Destructor. Cancels all running trajectories (if any)
@@ -321,6 +321,7 @@ private:
 
   boost::mutex execution_state_mutex_;
   boost::mutex continuous_execution_mutex_;
+  boost::mutex execution_thread_mutex_;
 
   boost::condition_variable continuous_execution_condition_;
 
