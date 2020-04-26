@@ -1,7 +1,9 @@
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.1.3)
 project(moveit_ros_planning_interface)
 
-add_compile_options(-std=c++14)
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
@@ -18,7 +20,6 @@ find_package(catkin REQUIRED COMPONENTS
   tf2_eigen
   tf2_geometry_msgs
   tf2_ros
-  eigenpy
   roscpp
   actionlib
   rospy
@@ -31,7 +32,7 @@ find_package(PythonLibs "${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}" REQUIR
 find_package(Boost REQUIRED)
 if(Boost_VERSION LESS 106700)
   set(BOOST_PYTHON_COMPONENT python)
-elseif()
+else()
   set(BOOST_PYTHON_COMPONENT python${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR})
 endif()
 
@@ -44,6 +45,7 @@ find_package(Boost REQUIRED COMPONENTS
   thread
 )
 find_package(Eigen3 REQUIRED)
+find_package(eigenpy REQUIRED)
 
 set(THIS_PACKAGE_INCLUDE_DIRS
   py_bindings_tools/include
@@ -59,16 +61,18 @@ catkin_package(
     moveit_common_planning_interface_objects
     moveit_planning_scene_interface
     moveit_move_group_interface
+    moveit_py_bindings_tools
   INCLUDE_DIRS
     ${THIS_PACKAGE_INCLUDE_DIRS}
   CATKIN_DEPENDS
     actionlib
+    geometry_msgs
+    moveit_msgs
     moveit_ros_planning
     moveit_ros_warehouse
     moveit_ros_manipulation
     moveit_ros_move_group
-    geometry_msgs
-    moveit_msgs
+    roscpp
     tf2_geometry_msgs
   DEPENDS
     EIGEN3
@@ -80,6 +84,7 @@ include_directories(${THIS_PACKAGE_INCLUDE_DIRS}
 
 include_directories(SYSTEM
                     ${EIGEN3_INCLUDE_DIRS}
+                    ${eigenpy_INCLUDE_DIRS}
                     ${PYTHON_INCLUDE_DIRS})
 
 add_subdirectory(py_bindings_tools)
