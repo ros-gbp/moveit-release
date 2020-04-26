@@ -38,7 +38,6 @@
 #define MOVEIT_ROBOT_TRAJECTORY_KINEMATIC_TRAJECTORY_
 
 #include <moveit/macros/class_forward.h>
-#include <moveit/macros/deprecation.h>
 #include <moveit/robot_state/robot_state.h>
 #include <moveit_msgs/RobotTrajectory.h>
 #include <moveit_msgs/RobotState.h>
@@ -117,7 +116,7 @@ public:
    */
   double getWayPointDurationFromStart(std::size_t index) const;
 
-  MOVEIT_DEPRECATED double getWaypointDurationFromStart(std::size_t index) const;
+  [[deprecated]] double getWaypointDurationFromStart(std::size_t index) const;
 
   double getWayPointDurationFromPrevious(std::size_t index) const
   {
@@ -202,9 +201,12 @@ public:
 
   void clear();
 
+  double getDuration() const;
+
   double getAverageSegmentDuration() const;
 
-  void getRobotTrajectoryMsg(moveit_msgs::RobotTrajectory& trajectory) const;
+  void getRobotTrajectoryMsg(moveit_msgs::RobotTrajectory& trajectory,
+                             const std::vector<std::string>& joint_filter = std::vector<std::string>()) const;
 
   /** \brief Copy the content of the trajectory message into this class. The trajectory message itself is not required
      to contain the values
