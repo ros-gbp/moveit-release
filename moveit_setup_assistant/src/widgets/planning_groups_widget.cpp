@@ -73,14 +73,14 @@ namespace moveit_setup_assistant
 static const std::string VIS_TOPIC_NAME = "planning_components_visualization";
 
 // Used for checking for cycles in a subgroup hierarchy
-struct cycle_detector : public boost::dfs_visitor<>
+struct CycleDetector : public boost::dfs_visitor<>
 {
-  cycle_detector(bool& has_cycle) : m_has_cycle(has_cycle)
+  CycleDetector(bool& has_cycle) : m_has_cycle(has_cycle)
   {
   }
 
   template <class Edge, class Graph>
-  void back_edge(Edge /*unused*/, Graph& /*unused*/)
+  void backEdge(Edge /*unused*/, Graph& /*unused*/)
   {
     m_has_cycle = true;
   }
@@ -716,20 +716,20 @@ void PlanningGroupsWidget::deleteGroup()
   }
 
   // delete all robot poses that use that group's name
-  bool haveConfirmedGroupStateDeletion = false;
-  bool haveDeletedGroupState = true;
-  while (haveDeletedGroupState)
+  bool have_confirmed_group_state_deletion = false;
+  bool have_deleted_group_state = true;
+  while (have_deleted_group_state)
   {
-    haveDeletedGroupState = false;
+    have_deleted_group_state = false;
     for (std::vector<srdf::Model::GroupState>::iterator pose_it = config_data_->srdf_->group_states_.begin();
          pose_it != config_data_->srdf_->group_states_.end(); ++pose_it)
     {
       // check if this group state depends on the currently being deleted group
       if (pose_it->group_ == searched_group->name_)
       {
-        if (!haveConfirmedGroupStateDeletion)
+        if (!have_confirmed_group_state_deletion)
         {
-          haveConfirmedGroupStateDeletion = true;
+          have_confirmed_group_state_deletion = true;
 
           // confirm the user wants to delete group states
           if (QMessageBox::question(
@@ -745,27 +745,27 @@ void PlanningGroupsWidget::deleteGroup()
 
         // the user has confirmed, now delete this group state
         config_data_->srdf_->group_states_.erase(pose_it);
-        haveDeletedGroupState = true;
+        have_deleted_group_state = true;
         break;  // you can only delete 1 item in vector before invalidating iterator
       }
     }
   }
 
   // delete all end effectors that use that group's name
-  bool haveConfirmedEndEffectorDeletion = false;
-  bool haveDeletedEndEffector = true;
-  while (haveDeletedEndEffector)
+  bool have_confirmed_end_effector_deletion = false;
+  bool have_deleted_end_effector = true;
+  while (have_deleted_end_effector)
   {
-    haveDeletedEndEffector = false;
+    have_deleted_end_effector = false;
     for (std::vector<srdf::Model::EndEffector>::iterator effector_it = config_data_->srdf_->end_effectors_.begin();
          effector_it != config_data_->srdf_->end_effectors_.end(); ++effector_it)
     {
       // check if this group state depends on the currently being deleted group
       if (effector_it->component_group_ == searched_group->name_)
       {
-        if (!haveConfirmedEndEffectorDeletion)
+        if (!have_confirmed_end_effector_deletion)
         {
-          haveConfirmedEndEffectorDeletion = true;
+          have_confirmed_end_effector_deletion = true;
 
           // confirm the user wants to delete group states
           if (QMessageBox::question(
@@ -781,7 +781,7 @@ void PlanningGroupsWidget::deleteGroup()
 
         // the user has confirmed, now delete this group state
         config_data_->srdf_->end_effectors_.erase(effector_it);
-        haveDeletedEndEffector = true;
+        have_deleted_end_effector = true;
         break;  // you can only delete 1 item in vector before invalidating iterator
       }
     }
@@ -1051,7 +1051,7 @@ void PlanningGroupsWidget::saveSubgroupsScreen()
 
   // Check for cycles
   bool has_cycle = false;
-  cycle_detector vis(has_cycle);
+  CycleDetector vis(has_cycle);
   boost::depth_first_search(g, visitor(vis));
 
   if (has_cycle)
@@ -1092,6 +1092,8 @@ bool PlanningGroupsWidget::saveGroupScreen()
   const std::string& default_planner = group_edit_widget_->default_planner_field_->currentText().toStdString();
   const std::string& kinematics_resolution = group_edit_widget_->kinematics_resolution_field_->text().toStdString();
   const std::string& kinematics_timeout = group_edit_widget_->kinematics_timeout_field_->text().toStdString();
+  const std::string& kinematics_parameters_file =
+      group_edit_widget_->kinematics_parameters_file_field_->text().toStdString();
 
   // Used for editing existing groups
   srdf::Model::Group* searched_group = nullptr;
@@ -1244,6 +1246,7 @@ bool PlanningGroupsWidget::saveGroupScreen()
   config_data_->group_meta_data_[group_name].kinematics_solver_ = kinematics_solver;
   config_data_->group_meta_data_[group_name].kinematics_solver_search_resolution_ = kinematics_resolution_double;
   config_data_->group_meta_data_[group_name].kinematics_solver_timeout_ = kinematics_timeout_double;
+  config_data_->group_meta_data_[group_name].kinematics_parameters_file_ = kinematics_parameters_file;
   config_data_->group_meta_data_[group_name].default_planner_ = default_planner;
   config_data_->changes |= MoveItConfigData::GROUP_KINEMATICS;
 
