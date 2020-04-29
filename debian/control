@@ -1,0 +1,12 @@
+Source: ros-melodic-moveit-experimental
+Section: misc
+Priority: optional
+Maintainer: MoveIt! Release Team <moveit_releasers@googlegroups.com>
+Build-Depends: debhelper (>= 9.0.0), ros-melodic-catkin
+Homepage: http://moveit.ros.org
+Standards-Version: 3.9.2
+
+Package: ros-melodic-moveit-experimental
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, 
+Description: Experimental packages for MoveIt!
