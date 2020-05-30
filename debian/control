@@ -1,0 +1,13 @@
+Source: ros-melodic-moveit-runtime
+Section: misc
+Priority: optional
+Maintainer: Isaac I. Y. Saito <gm130s@gmail.com>
+Build-Depends: debhelper (>= 9.0.0), ros-melodic-catkin
+Homepage: http://moveit.ros.org
+Standards-Version: 3.9.2
+
+Package: ros-melodic-moveit-runtime
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-melodic-moveit-core, ros-melodic-moveit-planners, ros-melodic-moveit-plugins, ros-melodic-moveit-ros-manipulation, ros-melodic-moveit-ros-move-group, ros-melodic-moveit-ros-perception, ros-melodic-moveit-ros-planning, ros-melodic-moveit-ros-planning-interface, ros-melodic-moveit-ros-warehouse
+Description: moveit_runtime meta package contains MoveIt! packages that are essential for its runtime (e.g.
+ running MoveIt! on robots).
