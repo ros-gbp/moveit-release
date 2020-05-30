@@ -118,4 +118,4 @@ tracks:
     ros_distro: melodic
     vcs_type: git
     vcs_uri: https://github.com/ros-planning/moveit.git
-    version: :{auto}
+    version: :{ask}
