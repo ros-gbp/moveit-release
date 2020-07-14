@@ -1,0 +1,135 @@
+ros-melodic-moveit-runtime (1.0.5-1stretch) stretch; urgency=high
+
+
+
+ -- Isaac I. Y. Saito <gm130s@gmail.com>  Wed, 15 Jul 2020 06:00:00 -0000
+
+ros-melodic-moveit-runtime (1.0.4-1stretch) stretch; urgency=high
+
+
+
+ -- Isaac I. Y. Saito <gm130s@gmail.com>  Sat, 30 May 2020 06:00:00 -0000
+
+ros-melodic-moveit-runtime (1.0.3-1stretch) stretch; urgency=high
+
+
+
+ -- Isaac I. Y. Saito <gm130s@gmail.com>  Sun, 26 Apr 2020 06:00:00 -0000
+
+ros-melodic-moveit-runtime (1.0.2-1stretch) stretch; urgency=high
+
+
+
+ -- Isaac I. Y. Saito <gm130s@gmail.com>  Fri, 28 Jun 2019 06:00:00 -0000
+
+ros-melodic-moveit-runtime (1.0.1-1stretch) stretch; urgency=high
+
+
+
+ -- Isaac I. Y. Saito <gm130s@gmail.com>  Fri, 08 Mar 2019 07:00:00 -0000
+
+ros-melodic-moveit-runtime (1.0.0-1stretch) stretch; urgency=high
+
+  * [fix] catkin_lint issues (#1341 <https://github.com/ros-planning/moveit/issues/1341>)
+  * Contributors: Robert Haschke
+
+ -- Isaac I. Y. Saito <gm130s@gmail.com>  Sun, 24 Feb 2019 07:00:00 -0000
+
+ros-melodic-moveit-runtime (0.10.8-1stretch) stretch; urgency=high
+
+
+
+ -- Isaac I. Y. Saito <gm130s@gmail.com>  Mon, 24 Dec 2018 07:00:00 -0000
+
+ros-melodic-moveit-runtime (0.10.7-1stretch) stretch; urgency=high
+
+
+
+ -- Isaac I. Y. Saito <gm130s@gmail.com>  Thu, 13 Dec 2018 07:00:00 -0000
+
+ros-melodic-moveit-runtime (0.10.6-1stretch) stretch; urgency=high
+
+
+
+ -- Isaac I. Y. Saito <gm130s@gmail.com>  Sun, 09 Dec 2018 07:00:00 -0000
+
+ros-melodic-moveit-runtime (0.10.5-1stretch) stretch; urgency=high
+
+
+
+ -- Isaac I. Y. Saito <gm130s@gmail.com>  Thu, 01 Nov 2018 06:00:00 -0000
+
+ros-melodic-moveit-runtime (0.10.4-1stretch) stretch; urgency=high
+
+
+
+ -- Isaac I. Y. Saito <gm130s@gmail.com>  Mon, 29 Oct 2018 06:00:00 -0000
+
+ros-melodic-moveit-runtime (0.10.3-1stretch) stretch; urgency=high
+
+
+
+ -- Isaac I. Y. Saito <gm130s@gmail.com>  Mon, 29 Oct 2018 06:00:00 -0000
+
+ros-melodic-moveit-runtime (0.10.2-1stretch) stretch; urgency=high
+
+
+
+ -- Isaac I. Y. Saito <gm130s@gmail.com>  Wed, 24 Oct 2018 06:00:00 -0000
+
+ros-melodic-moveit-runtime (0.10.1-1stretch) stretch; urgency=high
+
+
+
+ -- Isaac I. Y. Saito <gm130s@gmail.com>  Fri, 25 May 2018 06:00:00 -0000
+
+ros-melodic-moveit-runtime (0.9.11-1stretch) stretch; urgency=high
+
+
+
+ -- Isaac I. Y. Saito <gm130s@gmail.com>  Mon, 25 Dec 2017 07:00:00 -0000
+
+ros-melodic-moveit-runtime (0.9.10-1stretch) stretch; urgency=high
+
+
+
+ -- Isaac I. Y. Saito <gm130s@gmail.com>  Sat, 09 Dec 2017 07:00:00 -0000
+
+ros-melodic-moveit-runtime (0.9.9-1stretch) stretch; urgency=high
+
+
+
+ -- Isaac I. Y. Saito <gm130s@gmail.com>  Sun, 06 Aug 2017 06:00:00 -0000
+
+ros-melodic-moveit-runtime (0.9.8-1stretch) stretch; urgency=high
+
+
+
+ -- Isaac I. Y. Saito <gm130s@gmail.com>  Wed, 21 Jun 2017 06:00:00 -0000
+
+ros-melodic-moveit-runtime (0.9.7-1stretch) stretch; urgency=high
+
+
+
+ -- Isaac I. Y. Saito <gm130s@gmail.com>  Mon, 05 Jun 2017 06:00:00 -0000
+
+ros-melodic-moveit-runtime (0.9.6-1stretch) stretch; urgency=high
+
+
+
+ -- Isaac I. Y. Saito <gm130s@gmail.com>  Wed, 12 Apr 2017 06:00:00 -0000
+
+ros-melodic-moveit-runtime (0.9.5-1stretch) stretch; urgency=high
+
+
+
+ -- Isaac I. Y. Saito <gm130s@gmail.com>  Wed, 08 Mar 2017 07:00:00 -0000
+
+ros-melodic-moveit-runtime (0.9.4-1stretch) stretch; urgency=high
+
+  * Added a new metapackage as a minimum set of moveit-related packages that can be installed on a robot (eliminating development packages).
+  * Contributors: Isaac I.Y. Saito
+
+ -- Isaac I. Y. Saito <gm130s@gmail.com>  Mon, 06 Feb 2017 07:00:00 -0000
+
+
