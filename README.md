@@ -1,3 +1,54 @@
+## moveit (melodic) - 1.0.5-1
+
+The packages in the `moveit` repository were released into the `melodic` distro by running `/usr/bin/bloom-release moveit --rosdistro melodic` on `Tue, 14 Jul 2020 19:56:16 -0000`
+
+These packages were released:
+- `chomp_motion_planner`
+- `moveit`
+- `moveit_chomp_optimizer_adapter`
+- `moveit_commander`
+- `moveit_controller_manager_example`
+- `moveit_core`
+- `moveit_fake_controller_manager`
+- `moveit_kinematics`
+- `moveit_planners`
+- `moveit_planners_chomp`
+- `moveit_planners_ompl`
+- `moveit_plugins`
+- `moveit_ros`
+- `moveit_ros_benchmarks`
+- `moveit_ros_control_interface`
+- `moveit_ros_manipulation`
+- `moveit_ros_move_group`
+- `moveit_ros_occupancy_map_monitor`
+- `moveit_ros_perception`
+- `moveit_ros_planning`
+- `moveit_ros_planning_interface`
+- `moveit_ros_robot_interaction`
+- `moveit_ros_visualization`
+- `moveit_ros_warehouse`
+- `moveit_runtime`
+- `moveit_servo`
+- `moveit_setup_assistant`
+- `moveit_simple_controller_manager`
+
+Version of package(s) in repository `moveit`:
+
+- upstream repository: https://github.com/ros-planning/moveit.git
+- release repository: https://github.com/ros-gbp/moveit-release.git
+- rosdistro version: `1.0.4-1`
+- old version: `1.0.4-1`
+- new version: `1.0.5-1`
+
+Versions of tools used:
+
+- bloom version: `0.9.7`
+- catkin_pkg version: `0.4.22`
+- rosdep version: `0.19.0`
+- rosdistro version: `0.8.2`
+- vcstools version: `0.1.42`
+
+
 ## moveit (melodic) - 1.0.4-1
 
 The packages in the `moveit` repository were released into the `melodic` distro by running `/usr/bin/bloom-release --rosdistro melodic moveit -e` on `Sat, 30 May 2020 08:04:53 -0000`
