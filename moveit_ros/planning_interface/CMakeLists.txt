@@ -1,7 +1,9 @@
 cmake_minimum_required(VERSION 3.1.3)
 project(moveit_ros_planning_interface)
 
-set(CMAKE_CXX_STANDARD 14)
+if(NOT "${CMAKE_CXX_STANDARD}")
+  set(CMAKE_CXX_STANDARD 14)
+endif()
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -52,6 +54,7 @@ set(THIS_PACKAGE_INCLUDE_DIRS
   common_planning_interface_objects/include
   planning_scene_interface/include
   move_group_interface/include
+  moveit_cpp/include
 )
 
 catkin_python_setup()
@@ -62,6 +65,7 @@ catkin_package(
     moveit_planning_scene_interface
     moveit_move_group_interface
     moveit_py_bindings_tools
+    moveit_cpp
   INCLUDE_DIRS
     ${THIS_PACKAGE_INCLUDE_DIRS}
   CATKIN_DEPENDS
@@ -84,7 +88,6 @@ include_directories(${THIS_PACKAGE_INCLUDE_DIRS}
 
 include_directories(SYSTEM
                     ${EIGEN3_INCLUDE_DIRS}
-                    ${eigenpy_INCLUDE_DIRS}
                     ${PYTHON_INCLUDE_DIRS})
 
 add_subdirectory(py_bindings_tools)
@@ -93,3 +96,4 @@ add_subdirectory(planning_scene_interface)
 add_subdirectory(move_group_interface)
 add_subdirectory(robot_interface)
 add_subdirectory(test)
+add_subdirectory(moveit_cpp)
