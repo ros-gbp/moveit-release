@@ -1,7 +1,9 @@
 cmake_minimum_required(VERSION 3.1.3)
 project(moveit_ros_visualization)
 
-set(CMAKE_CXX_STANDARD 14)
+if(NOT "${CMAKE_CXX_STANDARD}")
+  set(CMAKE_CXX_STANDARD 14)
+endif()
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -81,6 +83,7 @@ catkin_package(
     moveit_ros_robot_interaction
     object_recognition_msgs
     roscpp
+    rviz
   DEPENDS
     EIGEN3
 )
