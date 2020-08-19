@@ -1,0 +1,12 @@
+Source: ros-melodic-moveit-setup-assistant
+Section: misc
+Priority: optional
+Maintainer: Dave Coleman <dave@picknik.ai>
+Build-Depends: debhelper (>= 9.0.0), libogre-1.9-dev, libqt5opengl5-dev, libyaml-cpp-dev, qtbase5-dev, ros-melodic-catkin, ros-melodic-moveit-core, ros-melodic-moveit-resources-panda-moveit-config, ros-melodic-moveit-ros-planning, ros-melodic-moveit-ros-visualization, ros-melodic-rosconsole, ros-melodic-roscpp, ros-melodic-rosunit, ros-melodic-rviz, ros-melodic-srdfdom (>> 0.3.1), ros-melodic-urdf
+Homepage: http://moveit.ros.org
+Standards-Version: 3.9.2
+
+Package: ros-melodic-moveit-setup-assistant
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, libyaml-cpp-dev, ros-melodic-moveit-core, ros-melodic-moveit-ros-planning, ros-melodic-moveit-ros-visualization, ros-melodic-rosconsole, ros-melodic-roscpp, ros-melodic-rviz, ros-melodic-srdfdom (>> 0.3.1), ros-melodic-urdf, ros-melodic-xacro
+Description: Generates a configuration package that makes it easy to use MoveIt!
