@@ -1,0 +1,13 @@
+Source: ros-melodic-moveit-ros-occupancy-map-monitor
+Section: misc
+Priority: optional
+Maintainer: Michael Ferguson <mferguson@fetchrobotics.com>
+Build-Depends: debhelper (>= 9.0.0), libeigen3-dev, ros-melodic-catkin, ros-melodic-geometric-shapes, ros-melodic-moveit-core, ros-melodic-moveit-msgs, ros-melodic-octomap, ros-melodic-pluginlib (>= 1.11.2), ros-melodic-rosunit, ros-melodic-tf2-ros
+Homepage: http://moveit.ros.org
+Standards-Version: 3.9.2
+
+Package: ros-melodic-moveit-ros-occupancy-map-monitor
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-melodic-geometric-shapes, ros-melodic-moveit-core, ros-melodic-moveit-msgs, ros-melodic-octomap, ros-melodic-pluginlib (>= 1.11.2), ros-melodic-tf2-ros
+Conflicts: ros-melodic-moveit-ros-perception (<< 1.0.3~)
+Description: Components of MoveIt! connecting to occupancy map
