@@ -1,6 +1,6 @@
 <package format="2">
   <name>moveit_commander</name>
-  <version>1.0.5</version>
+  <version>1.0.6</version>
   <description>Python interfaces to MoveIt</description>
 
   <author email="isucan@google.com">Ioan Sucan</author>
@@ -31,5 +31,5 @@
   <exec_depend>tf</exec_depend>
 
   <test_depend>rostest</test_depend>
-  <test_depend>moveit_resources</test_depend>
+  <test_depend>moveit_resources_fanuc_moveit_config</test_depend>
 </package>
