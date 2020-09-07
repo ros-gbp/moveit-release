@@ -34,8 +34,7 @@
 
 /* Author: Ioan Sucan, Acorn Pooley, Sachin Chitta */
 
-#ifndef MOVEIT_COLLISION_DETECTION_WORLD_
-#define MOVEIT_COLLISION_DETECTION_WORLD_
+#pragma once
 
 #include <moveit/macros/class_forward.h>
 
@@ -45,6 +44,7 @@
 #include <boost/function.hpp>
 #include <Eigen/Geometry>
 #include <eigen_stl_containers/eigen_stl_vector_container.h>
+#include <moveit/transforms/transforms.h>
 
 namespace shapes
 {
@@ -104,6 +104,12 @@ public:
      *
      * @copydetails shapes_ */
     EigenSTL::vector_Isometry3d shape_poses_;
+
+    /** \brief Transforms to subframes on the object.
+     *  Use them to define points of interest on an object to plan with
+     *  (e.g. screwdriver/tip, kettle/spout, mug/base).
+     */
+    moveit::core::FixedTransformsMap subframe_poses_;
   };
 
   /** \brief Get the list of Object ids */
@@ -137,6 +143,22 @@ public:
 
   /** \brief Check if a particular object exists in the collision world*/
   bool hasObject(const std::string& object_id) const;
+
+  /** \brief Check if an object or subframe with given name exists in the collision world.
+   * A subframe name needs to be prefixed with the object's name separated by a slash. */
+  bool knowsTransform(const std::string& name) const;
+
+  /** \brief Get the transform to an object or subframe with given name.
+   * If name does not exist, a std::runtime_error is thrown.
+   * A subframe name needs to be prefixed with the object's name separated by a slash.
+   * The returned transform is guaranteed to be a valid isometry. */
+  const Eigen::Isometry3d& getTransform(const std::string& name) const;
+
+  /** \brief Get the transform to an object or subframe with given name.
+   * If name does not exist, returns an identity transform and sets frame_found to false.
+   * A subframe name needs to be prefixed with the object's name separated by a slash.
+   * The returned transform is guaranteed to be a valid isometry. */
+  const Eigen::Isometry3d& getTransform(const std::string& name, bool& frame_found) const;
 
   /** \brief Add shapes to an object in the map.
    * This function makes repeated calls to addToObjectInternal() to add the
@@ -173,6 +195,9 @@ public:
    * Object, the memory is freed.
    * Returns true on success and false if no such object was found. */
   bool removeObject(const std::string& object_id);
+
+  /** \brief Set subframes on an object. */
+  bool setSubframesOfObject(const std::string& object_id, const moveit::core::FixedTransformsMap& subframe_poses);
 
   /** \brief Clear all objects.
    * If there are no other pointers to corresponding instances of Objects,
@@ -217,7 +242,7 @@ public:
   class ObserverHandle
   {
   public:
-    ObserverHandle() : observer_(NULL)
+    ObserverHandle() : observer_(nullptr)
     {
     }
 
@@ -246,7 +271,7 @@ public:
 
 private:
   /** notify all observers of a change */
-  void notify(const ObjectConstPtr&, Action);
+  void notify(const ObjectConstPtr& /*obj*/, Action /*action*/);
 
   /** send notification of change to all objects. */
   void notifyAll(Action action);
@@ -277,5 +302,3 @@ private:
   std::vector<Observer*> observers_;
 };
 }  // namespace collision_detection
-
-#endif

@@ -34,10 +34,13 @@
 
 /* Author: Ioan Sucan, Jon Binney */
 
-#ifndef MOVEIT_OCCUPANCY_MAP_MONITOR_OCCUPANCY_MAP_
-#define MOVEIT_OCCUPANCY_MAP_MONITOR_OCCUPANCY_MAP_
+#pragma once
 
+#include <moveit/macros/diagnostics.h>
+DIAGNOSTIC_PUSH
+SILENT_UNUSED_PARAM
 #include <octomap/octomap.h>
+DIAGNOSTIC_PUSH
 #include <boost/thread/locks.hpp>
 #include <boost/thread/shared_mutex.hpp>
 #include <boost/function.hpp>
@@ -97,7 +100,7 @@ public:
     return WriteLock(tree_mutex_);
   }
 
-  void triggerUpdateCallback(void)
+  void triggerUpdateCallback()
   {
     if (update_callback_)
       update_callback_();
@@ -117,5 +120,3 @@ private:
 typedef std::shared_ptr<OccMapTree> OccMapTreePtr;
 typedef std::shared_ptr<const OccMapTree> OccMapTreeConstPtr;
 }  // namespace occupancy_map_monitor
-
-#endif

@@ -169,7 +169,7 @@ void TrajectoryVisualization::setName(const QString& name)
     trajectory_slider_dock_panel_->setWindowTitle(name + " - Slider");
 }
 
-void TrajectoryVisualization::onRobotModelLoaded(const robot_model::RobotModelConstPtr& robot_model)
+void TrajectoryVisualization::onRobotModelLoaded(const moveit::core::RobotModelConstPtr& robot_model)
 {
   robot_model_ = robot_model;
 
@@ -181,7 +181,7 @@ void TrajectoryVisualization::onRobotModelLoaded(const robot_model::RobotModelCo
   }
 
   // Load robot state
-  robot_state_.reset(new robot_state::RobotState(robot_model_));
+  robot_state_.reset(new moveit::core::RobotState(robot_model_));
   robot_state_->setToDefaultValues();
 
   // Load rviz robot
@@ -362,7 +362,7 @@ void TrajectoryVisualization::dropTrajectory()
   drop_displaying_trajectory_ = true;
 }
 
-void TrajectoryVisualization::update(float wall_dt, float ros_dt)
+void TrajectoryVisualization::update(float wall_dt, float /*ros_dt*/)
 {
   if (drop_displaying_trajectory_)
   {

@@ -34,8 +34,7 @@
 
 /* Author: Dave Coleman */
 
-#ifndef MOVEIT_MOVEIT_SETUP_ASSISTANT_WIDGETS_DEFAULT_COLLISIONS_WIDGET__
-#define MOVEIT_MOVEIT_SETUP_ASSISTANT_WIDGETS_DEFAULT_COLLISIONS_WIDGET__
+#pragma once
 
 #include <QLabel>
 #include <QVBoxLayout>
@@ -73,8 +72,8 @@ class DefaultCollisionsWidget : public SetupScreenWidget
 public:
   enum ViewMode
   {
-    MatrixMode = 0,
-    LinearMode = 1
+    MATRIX_MODE = 0,
+    LINEAR_MODE = 1
   };
 
   // ******************************************************************************************
@@ -237,7 +236,7 @@ class MonitorThread : public QThread
   Q_OBJECT
 
 public:
-  MonitorThread(const boost::function<void(unsigned int*)>& f, QProgressBar* progress_bar = NULL);
+  MonitorThread(const boost::function<void(unsigned int*)>& f, QProgressBar* progress_bar = nullptr);
   void run() override;
   void cancel()
   {
@@ -257,5 +256,3 @@ private:
   bool canceled_;
 };
 }  // namespace moveit_setup_assistant
-
-#endif

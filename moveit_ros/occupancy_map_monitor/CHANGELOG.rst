@@ -2,6 +2,9 @@
 Changelog for package moveit_ros_occupancy_map_monitor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.1.0 (2020-09-04)
+------------------
+
 1.0.6 (2020-08-19)
 ------------------
 * [maint] Migrate to clang-format-10

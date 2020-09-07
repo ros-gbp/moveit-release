@@ -64,8 +64,8 @@ catkin_package(
     moveit_common_planning_interface_objects
     moveit_planning_scene_interface
     moveit_move_group_interface
-    moveit_py_bindings_tools
     moveit_cpp
+    moveit_py_bindings_tools
   INCLUDE_DIRS
     ${THIS_PACKAGE_INCLUDE_DIRS}
   CATKIN_DEPENDS
@@ -82,11 +82,11 @@ catkin_package(
     EIGEN3
 )
 
-include_directories(${THIS_PACKAGE_INCLUDE_DIRS}
-                    ${Boost_INCLUDE_DIRS}
-                    ${catkin_INCLUDE_DIRS})
+include_directories(${THIS_PACKAGE_INCLUDE_DIRS})
 
 include_directories(SYSTEM
+                    ${catkin_INCLUDE_DIRS}
+                    ${Boost_INCLUDE_DIRS}
                     ${EIGEN3_INCLUDE_DIRS}
                     ${PYTHON_INCLUDE_DIRS})
 

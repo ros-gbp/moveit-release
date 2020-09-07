@@ -167,7 +167,7 @@ PlanningSceneDisplay::~PlanningSceneDisplay()
 
   planning_scene_render_.reset();
   if (context_ && context_->getSceneManager() && planning_scene_node_)
-    context_->getSceneManager()->destroySceneNode(planning_scene_node_->getName());
+    context_->getSceneManager()->destroySceneNode(planning_scene_node_);
   if (planning_scene_robot_)
     planning_scene_robot_.reset();
   planning_scene_monitor_.reset();
@@ -273,13 +273,13 @@ const std::string PlanningSceneDisplay::getMoveGroupNS() const
   return move_group_ns_property_->getStdString();
 }
 
-const robot_model::RobotModelConstPtr& PlanningSceneDisplay::getRobotModel() const
+const moveit::core::RobotModelConstPtr& PlanningSceneDisplay::getRobotModel() const
 {
   if (planning_scene_monitor_)
     return planning_scene_monitor_->getRobotModel();
   else
   {
-    static robot_model::RobotModelConstPtr empty;
+    static moveit::core::RobotModelConstPtr empty;
     return empty;
   }
 }
@@ -434,12 +434,12 @@ void PlanningSceneDisplay::setGroupColor(rviz::Robot* robot, const std::string& 
 {
   if (getRobotModel())
   {
-    const robot_model::JointModelGroup* jmg = getRobotModel()->getJointModelGroup(group_name);
+    const moveit::core::JointModelGroup* jmg = getRobotModel()->getJointModelGroup(group_name);
     if (jmg)
     {
       const std::vector<std::string>& links = jmg->getLinkModelNamesWithCollisionGeometry();
-      for (std::size_t i = 0; i < links.size(); ++i)
-        setLinkColor(robot, links[i], color);
+      for (const std::string& link : links)
+        setLinkColor(robot, link, color);
     }
   }
 }
@@ -449,8 +449,8 @@ void PlanningSceneDisplay::unsetAllColors(rviz::Robot* robot)
   if (getRobotModel())
   {
     const std::vector<std::string>& links = getRobotModel()->getLinkModelNamesWithCollisionGeometry();
-    for (std::size_t i = 0; i < links.size(); ++i)
-      unsetLinkColor(robot, links[i]);
+    for (const std::string& link : links)
+      unsetLinkColor(robot, link);
   }
 }
 
@@ -458,12 +458,12 @@ void PlanningSceneDisplay::unsetGroupColor(rviz::Robot* robot, const std::string
 {
   if (getRobotModel())
   {
-    const robot_model::JointModelGroup* jmg = getRobotModel()->getJointModelGroup(group_name);
+    const moveit::core::JointModelGroup* jmg = getRobotModel()->getJointModelGroup(group_name);
     if (jmg)
     {
       const std::vector<std::string>& links = jmg->getLinkModelNamesWithCollisionGeometry();
-      for (std::size_t i = 0; i < links.size(); ++i)
-        unsetLinkColor(robot, links[i]);
+      for (const std::string& link : links)
+        unsetLinkColor(robot, link);
     }
   }
 }
@@ -560,9 +560,9 @@ void PlanningSceneDisplay::onRobotModelLoaded()
   if (planning_scene_robot_)
   {
     planning_scene_robot_->load(*getRobotModel()->getURDF());
-    robot_state::RobotState* rs = new robot_state::RobotState(ps->getCurrentState());
+    moveit::core::RobotState* rs = new moveit::core::RobotState(ps->getCurrentState());
     rs->update();
-    planning_scene_robot_->update(robot_state::RobotStateConstPtr(rs));
+    planning_scene_robot_->update(moveit::core::RobotStateConstPtr(rs));
   }
 
   bool old_state = scene_name_property_->blockSignals(true);
@@ -581,7 +581,7 @@ void PlanningSceneDisplay::sceneMonitorReceivedUpdate(
 }
 
 void PlanningSceneDisplay::onSceneMonitorReceivedUpdate(
-    planning_scene_monitor::PlanningSceneMonitor::SceneUpdateType update_type)
+    planning_scene_monitor::PlanningSceneMonitor::SceneUpdateType /*update_type*/)
 {
   bool old_state = scene_name_property_->blockSignals(true);
   getPlanningSceneRW()->getCurrentStateNonConst().update();
@@ -641,7 +641,7 @@ void PlanningSceneDisplay::update(float wall_dt, float ros_dt)
     updateInternal(wall_dt, ros_dt);
 }
 
-void PlanningSceneDisplay::updateInternal(float wall_dt, float ros_dt)
+void PlanningSceneDisplay::updateInternal(float wall_dt, float /*ros_dt*/)
 {
   current_scene_time_ += wall_dt;
   if ((current_scene_time_ > scene_display_time_property_->getFloat() && planning_scene_render_ &&

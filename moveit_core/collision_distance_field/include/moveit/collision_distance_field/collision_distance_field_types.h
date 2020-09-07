@@ -34,8 +34,7 @@
 
 /* Author: E. Gil Jones */
 
-#ifndef MOVEIT_COLLISION_DISTANCE_FIELD_COLLISION_DISTANCE_FIELD_TYPES_
-#define MOVEIT_COLLISION_DISTANCE_FIELD_COLLISION_DISTANCE_FIELD_TYPES_
+#pragma once
 
 #include <vector>
 #include <string>
@@ -45,7 +44,11 @@
 
 #include <geometric_shapes/shapes.h>
 #include <geometric_shapes/bodies.h>
+#include <moveit/macros/diagnostics.h>
+DIAGNOSTIC_PUSH
+SILENT_UNUSED_PARAM
 #include <octomap/OcTree.h>
+DIAGNOSTIC_POP
 
 #include <moveit/macros/class_forward.h>
 #include <moveit/distance_field/distance_field.h>
@@ -446,10 +449,9 @@ public:
   EigenSTL::vector_Vector3d getCollisionPoints() const
   {
     EigenSTL::vector_Vector3d ret_points;
-    for (unsigned int i = 0; i < decomp_vector_.size(); i++)
+    for (const PosedBodyPointDecompositionPtr& decomp : decomp_vector_)
     {
-      ret_points.insert(ret_points.end(), decomp_vector_[i]->getCollisionPoints().begin(),
-                        decomp_vector_[i]->getCollisionPoints().end());
+      ret_points.insert(ret_points.end(), decomp->getCollisionPoints().begin(), decomp->getCollisionPoints().end());
     }
     return ret_points;
   }
@@ -523,5 +525,3 @@ void getCollisionMarkers(const std::string& frame_id, const std::string& ns, con
                          const std::vector<PosedBodySphereDecompositionVectorPtr>& posed_vector_decompositions,
                          const std::vector<GradientInfo>& gradients, visualization_msgs::MarkerArray& arr);
 }  // namespace collision_detection
-
-#endif

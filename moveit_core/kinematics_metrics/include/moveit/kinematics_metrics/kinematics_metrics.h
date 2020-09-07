@@ -34,8 +34,7 @@
 
 /* Author: Sachin Chitta */
 
-#ifndef MOVEIT_KINEMATICS_METRICS_KINEMATICS_METRICS_
-#define MOVEIT_KINEMATICS_METRICS_KINEMATICS_METRICS_
+#pragma once
 
 #include <moveit/robot_state/robot_state.h>
 
@@ -52,7 +51,7 @@ class KinematicsMetrics
 {
 public:
   /** \brief Construct a KinematicsMetricss from a RobotModel */
-  KinematicsMetrics(const robot_model::RobotModelConstPtr& robot_model)
+  KinematicsMetrics(const moveit::core::RobotModelConstPtr& robot_model)
     : robot_model_(robot_model), penalty_multiplier_(0.0)
   {
   }
@@ -64,7 +63,7 @@ public:
    * @param manipulability_index The computed manipulability = sqrt(det(JJ^T))
    * @return False if the group was not found
    */
-  bool getManipulabilityIndex(const robot_state::RobotState& state, const std::string& group_name,
+  bool getManipulabilityIndex(const moveit::core::RobotState& state, const std::string& group_name,
                               double& manipulability_index, bool translation = false) const;
 
   /**
@@ -74,8 +73,8 @@ public:
    * @param manipulability_index The computed manipulability = sqrt(det(JJ^T))
    * @return False if the group was not found
    */
-  bool getManipulabilityIndex(const robot_state::RobotState& state,
-                              const robot_model::JointModelGroup* joint_model_group, double& manipulability_index,
+  bool getManipulabilityIndex(const moveit::core::RobotState& state,
+                              const moveit::core::JointModelGroup* joint_model_group, double& manipulability_index,
                               bool translation = false) const;
 
   /**
@@ -86,7 +85,7 @@ public:
    * @param eigen_vectors The eigen vectors for the translation part of JJ^T
    * @return False if the group was not found
    */
-  bool getManipulabilityEllipsoid(const robot_state::RobotState& state, const std::string& group_name,
+  bool getManipulabilityEllipsoid(const moveit::core::RobotState& state, const std::string& group_name,
                                   Eigen::MatrixXcd& eigen_values, Eigen::MatrixXcd& eigen_vectors) const;
 
   /**
@@ -97,9 +96,9 @@ public:
    * @param eigen_vectors The eigen vectors for the translation part of JJ^T
    * @return False if the group was not found
    */
-  bool getManipulabilityEllipsoid(const robot_state::RobotState& state,
-                                  const robot_model::JointModelGroup* joint_model_group, Eigen::MatrixXcd& eigen_values,
-                                  Eigen::MatrixXcd& eigen_vectors) const;
+  bool getManipulabilityEllipsoid(const moveit::core::RobotState& state,
+                                  const moveit::core::JointModelGroup* joint_model_group,
+                                  Eigen::MatrixXcd& eigen_values, Eigen::MatrixXcd& eigen_vectors) const;
 
   /**
    * @brief Get the manipulability = sigma_min/sigma_max
@@ -110,7 +109,7 @@ public:
    * @param condition_number Condition number for JJ^T
    * @return False if the group was not found
    */
-  bool getManipulability(const robot_state::RobotState& state, const std::string& group_name, double& condition_number,
+  bool getManipulability(const moveit::core::RobotState& state, const std::string& group_name, double& condition_number,
                          bool translation = false) const;
 
   /**
@@ -122,7 +121,7 @@ public:
    * @param condition_number Condition number for JJ^T
    * @return False if the group was not found
    */
-  bool getManipulability(const robot_state::RobotState& state, const robot_model::JointModelGroup* joint_model_group,
+  bool getManipulability(const moveit::core::RobotState& state, const moveit::core::JointModelGroup* joint_model_group,
                          double& condition_number, bool translation = false) const;
 
   void setPenaltyMultiplier(double multiplier)
@@ -136,7 +135,7 @@ public:
   }
 
 protected:
-  robot_model::RobotModelConstPtr robot_model_;
+  moveit::core::RobotModelConstPtr robot_model_;
 
 private:
   /**
@@ -151,11 +150,9 @@ private:
    * Ohio State University, 1986, for more details.
    * @return multiplier that is multiplied with every manipulability measure computed here
    */
-  double getJointLimitsPenalty(const robot_state::RobotState& state,
-                               const robot_model::JointModelGroup* joint_model_group) const;
+  double getJointLimitsPenalty(const moveit::core::RobotState& state,
+                               const moveit::core::JointModelGroup* joint_model_group) const;
 
   double penalty_multiplier_;
 };
 }  // namespace kinematics_metrics
-
-#endif

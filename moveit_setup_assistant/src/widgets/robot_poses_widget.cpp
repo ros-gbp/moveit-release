@@ -49,7 +49,7 @@
 namespace moveit_setup_assistant
 {
 // ******************************************************************************************
-// Outer User Interface for MoveIt! Configuration Assistant
+// Outer User Interface for MoveIt Configuration Assistant
 // ******************************************************************************************
 RobotPosesWidget::RobotPosesWidget(QWidget* parent, const MoveItConfigDataPtr& config_data)
   : SetupScreenWidget(parent), config_data_(config_data)
@@ -95,7 +95,7 @@ RobotPosesWidget::RobotPosesWidget(QWidget* parent, const MoveItConfigDataPtr& c
   pub_robot_state_ = nh.advertise<moveit_msgs::DisplayRobotState>(MOVEIT_ROBOT_STATE, 1);
 
   // Set the planning scene
-  config_data_->getPlanningScene()->setName("MoveIt! Planning Scene");
+  config_data_->getPlanningScene()->setName("MoveIt Planning Scene");
 
   // Collision Detection initializtion -------------------------------
 
@@ -146,7 +146,7 @@ QWidget* RobotPosesWidget::createContentsWidget()
   controls_layout->setAlignment(btn_default, Qt::AlignLeft);
 
   // Set play button
-  QPushButton* btn_play = new QPushButton("&MoveIt!", this);
+  QPushButton* btn_play = new QPushButton("&MoveIt", this);
   btn_play->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
   btn_play->setMaximumWidth(300);
   connect(btn_play, SIGNAL(clicked()), this, SLOT(playPoses()));
@@ -310,7 +310,7 @@ void RobotPosesWidget::showNewScreen()
 // ******************************************************************************************
 // Edit whatever element is selected
 // ******************************************************************************************
-void RobotPosesWidget::editDoubleClicked(int row, int column)
+void RobotPosesWidget::editDoubleClicked(int /*row*/, int /*column*/)
 {
   // We'll just base the edit on the selection highlight
   editSelected();
@@ -359,10 +359,10 @@ void RobotPosesWidget::showPose(srdf::Model::GroupState* pose)
 void RobotPosesWidget::showDefaultPose()
 {
   // Get list of all joints for the robot
-  std::vector<const robot_model::JointModel*> joint_models = config_data_->getRobotModel()->getJointModels();
+  std::vector<const moveit::core::JointModel*> joint_models = config_data_->getRobotModel()->getJointModels();
 
   // Iterate through the joints
-  for (std::vector<const robot_model::JointModel*>::const_iterator joint_it = joint_models.begin();
+  for (std::vector<const moveit::core::JointModel*>::const_iterator joint_it = joint_models.begin();
        joint_it < joint_models.end(); ++joint_it)
   {
     // Check that this joint only represents 1 variable.
@@ -467,10 +467,9 @@ void RobotPosesWidget::loadGroupsComboBox()
   group_name_field_->clear();
 
   // Add all group names to combo box
-  for (std::vector<srdf::Model::Group>::iterator group_it = config_data_->srdf_->groups_.begin();
-       group_it != config_data_->srdf_->groups_.end(); ++group_it)
+  for (srdf::Model::Group& group : config_data_->srdf_->groups_)
   {
-    group_name_field_->addItem(group_it->name_.c_str());
+    group_name_field_->addItem(group.name_.c_str());
   }
 }
 
@@ -512,12 +511,13 @@ void RobotPosesWidget::loadJointSliders(const QString& selected)
   joint_list_widget_->setMinimumSize(50, 50);  // w, h
 
   // Get list of associated joints
-  const robot_model::JointModelGroup* joint_model_group = config_data_->getRobotModel()->getJointModelGroup(group_name);
+  const moveit::core::JointModelGroup* joint_model_group =
+      config_data_->getRobotModel()->getJointModelGroup(group_name);
   joint_models_ = joint_model_group->getJointModels();
 
   // Iterate through the joints
   int num_joints = 0;
-  for (const robot_model::JointModel* joint_model : joint_models_)
+  for (const moveit::core::JointModel* joint_model : joint_models_)
   {
     if (joint_model->getVariableCount() != 1 ||  // only consider 1-variable joints
         joint_model->isPassive() ||              // ignore passive
@@ -680,7 +680,7 @@ void RobotPosesWidget::doneEditing()
   searched_data->joint_values_.clear();
 
   // Iterate through the current group's joints and add to SRDF
-  for (std::vector<const robot_model::JointModel*>::const_iterator joint_it = joint_models_.begin();
+  for (std::vector<const moveit::core::JointModel*>::const_iterator joint_it = joint_models_.begin();
        joint_it < joint_models_.end(); ++joint_it)
   {
     // Check that this joint only represents 1 variable.
@@ -741,13 +741,12 @@ void RobotPosesWidget::loadDataTable()
 
   // Loop through every pose
   int row = 0;
-  for (std::vector<srdf::Model::GroupState>::const_iterator data_it = config_data_->srdf_->group_states_.begin();
-       data_it != config_data_->srdf_->group_states_.end(); ++data_it)
+  for (const auto& group_state : config_data_->srdf_->group_states_)
   {
     // Create row elements
-    QTableWidgetItem* data_name = new QTableWidgetItem(data_it->name_.c_str());
+    QTableWidgetItem* data_name = new QTableWidgetItem(group_state.name_.c_str());
     data_name->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
-    QTableWidgetItem* group_name = new QTableWidgetItem(data_it->group_.c_str());
+    QTableWidgetItem* group_name = new QTableWidgetItem(group_state.group_.c_str());
     group_name->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
 
     // Add to table
@@ -812,7 +811,7 @@ void RobotPosesWidget::publishJoints()
 
   // Create a planning scene message
   moveit_msgs::DisplayRobotState msg;
-  robot_state::robotStateToRobotStateMsg(config_data_->getPlanningScene()->getCurrentState(), msg.state);
+  moveit::core::robotStateToRobotStateMsg(config_data_->getPlanningScene()->getCurrentState(), msg.state);
 
   // Publish!
   pub_robot_state_.publish(msg);
@@ -844,7 +843,7 @@ void RobotPosesWidget::publishJoints()
 // ******************************************************************************************
 // Simple widget for adjusting joints of a robot
 // ******************************************************************************************
-SliderWidget::SliderWidget(QWidget* parent, const robot_model::JointModel* joint_model, double init_value)
+SliderWidget::SliderWidget(QWidget* parent, const moveit::core::JointModel* joint_model, double init_value)
   : QWidget(parent), joint_model_(joint_model)
 {
   // Create layouts

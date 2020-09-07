@@ -2,6 +2,13 @@
 Changelog for package moveit_ros
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.1.0 (2020-09-04)
+------------------
+* [maint] Use standard cmake text for metapackages (`#1620 <https://github.com/ros-planning/moveit/issues/1620>`_)
+* [maint] Use CMAKE_CXX_STANDARD to enforce c++14 for portability (`#1607 <https://github.com/ros-planning/moveit/issues/1607>`_)
+* [maint] Remove ! from MoveIt name (`#1590 <https://github.com/ros-planning/moveit/issues/1590>`_)
+* Contributors: Dave Coleman, Jonathan Binney, Robert Haschke, Sean Yen
+
 1.0.6 (2020-08-19)
 ------------------
 
@@ -45,7 +52,7 @@ Changelog for package moveit_ros
 
 0.10.2 (2018-10-24)
 -------------------
-* Fix references to MoveIt! (`#1020 <https://github.com/ros-planning/moveit/issues/1020>`_)
+* Fix references to MoveIt (`#1020 <https://github.com/ros-planning/moveit/issues/1020>`_)
 * Contributors: Mohmmad Ayman
 
 0.10.1 (2018-05-25)

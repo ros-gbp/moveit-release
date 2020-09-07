@@ -34,8 +34,7 @@
 
 /* Author: Ioan Sucan, E. Gil Jones */
 
-#ifndef MOVEIT_COLLISION_DETECTION_COLLISION_MATRIX_
-#define MOVEIT_COLLISION_DETECTION_COLLISION_MATRIX_
+#pragma once
 
 #include <moveit/collision_detection/collision_common.h>
 #include <moveit/macros/class_forward.h>
@@ -66,7 +65,7 @@ enum Type
       imply that the two bodies are in collision*/
   CONDITIONAL
 };
-}
+}  // namespace AllowedCollision
 
 /** \brief Signature of predicate that decides whether a contact is allowed or not (when AllowedCollision::Type is
  * CONDITIONAL) */
@@ -278,5 +277,3 @@ private:
   std::map<std::string, DecideContactFn> default_allowed_contacts_;
 };
 }  // namespace collision_detection
-
-#endif

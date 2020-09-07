@@ -33,8 +33,7 @@
 
 /* Author: Mohamad Ayman */
 
-#ifndef MOVEIT_MOVEIT_SETUP_ASSISTANT_WIDGETS_ROS_CONTROLLERS_WIDGET_H
-#define MOVEIT_MOVEIT_SETUP_ASSISTANT_WIDGETS_ROS_CONTROLLERS_WIDGET_H
+#pragma once
 
 // Qt
 #include <QVBoxLayout>
@@ -108,10 +107,10 @@ private Q_SLOTS:
   void editSelected();
 
   /// Called from Double List widget to highlight a joint
-  void previewSelectedJoints(std::vector<std::string> joints);
+  void previewSelectedJoints(const std::vector<std::string>& joints);
 
   /// Called from Double List widget to highlight a group
-  void previewSelectedGroup(std::vector<std::string> groups);
+  void previewSelectedGroup(const std::vector<std::string>& groups);
 
   /// Called when an item is seleceted from the controllers tree
   void previewSelected(QTreeWidgetItem* selected_item, int column);
@@ -160,5 +159,3 @@ private:
 };
 
 }  // namespace moveit_setup_assistant
-
-#endif

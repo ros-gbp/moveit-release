@@ -38,6 +38,10 @@
 #include <moveit/robot_interaction/kinematic_options_map.h>
 #include <moveit/rviz_plugin_render_tools/planning_link_updater.h>
 #include <moveit/rviz_plugin_render_tools/robot_state_visualization.h>
+#include <moveit/macros/diagnostics.h>
+
+DIAGNOSTIC_PUSH
+SILENT_UNUSED_PARAM
 #include <rviz/visualization_manager.h>
 #include <rviz/robot/robot.h>
 #include <rviz/robot/robot_link.h>
@@ -59,6 +63,7 @@
 #include <OgreSceneManager.h>
 #include <OgreSceneNode.h>
 #include <rviz/ogre_helpers/shape.h>
+DIAGNOSTIC_POP
 
 #include <moveit/robot_state/conversions.h>
 #include <moveit/trajectory_processing/trajectory_tools.h>
@@ -437,8 +442,8 @@ void MotionPlanningDisplay::displayTable(const std::map<std::string, double>& va
 {
   // the line we want to render
   std::stringstream ss;
-  for (std::map<std::string, double>::const_iterator it = values.begin(); it != values.end(); ++it)
-    ss << boost::format("%-10s %-4.2f") % it->first % it->second << std::endl;
+  for (const std::pair<const std::string, double>& value : values)
+    ss << boost::format("%-10s %-4.2f") % value.first % value.second << std::endl;
 
   if (ss.str().empty())
   {
@@ -486,15 +491,15 @@ void MotionPlanningDisplay::computeMetrics(bool start, const std::string& group,
     return;
   boost::mutex::scoped_lock slock(update_metrics_lock_);
 
-  robot_state::RobotStateConstPtr state = start ? getQueryStartState() : getQueryGoalState();
-  for (std::size_t i = 0; i < eef.size(); ++i)
-    if (eef[i].parent_group == group)
-      computeMetricsInternal(computed_metrics_[std::make_pair(start, group)], eef[i], *state, payload);
+  moveit::core::RobotStateConstPtr state = start ? getQueryStartState() : getQueryGoalState();
+  for (const robot_interaction::EndEffectorInteraction& ee : eef)
+    if (ee.parent_group == group)
+      computeMetricsInternal(computed_metrics_[std::make_pair(start, group)], ee, *state, payload);
 }
 
 void MotionPlanningDisplay::computeMetricsInternal(std::map<std::string, double>& metrics,
                                                    const robot_interaction::EndEffectorInteraction& ee,
-                                                   const robot_state::RobotState& state, double payload)
+                                                   const moveit::core::RobotState& state, double payload)
 {
   metrics.clear();
   dynamics_solver::DynamicsSolverPtr ds;
@@ -562,13 +567,13 @@ void MotionPlanningDisplay::displayMetrics(bool start)
   if (eef.empty())
     return;
 
-  robot_state::RobotStateConstPtr state = start ? getQueryStartState() : getQueryGoalState();
+  moveit::core::RobotStateConstPtr state = start ? getQueryStartState() : getQueryGoalState();
 
-  for (std::size_t i = 0; i < eef.size(); ++i)
+  for (const robot_interaction::EndEffectorInteraction& ee : eef)
   {
     Ogre::Vector3 position(0.0, 0.0, 0.0);
     std::map<std::string, double> text_table;
-    const std::map<std::string, double>& metrics_table = computed_metrics_[std::make_pair(start, eef[i].parent_group)];
+    const std::map<std::string, double>& metrics_table = computed_metrics_[std::make_pair(start, ee.parent_group)];
     if (compute_weight_limit_property_->getBool())
     {
       copyItemIfExists(metrics_table, text_table, "max_payload");
@@ -580,7 +585,7 @@ void MotionPlanningDisplay::displayMetrics(bool start)
       copyItemIfExists(metrics_table, text_table, "manipulability");
     if (show_joint_torques_property_->getBool())
     {
-      std::size_t nj = getRobotModel()->getJointModelGroup(eef[i].parent_group)->getJointModelNames().size();
+      std::size_t nj = getRobotModel()->getJointModelGroup(ee.parent_group)->getJointModelNames().size();
       for (size_t j = 0; j < nj; ++j)
       {
         std::stringstream stream;
@@ -589,8 +594,8 @@ void MotionPlanningDisplay::displayMetrics(bool start)
       }
     }
 
-    const robot_state::LinkModel* lm = nullptr;
-    const robot_model::JointModelGroup* jmg = getRobotModel()->getJointModelGroup(eef[i].parent_group);
+    const moveit::core::LinkModel* lm = nullptr;
+    const moveit::core::JointModelGroup* jmg = getRobotModel()->getJointModelGroup(ee.parent_group);
     if (jmg)
       if (!jmg->getLinkModelNames().empty())
         lm = state->getLinkModel(jmg->getLinkModelNames().back());
@@ -618,7 +623,7 @@ void MotionPlanningDisplay::drawQueryStartState()
   {
     if (isEnabled())
     {
-      robot_state::RobotStateConstPtr state = getQueryStartState();
+      moveit::core::RobotStateConstPtr state = getQueryStartState();
 
       // update link poses
       query_robot_start_->update(state);
@@ -628,8 +633,8 @@ void MotionPlanningDisplay::drawQueryStartState()
       std::vector<std::string> collision_links;
       getPlanningSceneRO()->getCollidingLinks(collision_links, *state);
       status_links_start_.clear();
-      for (std::size_t i = 0; i < collision_links.size(); ++i)
-        status_links_start_[collision_links[i]] = COLLISION_LINK;
+      for (const std::string& collision_link : collision_links)
+        status_links_start_[collision_link] = COLLISION_LINK;
       if (!collision_links.empty())
       {
         collision_detection::CollisionResult::ContactMap pairs;
@@ -643,15 +648,15 @@ void MotionPlanningDisplay::drawQueryStartState()
       }
       if (!getCurrentPlanningGroup().empty())
       {
-        const robot_model::JointModelGroup* jmg = state->getJointModelGroup(getCurrentPlanningGroup());
+        const moveit::core::JointModelGroup* jmg = state->getJointModelGroup(getCurrentPlanningGroup());
         if (jmg)
         {
           std::vector<std::string> outside_bounds;
-          const std::vector<const robot_model::JointModel*>& jmodels = jmg->getActiveJointModels();
-          for (std::size_t i = 0; i < jmodels.size(); ++i)
-            if (!state->satisfiesBounds(jmodels[i], jmodels[i]->getMaximumExtent() * 1e-2))
+          const std::vector<const moveit::core::JointModel*>& jmodels = jmg->getActiveJointModels();
+          for (const moveit::core::JointModel* jmodel : jmodels)
+            if (!state->satisfiesBounds(jmodel, jmodel->getMaximumExtent() * 1e-2))
             {
-              outside_bounds.push_back(jmodels[i]->getChildLinkModel()->getName());
+              outside_bounds.push_back(jmodel->getChildLinkModel()->getName());
               status_links_start_[outside_bounds.back()] = OUTSIDE_BOUNDS_LINK;
             }
           if (!outside_bounds.empty())
@@ -691,8 +696,8 @@ void MotionPlanningDisplay::addStatusText(const std::string& text)
 
 void MotionPlanningDisplay::addStatusText(const std::vector<std::string>& text)
 {
-  for (std::size_t i = 0; i < text.size(); ++i)
-    addStatusText(text[i]);
+  for (const std::string& it : text)
+    addStatusText(it);
 }
 
 void MotionPlanningDisplay::recomputeQueryStartStateMetrics()
@@ -739,7 +744,7 @@ void MotionPlanningDisplay::drawQueryGoalState()
   {
     if (isEnabled())
     {
-      robot_state::RobotStateConstPtr state = getQueryGoalState();
+      moveit::core::RobotStateConstPtr state = getQueryGoalState();
 
       // update link poses
       query_robot_goal_->update(state);
@@ -749,8 +754,8 @@ void MotionPlanningDisplay::drawQueryGoalState()
       std::vector<std::string> collision_links;
       getPlanningSceneRO()->getCollidingLinks(collision_links, *state);
       status_links_goal_.clear();
-      for (std::size_t i = 0; i < collision_links.size(); ++i)
-        status_links_goal_[collision_links[i]] = COLLISION_LINK;
+      for (const std::string& collision_link : collision_links)
+        status_links_goal_[collision_link] = COLLISION_LINK;
       if (!collision_links.empty())
       {
         collision_detection::CollisionResult::ContactMap pairs;
@@ -765,15 +770,15 @@ void MotionPlanningDisplay::drawQueryGoalState()
 
       if (!getCurrentPlanningGroup().empty())
       {
-        const robot_model::JointModelGroup* jmg = state->getJointModelGroup(getCurrentPlanningGroup());
+        const moveit::core::JointModelGroup* jmg = state->getJointModelGroup(getCurrentPlanningGroup());
         if (jmg)
         {
-          const std::vector<const robot_state::JointModel*>& jmodels = jmg->getActiveJointModels();
+          const std::vector<const moveit::core::JointModel*>& jmodels = jmg->getActiveJointModels();
           std::vector<std::string> outside_bounds;
-          for (std::size_t i = 0; i < jmodels.size(); ++i)
-            if (!state->satisfiesBounds(jmodels[i], jmodels[i]->getMaximumExtent() * 1e-2))
+          for (const moveit::core::JointModel* jmodel : jmodels)
+            if (!state->satisfiesBounds(jmodel, jmodel->getMaximumExtent() * 1e-2))
             {
-              outside_bounds.push_back(jmodels[i]->getChildLinkModel()->getName());
+              outside_bounds.push_back(jmodel->getChildLinkModel()->getName());
               status_links_goal_[outside_bounds.back()] = OUTSIDE_BOUNDS_LINK;
             }
 
@@ -942,13 +947,13 @@ void MotionPlanningDisplay::rememberPreviousStartState()
   *previous_state_ = *query_start_state_->getState();
 }
 
-void MotionPlanningDisplay::setQueryStartState(const robot_state::RobotState& start)
+void MotionPlanningDisplay::setQueryStartState(const moveit::core::RobotState& start)
 {
   query_start_state_->setState(start);
   updateQueryStartState();
 }
 
-void MotionPlanningDisplay::setQueryGoalState(const robot_state::RobotState& goal)
+void MotionPlanningDisplay::setQueryGoalState(const moveit::core::RobotState& goal)
 {
   query_goal_state_->setState(goal);
   updateQueryGoalState();
@@ -966,8 +971,8 @@ void MotionPlanningDisplay::useApproximateIK(bool flag)
   }
 }
 
-bool MotionPlanningDisplay::isIKSolutionCollisionFree(robot_state::RobotState* state,
-                                                      const robot_model::JointModelGroup* group,
+bool MotionPlanningDisplay::isIKSolutionCollisionFree(moveit::core::RobotState* state,
+                                                      const moveit::core::JointModelGroup* group,
                                                       const double* ik_solution) const
 {
   if (frame_->ui_->collision_aware_ik->isChecked() && planning_scene_monitor_)
@@ -1059,13 +1064,13 @@ std::string MotionPlanningDisplay::getCurrentPlanningGroup() const
 
 void MotionPlanningDisplay::setQueryStateHelper(bool use_start_state, const std::string& state_name)
 {
-  robot_state::RobotState state = use_start_state ? *getQueryStartState() : *getQueryGoalState();
+  moveit::core::RobotState state = use_start_state ? *getQueryStartState() : *getQueryGoalState();
 
   std::string v = "<" + state_name + ">";
 
   if (v == "<random>")
   {
-    if (const robot_state::JointModelGroup* jmg = state.getJointModelGroup(getCurrentPlanningGroup()))
+    if (const moveit::core::JointModelGroup* jmg = state.getJointModelGroup(getCurrentPlanningGroup()))
       state.setToRandomPositions(jmg);
   }
   else if (v == "<current>")
@@ -1085,7 +1090,7 @@ void MotionPlanningDisplay::setQueryStateHelper(bool use_start_state, const std:
   else
   {
     // maybe it is a named state
-    if (const robot_model::JointModelGroup* jmg = state.getJointModelGroup(getCurrentPlanningGroup()))
+    if (const moveit::core::JointModelGroup* jmg = state.getJointModelGroup(getCurrentPlanningGroup()))
       state.setToDefaultValues(jmg, state_name);
   }
 
@@ -1107,13 +1112,13 @@ void MotionPlanningDisplay::populateMenuHandler(std::shared_ptr<interactive_mark
   // Commands for changing the state
   immh::EntryHandle menu_states =
       mh->insert(is_start ? "Set start state to" : "Set goal state to", immh::FeedbackCallback());
-  for (std::size_t i = 0; i < state_names.size(); ++i)
+  for (const std::string& state_name : state_names)
   {
     // Don't add "same as start" to the start state handler, and vice versa.
-    if ((state_names[i] == "same as start" && is_start) || (state_names[i] == "same as goal" && !is_start))
+    if ((state_name == "same as start" && is_start) || (state_name == "same as goal" && !is_start))
       continue;
-    mh->insert(menu_states, state_names[i],
-               boost::bind(&MotionPlanningDisplay::setQueryStateHelper, this, is_start, state_names[i]));
+    mh->insert(menu_states, state_name,
+               boost::bind(&MotionPlanningDisplay::setQueryStateHelper, this, is_start, state_name));
   }
 
   //  // Group commands, which end up being the same for both interaction handlers
@@ -1142,7 +1147,7 @@ void MotionPlanningDisplay::onRobotModelLoaded()
   query_robot_goal_->load(*getRobotModel()->getURDF());
 
   // initialize previous state, start state, and goal state to current state
-  previous_state_ = std::make_shared<robot_state::RobotState>(getPlanningSceneRO()->getCurrentState());
+  previous_state_ = std::make_shared<moveit::core::RobotState>(getPlanningSceneRO()->getCurrentState());
   query_start_state_.reset(new robot_interaction::InteractionHandler(robot_interaction_, "start", *previous_state_,
                                                                      planning_scene_monitor_->getTFClient()));
   query_goal_state_.reset(new robot_interaction::InteractionHandler(robot_interaction_, "goal", *previous_state_,
@@ -1162,8 +1167,8 @@ void MotionPlanningDisplay::onRobotModelLoaded()
 
   const std::vector<std::string>& groups = getRobotModel()->getJointModelGroupNames();
   planning_group_property_->clearOptions();
-  for (std::size_t i = 0; i < groups.size(); ++i)
-    planning_group_property_->addOptionStd(groups[i]);
+  for (const std::string& group : groups)
+    planning_group_property_->addOptionStd(group);
   planning_group_property_->sortOptions();
   if (!groups.empty() && planning_group_property_->getStdString().empty())
     planning_group_property_->setStdString(groups[0]);
@@ -1177,9 +1182,9 @@ void MotionPlanningDisplay::onRobotModelLoaded()
   gravity_vector.z = 9.81;
 
   dynamics_solver_.clear();
-  for (std::size_t i = 0; i < groups.size(); ++i)
-    if (getRobotModel()->getJointModelGroup(groups[i])->isChain())
-      dynamics_solver_[groups[i]].reset(new dynamics_solver::DynamicsSolver(getRobotModel(), groups[i], gravity_vector));
+  for (const std::string& group : groups)
+    if (getRobotModel()->getJointModelGroup(group)->isChain())
+      dynamics_solver_[group].reset(new dynamics_solver::DynamicsSolver(getRobotModel(), group, gravity_vector));
 
   if (frame_)
     frame_->fillPlanningGroupOptions();
@@ -1190,12 +1195,13 @@ void MotionPlanningDisplay::onNewPlanningSceneState()
   frame_->onNewPlanningSceneState();
 }
 
-void MotionPlanningDisplay::updateStateExceptModified(robot_state::RobotState& dest, const robot_state::RobotState& src)
+void MotionPlanningDisplay::updateStateExceptModified(moveit::core::RobotState& dest,
+                                                      const moveit::core::RobotState& src)
 {
-  robot_state::RobotState src_copy = src;
-  for (std::set<std::string>::const_iterator it = modified_groups_.begin(); it != modified_groups_.end(); ++it)
+  moveit::core::RobotState src_copy = src;
+  for (const std::string& modified_group : modified_groups_)
   {
-    const robot_model::JointModelGroup* jmg = dest.getJointModelGroup(*it);
+    const moveit::core::JointModelGroup* jmg = dest.getJointModelGroup(modified_group);
     if (jmg)
     {
       std::vector<double> values_to_keep;
@@ -1214,14 +1220,14 @@ void MotionPlanningDisplay::updateQueryStates(const moveit::core::RobotState& cu
 
   if (query_start_state_ && query_start_state_property_->getBool() && !group.empty())
   {
-    robot_state::RobotState start = *getQueryStartState();
+    moveit::core::RobotState start = *getQueryStartState();
     updateStateExceptModified(start, current_state);
     setQueryStartState(start);
   }
 
   if (query_goal_state_ && query_goal_state_property_->getBool() && !group.empty())
   {
-    robot_state::RobotState goal = *getQueryGoalState();
+    moveit::core::RobotState goal = *getQueryGoalState();
     updateStateExceptModified(goal, current_state);
     setQueryGoalState(goal);
   }
@@ -1427,8 +1433,8 @@ void MotionPlanningDisplay::fixedFrameChanged()
 // Pick and place
 void MotionPlanningDisplay::clearPlaceLocationsDisplay()
 {
-  for (std::size_t i = 0; i < place_locations_display_.size(); ++i)
-    place_locations_display_[i].reset();
+  for (std::shared_ptr<rviz::Shape>& place_location_shape : place_locations_display_)
+    place_location_shape.reset();
   place_locations_display_.clear();
 }
 

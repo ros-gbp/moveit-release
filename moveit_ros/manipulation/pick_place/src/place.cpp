@@ -39,6 +39,7 @@
 #include <moveit/pick_place/approach_and_translate_stage.h>
 #include <moveit/pick_place/plan_stage.h>
 #include <moveit/robot_state/conversions.h>
+#include <moveit/utils/message_checks.h>
 #include <tf2_eigen/tf2_eigen.h>
 #include <ros/console.h>
 
@@ -51,7 +52,7 @@ PlacePlan::PlacePlan(const PickPlaceConstPtr& pick_place) : PickPlacePlanBase(pi
 namespace
 {
 bool transformToEndEffectorGoal(const geometry_msgs::PoseStamped& goal_pose,
-                                const robot_state::AttachedBody* attached_body, geometry_msgs::PoseStamped& place_pose)
+                                const moveit::core::AttachedBody* attached_body, geometry_msgs::PoseStamped& place_pose)
 {
   const EigenSTL::vector_Isometry3d& fixed_transforms = attached_body->getFixedTransforms();
   if (fixed_transforms.empty())
@@ -71,8 +72,8 @@ bool PlacePlan::plan(const planning_scene::PlanningSceneConstPtr& planning_scene
   double timeout = goal.allowed_planning_time;
   ros::WallTime endtime = ros::WallTime::now() + ros::WallDuration(timeout);
   std::string attached_object_name = goal.attached_object_name;
-  const robot_model::JointModelGroup* jmg = nullptr;
-  const robot_model::JointModelGroup* eef = nullptr;
+  const moveit::core::JointModelGroup* jmg = nullptr;
+  const moveit::core::JointModelGroup* eef = nullptr;
 
   // if the group specified is actually an end-effector, we use it as such
   if (planning_scene->getRobotModel()->hasEndEffector(goal.group_name))
@@ -110,10 +111,10 @@ bool PlacePlan::plan(const planning_scene::PlanningSceneConstPtr& planning_scene
       }
       else
         // check to see if there is an end effector that has attached objects associaded, so we can complete the place
-        for (std::size_t i = 0; i < eef_names.size(); ++i)
+        for (const std::string& eef_name : eef_names)
         {
-          std::vector<const robot_state::AttachedBody*> attached_bodies;
-          const robot_model::JointModelGroup* eg = planning_scene->getRobotModel()->getEndEffector(eef_names[i]);
+          std::vector<const moveit::core::AttachedBody*> attached_bodies;
+          const moveit::core::JointModelGroup* eg = planning_scene->getRobotModel()->getEndEffector(eef_name);
           if (eg)
           {
             // see if there are objects attached to links in the eef
@@ -121,11 +122,11 @@ bool PlacePlan::plan(const planning_scene::PlanningSceneConstPtr& planning_scene
 
             // is is often possible that the objects are attached to the same link that the eef itself is attached,
             // so we check for attached bodies there as well
-            const robot_model::LinkModel* attached_link_model =
+            const moveit::core::LinkModel* attached_link_model =
                 planning_scene->getRobotModel()->getLinkModel(eg->getEndEffectorParentGroup().second);
             if (attached_link_model)
             {
-              std::vector<const robot_state::AttachedBody*> attached_bodies2;
+              std::vector<const moveit::core::AttachedBody*> attached_bodies2;
               planning_scene->getCurrentState().getAttachedBodies(attached_bodies2, attached_link_model);
               attached_bodies.insert(attached_bodies.end(), attached_bodies2.begin(), attached_bodies2.end());
             }
@@ -139,8 +140,8 @@ bool PlacePlan::plan(const planning_scene::PlanningSceneConstPtr& planning_scene
             if (!attached_object_name.empty())
             {
               bool found = false;
-              for (std::size_t j = 0; j < attached_bodies.size(); ++j)
-                if (attached_bodies[j]->getName() == attached_object_name)
+              for (const moveit::core::AttachedBody* attached_body : attached_bodies)
+                if (attached_body->getName() == attached_object_name)
                 {
                   found = true;
                   break;
@@ -162,7 +163,7 @@ bool PlacePlan::plan(const planning_scene::PlanningSceneConstPtr& planning_scene
               return false;
             }
             // set the end effector (this was initialized to NULL above)
-            eef = planning_scene->getRobotModel()->getEndEffector(eef_names[i]);
+            eef = planning_scene->getRobotModel()->getEndEffector(eef_name);
           }
         }
     }
@@ -171,16 +172,17 @@ bool PlacePlan::plan(const planning_scene::PlanningSceneConstPtr& planning_scene
   // if we know the attached object, but not the eef, we can try to identify that
   if (!attached_object_name.empty() && !eef)
   {
-    const robot_state::AttachedBody* attached_body =
+    const moveit::core::AttachedBody* attached_body =
         planning_scene->getCurrentState().getAttachedBody(attached_object_name);
     if (attached_body)
     {
       // get the robot model link this attached body is associated to
-      const robot_model::LinkModel* link = attached_body->getAttachedLink();
+      const moveit::core::LinkModel* link = attached_body->getAttachedLink();
       // check to see if there is a unique end effector containing the link
-      const std::vector<const robot_model::JointModelGroup*>& eefs = planning_scene->getRobotModel()->getEndEffectors();
-      for (std::size_t i = 0; i < eefs.size(); ++i)
-        if (eefs[i]->hasLinkModel(link->getName()))
+      const std::vector<const moveit::core::JointModelGroup*>& eefs =
+          planning_scene->getRobotModel()->getEndEffectors();
+      for (const moveit::core::JointModelGroup* end_effector : eefs)
+        if (end_effector->hasLinkModel(link->getName()))
         {
           if (eef)
           {
@@ -191,7 +193,7 @@ bool PlacePlan::plan(const planning_scene::PlanningSceneConstPtr& planning_scene
             error_code_.val = moveit_msgs::MoveItErrorCodes::INVALID_GROUP_NAME;
             return false;
           }
-          eef = eefs[i];
+          eef = end_effector;
         }
     }
     // if the group is also unknown, but we just found out the eef
@@ -223,7 +225,7 @@ bool PlacePlan::plan(const planning_scene::PlanningSceneConstPtr& planning_scene
   {
     // in the first try, look for objects attached to the eef, if the eef is known;
     // otherwise, look for attached bodies in the planning group itself
-    std::vector<const robot_state::AttachedBody*> attached_bodies;
+    std::vector<const moveit::core::AttachedBody*> attached_bodies;
     planning_scene->getCurrentState().getAttachedBodies(attached_bodies, loop_count == 0 ? eef : jmg);
 
     loop_count++;
@@ -239,7 +241,7 @@ bool PlacePlan::plan(const planning_scene::PlanningSceneConstPtr& planning_scene
       attached_object_name = attached_bodies[0]->getName();
   }
 
-  const robot_state::AttachedBody* attached_body =
+  const moveit::core::AttachedBody* attached_body =
       planning_scene->getCurrentState().getAttachedBody(attached_object_name);
   if (!attached_body)
   {
@@ -369,7 +371,7 @@ PlacePlanPtr PickPlace::planPlace(const planning_scene::PlanningSceneConstPtr& p
                                   const moveit_msgs::PlaceGoal& goal) const
 {
   PlacePlanPtr p(new PlacePlan(shared_from_this()));
-  if (planning_scene::PlanningScene::isEmpty(goal.planning_options.planning_scene_diff))
+  if (moveit::core::isEmpty(goal.planning_options.planning_scene_diff))
     p->plan(planning_scene, goal);
   else
     p->plan(planning_scene->diff(goal.planning_options.planning_scene_diff), goal);

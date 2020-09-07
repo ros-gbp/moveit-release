@@ -49,7 +49,7 @@ public:
   {
   }
 
-  bool initialize(const robot_model::RobotModelConstPtr& model, const std::string& ns) override
+  bool initialize(const moveit::core::RobotModelConstPtr& model, const std::string& /*ns*/) override
   {
     for (const std::string& group : model->getJointModelGroupNames())
     {
@@ -91,7 +91,7 @@ public:
     return context;
   }
 
-  bool canServiceRequest(const planning_interface::MotionPlanRequest& req) const override
+  bool canServiceRequest(const planning_interface::MotionPlanRequest& /*req*/) const override
   {
     // TODO: this is a dummy implementation
     //      capabilities.dummy = false;

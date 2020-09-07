@@ -2,6 +2,9 @@
 Changelog for package moveit_ros_visualization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.1.0 (2020-09-04)
+------------------
+
 1.0.6 (2020-08-19)
 ------------------
 * [feature] MP display: add units to joints tab (`#2264 <https://github.com/ros-planning/moveit/issues/2264>`_)

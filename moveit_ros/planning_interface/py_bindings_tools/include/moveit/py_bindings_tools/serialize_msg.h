@@ -34,8 +34,7 @@
 
 /* Author: Ioan Sucan */
 
-#ifndef MOVEIT_PY_BINDINGS_TOOLS_SERIALIZE_MSG_
-#define MOVEIT_PY_BINDINGS_TOOLS_SERIALIZE_MSG_
+#pragma once
 
 #include <ros/ros.h>
 #include <Python.h>
@@ -130,11 +129,9 @@ struct object_manager_traits<moveit::py_bindings_tools::ByteString>
 #else
   : pytype_object_manager_traits<&PyString_Type, moveit::py_bindings_tools::ByteString>
 #endif
+
 {
 };
-
 }  // namespace converter
 }  // namespace python
 }  // namespace boost
-
-#endif

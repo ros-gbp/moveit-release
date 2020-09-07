@@ -2,6 +2,15 @@
 Changelog for package moveit_servo
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.1.0 (2020-09-04)
+------------------
+* [feature] Update last_sent_command\_ at ServoCalcs start (`#2249 <https://github.com/ros-planning/moveit/issues/2249>`_)
+* [feature] Add a utility to print collision pairs (`#2275 <https://github.com/ros-planning/moveit/issues/2275>`_)
+* [fix] Various fixes for upcoming Noetic release (`#2180 <https://github.com/ros-planning/moveit/issues/2180>`_)
+* [maint] add soname version to moveit_servo (`#2266 <https://github.com/ros-planning/moveit/issues/2266>`_)
+* [maint] delete python integration tests (`#2186 <https://github.com/ros-planning/moveit/issues/2186>`_)
+* Contributors: AdamPettinger, AndyZe, Robert Haschke, Ruofan Xu, Tyler Weaver, v4hn
+
 1.0.6 (2020-08-19)
 ------------------
 * [feature] A ROS service to reset the Servo status (`#2246 <https://github.com/ros-planning/moveit/issues/2246>`_)
@@ -119,3 +128,63 @@ Changelog for package moveit_servo
   * Better comments in config file, add spacenav_node dependency
   * Add spacenav_node to CMakeLists.
 * Contributors: AdamPettinger, AndyZe, Ayush Garg, Dale Koenig, Dave Coleman, Jonathan Binney, Paul Verhoeckx, Henning Kayser, Jafar Abdi, John Stechschulte, Mike Lautman, Robert Haschke, SansoneG, jschleicher, Tyler Weaver, rfeistenauer
+
+1.0.1 (2019-03-08)
+------------------
+
+1.0.0 (2019-02-24)
+------------------
+
+0.10.8 (2018-12-24)
+-------------------
+
+0.10.5 (2018-11-01)
+-------------------
+
+0.10.4 (2018-10-29 19:44)
+-------------------------
+
+0.10.3 (2018-10-29 04:12)
+-------------------------
+
+0.10.2 (2018-10-24)
+-------------------
+
+0.10.1 (2018-05-25)
+-------------------
+
+0.10.0 (2018-05-22)
+-------------------
+
+0.9.11 (2017-12-25)
+-------------------
+
+0.9.10 (2017-12-09)
+-------------------
+
+0.9.9 (2017-08-06)
+------------------
+
+0.9.8 (2017-06-21)
+------------------
+
+0.9.7 (2017-06-05)
+------------------
+
+0.9.6 (2017-04-12)
+------------------
+
+0.9.5 (2017-03-08)
+------------------
+
+0.9.4 (2017-02-06)
+------------------
+
+0.9.3 (2016-11-16)
+------------------
+
+0.9.2 (2016-11-05)
+------------------
+
+0.9.1 (2016-10-21)
+------------------

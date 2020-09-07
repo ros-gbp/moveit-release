@@ -39,6 +39,11 @@
 #include <moveit/profiler/profiler.h>
 #include <ros/ros.h>
 
+namespace ompl_interface
+{
+constexpr char LOGNAME[] = "state_validity_checker";
+}  // namespace ompl_interface
+
 ompl_interface::StateValidityChecker::StateValidityChecker(const ModelBasedPlanningContext* pc)
   : ompl::base::StateValidityChecker(pc->getOMPLSimpleSetup()->getSpaceInformation())
   , planning_context_(pc)
@@ -70,129 +75,19 @@ void ompl_interface::StateValidityChecker::setVerbose(bool flag)
 
 bool ompl_interface::StateValidityChecker::isValid(const ompl::base::State* state, bool verbose) const
 {
-  //  moveit::Profiler::ScopedBlock sblock("isValid");
-  return planning_context_->useStateValidityCache() ? isValidWithCache(state, verbose) :
-                                                      isValidWithoutCache(state, verbose);
-}
-
-bool ompl_interface::StateValidityChecker::isValid(const ompl::base::State* state, double& dist, bool verbose) const
-{
-  //  moveit::Profiler::ScopedBlock sblock("isValid");
-  return planning_context_->useStateValidityCache() ? isValidWithCache(state, dist, verbose) :
-                                                      isValidWithoutCache(state, dist, verbose);
-}
-
-double ompl_interface::StateValidityChecker::cost(const ompl::base::State* state) const
-{
-  double cost = 0.0;
-
-  robot_state::RobotState* robot_state = tss_.getStateStorage();
-  planning_context_->getOMPLStateSpace()->copyToRobotState(*robot_state, state);
-
-  // Calculates cost from a summation of distance to obstacles times the size of the obstacle
-  collision_detection::CollisionResult res;
-  planning_context_->getPlanningScene()->checkCollision(collision_request_with_cost_, res, *robot_state);
-
-  for (const collision_detection::CostSource& cost_source : res.cost_sources)
-    cost += cost_source.cost * cost_source.getVolume();
-
-  return cost;
-}
-
-double ompl_interface::StateValidityChecker::clearance(const ompl::base::State* state) const
-{
-  robot_state::RobotState* robot_state = tss_.getStateStorage();
-  planning_context_->getOMPLStateSpace()->copyToRobotState(*robot_state, state);
-
-  collision_detection::CollisionResult res;
-  planning_context_->getPlanningScene()->checkCollision(collision_request_with_distance_, res, *robot_state);
-  return res.collision ? 0.0 : (res.distance < 0.0 ? std::numeric_limits<double>::infinity() : res.distance);
-}
-
-bool ompl_interface::StateValidityChecker::isValidWithoutCache(const ompl::base::State* state, bool verbose) const
-{
-  // check bounds
-  if (!si_->satisfiesBounds(state))
-  {
-    if (verbose)
-      ROS_INFO_NAMED("state_validity_checker", "State outside bounds");
-    return false;
-  }
-
-  // convert ompl state to MoveIt! robot state
-  robot_state::RobotState* robot_state = tss_.getStateStorage();
-  planning_context_->getOMPLStateSpace()->copyToRobotState(*robot_state, state);
-
-  // check path constraints
-  const kinematic_constraints::KinematicConstraintSetPtr& kset = planning_context_->getPathConstraints();
-  if (kset && !kset->decide(*robot_state, verbose).satisfied)
-    return false;
-
-  // check feasibility
-  if (!planning_context_->getPlanningScene()->isStateFeasible(*robot_state, verbose))
-    return false;
-
-  // check collision avoidance
-  collision_detection::CollisionResult res;
-  planning_context_->getPlanningScene()->checkCollision(
-      verbose ? collision_request_simple_verbose_ : collision_request_simple_, res, *robot_state);
-  return !res.collision;
-}
-
-bool ompl_interface::StateValidityChecker::isValidWithoutCache(const ompl::base::State* state, double& dist,
-                                                               bool verbose) const
-{
-  if (!si_->satisfiesBounds(state))
-  {
-    if (verbose)
-      ROS_INFO_NAMED("state_validity_checker", "State outside bounds");
-    return false;
-  }
-
-  robot_state::RobotState* robot_state = tss_.getStateStorage();
-  planning_context_->getOMPLStateSpace()->copyToRobotState(*robot_state, state);
-
-  // check path constraints
-  const kinematic_constraints::KinematicConstraintSetPtr& kset = planning_context_->getPathConstraints();
-  if (kset)
-  {
-    kinematic_constraints::ConstraintEvaluationResult cer = kset->decide(*robot_state, verbose);
-    if (!cer.satisfied)
-    {
-      dist = cer.distance;
-      return false;
-    }
-  }
-
-  // check feasibility
-  if (!planning_context_->getPlanningScene()->isStateFeasible(*robot_state, verbose))
-  {
-    dist = 0.0;
-    return false;
-  }
-
-  // check collision avoidance
-  collision_detection::CollisionResult res;
-  planning_context_->getPlanningScene()->checkCollision(
-      verbose ? collision_request_with_distance_verbose_ : collision_request_with_distance_, res, *robot_state);
-  dist = res.distance;
-  return !res.collision;
-}
-
-bool ompl_interface::StateValidityChecker::isValidWithCache(const ompl::base::State* state, bool verbose) const
-{
+  // Use cached validity if it is available
   if (state->as<ModelBasedStateSpace::StateType>()->isValidityKnown())
     return state->as<ModelBasedStateSpace::StateType>()->isMarkedValid();
 
   if (!si_->satisfiesBounds(state))
   {
     if (verbose)
-      ROS_INFO_NAMED("state_validity_checker", "State outside bounds");
+      ROS_INFO_NAMED(LOGNAME, "State outside bounds");
     const_cast<ob::State*>(state)->as<ModelBasedStateSpace::StateType>()->markInvalid();
     return false;
   }
 
-  robot_state::RobotState* robot_state = tss_.getStateStorage();
+  moveit::core::RobotState* robot_state = tss_.getStateStorage();
   planning_context_->getOMPLStateSpace()->copyToRobotState(*robot_state, state);
 
   // check path constraints
@@ -225,9 +120,9 @@ bool ompl_interface::StateValidityChecker::isValidWithCache(const ompl::base::St
   return !res.collision;
 }
 
-bool ompl_interface::StateValidityChecker::isValidWithCache(const ompl::base::State* state, double& dist,
-                                                            bool verbose) const
+bool ompl_interface::StateValidityChecker::isValid(const ompl::base::State* state, double& dist, bool verbose) const
 {
+  // Use cached validity and distance if they are available
   if (state->as<ModelBasedStateSpace::StateType>()->isValidityKnown() &&
       state->as<ModelBasedStateSpace::StateType>()->isGoalDistanceKnown())
   {
@@ -238,12 +133,12 @@ bool ompl_interface::StateValidityChecker::isValidWithCache(const ompl::base::St
   if (!si_->satisfiesBounds(state))
   {
     if (verbose)
-      ROS_INFO_NAMED("state_validity_checker", "State outside bounds");
+      ROS_INFO_NAMED(LOGNAME, "State outside bounds");
     const_cast<ob::State*>(state)->as<ModelBasedStateSpace::StateType>()->markInvalid(0.0);
     return false;
   }
 
-  robot_state::RobotState* robot_state = tss_.getStateStorage();
+  moveit::core::RobotState* robot_state = tss_.getStateStorage();
   planning_context_->getOMPLStateSpace()->copyToRobotState(*robot_state, state);
 
   // check path constraints
@@ -272,4 +167,31 @@ bool ompl_interface::StateValidityChecker::isValidWithCache(const ompl::base::St
       verbose ? collision_request_with_distance_verbose_ : collision_request_with_distance_, res, *robot_state);
   dist = res.distance;
   return !res.collision;
+}
+
+double ompl_interface::StateValidityChecker::cost(const ompl::base::State* state) const
+{
+  double cost = 0.0;
+
+  moveit::core::RobotState* robot_state = tss_.getStateStorage();
+  planning_context_->getOMPLStateSpace()->copyToRobotState(*robot_state, state);
+
+  // Calculates cost from a summation of distance to obstacles times the size of the obstacle
+  collision_detection::CollisionResult res;
+  planning_context_->getPlanningScene()->checkCollision(collision_request_with_cost_, res, *robot_state);
+
+  for (const collision_detection::CostSource& cost_source : res.cost_sources)
+    cost += cost_source.cost * cost_source.getVolume();
+
+  return cost;
+}
+
+double ompl_interface::StateValidityChecker::clearance(const ompl::base::State* state) const
+{
+  moveit::core::RobotState* robot_state = tss_.getStateStorage();
+  planning_context_->getOMPLStateSpace()->copyToRobotState(*robot_state, state);
+
+  collision_detection::CollisionResult res;
+  planning_context_->getPlanningScene()->checkCollision(collision_request_with_distance_, res, *robot_state);
+  return res.collision ? 0.0 : (res.distance < 0.0 ? std::numeric_limits<double>::infinity() : res.distance);
 }

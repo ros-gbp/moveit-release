@@ -16,7 +16,7 @@ env:
     - ROS_DISTRO=melodic
     - ROS_REPO=ros
     - UPSTREAM_WORKSPACE=moveit.rosinstall
-    - CXXFLAGS="-Wall -Wextra -Wwrite-strings -Wunreachable-code -Wpointer-arith -Wredundant-decls -Wno-unused-parameter -Wno-unused-but-set-parameter -Wno-unused-function"
+    - CXXFLAGS="-Wall -Wextra -Wwrite-strings -Wunreachable-code -Wpointer-arith -Wredundant-decls"
     - WARNINGS_OK=false
 
 jobs:
@@ -24,20 +24,17 @@ jobs:
   include:
     - env: TEST="clang-format catkin_lint"
     - env: TEST=code-coverage
+    - env: ROS_DISTRO=noetic ROS_REPO=ros-testing
     - env: ROS_DISTRO=melodic
-    - env: ROS_DISTRO=kinetic
     - compiler: clang
       # test_ikfast_plugins takes ~10 minutes: include here to keep the main jobs shorter
       env: TEST=clang-tidy-fix
            BEFORE_DOCKER_SCRIPT="source moveit_kinematics/test/test_ikfast_plugins.sh"
-           CXXFLAGS="-Wall -Wextra -Wwrite-strings -Wunreachable-code -Wpointer-arith -Wredundant-decls -Wno-unused-parameter -Wno-unused-function -Wno-overloaded-virtual"
+           CXXFLAGS="-Wall -Wextra -Wwrite-strings -Wunreachable-code -Wpointer-arith -Wredundant-decls -Wno-overloaded-virtual"
     - if: branch =~ /^(.*-devel|master)$/
       env: ROS_REPO=ros-shadow-fixed
   allow_failures:
     - env: TEST=code-coverage
-    - env: TEST=clang-tidy-fix
-           BEFORE_DOCKER_SCRIPT="source moveit_kinematics/test/test_ikfast_plugins.sh"
-           CXXFLAGS="-Wall -Wextra -Wwrite-strings -Wunreachable-code -Wpointer-arith -Wredundant-decls -Wno-unused-parameter -Wno-unused-function -Wno-overloaded-virtual"
 
 before_script:
   - git clone -q --depth=1 https://github.com/ros-planning/moveit_ci.git .moveit_ci

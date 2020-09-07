@@ -34,11 +34,15 @@
 
 /* Author: Robert Haschke */
 
-#ifndef MOVEIT_MOTION_PLANNING_RVIZ_PLUGIN_MOTION_PLANNING_PARAM_WIDGET_
-#define MOVEIT_MOTION_PLANNING_RVIZ_PLUGIN_MOTION_PLANNING_PARAM_WIDGET_
+#pragma once
 
-#include <rviz/properties/property_tree_widget.h>
 #include <moveit/macros/class_forward.h>
+#include <moveit/macros/diagnostics.h>
+DIAGNOSTIC_PUSH
+SILENT_UNUSED_PARAM
+#include <rviz/properties/property_tree_widget.h>
+DIAGNOSTIC_POP
+
 namespace moveit
 {
 namespace planning_interface
@@ -54,7 +58,7 @@ class MotionPlanningParamWidget : public rviz::PropertyTreeWidget
   Q_OBJECT
 public:
   MotionPlanningParamWidget(const MotionPlanningParamWidget&) = delete;
-  MotionPlanningParamWidget(QWidget* parent = 0);
+  MotionPlanningParamWidget(QWidget* parent = nullptr);
   ~MotionPlanningParamWidget() override;
 
   void setMoveGroup(const moveit::planning_interface::MoveGroupInterfacePtr& mg);
@@ -77,5 +81,3 @@ private:
   std::string planner_id_;
 };
 }  // namespace moveit_rviz_plugin
-
-#endif

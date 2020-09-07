@@ -92,18 +92,6 @@ PlanningComponent::~PlanningComponent()
   clearContents();
 }
 
-PlanningComponent& PlanningComponent::operator=(PlanningComponent&& other)
-{
-  if (this != &other)
-  {
-    this->considered_start_state_ = other.considered_start_state_;
-    this->workspace_parameters_ = other.workspace_parameters_;
-    this->last_plan_solution_ = other.last_plan_solution_;
-    other.clearContents();
-  }
-  return *this;
-}
-
 const std::vector<std::string> PlanningComponent::getNamedTargetStates()
 {
   if (joint_model_group_)
@@ -211,19 +199,19 @@ PlanningComponent::PlanSolution PlanningComponent::plan()
   return plan(plan_request_parameters_);
 }
 
-bool PlanningComponent::setStartState(const robot_state::RobotState& start_state)
+bool PlanningComponent::setStartState(const moveit::core::RobotState& start_state)
 {
-  considered_start_state_.reset(new robot_state::RobotState(start_state));
+  considered_start_state_.reset(new moveit::core::RobotState(start_state));
   return true;
 }
 
-robot_state::RobotStatePtr PlanningComponent::getStartState()
+moveit::core::RobotStatePtr PlanningComponent::getStartState()
 {
   if (considered_start_state_)
     return considered_start_state_;
   else
   {
-    robot_state::RobotStatePtr s;
+    moveit::core::RobotStatePtr s;
     moveit_cpp_->getCurrentState(s, 1.0);
     return s;
   }
@@ -237,7 +225,7 @@ bool PlanningComponent::setStartState(const std::string& start_state_name)
     ROS_ERROR_NAMED(LOGNAME, "No predefined joint state found for target name '%s'", start_state_name.c_str());
     return false;
   }
-  robot_state::RobotState start_state(moveit_cpp_->getRobotModel());
+  moveit::core::RobotState start_state(moveit_cpp_->getRobotModel());
   start_state.setToDefaultValues(joint_model_group_, start_state_name);
   return setStartState(start_state);
 }
@@ -279,7 +267,7 @@ bool PlanningComponent::setGoal(const std::vector<moveit_msgs::Constraints>& goa
   return true;
 }
 
-bool PlanningComponent::setGoal(const robot_state::RobotState& goal_state)
+bool PlanningComponent::setGoal(const moveit::core::RobotState& goal_state)
 {
   current_goal_constraints_ = { kinematic_constraints::constructGoalConstraints(goal_state, joint_model_group_) };
   return true;
@@ -299,7 +287,7 @@ bool PlanningComponent::setGoal(const std::string& goal_state_name)
     ROS_ERROR_NAMED(LOGNAME, "No predefined joint state found for target name '%s'", goal_state_name.c_str());
     return false;
   }
-  robot_state::RobotState goal_state(moveit_cpp_->getRobotModel());
+  moveit::core::RobotState goal_state(moveit_cpp_->getRobotModel());
   goal_state.setToDefaultValues(joint_model_group_, goal_state_name);
   return setGoal(goal_state);
 }

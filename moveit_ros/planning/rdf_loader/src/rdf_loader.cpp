@@ -34,7 +34,7 @@
 
 /* Author: Ioan Sucan, Mathias Lüdtke, Dave Coleman */
 
-// MoveIt!
+// MoveIt
 #include <moveit/rdf_loader/rdf_loader.h>
 #include <moveit/profiler/profiler.h>
 
@@ -176,8 +176,8 @@ bool rdf_loader::RDFLoader::loadXacroFileToString(std::string& buffer, const std
   }
 
   std::string cmd = "rosrun xacro xacro ";
-  for (std::vector<std::string>::const_iterator it = xacro_args.begin(); it != xacro_args.end(); ++it)
-    cmd += *it + " ";
+  for (const std::string& xacro_arg : xacro_args)
+    cmd += xacro_arg + " ";
   cmd += path;
 
   FILE* pipe = popen(cmd.c_str(), "r");

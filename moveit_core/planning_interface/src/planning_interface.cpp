@@ -91,7 +91,7 @@ void PlanningContext::setMotionPlanRequest(const MotionPlanRequest& request)
   request_.num_planning_attempts = std::max(1, request_.num_planning_attempts);
 }
 
-bool PlannerManager::initialize(const robot_model::RobotModelConstPtr& /*unused*/, const std::string& /*unused*/)
+bool PlannerManager::initialize(const moveit::core::RobotModelConstPtr& /*unused*/, const std::string& /*unused*/)
 {
   return true;
 }
@@ -123,8 +123,8 @@ void PlannerManager::terminate() const
 {
   ActiveContexts& ac = getActiveContexts();
   boost::mutex::scoped_lock _(ac.mutex_);
-  for (std::set<PlanningContext*>::iterator it = ac.contexts_.begin(); it != ac.contexts_.end(); ++it)
-    (*it)->terminate();
+  for (PlanningContext* context : ac.contexts_)
+    context->terminate();
 }
 
 }  // end of namespace planning_interface

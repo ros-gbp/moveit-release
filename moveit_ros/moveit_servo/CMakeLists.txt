@@ -47,8 +47,8 @@ catkin_package(
     EIGEN3
 )
 
-include_directories(
-  include
+include_directories(include)
+include_directories(SYSTEM
   ${catkin_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIR}
@@ -65,6 +65,7 @@ add_library(${LIBRARY_NAME} SHARED
   src/joint_state_subscriber.cpp
   src/low_pass_filter.cpp
 )
+set_target_properties(${LIBRARY_NAME} PROPERTIES VERSION "${${PROJECT_NAME}_VERSION}")
 add_dependencies(${LIBRARY_NAME} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(${LIBRARY_NAME}
   ${catkin_LIBRARIES}
@@ -126,6 +127,9 @@ install(
 install(DIRECTORY include/${PROJECT_NAME}/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
 )
+
+install(DIRECTORY launch DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
+install(DIRECTORY config DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 
 #############
 ## TESTING ##

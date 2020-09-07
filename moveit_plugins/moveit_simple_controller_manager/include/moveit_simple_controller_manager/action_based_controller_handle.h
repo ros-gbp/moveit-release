@@ -35,8 +35,7 @@
 
 /* Author: Michael Ferguson, Ioan Sucan, E. Gil Jones */
 
-#ifndef MOVEIT_PLUGINS_ACTION_BASED_CONTROLLER_HANDLE
-#define MOVEIT_PLUGINS_ACTION_BASED_CONTROLLER_HANDLE
+#pragma once
 
 #include <actionlib/client/simple_action_client.h>
 #include <moveit/controller_manager/controller_manager.h>
@@ -57,7 +56,7 @@ public:
 
   virtual void addJoint(const std::string& name) = 0;
   virtual void getJoints(std::vector<std::string>& joints) = 0;
-  virtual void configure(XmlRpc::XmlRpcValue& config)
+  virtual void configure(XmlRpc::XmlRpcValue& /* config */)
   {
   }
 };
@@ -153,7 +152,7 @@ public:
 
 protected:
   ros::NodeHandle nh_;
-  std::string getActionName(void) const
+  std::string getActionName() const
   {
     if (namespace_.empty())
       return name_;
@@ -192,5 +191,3 @@ protected:
 };
 
 }  // end namespace moveit_simple_controller_manager
-
-#endif  // MOVEIT_PLUGINS_ACTION_BASED_CONTROLLER_HANDLE

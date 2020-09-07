@@ -2,6 +2,23 @@
 Changelog for package moveit_ros_benchmarks
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.1.0 (2020-09-04)
+------------------
+* [feature] Benchmark combinations of predefined poses (`#1548 <https://github.com/ros-planning/moveit/issues/1548>`_)
+* [feature] Support benchmarking of full planning pipelines (`#1531 <https://github.com/ros-planning/moveit/issues/1531>`_)
+* [fix] Various fixes for upcoming Noetic release (`#2180 <https://github.com/ros-planning/moveit/issues/2180>`_)
+* [fix] Fix plot details, correcting xlabels positions and cleaning the graph (`#1658 <https://github.com/ros-planning/moveit/issues/1658>`_) (`#1668 <https://github.com/ros-planning/moveit/issues/1668>`_)
+* [maint] Optional cpp version setting (`#2166 <https://github.com/ros-planning/moveit/issues/2166>`_)
+* [maint] clang-tidy fixes (`#2050 <https://github.com/ros-planning/moveit/issues/2050>`_, `#2004 <https://github.com/ros-planning/moveit/issues/2004>`_, `#1419 <https://github.com/ros-planning/moveit/issues/1419>`_)
+* [maint] Fix usage of panda_moveit_config (`#1904 <https://github.com/ros-planning/moveit/issues/1904>`_)
+* [maint] Replace namespaces robot_state and robot_model with moveit::core (`#1924 <https://github.com/ros-planning/moveit/issues/1924>`_)
+* [maint] Fix compiler warnings (`#1773 <https://github.com/ros-planning/moveit/issues/1773>`_)
+* [maint] Do not install helper scripts in global bin destination (`#1704 <https://github.com/ros-planning/moveit/issues/1704>`_)
+* [maint] Cleanup launch + config files (`#1631 <https://github.com/ros-planning/moveit/issues/1631>`_)
+* [maint] Switch from include guards to pragma once (`#1615 <https://github.com/ros-planning/moveit/issues/1615>`_)
+* [maint] Remove ! from MoveIt name (`#1590 <https://github.com/ros-planning/moveit/issues/1590>`_)
+* Contributors: Ayush Garg, Dave Coleman, Henning Kayser, Jonathan Binney, Mahmoud Ahmed Selim, Markus Vieth, Michael Görner, Robert Haschke, Sean Yen, Tyler Weaver, Yu, Yan
+
 1.0.6 (2020-08-19)
 ------------------
 * [maint] Adapt repository for splitted moveit_resources layout (`#2199 <https://github.com/ros-planning/moveit/issues/2199>`_)
@@ -191,13 +208,13 @@ Changelog for package moveit_ros_benchmarks
   as a symlink pointing to the versioned file.
   Because this sets each library's SONAME to the *full version*, this enforces
   that *every* binary links with the versioned library file from now on and
-  has to be relinked with *each* new release of MoveIt!.
+  has to be relinked with *each* new release of MoveIt.
   The alternative would be to set the SONAME to `$MAJOR.$MINOR` and ignore the patch version,
   but because we currently stay with one `$MAJOR.$MINOR` number within each ROS distribution,
   we had (and likely will have) ABI changes in the `$PATCH` version releases too.
   The reason for this commit is that it is practically impossible to maintain full ABI compatibility
   within each ROS distribution and still add the the features/patches the community asks for.
-  This has resulted in more than one ABI-incompatible MoveIt! release in the recent past
+  This has resulted in more than one ABI-incompatible MoveIt release in the recent past
   within a ROS distribution. Because the libraries have not been versioned up to now,
   there was no way to indicate the incompatible changes and users who did not rebuild
   their whole workspace with the new release encountered weird and hard-to-track segfaults

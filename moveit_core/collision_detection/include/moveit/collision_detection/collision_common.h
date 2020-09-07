@@ -34,8 +34,7 @@
 
 /* Author: Ioan Sucan */
 
-#ifndef MOVEIT_COLLISION_DETECTION_COLLISION_COMMON_
-#define MOVEIT_COLLISION_DETECTION_COLLISION_COMMON_
+#pragma once
 
 #include <boost/array.hpp>
 #include <boost/function.hpp>
@@ -95,6 +94,15 @@ struct Contact
 
   /** \brief The type of the second body involved in the contact */
   BodyType body_type_2;
+
+  /** \brief The distance percentage between casted poses until collision.
+   *
+   *  If the value is 0, then the collision occured in the start pose. If the value is 1, then the collision occured in
+   *  the end pose. */
+  double percent_interpolation;
+
+  /** \brief The two nearest points connecting the two bodies */
+  Eigen::Vector3d nearest_points[2];
 };
 
 /** \brief When collision costs are computed, this structure contains information about the partial cost incurred in a
@@ -152,6 +160,9 @@ struct CollisionResult
     contacts.clear();
     cost_sources.clear();
   }
+
+  /** \brief Throttled warning printing the first collision pair, if any. All collisions are logged at DEBUG level */
+  void print() const;
 
   /** \brief True if collision was found, false otherwise */
   bool collision;
@@ -248,7 +259,7 @@ struct DistanceRequest
   }
 
   /// Compute \e active_components_only_ based on \e req_
-  void enableGroup(const robot_model::RobotModelConstPtr& robot_model)
+  void enableGroup(const moveit::core::RobotModelConstPtr& robot_model)
   {
     if (robot_model->hasJointModelGroup(group_name))
       active_components_only = &robot_model->getJointModelGroup(group_name)->getUpdatedLinkModelsSet();
@@ -274,7 +285,7 @@ struct DistanceRequest
   std::string group_name;
 
   /// The set of active components to check
-  const std::set<const robot_model::LinkModel*>* active_components_only;
+  const std::set<const moveit::core::LinkModel*>* active_components_only;
 
   /// The allowed collision matrix used to filter checks
   const AllowedCollisionMatrix* acm;
@@ -385,5 +396,3 @@ struct DistanceResult
   }
 };
 }  // namespace collision_detection
-
-#endif

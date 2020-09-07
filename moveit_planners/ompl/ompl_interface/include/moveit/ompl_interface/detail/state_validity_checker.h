@@ -34,8 +34,7 @@
 
 /* Author: Ioan Sucan */
 
-#ifndef MOVEIT_OMPL_INTERFACE_DETAIL_STATE_VALIDITY_CHECKER_
-#define MOVEIT_OMPL_INTERFACE_DETAIL_STATE_VALIDITY_CHECKER_
+#pragma once
 
 #include <moveit/ompl_interface/detail/threadsafe_state_storage.h>
 #include <moveit/collision_detection/collision_common.h>
@@ -71,12 +70,6 @@ public:
   void setVerbose(bool flag);
 
 protected:
-  bool isValidWithoutCache(const ompl::base::State* state, bool verbose) const;
-  bool isValidWithoutCache(const ompl::base::State* state, double& dist, bool verbose) const;
-
-  bool isValidWithCache(const ompl::base::State* state, bool verbose) const;
-  bool isValidWithCache(const ompl::base::State* state, double& dist, bool verbose) const;
-
   const ModelBasedPlanningContext* planning_context_;
   std::string group_name_;
   TSStateStorage tss_;
@@ -89,5 +82,3 @@ protected:
   bool verbose_;
 };
 }  // namespace ompl_interface
-
-#endif

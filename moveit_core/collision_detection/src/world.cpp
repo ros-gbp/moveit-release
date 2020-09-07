@@ -35,6 +35,8 @@
 /* Author: Acorn Pooley, Ioan Sucan */
 
 #include <moveit/collision_detection/world.h>
+#include <geometric_shapes/check_isometry.h>
+#include <boost/algorithm/string/predicate.hpp>
 #include <ros/console.h>
 
 namespace collision_detection
@@ -58,6 +60,7 @@ inline void World::addToObjectInternal(const ObjectPtr& obj, const shapes::Shape
                                        const Eigen::Isometry3d& pose)
 {
   obj->shapes_.push_back(shape);
+  ASSERT_ISOMETRY(pose)  // unsanitized input, could contain a non-isometry
   obj->shape_poses_.push_back(pose);
 }
 
@@ -136,6 +139,66 @@ bool World::hasObject(const std::string& object_id) const
   return objects_.find(object_id) != objects_.end();
 }
 
+bool World::knowsTransform(const std::string& name) const
+{
+  // Check object names first
+  std::map<std::string, ObjectPtr>::const_iterator it = objects_.find(name);
+  if (it != objects_.end())
+    // only accept object name as frame if it is associated to a unique shape
+    return !it->second->shape_poses_.empty();
+  else  // Then objects' subframes
+  {
+    for (const std::pair<const std::string, ObjectPtr>& object : objects_)
+    {
+      // if "object name/" matches start of object_id, we found the matching object
+      if (boost::starts_with(name, object.first) && name[object.first.length()] == '/')
+        return object.second->subframe_poses_.find(name.substr(object.first.length() + 1)) !=
+               object.second->subframe_poses_.end();
+    }
+  }
+  return false;
+}
+
+const Eigen::Isometry3d& World::getTransform(const std::string& name) const
+{
+  bool found;
+  const Eigen::Isometry3d& result = getTransform(name, found);
+  if (!found)
+    throw std::runtime_error("No transform found with name: " + name);
+  return result;
+}
+
+const Eigen::Isometry3d& World::getTransform(const std::string& name, bool& frame_found) const
+{
+  // assume found
+  frame_found = true;
+
+  std::map<std::string, ObjectPtr>::const_iterator it = objects_.find(name);
+  if (it != objects_.end())
+  {
+    if (!it->second->shape_poses_.empty())
+      return it->second->shape_poses_[0];
+  }
+  else  // Search within subframes
+  {
+    for (const std::pair<const std::string, ObjectPtr>& object : objects_)
+    {
+      // if "object name/" matches start of object_id, we found the matching object
+      if (boost::starts_with(name, object.first) && name[object.first.length()] == '/')
+      {
+        auto it = object.second->subframe_poses_.find(name.substr(object.first.length() + 1));
+        if (it != object.second->subframe_poses_.end())
+          return it->second;
+      }
+    }
+  }
+
+  // we need a persisting isometry for the API
+  static const Eigen::Isometry3d IDENTITY_TRANSFORM = Eigen::Isometry3d::Identity();
+  frame_found = false;
+  return IDENTITY_TRANSFORM;
+}
+
 bool World::moveShapeInObject(const std::string& object_id, const shapes::ShapeConstPtr& shape,
                               const Eigen::Isometry3d& pose)
 {
@@ -147,6 +210,7 @@ bool World::moveShapeInObject(const std::string& object_id, const shapes::ShapeC
       if (it->second->shapes_[i] == shape)
       {
         ensureUnique(it->second);
+        ASSERT_ISOMETRY(pose)  // unsanitized input, could contain a non-isometry
         it->second->shape_poses_[i] = pose;
 
         notify(it->second, MOVE_SHAPE);
@@ -166,6 +230,7 @@ bool World::moveObject(const std::string& object_id, const Eigen::Isometry3d& tr
   ensureUnique(it->second);
   for (size_t i = 0, n = it->second->shapes_.size(); i < n; ++i)
   {
+    ASSERT_ISOMETRY(transform)  // unsanitized input, could contain a non-isometry
     it->second->shape_poses_[i] = transform * it->second->shape_poses_[i];
   }
   notify(it->second, MOVE_SHAPE);
@@ -218,6 +283,21 @@ void World::clearObjects()
   objects_.clear();
 }
 
+bool World::setSubframesOfObject(const std::string& object_id, const moveit::core::FixedTransformsMap& subframe_poses)
+{
+  auto obj_pair = objects_.find(object_id);
+  if (obj_pair == objects_.end())
+  {
+    return false;
+  }
+  for (const auto& t : subframe_poses)
+  {
+    ASSERT_ISOMETRY(t.second)  // unsanitized input, could contain a non-isometry
+  }
+  obj_pair->second->subframe_poses_ = subframe_poses;
+  return true;
+}
+
 World::ObserverHandle World::addObserver(const ObserverCallbackFn& callback)
 {
   auto o = new Observer(callback);
@@ -246,8 +326,8 @@ void World::notifyAll(Action action)
 
 void World::notify(const ObjectConstPtr& obj, Action action)
 {
-  for (std::vector<Observer*>::const_iterator obs = observers_.begin(); obs != observers_.end(); ++obs)
-    (*obs)->callback_(obj, action);
+  for (Observer* observer : observers_)
+    observer->callback_(obj, action);
 }
 
 void World::notifyObserverAllObjects(const ObserverHandle observer_handle, Action action) const

@@ -93,32 +93,13 @@ MoveItCpp::MoveItCpp(const Options& options, const ros::NodeHandle& nh,
   trajectory_execution_manager_.reset(new trajectory_execution_manager::TrajectoryExecutionManager(
       robot_model_, planning_scene_monitor_->getStateMonitor()));
 
-  ROS_INFO_NAMED(LOGNAME, "MoveItCpp running");
-}
-
-MoveItCpp::MoveItCpp(MoveItCpp&& other)
-{
-  other.clearContents();
+  ROS_DEBUG_NAMED(LOGNAME, "MoveItCpp running");
 }
 
 MoveItCpp::~MoveItCpp()
 {
   ROS_INFO_NAMED(LOGNAME, "Deleting MoveItCpp");
   clearContents();
-}
-
-MoveItCpp& MoveItCpp::operator=(MoveItCpp&& other)
-{
-  if (this != &other)
-  {
-    this->node_handle_ = other.node_handle_;
-    this->tf_buffer_ = other.tf_buffer_;
-    this->robot_model_ = other.robot_model_;
-    this->planning_scene_monitor_ = other.planning_scene_monitor_;
-    other.clearContents();
-  }
-
-  return *this;
 }
 
 bool MoveItCpp::loadPlanningSceneMonitor(const PlanningSceneMonitorOptions& options)
@@ -202,7 +183,7 @@ bool MoveItCpp::loadPlanningPipelines(const PlanningPipelineOptions& options)
   return true;
 }
 
-robot_model::RobotModelConstPtr MoveItCpp::getRobotModel() const
+moveit::core::RobotModelConstPtr MoveItCpp::getRobotModel() const
 {
   return robot_model_;
 }
@@ -212,7 +193,7 @@ const ros::NodeHandle& MoveItCpp::getNodeHandle() const
   return node_handle_;
 }
 
-bool MoveItCpp::getCurrentState(robot_state::RobotStatePtr& current_state, double wait_seconds)
+bool MoveItCpp::getCurrentState(moveit::core::RobotStatePtr& current_state, double wait_seconds)
 {
   if (wait_seconds > 0.0 &&
       !planning_scene_monitor_->getStateMonitor()->waitForCurrentState(ros::Time::now(), wait_seconds))
@@ -227,9 +208,9 @@ bool MoveItCpp::getCurrentState(robot_state::RobotStatePtr& current_state, doubl
   return true;
 }
 
-robot_state::RobotStatePtr MoveItCpp::getCurrentState(double wait)
+moveit::core::RobotStatePtr MoveItCpp::getCurrentState(double wait)
 {
-  robot_state::RobotStatePtr current_state;
+  moveit::core::RobotStatePtr current_state;
   getCurrentState(current_state, wait);
   return current_state;
 }

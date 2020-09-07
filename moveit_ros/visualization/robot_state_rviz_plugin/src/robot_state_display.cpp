@@ -36,7 +36,11 @@
 
 #include <moveit/robot_state_rviz_plugin/robot_state_display.h>
 #include <moveit/robot_state/conversions.h>
+#include <moveit/utils/message_checks.h>
 
+#include <moveit/macros/diagnostics.h>
+DIAGNOSTIC_PUSH
+SILENT_UNUSED_PARAM
 #include <rviz/visualization_manager.h>
 #include <rviz/robot/robot.h>
 #include <rviz/robot/robot_link.h>
@@ -52,6 +56,7 @@
 
 #include <OgreSceneManager.h>
 #include <OgreSceneNode.h>
+DIAGNOSTIC_POP
 
 namespace moveit_rviz_plugin
 {
@@ -159,16 +164,16 @@ void RobotStateDisplay::changedEnableLinkHighlight()
 {
   if (enable_link_highlight_->getBool())
   {
-    for (std::map<std::string, std_msgs::ColorRGBA>::iterator it = highlights_.begin(); it != highlights_.end(); ++it)
+    for (std::pair<const std::string, std_msgs::ColorRGBA>& highlight : highlights_)
     {
-      setHighlight(it->first, it->second);
+      setHighlight(highlight.first, highlight.second);
     }
   }
   else
   {
-    for (std::map<std::string, std_msgs::ColorRGBA>::iterator it = highlights_.begin(); it != highlights_.end(); ++it)
+    for (std::pair<const std::string, std_msgs::ColorRGBA>& highlight : highlights_)
     {
-      unsetHighlight(it->first);
+      unsetHighlight(highlight.first);
     }
   }
 }
@@ -194,10 +199,9 @@ void RobotStateDisplay::setRobotHighlights(const moveit_msgs::DisplayRobotState:
     return;
 
   std::map<std::string, std_msgs::ColorRGBA> highlights;
-  for (moveit_msgs::DisplayRobotState::_highlight_links_type::const_iterator it = highlight_links.begin();
-       it != highlight_links.end(); ++it)
+  for (const moveit_msgs::ObjectColor& highlight_link : highlight_links)
   {
-    highlights[it->id] = it->color;
+    highlights[highlight_link.id] = highlight_link.color;
   }
 
   if (enable_link_highlight_->getBool())
@@ -304,14 +308,13 @@ void RobotStateDisplay::newRobotStateCallback(const moveit_msgs::DisplayRobotSta
   if (!robot_model_)
     return;
   if (!robot_state_)
-    robot_state_.reset(new robot_state::RobotState(robot_model_));
-  // possibly use TF to construct a robot_state::Transforms object to pass in to the conversion function?
+    robot_state_.reset(new moveit::core::RobotState(robot_model_));
+  // possibly use TF to construct a moveit::core::Transforms object to pass in to the conversion function?
   try
   {
-    moveit::core::robotStateMsgToRobotState(state_msg->state, *robot_state_);
+    if (!moveit::core::isEmpty(state_msg->state))
+      moveit::core::robotStateMsgToRobotState(state_msg->state, *robot_state_);
     setRobotHighlights(state_msg->highlight_links);
-    setStatus(rviz::StatusProperty::Ok, "RobotState", "");
-    robot_->setVisible(true);
   }
   catch (const moveit::Exception& e)
   {
@@ -321,6 +324,16 @@ void RobotStateDisplay::newRobotStateCallback(const moveit_msgs::DisplayRobotSta
     robot_->setVisible(false);
     return;
   }
+
+  if (robot_->isVisible() != !state_msg->hide)
+  {
+    robot_->setVisible(!state_msg->hide);
+    if (robot_->isVisible())
+      setStatus(rviz::StatusProperty::Ok, "RobotState", "");
+    else
+      setStatus(rviz::StatusProperty::Warn, "RobotState", "Hidden");
+  }
+
   update_state_ = true;
 }
 
@@ -332,6 +345,11 @@ void RobotStateDisplay::setLinkColor(const std::string& link_name, const QColor&
 void RobotStateDisplay::unsetLinkColor(const std::string& link_name)
 {
   unsetLinkColor(&robot_->getRobot(), link_name);
+}
+
+void RobotStateDisplay::setVisible(bool visible)
+{
+  robot_->setVisible(visible);
 }
 
 void RobotStateDisplay::setLinkColor(rviz::Robot* robot, const std::string& link_name, const QColor& color)
@@ -363,9 +381,9 @@ void RobotStateDisplay::loadRobotModel()
   {
     const srdf::ModelSharedPtr& srdf =
         rdf_loader_->getSRDF() ? rdf_loader_->getSRDF() : srdf::ModelSharedPtr(new srdf::Model());
-    robot_model_.reset(new robot_model::RobotModel(rdf_loader_->getURDF(), srdf));
+    robot_model_.reset(new moveit::core::RobotModel(rdf_loader_->getURDF(), srdf));
     robot_->load(*robot_model_->getURDF());
-    robot_state_.reset(new robot_state::RobotState(robot_model_));
+    robot_state_.reset(new moveit::core::RobotState(robot_model_));
     robot_state_->setToDefaultValues();
     bool old_state = root_link_name_property_->blockSignals(true);
     root_link_name_property_->setStdString(getRobotModel()->getRootLinkName());

@@ -133,7 +133,7 @@ void MotionPlanningFrame::selectedDetectedObjectChanged()
   }
 }
 
-void MotionPlanningFrame::detectedObjectChanged(QListWidgetItem* item)
+void MotionPlanningFrame::detectedObjectChanged(QListWidgetItem* /*item*/)
 {
 }
 
@@ -167,7 +167,7 @@ void MotionPlanningFrame::triggerObjectDetection()
   }
 }
 
-void MotionPlanningFrame::listenDetectedObjects(const object_recognition_msgs::RecognizedObjectArrayPtr& msg)
+void MotionPlanningFrame::listenDetectedObjects(const object_recognition_msgs::RecognizedObjectArrayPtr& /*msg*/)
 {
   ros::Duration(1.0).sleep();
   planning_display_->addMainLoopJob(boost::bind(&MotionPlanningFrame::processDetectedObjects, this));
@@ -287,8 +287,7 @@ void MotionPlanningFrame::pickObjectButtonClicked()
       const planning_scene_monitor::LockedPlanningSceneRO& ps = planning_display_->getPlanningSceneRO();
       if (ps->getWorld()->hasObject(pick_object_name_[group_name]))
       {
-        geometry_msgs::Pose object_pose(
-            tf2::toMsg(ps->getWorld()->find(pick_object_name_[group_name])->second->shape_poses_[0]));
+        geometry_msgs::Pose object_pose(tf2::toMsg(ps->getWorld()->getTransform(pick_object_name_[group_name])));
         ROS_DEBUG_STREAM("Finding current table for object: " << pick_object_name_[group_name]);
         support_surface_name_ = semantic_world_->findObjectTable(object_pose);
       }
@@ -320,14 +319,14 @@ void MotionPlanningFrame::placeObjectButtonClicked()
   ui_->pick_button->setEnabled(false);
   ui_->place_button->setEnabled(false);
 
-  std::vector<const robot_state::AttachedBody*> attached_bodies;
+  std::vector<const moveit::core::AttachedBody*> attached_bodies;
   const planning_scene_monitor::LockedPlanningSceneRO& ps = planning_display_->getPlanningSceneRO();
   if (!ps)
   {
     ROS_ERROR("No planning scene");
     return;
   }
-  const robot_model::JointModelGroup* jmg = ps->getCurrentState().getJointModelGroup(group_name);
+  const moveit::core::JointModelGroup* jmg = ps->getCurrentState().getJointModelGroup(group_name);
   if (jmg)
     ps->getCurrentState().getAttachedBodies(attached_bodies, jmg);
 

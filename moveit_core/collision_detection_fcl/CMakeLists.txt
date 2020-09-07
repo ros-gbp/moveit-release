@@ -2,8 +2,7 @@ set(MOVEIT_LIB_NAME moveit_collision_detection_fcl)
 
 add_library(${MOVEIT_LIB_NAME}
   src/collision_common.cpp
-  src/collision_robot_fcl.cpp
-  src/collision_world_fcl.cpp
+  src/collision_env_fcl.cpp
 )
 set_target_properties(${MOVEIT_LIB_NAME} PROPERTIES VERSION "${${PROJECT_NAME}_VERSION}")
 
@@ -25,6 +24,9 @@ install(DIRECTORY include/ DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION})
 install(FILES ../collision_detector_fcl_description.xml DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 
 if(CATKIN_ENABLE_TESTING)
-  catkin_add_gtest(test_fcl_collision_detection test/test_fcl_collision_detection.cpp)
+  catkin_add_gtest(test_fcl_collision_detection test/test_fcl_collision_detection_pr2.cpp)
   target_link_libraries(test_fcl_collision_detection moveit_test_utils ${MOVEIT_LIB_NAME} ${Boost_LIBRARIES})
+
+  catkin_add_gtest(test_fcl_collision_detection_panda test/test_fcl_collision_detection_panda.cpp)
+  target_link_libraries(test_fcl_collision_detection_panda moveit_test_utils ${MOVEIT_LIB_NAME} ${Boost_LIBRARIES})
 endif()
