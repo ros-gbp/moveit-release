@@ -47,12 +47,8 @@
 #include <moveit/robot_interaction/robot_interaction.h>
 #include <moveit/robot_interaction/interaction_handler.h>
 #include <moveit/semantic_world/semantic_world.h>
-#include <moveit/macros/diagnostics.h>
 #include <interactive_markers/interactive_marker_server.h>
-DIAGNOSTIC_PUSH
-SILENT_UNUSED_PARAM
 #include <rviz/default_plugin/interactive_markers/interactive_marker.h>
-DIAGNOSTIC_POP
 #include <moveit_msgs/MotionPlanRequest.h>
 #include <actionlib/client/simple_action_client.h>
 #include <object_recognition_msgs/ObjectRecognitionAction.h>
@@ -77,9 +73,9 @@ class MotionPlanningUI;
 
 namespace moveit_warehouse
 {
-MOVEIT_CLASS_FORWARD(PlanningSceneStorage);
-MOVEIT_CLASS_FORWARD(ConstraintsStorage);
-MOVEIT_CLASS_FORWARD(RobotStateStorage);
+MOVEIT_CLASS_FORWARD(PlanningSceneStorage);  // Defines PlanningSceneStoragePtr, ConstPtr, WeakPtr... etc
+MOVEIT_CLASS_FORWARD(ConstraintsStorage);    // Defines ConstraintsStoragePtr, ConstPtr, WeakPtr... etc
+MOVEIT_CLASS_FORWARD(RobotStateStorage);     // Defines RobotStateStoragePtr, ConstPtr, WeakPtr... etc
 }  // namespace moveit_warehouse
 
 namespace moveit_rviz_plugin
