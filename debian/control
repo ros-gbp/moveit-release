@@ -1,0 +1,12 @@
+Source: ros-noetic-chomp-motion-planner
+Section: misc
+Priority: optional
+Maintainer: Chittaranjan Srinivas Swaminathan <chitt@live.in>
+Build-Depends: debhelper (>= 9.0.0), ros-noetic-catkin, ros-noetic-moveit-core, ros-noetic-roscpp
+Homepage: http://ros.org/wiki/chomp_motion_planner
+Standards-Version: 3.9.2
+
+Package: ros-noetic-chomp-motion-planner
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, 
+Description: chomp_motion_planner
