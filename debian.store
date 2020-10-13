@@ -1,1 +1,1 @@
-{"trim": "", "base": "77a04007f", "trimbase": "", "parent": "debian/noetic/moveit_ros_manipulation", "previous": "a4c9aff5a"}
+{"base": "5a8c995b2", "parent": "debian/noetic/moveit_ros_manipulation", "previous": "dc7ffe46c", "trim": "", "trimbase": ""}
