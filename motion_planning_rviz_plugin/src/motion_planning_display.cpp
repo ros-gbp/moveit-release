@@ -38,10 +38,7 @@
 #include <moveit/robot_interaction/kinematic_options_map.h>
 #include <moveit/rviz_plugin_render_tools/planning_link_updater.h>
 #include <moveit/rviz_plugin_render_tools/robot_state_visualization.h>
-#include <moveit/macros/diagnostics.h>
 
-DIAGNOSTIC_PUSH
-SILENT_UNUSED_PARAM
 #include <rviz/visualization_manager.h>
 #include <rviz/robot/robot.h>
 #include <rviz/robot/robot_link.h>
@@ -63,7 +60,6 @@ SILENT_UNUSED_PARAM
 #include <OgreSceneManager.h>
 #include <OgreSceneNode.h>
 #include <rviz/ogre_helpers/shape.h>
-DIAGNOSTIC_POP
 
 #include <moveit/robot_state/conversions.h>
 #include <moveit/trajectory_processing/trajectory_tools.h>
@@ -1335,8 +1331,6 @@ void MotionPlanningDisplay::load(const rviz::Config& config)
       frame_->ui_->velocity_scaling_factor->setValue(d);
     if (config.mapGetFloat("Acceleration_Scaling_Factor", &d))
       frame_->ui_->acceleration_scaling_factor->setValue(d);
-    if (config.mapGetFloat("MoveIt_Goal_Tolerance", &d))
-      frame_->ui_->goal_tolerance->setValue(d);
 
     bool b;
     if (config.mapGetBool("MoveIt_Allow_Replanning", &b))
@@ -1394,8 +1388,6 @@ void MotionPlanningDisplay::save(rviz::Config config) const
   {
     config.mapSetValue("MoveIt_Warehouse_Host", frame_->ui_->database_host->text());
     config.mapSetValue("MoveIt_Warehouse_Port", frame_->ui_->database_port->value());
-
-    config.mapSetValue("MoveIt_Goal_Tolerance", frame_->ui_->goal_tolerance->value());
 
     // "Options" Section
     config.mapSetValue("MoveIt_Planning_Time", frame_->ui_->planning_time->value());
