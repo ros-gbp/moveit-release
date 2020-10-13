@@ -1,8 +1,8 @@
 /*******************************************************************************
- *      Title     : cpp_interface_example.cpp
+ *      Title     : pose_tracking_example.cpp
  *      Project   : moveit_servo
- *      Created   : 11/20/2019
- *      Author    : Andy Zelenak
+ *      Created   : 09/04/2020
+ *      Author    : Adam Pettinger
  *
  * BSD 3-Clause License
  *
@@ -37,10 +37,13 @@
  *******************************************************************************/
 
 #include <std_msgs/Int8.h>
+#include <geometry_msgs/TransformStamped.h>
 
 #include <moveit_servo/servo.h>
+#include <moveit_servo/pose_tracking.h>
 #include <moveit_servo/status_codes.h>
 #include <moveit_servo/make_shared_from_pool.h>
+#include <thread>
 
 static const std::string LOGNAME = "cpp_interface_example";
 
@@ -69,8 +72,9 @@ private:
 };
 
 /**
- * Instantiate the C++ servo node interface.
- * Send some Cartesian commands, then some joint commands.
+ * Instantiate the pose tracking interface.
+ * Send a pose slightly different from the starting pose
+ * Then keep updating the target pose a little bit
  */
 int main(int argc, char** argv)
 {
@@ -95,61 +99,57 @@ int main(int argc, char** argv)
       false /* skip octomap monitor */);
   planning_scene_monitor->startStateMonitor();
 
-  // Run the servo node C++ interface in a new timer to ensure a constant outgoing message rate.
-  moveit_servo::Servo servo(nh, planning_scene_monitor);
-  servo.start();
+  // Create the pose tracker
+  moveit_servo::PoseTracking tracker(planning_scene_monitor, "servo_server");
+
+  // Make a publisher for sending pose commands
+  ros::Publisher target_pose_pub =
+      nh.advertise<geometry_msgs::PoseStamped>("/servo_server/target_pose", 1 /* queue */, true /* latch */);
 
   // Subscribe to servo status (and log it when it changes)
-  StatusMonitor status_monitor(nh, servo.getParameters().status_topic);
+  StatusMonitor status_monitor(nh, "servo_server/status");
 
-  // Create publishers to send servo commands
-  auto twist_stamped_pub =
-      nh.advertise<geometry_msgs::TwistStamped>(servo.getParameters().cartesian_command_in_topic, 1);
-  auto joint_servo_pub = nh.advertise<control_msgs::JointJog>(servo.getParameters().joint_command_in_topic, 1);
+  Eigen::Vector3d lin_tol{ 0.01, 0.01, 0.01 };
+  double rot_tol = 0.1;
 
-  ros::Rate cmd_rate(100);
-  uint num_commands = 0;
+  // Get the current EE transform
+  geometry_msgs::TransformStamped current_ee_tf;
+  tracker.getCommandFrameTransform(current_ee_tf);
 
-  // Send a few Cartesian velocity commands
-  while (ros::ok() && num_commands < 200)
+  // Convert it to a Pose
+  geometry_msgs::PoseStamped target_pose;
+  target_pose.header.frame_id = current_ee_tf.header.frame_id;
+  target_pose.pose.position.x = current_ee_tf.transform.translation.x;
+  target_pose.pose.position.y = current_ee_tf.transform.translation.y;
+  target_pose.pose.position.z = current_ee_tf.transform.translation.z;
+  target_pose.pose.orientation = current_ee_tf.transform.rotation;
+
+  // Modify it a little bit
+  target_pose.pose.position.x += 0.1;
+
+  // Publish target pose
+  target_pose.header.stamp = ros::Time::now();
+  target_pose_pub.publish(target_pose);
+
+  // Run the pose tracking in a new thread
+  std::thread move_to_pose_thread(
+      [&tracker, &lin_tol, &rot_tol] { tracker.moveToPose(lin_tol, rot_tol, 0.1 /* target pose timeout */); });
+
+  ros::Rate loop_rate(50);
+  for (size_t i = 0; i < 500; ++i)
   {
-    // Make a Cartesian velocity message
-    // Messages are sent to servo node as boost::shared_ptr to enable zero-copy message_passing.
-    // Because this message is not copied we should not modify it after we send it.
-    auto msg = moveit::util::make_shared_from_pool<geometry_msgs::TwistStamped>();
-    msg->header.stamp = ros::Time::now();
-    msg->header.frame_id = "base_link";
-    msg->twist.linear.y = 0.01;
-    msg->twist.linear.z = -0.01;
+    // Modify the pose target a little bit each cycle
+    // This is a dynamic pose target
+    target_pose.pose.position.z += 0.0004;
+    target_pose.header.stamp = ros::Time::now();
+    target_pose_pub.publish(target_pose);
 
-    // Send the message
-    twist_stamped_pub.publish(msg);
-    cmd_rate.sleep();
-    ++num_commands;
+    loop_rate.sleep();
   }
 
-  // Leave plenty of time for the servo node to halt its previous motion.
-  // For a faster response, adjust the incoming_command_timeout yaml parameter
-  ros::Duration(2).sleep();
+  // Make sure the tracker is stopped and clean up
+  tracker.stopMotion();
+  move_to_pose_thread.join();
 
-  // Send a few joint commands
-  num_commands = 0;
-  while (ros::ok() && num_commands < 200)
-  {
-    // Make a joint command
-    // Messages are sent to servo node as boost::shared_ptr to enable zero-copy message_passing.
-    // Because this message is not copied we should not modify it after we send it.
-    auto msg = moveit::util::make_shared_from_pool<control_msgs::JointJog>();
-    msg->header.stamp = ros::Time::now();
-    msg->joint_names.push_back("elbow_joint");
-    msg->velocities.push_back(0.2);
-
-    // Send the message
-    joint_servo_pub.publish(msg);
-    cmd_rate.sleep();
-    ++num_commands;
-  }
-
-  servo.setPaused(true);
-  return 0;
+  return EXIT_SUCCESS;
 }
