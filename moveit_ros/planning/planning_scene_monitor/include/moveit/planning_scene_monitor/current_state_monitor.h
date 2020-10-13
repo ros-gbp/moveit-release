@@ -46,13 +46,13 @@
 
 namespace planning_scene_monitor
 {
-typedef boost::function<void(const sensor_msgs::JointStateConstPtr& joint_state)> JointStateUpdateCallback;
+using JointStateUpdateCallback = boost::function<void(const sensor_msgs::JointStateConstPtr&)>;
 
 /** @class CurrentStateMonitor
     @brief Monitors the joint_states topic and tf to maintain the current state of the robot. */
 class CurrentStateMonitor
 {
-  typedef boost::signals2::connection TFConnection;
+  using TFConnection = boost::signals2::connection;
 
 public:
   /**
@@ -210,5 +210,5 @@ private:
   std::shared_ptr<TFConnection> tf_connection_;
 };
 
-MOVEIT_CLASS_FORWARD(CurrentStateMonitor);
+MOVEIT_CLASS_FORWARD(CurrentStateMonitor);  // Defines CurrentStateMonitorPtr, ConstPtr, WeakPtr... etc
 }  // namespace planning_scene_monitor
