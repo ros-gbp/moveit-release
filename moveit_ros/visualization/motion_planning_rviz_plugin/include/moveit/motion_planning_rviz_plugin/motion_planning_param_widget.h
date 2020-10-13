@@ -37,17 +37,13 @@
 #pragma once
 
 #include <moveit/macros/class_forward.h>
-#include <moveit/macros/diagnostics.h>
-DIAGNOSTIC_PUSH
-SILENT_UNUSED_PARAM
 #include <rviz/properties/property_tree_widget.h>
-DIAGNOSTIC_POP
 
 namespace moveit
 {
 namespace planning_interface
 {
-MOVEIT_CLASS_FORWARD(MoveGroupInterface);
+MOVEIT_CLASS_FORWARD(MoveGroupInterface);  // Defines MoveGroupInterfacePtr, ConstPtr, WeakPtr... etc
 }
 }  // namespace moveit
 
