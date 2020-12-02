@@ -37,15 +37,21 @@
 // SA
 #include "setup_screen_widget.h"  // a base class for screens in the setup assistant
 #include "setup_assistant_widget.h"
+#include "header_widget.h"
+
 // Qt
-#include <QStackedLayout>
-#include <QListWidget>
-#include <QListWidgetItem>
+#include <QApplication>
+#include <QCloseEvent>
 #include <QFont>
+#include <QHBoxLayout>
 #include <QLabel>
 #include <QPushButton>
+#include <QCheckBox>
 #include <QCloseEvent>
 #include <QMessageBox>
+#include <QPushButton>
+#include <QSplitter>
+#include <QStackedWidget>
 #include <QString>
 #include <pluginlib/class_loader.hpp>  // for loading all avail kinematic planners
 // Rviz
@@ -83,13 +89,8 @@ SetupAssistantWidget::SetupAssistantWidget(QWidget* parent, const boost::program
   layout->setAlignment(Qt::AlignTop);
 
   // Create main content stack for various screens
-  main_content_ = new QStackedLayout();
+  main_content_ = new QStackedWidget();
   current_index_ = 0;
-
-  // Wrap main_content_ with a widget
-  middle_frame_ = new QWidget(this);
-  middle_frame_->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
-  middle_frame_->setLayout(main_content_);
 
   // Screens --------------------------------------------------------
 
@@ -145,7 +146,7 @@ SetupAssistantWidget::SetupAssistantWidget(QWidget* parent, const boost::program
   splitter_ = new QSplitter(Qt::Horizontal, this);
   splitter_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
   splitter_->addWidget(navs_view_);
-  splitter_->addWidget(middle_frame_);
+  splitter_->addWidget(main_content_);
   splitter_->addWidget(rviz_container_);
   splitter_->setHandleWidth(6);
   // splitter_->setCollapsible( 0, false ); // don't let navigation collapse
@@ -183,6 +184,7 @@ void SetupAssistantWidget::virtualJointReferenceFrameChanged()
   {
     rviz_manager_->setFixedFrame(QString::fromStdString(config_data_->getRobotModel()->getModelFrame()));
     robot_state_display_->reset();
+    robot_state_display_->setVisible(true);
   }
 }
 
@@ -396,15 +398,31 @@ void SetupAssistantWidget::loadRviz()
 
   // Set robot description
   robot_state_display_->subProp("Robot Description")->setValue(QString::fromStdString(ROBOT_DESCRIPTION));
+  robot_state_display_->setVisible(true);
 
   // Zoom into robot
   rviz::ViewController* view = rviz_manager_->getViewManager()->getCurrent();
   view->subProp("Distance")->setValue(4.0f);
 
   // Add Rviz to Planning Groups Widget
-  QHBoxLayout* rviz_layout = new QHBoxLayout();
+  QVBoxLayout* rviz_layout = new QVBoxLayout();
   rviz_layout->addWidget(rviz_render_panel_);
   rviz_container_->setLayout(rviz_layout);
+
+  // visual / collision buttons
+  auto btn_layout = new QHBoxLayout();
+  rviz_layout->addLayout(btn_layout);
+
+  QCheckBox* btn;
+  btn_layout->addWidget(btn = new QCheckBox("visual"), 0);
+  btn->setChecked(true);
+  connect(btn, &QCheckBox::toggled,
+          [this](bool checked) { robot_state_display_->subProp("Visual Enabled")->setValue(checked); });
+
+  btn_layout->addWidget(btn = new QCheckBox("collision"), 1);
+  btn->setChecked(false);
+  connect(btn, &QCheckBox::toggled,
+          [this](bool checked) { robot_state_display_->subProp("Collision Enabled")->setValue(checked); });
 
   rviz_container_->show();
 }
