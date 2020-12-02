@@ -51,12 +51,10 @@ namespace moveit_servo
 {
 // Constructor for the class that handles collision checking
 CollisionCheck::CollisionCheck(ros::NodeHandle& nh, const moveit_servo::ServoParameters& parameters,
-                               const planning_scene_monitor::PlanningSceneMonitorPtr& planning_scene_monitor,
-                               const std::shared_ptr<JointStateSubscriber>& joint_state_subscriber)
+                               const planning_scene_monitor::PlanningSceneMonitorPtr& planning_scene_monitor)
   : nh_(nh)
   , parameters_(parameters)
   , planning_scene_monitor_(planning_scene_monitor)
-  , joint_state_subscriber_(joint_state_subscriber)
   , self_velocity_scale_coefficient_(-log(0.001) / parameters.self_collision_proximity_threshold)
   , scene_velocity_scale_coefficient_(-log(0.001) / parameters.scene_collision_proximity_threshold)
   , period_(1. / parameters_.collision_check_rate)
@@ -75,12 +73,12 @@ CollisionCheck::CollisionCheck(ros::NodeHandle& nh, const moveit_servo::ServoPar
   safety_factor_ = parameters_.collision_distance_safety_factor;
 
   // Internal namespace
-  ros::NodeHandle internal_nh("~internal");
+  ros::NodeHandle internal_nh(nh_, "internal");
   collision_velocity_scale_pub_ = internal_nh.advertise<std_msgs::Float64>("collision_velocity_scale", ROS_QUEUE_SIZE);
   worst_case_stop_time_sub_ =
       internal_nh.subscribe("worst_case_stop_time", ROS_QUEUE_SIZE, &CollisionCheck::worstCaseStopTimeCB, this);
 
-  current_state_ = std::make_unique<moveit::core::RobotState>(getLockedPlanningSceneRO()->getCurrentState());
+  current_state_ = planning_scene_monitor_->getStateMonitor()->getCurrentState();
   acm_ = getLockedPlanningSceneRO()->getAllowedCollisionMatrix();
 }
 
@@ -92,11 +90,6 @@ planning_scene_monitor::LockedPlanningSceneRO CollisionCheck::getLockedPlanningS
 void CollisionCheck::start()
 {
   timer_ = nh_.createTimer(period_, &CollisionCheck::run, this);
-}
-
-void CollisionCheck::stop()
-{
-  timer_.stop();
 }
 
 void CollisionCheck::run(const ros::TimerEvent& timer_event)
@@ -114,11 +107,8 @@ void CollisionCheck::run(const ros::TimerEvent& timer_event)
     return;
   }
 
-  // Copy the latest joint state
-  auto latest_joint_state = joint_state_subscriber_->getLatest();
-  for (std::size_t i = 0; i < latest_joint_state->position.size(); ++i)
-    current_state_->setJointPositions(latest_joint_state->name[i], &latest_joint_state->position[i]);
-
+  // Update to the latest current state
+  current_state_ = planning_scene_monitor_->getStateMonitor()->getCurrentState();
   current_state_->updateCollisionBodyTransforms();
   collision_detected_ = false;
 
@@ -132,7 +122,6 @@ void CollisionCheck::run(const ros::TimerEvent& timer_event)
 
     scene_collision_distance_ = collision_result_.distance;
     collision_detected_ |= collision_result_.collision;
-    printCollisionPairs(collision_result_.contacts);
 
     collision_result_.clear();
     // Self-collisions and scene collisions are checked separately so different thresholds can be used
@@ -142,7 +131,7 @@ void CollisionCheck::run(const ros::TimerEvent& timer_event)
 
   self_collision_distance_ = collision_result_.distance;
   collision_detected_ |= collision_result_.collision;
-  printCollisionPairs(collision_result_.contacts);
+  collision_result_.print();
 
   velocity_scale_ = 1;
   // If we're definitely in collision, stop immediately
@@ -210,25 +199,6 @@ void CollisionCheck::run(const ros::TimerEvent& timer_event)
     auto msg = moveit::util::make_shared_from_pool<std_msgs::Float64>();
     msg->data = velocity_scale_;
     collision_velocity_scale_pub_.publish(msg);
-  }
-}
-
-void CollisionCheck::printCollisionPairs(collision_detection::CollisionResult::ContactMap& contact_map)
-{
-  if (!contact_map.empty())
-  {
-    // Throttled error message about the first contact in the list
-    ROS_WARN_STREAM_THROTTLE_NAMED(ROS_LOG_THROTTLE_PERIOD, LOGNAME,
-                                   "Objects in collision (among others, possibly): "
-                                       << contact_map.begin()->first.first << ", "
-                                       << contact_map.begin()->first.second);
-    // Log all other contacts if in debug mode
-    ROS_DEBUG_STREAM_THROTTLE_NAMED(ROS_LOG_THROTTLE_PERIOD, LOGNAME, "Objects in collision:");
-    for (auto contact : contact_map)
-    {
-      ROS_DEBUG_STREAM_THROTTLE_NAMED(ROS_LOG_THROTTLE_PERIOD, LOGNAME,
-                                      "\t" << contact.first.first << ", " << contact.first.second);
-    }
   }
 }
 

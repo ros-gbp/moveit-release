@@ -46,7 +46,6 @@
 
 #include <moveit_servo/servo_parameters.h>
 #include <moveit_servo/low_pass_filter.h>
-#include <moveit_servo/joint_state_subscriber.h>
 
 namespace moveit_servo
 {
@@ -65,12 +64,15 @@ public:
    *                                 already started when passed into this class
    */
   CollisionCheck(ros::NodeHandle& nh, const moveit_servo::ServoParameters& parameters,
-                 const planning_scene_monitor::PlanningSceneMonitorPtr& planning_scene_monitor,
-                 const std::shared_ptr<JointStateSubscriber>& joint_state_subscriber);
+                 const planning_scene_monitor::PlanningSceneMonitorPtr& planning_scene_monitor);
 
-  /** \brief start and stop the Timer */
+  ~CollisionCheck()
+  {
+    timer_.stop();
+  }
+
+  /** \brief start the Timer that regulates collision check rate */
   void start();
-  void stop();
 
   /** \brief Pause or unpause processing servo commands while keeping the timers alive */
   void setPaused(bool paused);
@@ -78,9 +80,6 @@ public:
 private:
   /** \brief Run one iteration of collision checking */
   void run(const ros::TimerEvent& timer_event);
-
-  /** \brief Print objects in collision. Useful for debugging.  */
-  void printCollisionPairs(collision_detection::CollisionResult::ContactMap& contact_map);
 
   /** \brief Get a read-only copy of the planning scene */
   planning_scene_monitor::LockedPlanningSceneRO getLockedPlanningSceneRO() const;
@@ -96,11 +95,8 @@ private:
   // Pointer to the collision environment
   planning_scene_monitor::PlanningSceneMonitorPtr planning_scene_monitor_;
 
-  // Subscriber to joint states
-  const std::shared_ptr<JointStateSubscriber> joint_state_subscriber_;
-
   // Robot state and collision matrix from planning scene
-  std::unique_ptr<moveit::core::RobotState> current_state_;
+  std::shared_ptr<moveit::core::RobotState> current_state_;
   collision_detection::AllowedCollisionMatrix acm_;
 
   // Scale robot velocity according to collision proximity and user-defined thresholds.
