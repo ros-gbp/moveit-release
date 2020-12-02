@@ -75,7 +75,7 @@ private:
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, LOGNAME);
-  ros::NodeHandle nh;
+  ros::NodeHandle nh("~");
   ros::AsyncSpinner spinner(8);
   spinner.start();
 
@@ -150,6 +150,6 @@ int main(int argc, char** argv)
     ++num_commands;
   }
 
-  servo.stop();
+  servo.setPaused(true);
   return 0;
 }
