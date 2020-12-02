@@ -39,12 +39,18 @@
 
 #include <rosparam_shortcuts/rosparam_shortcuts.h>
 
+#include <moveit_servo/make_shared_from_pool.h>
 #include <moveit_servo/servo.h>
 
 static const std::string LOGNAME = "servo_node";
 
 namespace moveit_servo
 {
+namespace
+{
+constexpr double ROBOT_STATE_WAIT_TIME = 10.0;  // seconds
+}  // namespace
+
 Servo::Servo(ros::NodeHandle& nh, const planning_scene_monitor::PlanningSceneMonitorPtr& planning_scene_monitor)
   : nh_(nh), planning_scene_monitor_(planning_scene_monitor)
 {
@@ -52,12 +58,27 @@ Servo::Servo(ros::NodeHandle& nh, const planning_scene_monitor::PlanningSceneMon
   if (!readParameters())
     exit(EXIT_FAILURE);
 
-  joint_state_subscriber_ = std::make_shared<JointStateSubscriber>(nh_, parameters_.joint_topic);
+  // Async spinner is needed to receive messages to wait for the robot state to be complete
+  ros::AsyncSpinner spinner(1);
+  spinner.start();
 
-  servo_calcs_ = std::make_unique<ServoCalcs>(nh_, parameters_, planning_scene_monitor_, joint_state_subscriber_);
+  // Confirm the planning scene monitor is ready to be used
+  if (!planning_scene_monitor_->getStateMonitor())
+  {
+    planning_scene_monitor_->startStateMonitor(parameters_.joint_topic);
+  }
+  planning_scene_monitor->getStateMonitor()->enableCopyDynamics(true);
 
-  collision_checker_ =
-      std::make_unique<CollisionCheck>(nh_, parameters_, planning_scene_monitor_, joint_state_subscriber_);
+  if (!planning_scene_monitor_->getStateMonitor()->waitForCompleteState(parameters_.move_group_name,
+                                                                        ROBOT_STATE_WAIT_TIME))
+  {
+    ROS_FATAL_NAMED(LOGNAME, "Timeout waiting for current state");
+    exit(EXIT_FAILURE);
+  }
+
+  servo_calcs_ = std::make_unique<ServoCalcs>(nh_, parameters_, planning_scene_monitor_);
+
+  collision_checker_ = std::make_unique<CollisionCheck>(nh_, parameters_, planning_scene_monitor_);
 }
 
 // Read ROS parameters, typically from YAML file
@@ -65,67 +86,58 @@ bool Servo::readParameters()
 {
   std::size_t error = 0;
 
-  // Specified in the launch file. All other parameters will be read from this namespace.
+  // Optional parameter sub-namespace specified in the launch file. All other parameters will be read from this namespace.
   std::string parameter_ns;
   ros::param::get("~parameter_ns", parameter_ns);
-  if (parameter_ns.empty())
-  {
-    ROS_ERROR_STREAM_NAMED(LOGNAME, "A namespace must be specified in the launch file, like:");
-    ROS_ERROR_STREAM_NAMED(LOGNAME, "<param name=\"parameter_ns\" "
-                                    "type=\"string\" "
-                                    "value=\"left_servo_server\" />");
-    return false;
-  }
 
-  error += !rosparam_shortcuts::get("", nh_, parameter_ns + "/publish_period", parameters_.publish_period);
-  error += !rosparam_shortcuts::get("", nh_, parameter_ns + "/collision_check_rate", parameters_.collision_check_rate);
-  error += !rosparam_shortcuts::get("", nh_, parameter_ns + "/num_outgoing_halt_msgs_to_publish",
+  // If parameters have been loaded into sub-namespace within the node namespace, append the parameter namespace
+  // to load the parameters correctly.
+  ros::NodeHandle nh = parameter_ns.empty() ? nh_ : ros::NodeHandle(nh_, parameter_ns);
+
+  error += !rosparam_shortcuts::get(LOGNAME, nh, "publish_period", parameters_.publish_period);
+  error += !rosparam_shortcuts::get(LOGNAME, nh, "collision_check_rate", parameters_.collision_check_rate);
+  error += !rosparam_shortcuts::get(LOGNAME, nh, "num_outgoing_halt_msgs_to_publish",
                                     parameters_.num_outgoing_halt_msgs_to_publish);
-  error += !rosparam_shortcuts::get("", nh_, parameter_ns + "/scale/linear", parameters_.linear_scale);
-  error += !rosparam_shortcuts::get("", nh_, parameter_ns + "/scale/rotational", parameters_.rotational_scale);
-  error += !rosparam_shortcuts::get("", nh_, parameter_ns + "/scale/joint", parameters_.joint_scale);
+  error += !rosparam_shortcuts::get(LOGNAME, nh, "scale/linear", parameters_.linear_scale);
+  error += !rosparam_shortcuts::get(LOGNAME, nh, "scale/rotational", parameters_.rotational_scale);
+  error += !rosparam_shortcuts::get(LOGNAME, nh, "scale/joint", parameters_.joint_scale);
+  error += !rosparam_shortcuts::get(LOGNAME, nh, "low_pass_filter_coeff", parameters_.low_pass_filter_coeff);
+  error += !rosparam_shortcuts::get(LOGNAME, nh, "joint_topic", parameters_.joint_topic);
+  error += !rosparam_shortcuts::get(LOGNAME, nh, "command_in_type", parameters_.command_in_type);
+  error += !rosparam_shortcuts::get(LOGNAME, nh, "cartesian_command_in_topic", parameters_.cartesian_command_in_topic);
+  error += !rosparam_shortcuts::get(LOGNAME, nh, "joint_command_in_topic", parameters_.joint_command_in_topic);
+  error += !rosparam_shortcuts::get(LOGNAME, nh, "robot_link_command_frame", parameters_.robot_link_command_frame);
+  error += !rosparam_shortcuts::get(LOGNAME, nh, "incoming_command_timeout", parameters_.incoming_command_timeout);
   error +=
-      !rosparam_shortcuts::get("", nh_, parameter_ns + "/low_pass_filter_coeff", parameters_.low_pass_filter_coeff);
-  error += !rosparam_shortcuts::get("", nh_, parameter_ns + "/joint_topic", parameters_.joint_topic);
-  error += !rosparam_shortcuts::get("", nh_, parameter_ns + "/command_in_type", parameters_.command_in_type);
-  error += !rosparam_shortcuts::get("", nh_, parameter_ns + "/cartesian_command_in_topic",
-                                    parameters_.cartesian_command_in_topic);
-  error +=
-      !rosparam_shortcuts::get("", nh_, parameter_ns + "/joint_command_in_topic", parameters_.joint_command_in_topic);
-  error += !rosparam_shortcuts::get("", nh_, parameter_ns + "/robot_link_command_frame",
-                                    parameters_.robot_link_command_frame);
-  error += !rosparam_shortcuts::get("", nh_, parameter_ns + "/incoming_command_timeout",
-                                    parameters_.incoming_command_timeout);
-  error += !rosparam_shortcuts::get("", nh_, parameter_ns + "/lower_singularity_threshold",
-                                    parameters_.lower_singularity_threshold);
-  error += !rosparam_shortcuts::get("", nh_, parameter_ns + "/hard_stop_singularity_threshold",
+      !rosparam_shortcuts::get(LOGNAME, nh, "lower_singularity_threshold", parameters_.lower_singularity_threshold);
+  error += !rosparam_shortcuts::get(LOGNAME, nh, "hard_stop_singularity_threshold",
                                     parameters_.hard_stop_singularity_threshold);
-  error += !rosparam_shortcuts::get("", nh_, parameter_ns + "/move_group_name", parameters_.move_group_name);
-  error += !rosparam_shortcuts::get("", nh_, parameter_ns + "/planning_frame", parameters_.planning_frame);
-  error += !rosparam_shortcuts::get("", nh_, parameter_ns + "/use_gazebo", parameters_.use_gazebo);
-  error += !rosparam_shortcuts::get("", nh_, parameter_ns + "/joint_limit_margin", parameters_.joint_limit_margin);
-  error += !rosparam_shortcuts::get("", nh_, parameter_ns + "/command_out_topic", parameters_.command_out_topic);
-  error += !rosparam_shortcuts::get("", nh_, parameter_ns + "/command_out_type", parameters_.command_out_type);
+  error += !rosparam_shortcuts::get(LOGNAME, nh, "move_group_name", parameters_.move_group_name);
+  error += !rosparam_shortcuts::get(LOGNAME, nh, "planning_frame", parameters_.planning_frame);
+  error += !rosparam_shortcuts::get(LOGNAME, nh, "ee_frame_name", parameters_.ee_frame_name);
+  error += !rosparam_shortcuts::get(LOGNAME, nh, "use_gazebo", parameters_.use_gazebo);
+  error += !rosparam_shortcuts::get(LOGNAME, nh, "joint_limit_margin", parameters_.joint_limit_margin);
+  error += !rosparam_shortcuts::get(LOGNAME, nh, "command_out_topic", parameters_.command_out_topic);
+  error += !rosparam_shortcuts::get(LOGNAME, nh, "command_out_type", parameters_.command_out_type);
+  error += !rosparam_shortcuts::get(LOGNAME, nh, "publish_joint_positions", parameters_.publish_joint_positions);
+  error += !rosparam_shortcuts::get(LOGNAME, nh, "publish_joint_velocities", parameters_.publish_joint_velocities);
   error +=
-      !rosparam_shortcuts::get("", nh_, parameter_ns + "/publish_joint_positions", parameters_.publish_joint_positions);
-  error += !rosparam_shortcuts::get("", nh_, parameter_ns + "/publish_joint_velocities",
-                                    parameters_.publish_joint_velocities);
-  error += !rosparam_shortcuts::get("", nh_, parameter_ns + "/publish_joint_accelerations",
-                                    parameters_.publish_joint_accelerations);
+      !rosparam_shortcuts::get(LOGNAME, nh, "publish_joint_accelerations", parameters_.publish_joint_accelerations);
 
   // Parameters for collision checking
-  error += !rosparam_shortcuts::get("", nh_, parameter_ns + "/check_collisions", parameters_.check_collisions);
-  error += !rosparam_shortcuts::get("", nh_, parameter_ns + "/collision_check_type", parameters_.collision_check_type);
+  error += !rosparam_shortcuts::get(LOGNAME, nh, "check_collisions", parameters_.check_collisions);
+  error += !rosparam_shortcuts::get(LOGNAME, nh, "collision_check_type", parameters_.collision_check_type);
   bool have_self_collision_proximity_threshold = rosparam_shortcuts::get(
-      "", nh_, parameter_ns + "/self_collision_proximity_threshold", parameters_.self_collision_proximity_threshold);
+      LOGNAME, nh, "self_collision_proximity_threshold", parameters_.self_collision_proximity_threshold);
   bool have_scene_collision_proximity_threshold = rosparam_shortcuts::get(
-      "", nh_, parameter_ns + "/scene_collision_proximity_threshold", parameters_.scene_collision_proximity_threshold);
+      LOGNAME, nh, "scene_collision_proximity_threshold", parameters_.scene_collision_proximity_threshold);
+
   double collision_proximity_threshold;
   // 'collision_proximity_threshold' parameter was removed, replaced with separate self- and scene-collision proximity
   // thresholds
   // TODO(JStech): remove this deprecation warning in ROS Noetic; simplify error case handling
-  if (nh_.hasParam(parameter_ns + "/collision_proximity_threshold") &&
-      rosparam_shortcuts::get("", nh_, parameter_ns + "/collision_proximity_threshold", collision_proximity_threshold))
+  if (nh_.hasParam("collision_proximity_threshold") &&
+      rosparam_shortcuts::get(LOGNAME, nh, "collision_proximity_threshold", collision_proximity_threshold))
   {
     ROS_WARN_NAMED(LOGNAME, "'collision_proximity_threshold' parameter is deprecated, and has been replaced by separate"
                             "'self_collision_proximity_threshold' and 'scene_collision_proximity_threshold' "
@@ -143,22 +155,22 @@ bool Servo::readParameters()
   }
   error += !have_self_collision_proximity_threshold;
   error += !have_scene_collision_proximity_threshold;
-  error += !rosparam_shortcuts::get("", nh_, parameter_ns + "/collision_distance_safety_factor",
+  error += !rosparam_shortcuts::get(LOGNAME, nh, "collision_distance_safety_factor",
                                     parameters_.collision_distance_safety_factor);
-  error += !rosparam_shortcuts::get("", nh_, parameter_ns + "/min_allowable_collision_distance",
+  error += !rosparam_shortcuts::get(LOGNAME, nh, "min_allowable_collision_distance",
                                     parameters_.min_allowable_collision_distance);
 
   // This parameter name was changed recently.
   // Try retrieving from the correct name. If it fails, then try the deprecated name.
   // TODO(andyz): remove this deprecation warning in ROS Noetic
-  if (!rosparam_shortcuts::get("", nh_, parameter_ns + "/status_topic", parameters_.status_topic))
+  if (!rosparam_shortcuts::get(LOGNAME, nh, "status_topic", parameters_.status_topic))
   {
     ROS_WARN_NAMED(LOGNAME, "'status_topic' parameter is missing. Recently renamed from 'warning_topic'. Please update "
                             "the servoing yaml file.");
-    error += !rosparam_shortcuts::get("", nh_, parameter_ns + "/warning_topic", parameters_.status_topic);
+    error += !rosparam_shortcuts::get(LOGNAME, nh, "warning_topic", parameters_.status_topic);
   }
 
-  rosparam_shortcuts::shutdownIfError(parameter_ns, error);
+  rosparam_shortcuts::shutdownIfError(LOGNAME, error);
 
   // Input checking
   if (parameters_.publish_period <= 0.)
@@ -196,7 +208,7 @@ bool Servo::readParameters()
   if (parameters_.joint_limit_margin < 0.)
   {
     ROS_WARN_NAMED(LOGNAME, "Parameter 'joint_limit_margin' should be "
-                            "greater than zero. Check yaml file.");
+                            "greater than or equal to zero. Check yaml file.");
     return false;
   }
   if (parameters_.command_in_type != "unitless" && parameters_.command_in_type != "speed_units")
@@ -286,15 +298,9 @@ void Servo::start()
     collision_checker_->start();
 }
 
-void Servo::stop()
-{
-  servo_calcs_->stop();
-  collision_checker_->stop();
-}
-
 Servo::~Servo()
 {
-  stop();
+  setPaused(true);
 }
 
 void Servo::setPaused(bool paused)
@@ -308,14 +314,24 @@ bool Servo::getCommandFrameTransform(Eigen::Isometry3d& transform)
   return servo_calcs_->getCommandFrameTransform(transform);
 }
 
+bool Servo::getCommandFrameTransform(geometry_msgs::TransformStamped& transform)
+{
+  return servo_calcs_->getEEFrameTransform(transform);
+}
+
+bool Servo::getEEFrameTransform(Eigen::Isometry3d& transform)
+{
+  return servo_calcs_->getEEFrameTransform(transform);
+}
+
+bool Servo::getEEFrameTransform(geometry_msgs::TransformStamped& transform)
+{
+  return servo_calcs_->getEEFrameTransform(transform);
+}
+
 const ServoParameters& Servo::getParameters() const
 {
   return parameters_;
-}
-
-sensor_msgs::JointStateConstPtr Servo::getLatestJointState() const
-{
-  return joint_state_subscriber_->getLatest();
 }
 
 }  // namespace moveit_servo
