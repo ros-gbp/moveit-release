@@ -14,7 +14,7 @@
  *     copyright notice, this list of conditions and the following
  *     disclaimer in the documentation and/or other materials provided
  *     with the distribution.
- *   * Neither the name of Willow Garage nor the names of its
+ *   * Neither the name of the copyright holder nor the names of its
  *     contributors may be used to endorse or promote products derived
  *     from this software without specific prior written permission.
  *
@@ -32,35 +32,30 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-/* Author: Ioan Sucan */
+#include <moveit/collision_detection/collision_common.h>
 
-#ifndef MOVEIT_CONSTRAINT_SAMPLERS_CONSTRAINT_SAMPLER_ALLOCATOR_
-#define MOVEIT_CONSTRAINT_SAMPLERS_CONSTRAINT_SAMPLER_ALLOCATOR_
+static const char LOGNAME[] = "collision_common";
+constexpr size_t LOG_THROTTLE_PERIOD = 5;
 
-#include <moveit/constraint_samplers/constraint_sampler.h>
-#include <moveit/macros/class_forward.h>
-
-namespace constraint_samplers
+namespace collision_detection
 {
-MOVEIT_CLASS_FORWARD(ConstraintSamplerAllocator);  // Defines ConstraintSamplerAllocatorPtr, ConstPtr, WeakPtr... etc
-
-class ConstraintSamplerAllocator
+void CollisionResult::print() const
 {
-public:
-  ConstraintSamplerAllocator()
+  if (!contacts.empty())
   {
+    ROS_WARN_STREAM_THROTTLE_NAMED(LOG_THROTTLE_PERIOD, LOGNAME,
+                                   "Objects in collision (printing 1st of "
+                                       << contacts.size() << " pairs): " << contacts.begin()->first.first << ", "
+                                       << contacts.begin()->first.second);
+
+    // Log all collisions at the debug level
+    ROS_DEBUG_STREAM_THROTTLE_NAMED(LOG_THROTTLE_PERIOD, LOGNAME, "Objects in collision:");
+    for (const auto& contact : contacts)
+    {
+      ROS_DEBUG_STREAM_THROTTLE_NAMED(LOG_THROTTLE_PERIOD, LOGNAME,
+                                      "\t" << contact.first.first << ", " << contact.first.second);
+    }
   }
+}
 
-  virtual ~ConstraintSamplerAllocator()
-  {
-  }
-
-  virtual ConstraintSamplerPtr alloc(const planning_scene::PlanningSceneConstPtr& scene, const std::string& group_name,
-                                     const moveit_msgs::Constraints& constr) = 0;
-
-  virtual bool canService(const planning_scene::PlanningSceneConstPtr& scene, const std::string& group_name,
-                          const moveit_msgs::Constraints& constr) const = 0;
-};
-}  // namespace constraint_samplers
-
-#endif
+}  // namespace collision_detection
