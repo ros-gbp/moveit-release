@@ -34,7 +34,8 @@
 
 /* Author: Mrinal Kalakrishnan */
 
-#pragma once
+#ifndef CHOMP_UTILS_H_
+#define CHOMP_UTILS_H_
 
 #include <iostream>
 #include <Eigen/Core>
@@ -85,3 +86,5 @@ static inline double shortestAngularDistance(double start, double end)
 }
 
 }  // namespace chomp
+
+#endif /* CHOMP_UTILS_H_ */

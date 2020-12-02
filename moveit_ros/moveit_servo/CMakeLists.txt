@@ -51,8 +51,8 @@ catkin_package(
     EIGEN3
 )
 
-include_directories(include)
-include_directories(SYSTEM
+include_directories(
+  include
   ${catkin_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIR}
@@ -68,7 +68,6 @@ add_library(${SERVO_LIB_NAME}
   src/collision_check.cpp
   src/servo_calcs.cpp
   src/servo.cpp
-  src/joint_state_subscriber.cpp
   src/low_pass_filter.cpp
 )
 set_target_properties(${SERVO_LIB_NAME} PROPERTIES VERSION "${${PROJECT_NAME}_VERSION}")

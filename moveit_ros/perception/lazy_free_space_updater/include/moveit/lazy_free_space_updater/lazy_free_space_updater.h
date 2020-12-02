@@ -34,12 +34,12 @@
 
 /* Author: Ioan Sucan */
 
-#pragma once
+#ifndef MOVEIT_OCCUPANCY_MAP_MONITOR_LAZY_FREE_SPACE_UPDATER_
+#define MOVEIT_OCCUPANCY_MAP_MONITOR_LAZY_FREE_SPACE_UPDATER_
 
 #include <moveit/occupancy_map_monitor/occupancy_map.h>
 #include <boost/thread.hpp>
 #include <deque>
-#include <unordered_map>
 
 namespace occupancy_map_monitor
 {
@@ -54,8 +54,6 @@ public:
 
 private:
 #ifdef __APPLE__
-  typedef std::unordered_map<octomap::OcTreeKey, unsigned int, octomap::OcTreeKey::KeyHash> OcTreeKeyCountMap;
-#elif __cplusplus >= 201103L
   typedef std::unordered_map<octomap::OcTreeKey, unsigned int, octomap::OcTreeKey::KeyHash> OcTreeKeyCountMap;
 #else
   typedef std::tr1::unordered_map<octomap::OcTreeKey, unsigned int, octomap::OcTreeKey::KeyHash> OcTreeKeyCountMap;
@@ -88,3 +86,5 @@ private:
   boost::thread process_thread_;
 };
 }  // namespace occupancy_map_monitor
+
+#endif /* MOVEIT_OCCUPANCY_MAP_UPDATER_H_ */

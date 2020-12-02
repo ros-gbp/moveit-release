@@ -23,7 +23,8 @@
 // linear relationship to that of another joint.
 // Copyright  (C)  2013  Sachin Chitta, Willow Garage
 
-#pragma once
+#ifndef KDL_CHAIN_IKSOLVERVEL_PINV_Mimic_HPP
+#define KDL_CHAIN_IKSOLVERVEL_PINV_Mimic_HPP
 
 #include <kdl/config.h>
 #include <kdl/chainiksolver.hpp>
@@ -83,12 +84,11 @@ public:
    *
    * where W_q and W_x are joint- and Cartesian weights respectively.
    * A smaller joint weight (< 1.0) will reduce the contribution of this joint to the solution. */
-  // NOLINTNEXTLINE(readability-identifier-naming)
   int CartToJnt(const JntArray& q_in, const Twist& v_in, JntArray& qdot_out, const Eigen::VectorXd& joint_weights,
                 const Eigen::Matrix<double, 6, 1>& cartesian_weights);
 
   /// not implemented.
-  int CartToJnt(const JntArray& /*q_init*/, const FrameVel& /*v_in*/, JntArrayVel& /*q_out*/) override
+  int CartToJnt(const JntArray& q_init, const FrameVel& v_in, JntArrayVel& q_out) override
   {
     return -1;
   }
@@ -116,3 +116,4 @@ private:
   Jacobian jac_reduced_;  // reduced Jacobian with contributions of mimic joints mapped onto active DoFs
 };
 }  // namespace KDL
+#endif

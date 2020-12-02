@@ -65,7 +65,7 @@ void ompl_interface::ProjectionEvaluatorLinkPose::defaultCellSizes()
 void ompl_interface::ProjectionEvaluatorLinkPose::project(const ompl::base::State* state,
                                                           OMPLProjection projection) const
 {
-  moveit::core::RobotState* s = tss_.getStateStorage();
+  robot_state::RobotState* s = tss_.getStateStorage();
   planning_context_->getOMPLStateSpace()->copyToRobotState(*s, state);
 
   const Eigen::Vector3d& o = s->getGlobalLinkTransform(link_).translation();

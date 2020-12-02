@@ -2,19 +2,10 @@
 Changelog for package moveit_ros_occupancy_map_monitor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1.1.1 (2020-10-13)
+1.0.7 (2020-11-20)
 ------------------
-* [fix] clang-tidy issues on Travis (`#2337 <https://github.com/ros-planning/moveit/issues/2337>`_)
-  * Replace typedefs with using declarations
-  * Move default destructor definitions to headers
-  * Silent spurious clang-tidy warning
-  * Move variable definitions to their usage location
-* [maint] Cleanup MSA includes (`#2351 <https://github.com/ros-planning/moveit/issues/2351>`_)
 * [maint] Add comment to MOVEIT_CLASS_FORWARD (`#2315 <https://github.com/ros-planning/moveit/issues/2315>`_)
-* Contributors: Felix von Drigalski, Robert Haschke
-
-1.1.0 (2020-09-04)
-------------------
+* Contributors: Felix von Drigalski
 
 1.0.6 (2020-08-19)
 ------------------

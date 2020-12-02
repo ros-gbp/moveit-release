@@ -35,7 +35,8 @@
  * Author: Sachin Chitta
  *********************************************************************/
 
-#pragma once
+#ifndef KINEMATICS_CACHE_ROS_H_
+#define KINEMATICS_CACHE_ROS_H_
 
 #include <kinematics_cache/kinematics_cache.h>
 #include <planning_models/robot_model.h>
@@ -69,3 +70,5 @@ private:
   planning_models::RobotModelPtr kinematic_model_; /** A kinematics model */
 };
 }  // namespace kinematics_cache_ros
+
+#endif

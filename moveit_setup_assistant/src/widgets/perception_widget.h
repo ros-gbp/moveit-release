@@ -33,7 +33,8 @@
 
 /* Author: Mohamad Ayman */
 
-#pragma once
+#ifndef MOVEIT_MOVEIT_SETUP_ASSISTANT_WIDGETS_PERCEPTION_WIDGET_
+#define MOVEIT_MOVEIT_SETUP_ASSISTANT_WIDGETS_PERCEPTION_WIDGET_
 
 // Qt
 class QComboBox;
@@ -121,3 +122,5 @@ private:
 };
 
 }  // namespace moveit_setup_assistant
+
+#endif

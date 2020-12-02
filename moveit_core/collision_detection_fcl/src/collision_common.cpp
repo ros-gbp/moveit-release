@@ -67,11 +67,11 @@ bool collisionCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, voi
   // If active components are specified
   if (cdata->active_components_only_)
   {
-    const moveit::core::LinkModel* l1 =
+    const robot_model::LinkModel* l1 =
         cd1->type == BodyTypes::ROBOT_LINK ?
             cd1->ptr.link :
             (cd1->type == BodyTypes::ROBOT_ATTACHED ? cd1->ptr.ab->getAttachedLink() : nullptr);
-    const moveit::core::LinkModel* l2 =
+    const robot_model::LinkModel* l2 =
         cd2->type == BodyTypes::ROBOT_LINK ?
             cd2->ptr.link :
             (cd2->type == BodyTypes::ROBOT_ATTACHED ? cd2->ptr.ab->getAttachedLink() : nullptr);
@@ -421,11 +421,11 @@ bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void
   // If active components are specified
   if (cdata->req->active_components_only)
   {
-    const moveit::core::LinkModel* l1 =
+    const robot_model::LinkModel* l1 =
         cd1->type == BodyTypes::ROBOT_LINK ?
             cd1->ptr.link :
             (cd1->type == BodyTypes::ROBOT_ATTACHED ? cd1->ptr.ab->getAttachedLink() : nullptr);
-    const moveit::core::LinkModel* l2 =
+    const robot_model::LinkModel* l2 =
         cd2->type == BodyTypes::ROBOT_LINK ?
             cd2->ptr.link :
             (cd2->type == BodyTypes::ROBOT_ATTACHED ? cd2->ptr.ab->getAttachedLink() : nullptr);
@@ -472,16 +472,19 @@ bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void
                         cd1->getID().c_str(), cd2->getID().c_str());
     }
   }
-  else if (cd2->type == BodyTypes::ROBOT_LINK && cd1->type == BodyTypes::ROBOT_ATTACHED)
+  else
   {
-    const std::set<std::string>& tl = cd1->ptr.ab->getTouchLinks();
-    if (tl.find(cd2->getID()) != tl.end())
+    if (cd2->type == BodyTypes::ROBOT_LINK && cd1->type == BodyTypes::ROBOT_ATTACHED)
     {
-      always_allow_collision = true;
-      if (cdata->req->verbose)
-        ROS_DEBUG_NAMED("collision_detection.fcl",
-                        "Robot link '%s' is allowed to touch attached object '%s'. No distances are computed.",
-                        cd2->getID().c_str(), cd1->getID().c_str());
+      const std::set<std::string>& tl = cd1->ptr.ab->getTouchLinks();
+      if (tl.find(cd2->getID()) != tl.end())
+      {
+        always_allow_collision = true;
+        if (cdata->req->verbose)
+          ROS_DEBUG_NAMED("collision_detection.fcl",
+                          "Robot link '%s' is allowed to touch attached object '%s'. No distances are computed.",
+                          cd2->getID().c_str(), cd1->getID().c_str());
+      }
     }
   }
 
@@ -493,6 +496,8 @@ bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void
     ROS_DEBUG_NAMED("collision_detection.fcl", "Actually checking collisions between %s and %s", cd1->getID().c_str(),
                     cd2->getID().c_str());
 
+  fcl::DistanceResultd fcl_result;
+  DistanceResultsData dist_result;
   double dist_threshold = cdata->req->distance_threshold;
 
   const std::pair<std::string, std::string>& pc = cd1->getID() < cd2->getID() ?
@@ -521,7 +526,6 @@ bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void
     }
   }
 
-  fcl::DistanceResultd fcl_result;
   fcl_result.min_distance = dist_threshold;
   // fcl::distance segfaults when given an octree with a null root pointer (using FCL 0.6.1)
   if ((o1->getObjectType() == fcl::OT_OCTREE &&
@@ -538,7 +542,6 @@ bool distanceCallback(fcl::CollisionObjectd* o1, fcl::CollisionObjectd* o2, void
   // one and add the new distance information.
   if (d < dist_threshold)
   {
-    DistanceResultsData dist_result;
     dist_result.distance = fcl_result.min_distance;
 #if (MOVEIT_FCL_VERSION >= FCL_VERSION_CHECK(0, 6, 0))
     dist_result.nearest_points[0] = fcl_result.nearest_points[0];
@@ -719,7 +722,7 @@ FCLGeometryConstPtr createCollisionGeometry(const shapes::ShapeConstPtr& shape, 
   // attached objects could have previously been World::Object; we try to move them
   // from their old cache to the new one, if possible. the code is not pretty, but should help
   // when we attach/detach objects that are in the world
-  if (IfSameType<T, moveit::core::AttachedBody>::value == 1)
+  if (IfSameType<T, robot_state::AttachedBody>::value == 1)
   {
     // get the cache that corresponds to objects; maybe this attached object used to be a world object
     FCLShapeCache& othercache = GetShapeCache<BV, World::Object>();
@@ -755,7 +758,7 @@ FCLGeometryConstPtr createCollisionGeometry(const shapes::ShapeConstPtr& shape, 
       if (IfSameType<T, World::Object>::value == 1)
   {
     // get the cache that corresponds to objects; maybe this attached object used to be a world object
-    FCLShapeCache& othercache = GetShapeCache<BV, moveit::core::AttachedBody>();
+    FCLShapeCache& othercache = GetShapeCache<BV, robot_state::AttachedBody>();
 
     // attached bodies could be just moved from the environment.
     auto cache_it = othercache.map_.find(wptr);
@@ -864,16 +867,16 @@ FCLGeometryConstPtr createCollisionGeometry(const shapes::ShapeConstPtr& shape, 
   return FCLGeometryConstPtr();
 }
 
-FCLGeometryConstPtr createCollisionGeometry(const shapes::ShapeConstPtr& shape, const moveit::core::LinkModel* link,
+FCLGeometryConstPtr createCollisionGeometry(const shapes::ShapeConstPtr& shape, const robot_model::LinkModel* link,
                                             int shape_index)
 {
-  return createCollisionGeometry<fcl::OBBRSSd, moveit::core::LinkModel>(shape, link, shape_index);
+  return createCollisionGeometry<fcl::OBBRSSd, robot_model::LinkModel>(shape, link, shape_index);
 }
 
-FCLGeometryConstPtr createCollisionGeometry(const shapes::ShapeConstPtr& shape, const moveit::core::AttachedBody* ab,
+FCLGeometryConstPtr createCollisionGeometry(const shapes::ShapeConstPtr& shape, const robot_state::AttachedBody* ab,
                                             int shape_index)
 {
-  return createCollisionGeometry<fcl::OBBRSSd, moveit::core::AttachedBody>(shape, ab, shape_index);
+  return createCollisionGeometry<fcl::OBBRSSd, robot_state::AttachedBody>(shape, ab, shape_index);
 }
 
 FCLGeometryConstPtr createCollisionGeometry(const shapes::ShapeConstPtr& shape, const World::Object* obj)
@@ -899,15 +902,15 @@ FCLGeometryConstPtr createCollisionGeometry(const shapes::ShapeConstPtr& shape, 
 }
 
 FCLGeometryConstPtr createCollisionGeometry(const shapes::ShapeConstPtr& shape, double scale, double padding,
-                                            const moveit::core::LinkModel* link, int shape_index)
+                                            const robot_model::LinkModel* link, int shape_index)
 {
-  return createCollisionGeometry<fcl::OBBRSSd, moveit::core::LinkModel>(shape, scale, padding, link, shape_index);
+  return createCollisionGeometry<fcl::OBBRSSd, robot_model::LinkModel>(shape, scale, padding, link, shape_index);
 }
 
 FCLGeometryConstPtr createCollisionGeometry(const shapes::ShapeConstPtr& shape, double scale, double padding,
-                                            const moveit::core::AttachedBody* ab, int shape_index)
+                                            const robot_state::AttachedBody* ab, int shape_index)
 {
-  return createCollisionGeometry<fcl::OBBRSSd, moveit::core::AttachedBody>(shape, scale, padding, ab, shape_index);
+  return createCollisionGeometry<fcl::OBBRSSd, robot_state::AttachedBody>(shape, scale, padding, ab, shape_index);
 }
 
 FCLGeometryConstPtr createCollisionGeometry(const shapes::ShapeConstPtr& shape, double scale, double padding,
@@ -922,13 +925,13 @@ void cleanCollisionGeometryCache()
   {
     cache1.bumpUseCount(true);
   }
-  FCLShapeCache& cache2 = GetShapeCache<fcl::OBBRSSd, moveit::core::AttachedBody>();
+  FCLShapeCache& cache2 = GetShapeCache<fcl::OBBRSSd, robot_state::AttachedBody>();
   {
     cache2.bumpUseCount(true);
   }
 }
 
-void CollisionData::enableGroup(const moveit::core::RobotModelConstPtr& robot_model)
+void CollisionData::enableGroup(const robot_model::RobotModelConstPtr& robot_model)
 {
   if (robot_model->hasJointModelGroup(req_->group_name))
     active_components_only_ = &robot_model->getJointModelGroup(req_->group_name)->getUpdatedLinkModelsSet();

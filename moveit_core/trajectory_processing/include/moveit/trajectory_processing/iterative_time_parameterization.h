@@ -34,7 +34,8 @@
 
 /* Author: Ken Anderson */
 
-#pragma once
+#ifndef MOVEIT_TRAJECTORY_PROCESSING_ITERATIVE_PARABOLIC_SMOOTHER_
+#define MOVEIT_TRAJECTORY_PROCESSING_ITERATIVE_PARABOLIC_SMOOTHER_
 
 #include <moveit/robot_trajectory/robot_trajectory.h>
 
@@ -46,7 +47,7 @@ class IterativeParabolicTimeParameterization
 {
 public:
   IterativeParabolicTimeParameterization(unsigned int max_iterations = 100, double max_time_change_per_it = .01);
-  ~IterativeParabolicTimeParameterization() = default;
+  ~IterativeParabolicTimeParameterization();
 
   bool computeTimeStamps(robot_trajectory::RobotTrajectory& trajectory, const double max_velocity_scaling_factor = 1.0,
                          const double max_acceleration_scaling_factor = 1.0) const;
@@ -65,3 +66,5 @@ private:
   double findT2(const double d1, const double d2, const double t1, double t2, const double a_max) const;
 };
 }  // namespace trajectory_processing
+
+#endif

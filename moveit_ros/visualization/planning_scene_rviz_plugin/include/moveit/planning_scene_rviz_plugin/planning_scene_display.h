@@ -34,7 +34,8 @@
 
 /* Author: Ioan Sucan */
 
-#pragma once
+#ifndef MOVEIT_VISUALIZATION_SCENE_DISPLAY_RVIZ_PLUGIN_SCENE_DISPLAY_
+#define MOVEIT_VISUALIZATION_SCENE_DISPLAY_RVIZ_PLUGIN_SCENE_DISPLAY_
 
 #include <rviz/display.h>
 
@@ -102,7 +103,7 @@ public:
   void clearJobs();
 
   const std::string getMoveGroupNS() const;
-  const moveit::core::RobotModelConstPtr& getRobotModel() const;
+  const robot_model::RobotModelConstPtr& getRobotModel() const;
 
   /// wait for robot state more recent than t
   bool waitForCurrentRobotState(const ros::Time& t = ros::Time::now());
@@ -217,3 +218,5 @@ protected:
 };
 
 }  // namespace moveit_rviz_plugin
+
+#endif

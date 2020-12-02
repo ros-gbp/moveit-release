@@ -34,7 +34,8 @@
 
 /* Author: Mrinal Kalakrishnan */
 
-#pragma once
+#ifndef CHOMP_COST_H_
+#define CHOMP_COST_H_
 
 #include <eigen3/Eigen/Core>
 #include <chomp_motion_planner/chomp_trajectory.h>
@@ -53,13 +54,13 @@ public:
   virtual ~ChompCost();
 
   template <typename Derived>
-  void getDerivative(const Eigen::MatrixXd::ColXpr& joint_trajectory, Eigen::MatrixBase<Derived>& derivative) const;
+  void getDerivative(Eigen::MatrixXd::ColXpr joint_trajectory, Eigen::MatrixBase<Derived>& derivative) const;
 
   const Eigen::MatrixXd& getQuadraticCostInverse() const;
 
   const Eigen::MatrixXd& getQuadraticCost() const;
 
-  double getCost(const Eigen::MatrixXd::ColXpr& joint_trajectory) const;
+  double getCost(Eigen::MatrixXd::ColXpr joint_trajectory) const;
 
   double getMaxQuadCostInvValue() const;
 
@@ -75,8 +76,7 @@ private:
 };
 
 template <typename Derived>
-void ChompCost::getDerivative(const Eigen::MatrixXd::ColXpr& joint_trajectory,
-                              Eigen::MatrixBase<Derived>& derivative) const
+void ChompCost::getDerivative(Eigen::MatrixXd::ColXpr joint_trajectory, Eigen::MatrixBase<Derived>& derivative) const
 {
   derivative = (quad_cost_full_ * (2.0 * joint_trajectory));
 }
@@ -91,9 +91,11 @@ inline const Eigen::MatrixXd& ChompCost::getQuadraticCost() const
   return quad_cost_;
 }
 
-inline double ChompCost::getCost(const Eigen::MatrixXd::ColXpr& joint_trajectory) const
+inline double ChompCost::getCost(Eigen::MatrixXd::ColXpr joint_trajectory) const
 {
   return joint_trajectory.dot(quad_cost_full_ * joint_trajectory);
 }
 
 }  // namespace chomp
+
+#endif /* CHOMP_COST_H_ */

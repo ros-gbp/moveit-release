@@ -34,7 +34,8 @@
 
 /* Author: Ioan Sucan */
 
-#pragma once
+#ifndef MOVEIT_COLLISION_DETECTION_COLLISION_COMMON_
+#define MOVEIT_COLLISION_DETECTION_COLLISION_COMMON_
 
 #include <boost/array.hpp>
 #include <boost/function.hpp>
@@ -67,7 +68,7 @@ enum Type
 }  // namespace BodyTypes
 
 /** \brief The types of bodies that are considered for collision */
-using BodyType = BodyTypes::Type;
+typedef BodyTypes::Type BodyType;
 
 /** \brief Definition of a contact point */
 struct Contact
@@ -94,15 +95,6 @@ struct Contact
 
   /** \brief The type of the second body involved in the contact */
   BodyType body_type_2;
-
-  /** \brief The distance percentage between casted poses until collision.
-   *
-   *  If the value is 0, then the collision occured in the start pose. If the value is 1, then the collision occured in
-   *  the end pose. */
-  double percent_interpolation;
-
-  /** \brief The two nearest points connecting the two bodies */
-  Eigen::Vector3d nearest_points[2];
 };
 
 /** \brief When collision costs are computed, this structure contains information about the partial cost incurred in a
@@ -147,7 +139,7 @@ struct CollisionResult
   CollisionResult() : collision(false), distance(std::numeric_limits<double>::max()), contact_count(0)
   {
   }
-  using ContactMap = std::map<std::pair<std::string, std::string>, std::vector<Contact> >;
+  typedef std::map<std::pair<std::string, std::string>, std::vector<Contact> > ContactMap;
 
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
@@ -240,7 +232,7 @@ enum DistanceRequestType
   ALL       ///< Find all the contacts for a given pair
 };
 }
-using DistanceRequestType = DistanceRequestTypes::DistanceRequestType;
+typedef DistanceRequestTypes::DistanceRequestType DistanceRequestType;
 
 /** \brief Representation of a distance-reporting request */
 struct DistanceRequest
@@ -259,7 +251,7 @@ struct DistanceRequest
   }
 
   /// Compute \e active_components_only_ based on \e req_
-  void enableGroup(const moveit::core::RobotModelConstPtr& robot_model)
+  void enableGroup(const robot_model::RobotModelConstPtr& robot_model)
   {
     if (robot_model->hasJointModelGroup(group_name))
       active_components_only = &robot_model->getJointModelGroup(group_name)->getUpdatedLinkModelsSet();
@@ -285,7 +277,7 @@ struct DistanceRequest
   std::string group_name;
 
   /// The set of active components to check
-  const std::set<const moveit::core::LinkModel*>* active_components_only;
+  const std::set<const robot_model::LinkModel*>* active_components_only;
 
   /// The allowed collision matrix used to filter checks
   const AllowedCollisionMatrix* acm;
@@ -303,7 +295,7 @@ struct DistanceRequest
 };
 
 /** \brief Generic representation of the distance information for a pair of objects */
-struct DistanceResultsData  // NOLINT(readability-identifier-naming) - suppress spurious clang-tidy warning
+struct DistanceResultsData
 {
   DistanceResultsData()
   {
@@ -356,7 +348,7 @@ struct DistanceResultsData  // NOLINT(readability-identifier-naming) - suppress 
 };
 
 /** \brief Mapping between the names of the collision objects and the DistanceResultData. */
-using DistanceMap = std::map<const std::pair<std::string, std::string>, std::vector<DistanceResultsData> >;
+typedef std::map<const std::pair<std::string, std::string>, std::vector<DistanceResultsData> > DistanceMap;
 
 /** \brief Result of a distance request. */
 struct DistanceResult
@@ -383,3 +375,5 @@ struct DistanceResult
   }
 };
 }  // namespace collision_detection
+
+#endif

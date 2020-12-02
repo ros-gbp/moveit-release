@@ -34,7 +34,8 @@
 
 /* Author: Ioan Sucan, Sachin Chitta */
 
-#pragma once
+#ifndef MOVEIT_PICK_PLACE_MANIPULATION_STAGE_
+#define MOVEIT_PICK_PLACE_MANIPULATION_STAGE_
 
 #include <moveit/macros/class_forward.h>
 #include <moveit/pick_place/manipulation_plan.h>
@@ -83,3 +84,5 @@ protected:
   bool verbose_;
 };
 }  // namespace pick_place
+
+#endif

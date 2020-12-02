@@ -120,20 +120,28 @@ public:
     return setJointValueTarget(js_msg);
   }
 
+  bool setStateValueTarget(const py_bindings_tools::ByteString& state_str)
+  {
+    moveit_msgs::RobotState msg;
+    py_bindings_tools::deserializeMsg(state_str, msg);
+    robot_state::RobotState state(moveit::planning_interface::MoveGroupInterface::getJointValueTarget());
+    moveit::core::robotStateMsgToRobotState(msg, state);
+    return moveit::planning_interface::MoveGroupInterface::setJointValueTarget(state);
+  }
+
   bp::list getJointValueTargetPythonList()
   {
-    std::vector<double> values;
-    MoveGroupInterface::getJointValueTarget(values);
+    const robot_state::RobotState& values = moveit::planning_interface::MoveGroupInterface::getJointValueTarget();
     bp::list l;
-    for (const double value : values)
-      l.append(value);
+    for (const double *it = values.getVariablePositions(), *end = it + getVariableCount(); it != end; ++it)
+      l.append(*it);
     return l;
   }
 
   py_bindings_tools::ByteString getJointValueTarget()
   {
     moveit_msgs::RobotState msg;
-    const moveit::core::RobotState state = moveit::planning_interface::MoveGroupInterface::getTargetRobotState();
+    const robot_state::RobotState state = moveit::planning_interface::MoveGroupInterface::getJointValueTarget();
     moveit::core::robotStateToRobotStateMsg(state, msg);
     return py_bindings_tools::serializeMsg(msg);
   }
@@ -179,8 +187,8 @@ public:
   {
     const std::map<std::string, std::vector<double>>& rv = getRememberedJointValues();
     bp::dict d;
-    for (const std::pair<const std::string, std::vector<double>>& it : rv)
-      d[it.first] = py_bindings_tools::listFromDouble(it.second);
+    for (std::map<std::string, std::vector<double>>::const_iterator it = rv.begin(); it != rv.end(); ++it)
+      d[it->first] = py_bindings_tools::listFromDouble(it->second);
     return d;
   }
 
@@ -332,14 +340,22 @@ public:
 
   bp::dict getCurrentStateBoundedPython()
   {
-    moveit::core::RobotStatePtr current = getCurrentState();
+    robot_state::RobotStatePtr current = getCurrentState();
     current->enforceBounds();
     moveit_msgs::RobotState rsmv;
-    moveit::core::robotStateToRobotStateMsg(*current, rsmv);
+    robot_state::robotStateToRobotStateMsg(*current, rsmv);
     bp::dict output;
     for (size_t x = 0; x < rsmv.joint_state.name.size(); ++x)
       output[rsmv.joint_state.name[x]] = rsmv.joint_state.position[x];
     return output;
+  }
+
+  py_bindings_tools::ByteString getCurrentStatePython()
+  {
+    moveit::core::RobotStatePtr current_state = getCurrentState();
+    moveit_msgs::RobotState state_message;
+    moveit::core::robotStateToRobotStateMsg(*current_state, state_message);
+    return py_bindings_tools::serializeMsg(state_message);
   }
 
   void setStartStatePython(const py_bindings_tools::ByteString& msg_str)
@@ -456,16 +472,14 @@ public:
     return asyncExecute(plan) == MoveItErrorCode::SUCCESS;
   }
 
-  bp::tuple planPython()
+  py_bindings_tools::ByteString getPlanPython()
   {
     MoveGroupInterface::Plan plan;
-    moveit_msgs::MoveItErrorCodes res;
     {
       GILReleaser gr;
-      res = MoveGroupInterface::plan(plan);
+      MoveGroupInterface::plan(plan);
     }
-    return bp::make_tuple(py_bindings_tools::serializeMsg(res), py_bindings_tools::serializeMsg(plan.trajectory_),
-                          plan.planning_time_);
+    return py_bindings_tools::serializeMsg(plan.trajectory_);
   }
 
   bp::tuple computeCartesianPathPython(const bp::list& waypoints, double eef_step, double jump_threshold,
@@ -596,11 +610,29 @@ public:
     if (ref.size() != 3)
       throw std::invalid_argument("reference point needs to have 3 elements, got " + std::to_string(ref.size()));
 
-    moveit::core::RobotState state(getRobotModel());
+    robot_state::RobotState state(getRobotModel());
     state.setToDefaultValues();
     auto group = state.getJointModelGroup(getName());
     state.setJointGroupPositions(group, v);
     return state.getJacobian(group, Eigen::Map<Eigen::Vector3d>(&ref[0]));
+  }
+
+  py_bindings_tools::ByteString enforceBoundsPython(const py_bindings_tools::ByteString& msg_str)
+  {
+    moveit_msgs::RobotState state_msg;
+    py_bindings_tools::deserializeMsg(msg_str, state_msg);
+    moveit::core::RobotState state(getRobotModel());
+    if (moveit::core::robotStateMsgToRobotState(state_msg, state, true))
+    {
+      state.enforceBounds();
+      moveit::core::robotStateToRobotStateMsg(state, state_msg);
+      return py_bindings_tools::serializeMsg(state_msg);
+    }
+    else
+    {
+      ROS_ERROR("Unable to convert RobotState message to RobotState instance.");
+      return py_bindings_tools::ByteString("");
+    }
   }
 };
 
@@ -671,6 +703,7 @@ static void wrap_move_group_interface()
   bool (MoveGroupInterfaceWrapper::*set_joint_value_target_4)(const std::string&, double) =
       &MoveGroupInterfaceWrapper::setJointValueTarget;
   move_group_interface_class.def("set_joint_value_target", set_joint_value_target_4);
+  move_group_interface_class.def("set_state_value_target", &MoveGroupInterfaceWrapper::setStateValueTarget);
 
   move_group_interface_class.def("set_joint_value_target_from_pose",
                                  &MoveGroupInterfaceWrapper::setJointValueTargetFromPosePython);
@@ -731,7 +764,7 @@ static void wrap_move_group_interface()
   move_group_interface_class.def("set_planner_id", &MoveGroupInterfaceWrapper::setPlannerId);
   move_group_interface_class.def("get_planner_id", &MoveGroupInterfaceWrapper::getPlannerIdCStr);
   move_group_interface_class.def("set_num_planning_attempts", &MoveGroupInterfaceWrapper::setNumPlanningAttempts);
-  move_group_interface_class.def("plan", &MoveGroupInterfaceWrapper::planPython);
+  move_group_interface_class.def("compute_plan", &MoveGroupInterfaceWrapper::getPlanPython);
   move_group_interface_class.def("compute_cartesian_path", &MoveGroupInterfaceWrapper::computeCartesianPathPython);
   move_group_interface_class.def("compute_cartesian_path",
                                  &MoveGroupInterfaceWrapper::computeCartesianPathConstrainedPython);
@@ -742,8 +775,10 @@ static void wrap_move_group_interface()
   move_group_interface_class.def("get_named_targets", &MoveGroupInterfaceWrapper::getNamedTargetsPython);
   move_group_interface_class.def("get_named_target_values", &MoveGroupInterfaceWrapper::getNamedTargetValuesPython);
   move_group_interface_class.def("get_current_state_bounded", &MoveGroupInterfaceWrapper::getCurrentStateBoundedPython);
+  move_group_interface_class.def("get_current_state", &MoveGroupInterfaceWrapper::getCurrentStatePython);
   move_group_interface_class.def("get_jacobian_matrix", &MoveGroupInterfaceWrapper::getJacobianMatrixPython,
                                  getJacobianMatrixOverloads());
+  move_group_interface_class.def("enforce_bounds", &MoveGroupInterfaceWrapper::enforceBoundsPython);
 }
 }  // namespace planning_interface
 }  // namespace moveit

@@ -34,7 +34,8 @@
 
 /* Author: Sachin Chitta */
 
-#pragma once
+#ifndef MOVEIT_DYNAMICS_SOLVER_DYNAMICS_SOLVER_
+#define MOVEIT_DYNAMICS_SOLVER_DYNAMICS_SOLVER_
 
 // KDL
 #include <kdl/chain.hpp>
@@ -66,7 +67,7 @@ public:
    * @param group_name The name of the group to compute stuff for
    * @return False if initialization failed
    */
-  DynamicsSolver(const moveit::core::RobotModelConstPtr& robot_model, const std::string& group_name,
+  DynamicsSolver(const robot_model::RobotModelConstPtr& robot_model, const std::string& group_name,
                  const geometry_msgs::Vector3& gravity_vector);
 
   /**
@@ -124,12 +125,12 @@ public:
    * @brief Get the kinematic model
    * @return kinematic model
    */
-  const moveit::core::RobotModelConstPtr& getRobotModel() const
+  const robot_model::RobotModelConstPtr& getRobotModel() const
   {
     return robot_model_;
   }
 
-  const moveit::core::JointModelGroup* getGroup() const
+  const robot_model::JointModelGroup* getGroup() const
   {
     return joint_model_group_;
   }
@@ -138,10 +139,10 @@ private:
   std::shared_ptr<KDL::ChainIdSolver_RNE> chain_id_solver_;  // KDL chain inverse dynamics
   KDL::Chain kdl_chain_;                                     // KDL chain
 
-  moveit::core::RobotModelConstPtr robot_model_;
-  const moveit::core::JointModelGroup* joint_model_group_;
+  robot_model::RobotModelConstPtr robot_model_;
+  const robot_model::JointModelGroup* joint_model_group_;
 
-  moveit::core::RobotStatePtr state_;  // robot state
+  robot_state::RobotStatePtr state_;  // robot state
 
   std::string base_name_, tip_name_;        // base name, tip name
   unsigned int num_joints_, num_segments_;  // number of joints in group, number of segments in group
@@ -150,3 +151,4 @@ private:
   double gravity_;  // Norm of the gravity vector passed in initialize()
 };
 }  // namespace dynamics_solver
+#endif

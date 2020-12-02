@@ -34,7 +34,8 @@
 
 /* Author: Dave Coleman */
 
-#pragma once
+#ifndef MOVEIT_MOVEIT_SETUP_ASSISTANT_WIDGETS_DOUBLE_LIST_WIDGET_
+#define MOVEIT_MOVEIT_SETUP_ASSISTANT_WIDGETS_DOUBLE_LIST_WIDGET_
 
 #include <QWidget>
 class QLabel;
@@ -70,7 +71,7 @@ public:
   /// Set the right box
   void setSelected(const std::vector<std::string>& items);
 
-  void clearContents();
+  void clearContents(void);
 
   /// Convenience function for reusing set table code
   void setTable(const std::vector<std::string>& items, QTableWidget* table);
@@ -142,3 +143,5 @@ private:
 };
 
 }  // namespace moveit_setup_assistant
+
+#endif

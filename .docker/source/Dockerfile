@@ -1,7 +1,7 @@
-# moveit/moveit:noetic-source
+# moveit/moveit:melodic-source
 # Downloads the moveit source code and install remaining debian dependencies
 
-FROM moveit/moveit:noetic-ci-shadow-fixed
+FROM moveit/moveit:melodic-ci-shadow-fixed
 MAINTAINER Dave Coleman dave@picknik.ai
 
 ENV ROS_UNDERLAY /root/ws_moveit/install

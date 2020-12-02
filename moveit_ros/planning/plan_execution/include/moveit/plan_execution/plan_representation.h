@@ -34,7 +34,8 @@
 
 /* Author: Ioan Sucan */
 
-#pragma once
+#ifndef MOVEIT_PLAN_EXECUTION_PLAN_REPRESENTATION_
+#define MOVEIT_PLAN_EXECUTION_PLAN_REPRESENTATION_
 
 #include <moveit/planning_scene_monitor/planning_scene_monitor.h>
 #include <moveit/robot_trajectory/robot_trajectory.h>
@@ -85,5 +86,6 @@ struct ExecutableMotionPlan
 };
 
 /// The signature of a function that can compute a motion plan
-using ExecutableMotionPlanComputationFn = boost::function<bool(ExecutableMotionPlan&)>;
+typedef boost::function<bool(ExecutableMotionPlan& plan)> ExecutableMotionPlanComputationFn;
 }  // namespace plan_execution
+#endif

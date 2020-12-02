@@ -223,16 +223,17 @@ Path::Path(const std::list<Eigen::VectorXd>& path, double max_deviation) : lengt
 
   // Create list of switching point candidates, calculate total path length and
   // absolute positions of path segments
-  for (std::unique_ptr<PathSegment>& path_segment : path_segments_)
+  for (std::list<std::unique_ptr<PathSegment>>::iterator segment = path_segments_.begin();
+       segment != path_segments_.end(); ++segment)
   {
-    path_segment->position_ = length_;
-    std::list<double> local_switching_points = path_segment->getSwitchingPoints();
+    (*segment)->position_ = length_;
+    std::list<double> local_switching_points = (*segment)->getSwitchingPoints();
     for (std::list<double>::const_iterator point = local_switching_points.begin();
          point != local_switching_points.end(); ++point)
     {
       switching_points_.push_back(std::make_pair(length_ + *point, false));
     }
-    length_ += path_segment->getLength();
+    length_ += (*segment)->getLength();
     while (!switching_points_.empty() && switching_points_.back().first >= length_)
       switching_points_.pop_back();
     switching_points_.push_back(std::make_pair(length_, true));
@@ -242,9 +243,10 @@ Path::Path(const std::list<Eigen::VectorXd>& path, double max_deviation) : lengt
 
 Path::Path(const Path& path) : length_(path.length_), switching_points_(path.switching_points_)
 {
-  for (const std::unique_ptr<PathSegment>& path_segment : path.path_segments_)
+  for (std::list<std::unique_ptr<PathSegment>>::const_iterator it = path.path_segments_.begin();
+       it != path.path_segments_.end(); ++it)
   {
-    path_segments_.emplace_back(path_segment->clone());
+    path_segments_.emplace_back((*it)->clone());
   }
 }
 
@@ -876,7 +878,7 @@ bool TimeOptimalTrajectoryGeneration::computeTimeStamps(robot_trajectory::RobotT
   if (trajectory.empty())
     return true;
 
-  const moveit::core::JointModelGroup* group = trajectory.getGroup();
+  const robot_model::JointModelGroup* group = trajectory.getGroup();
   if (!group)
   {
     ROS_ERROR_NAMED(LOGNAME, "It looks like the planner did not set the group the plan was computed for");
@@ -922,7 +924,7 @@ bool TimeOptimalTrajectoryGeneration::computeTimeStamps(robot_trajectory::RobotT
   // This is pretty much copied from IterativeParabolicTimeParameterization::applyVelocityConstraints
   const std::vector<std::string>& vars = group->getVariableNames();
   const std::vector<int>& idx = group->getVariableIndexList();
-  const moveit::core::RobotModel& rmodel = group->getParentModel();
+  const robot_model::RobotModel& rmodel = group->getParentModel();
   const unsigned num_joints = group->getVariableCount();
   const unsigned num_points = trajectory.getWayPointCount();
 
@@ -931,7 +933,7 @@ bool TimeOptimalTrajectoryGeneration::computeTimeStamps(robot_trajectory::RobotT
   Eigen::VectorXd max_acceleration(num_joints);
   for (size_t j = 0; j < num_joints; ++j)
   {
-    const moveit::core::VariableBounds& bounds = rmodel.getVariableBounds(vars[j]);
+    const robot_model::VariableBounds& bounds = rmodel.getVariableBounds(vars[j]);
 
     // Limits need to be non-zero, otherwise we never exit
     max_velocity[j] = 1.0;
@@ -955,7 +957,7 @@ bool TimeOptimalTrajectoryGeneration::computeTimeStamps(robot_trajectory::RobotT
   std::list<Eigen::VectorXd> points;
   for (size_t p = 0; p < num_points; ++p)
   {
-    moveit::core::RobotStatePtr waypoint = trajectory.getWayPointPtr(p);
+    robot_state::RobotStatePtr waypoint = trajectory.getWayPointPtr(p);
     Eigen::VectorXd new_point(num_joints);
     bool diverse_point = (p == 0);
 
@@ -995,7 +997,7 @@ bool TimeOptimalTrajectoryGeneration::computeTimeStamps(robot_trajectory::RobotT
   size_t sample_count = std::ceil(parameterized.getDuration() / resample_dt_);
 
   // Resample and fill in trajectory
-  moveit::core::RobotState waypoint = moveit::core::RobotState(trajectory.getWayPoint(0));
+  robot_state::RobotState waypoint = robot_state::RobotState(trajectory.getWayPoint(0));
   trajectory.clear();
   double last_t = 0;
   for (size_t sample = 0; sample <= sample_count; ++sample)

@@ -34,7 +34,8 @@
 
 /* Author: Ioan Sucan, Sachin Chitta */
 
-#pragma once
+#ifndef MOVEIT_PICK_PLACE_REACHABLE_VALID_POSE_FILTER_
+#define MOVEIT_PICK_PLACE_REACHABLE_VALID_POSE_FILTER_
 
 #include <moveit/pick_place/manipulation_stage.h>
 #include <moveit/constraint_samplers/constraint_sampler_manager.h>
@@ -52,10 +53,12 @@ public:
   bool evaluate(const ManipulationPlanPtr& plan) const override;
 
 private:
-  bool isEndEffectorFree(const ManipulationPlanPtr& plan, moveit::core::RobotState& token_state) const;
+  bool isEndEffectorFree(const ManipulationPlanPtr& plan, robot_state::RobotState& token_state) const;
 
   planning_scene::PlanningSceneConstPtr planning_scene_;
   collision_detection::AllowedCollisionMatrixConstPtr collision_matrix_;
   constraint_samplers::ConstraintSamplerManagerPtr constraints_sampler_manager_;
 };
 }  // namespace pick_place
+
+#endif

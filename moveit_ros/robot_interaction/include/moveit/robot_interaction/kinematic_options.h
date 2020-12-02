@@ -34,7 +34,8 @@
 
 /* Author: Acorn Pooley */
 
-#pragma once
+#ifndef MOVEIT_ROBOT_INTERACTION_KINEMATIC_OPTIONS_
+#define MOVEIT_ROBOT_INTERACTION_KINEMATIC_OPTIONS_
 
 #include <moveit/kinematics_base/kinematics_base.h>
 #include <moveit/robot_state/robot_state.h>
@@ -70,7 +71,7 @@ struct KinematicOptions
   /// @param tip link that will be posed
   /// @param pose desired pose of tip link
   /// @param result true if IK succeeded.
-  bool setStateFromIK(moveit::core::RobotState& state, const std::string& group, const std::string& tip,
+  bool setStateFromIK(robot_state::RobotState& state, const std::string& group, const std::string& tip,
                       const geometry_msgs::Pose& pose) const;
 
   /// Copy a subset of source to this.
@@ -82,9 +83,11 @@ struct KinematicOptions
   double timeout_seconds_;
 
   /// This is called to determine if the state is valid
-  moveit::core::GroupStateValidityCallbackFn state_validity_callback_;
+  robot_state::GroupStateValidityCallbackFn state_validity_callback_;
 
   /// other options
   kinematics::KinematicsQueryOptions options_;
 };
 }  // namespace robot_interaction
+
+#endif

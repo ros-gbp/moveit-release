@@ -34,7 +34,8 @@
 
 /* Author: Ioan Sucan */
 
-#pragma once
+#ifndef MOVEIT_OMPL_INTERFACE_MODEL_BASED_PLANNING_CONTEXT_
+#define MOVEIT_OMPL_INTERFACE_MODEL_BASED_PLANNING_CONTEXT_
 
 #include <moveit/ompl_interface/parameterization/model_based_state_space.h>
 #include <moveit/ompl_interface/detail/constrained_valid_state_sampler.h>
@@ -65,9 +66,11 @@ struct ModelBasedPlanningContextSpecification
 {
   std::map<std::string, std::string> config_;
   ConfiguredPlannerSelector planner_selector_;
+  ConstraintsLibraryConstPtr constraints_library_;
   constraint_samplers::ConstraintSamplerManagerPtr constraint_sampler_manager_;
 
   ModelBasedStateSpacePtr state_space_;
+  std::vector<ModelBasedStateSpacePtr> subspaces_;
   og::SimpleSetupPtr ompl_simple_setup_;  // pass in the correct simple setup type
 };
 
@@ -101,17 +104,17 @@ public:
     spec_.config_ = config;
   }
 
-  const moveit::core::RobotModelConstPtr& getRobotModel() const
+  const robot_model::RobotModelConstPtr& getRobotModel() const
   {
     return spec_.state_space_->getRobotModel();
   }
 
-  const moveit::core::JointModelGroup* getJointModelGroup() const
+  const robot_model::JointModelGroup* getJointModelGroup() const
   {
     return spec_.state_space_->getJointModelGroup();
   }
 
-  const moveit::core::RobotState& getCompleteInitialRobotState() const
+  const robot_state::RobotState& getCompleteInitialRobotState() const
   {
     return complete_initial_robot_state_;
   }
@@ -233,25 +236,15 @@ public:
 
   void setPlanningVolume(const moveit_msgs::WorkspaceParameters& wparams);
 
-  void setCompleteInitialState(const moveit::core::RobotState& complete_initial_robot_state);
+  void setCompleteInitialState(const robot_state::RobotState& complete_initial_robot_state);
 
   bool setGoalConstraints(const std::vector<moveit_msgs::Constraints>& goal_constraints,
                           const moveit_msgs::Constraints& path_constraints, moveit_msgs::MoveItErrorCodes* error);
   bool setPathConstraints(const moveit_msgs::Constraints& path_constraints, moveit_msgs::MoveItErrorCodes* error);
 
-  void setConstraintsApproximations(const ConstraintsLibraryPtr& constraints_library)
+  void setConstraintsApproximations(const ConstraintsLibraryConstPtr& constraints_library)
   {
-    constraints_library_ = constraints_library;
-  }
-
-  ConstraintsLibraryPtr getConstraintsLibraryNonConst()
-  {
-    return constraints_library_;
-  }
-
-  const ConstraintsLibraryPtr& getConstraintsLibrary() const
-  {
-    return constraints_library_;
+    spec_.constraints_library_ = constraints_library;
   }
 
   bool simplifySolutions() const
@@ -312,22 +305,11 @@ public:
 
   void convertPath(const og::PathGeometric& pg, robot_trajectory::RobotTrajectory& traj) const;
 
-  /** @brief Look up param server 'constraint_approximations' and use its value as the path to load constraint
-   * approximations to */
-  bool loadConstraintApproximations(const ros::NodeHandle& nh);
-
-  /** @brief Look up param server 'constraint_approximations' and use its value as the path to save constraint
-   * approximations to */
-  bool saveConstraintApproximations(const ros::NodeHandle& nh);
-
   /** \brief Configure ompl_simple_setup_ and optionally the constraints_library_.
    *
-   * ompl_simple_setup_ gets a start state, state sampler, and state validity checker.
-   *
-   * \param nh ROS node handle used to load the constraint approximations.
-   * \param use_constraints_approximations Set to true if we want to load the constraint approximation.
+   * ompl_simple_setup_ gets a start state and state validity checker.
    * */
-  virtual void configure(const ros::NodeHandle& nh, bool use_constraints_approximations);
+  virtual void configure();
 
 protected:
   void preSolve();
@@ -341,40 +323,12 @@ protected:
   virtual void useConfig();
   virtual ob::GoalPtr constructGoal();
 
-  /* @brief Construct a planner termination condition, by default a simple time limit
-     @param timeout The maximum time (in seconds) that can be used for planning
-     @param start The point in time from which planning is considered to have started
-
-     An additional planner termination condition can be specified per planner
-     configuration in ompl_planning.yaml via the `termination_condition` parameter.
-     Possible values are:
-
-     * `Iteration[num]`: Terminate after `num` iterations. Here, `num` should be replaced
-       with a positive integer.
-     * `CostConvergence[solutions_window,epsilon]`: Terminate after the cost (as specified
-       by an optimization objective) has converged. The parameter `solutions_window`
-       specifies the minimum number of solutions to use in deciding whether a planner has
-       converged. The parameter `epsilon`	is the threshold to consider for convergence.
-       This should be a positive number close to 0. If the cumulative moving average does
-       not change by a relative fraction of epsilon after a new better solution is found,
-       convergence has been reached.
-     * `ExactSolution`: Terminate as soon as an exact solution is found or a timeout
-       occurs. This modifies the behavior of anytime/optimizing planners to terminate
-       upon discovering the first feasible solution.
-
-     In all cases, the planner will terminate when either the user-specified termination
-     condition is satisfied or the time limit specified by `timeout` has been reached,
-     whichever occurs first.
-  */
-  virtual ob::PlannerTerminationCondition constructPlannerTerminationCondition(double timeout,
-                                                                               const ompl::time::point& start);
-
   void registerTerminationCondition(const ob::PlannerTerminationCondition& ptc);
   void unregisterTerminationCondition();
 
   ModelBasedPlanningContextSpecification spec_;
 
-  moveit::core::RobotState complete_initial_robot_state_;
+  robot_state::RobotState complete_initial_robot_state_;
 
   /// the OMPL planning context; this contains the problem definition and the planner used
   og::SimpleSetupPtr ompl_simple_setup_;
@@ -422,11 +376,6 @@ protected:
   /// needed)
   unsigned int minimum_waypoint_count_;
 
-  /// when false, clears planners before running solve()
-  bool multi_query_planning_enabled_;
-
-  ConstraintsLibraryPtr constraints_library_;
-
   bool simplify_solutions_;
 
   // if false the final solution is not interpolated
@@ -436,3 +385,5 @@ protected:
   bool hybridize_;
 };
 }  // namespace ompl_interface
+
+#endif

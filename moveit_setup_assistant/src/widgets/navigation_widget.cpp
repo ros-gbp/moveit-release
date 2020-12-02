@@ -77,10 +77,10 @@ void NavigationWidget::setNavs(const QList<QString>& navs)
   setModel(nullptr);
   model_->clear();
 
-  for (const QString& nav : navs)
+  for (int i = 0; i < navs.size(); i++)
   {
     QStandardItem* item = new QStandardItem();
-    item->setData(QVariant::fromValue(nav), Qt::DisplayRole);
+    item->setData(QVariant::fromValue(navs.at(i)), Qt::DisplayRole);
     item->setFlags(Qt::NoItemFlags);
     model_->appendRow(item);
   }
@@ -119,7 +119,7 @@ NavDelegate::NavDelegate(QObject* parent) : QStyledItemDelegate(parent)
 {
 }
 
-QSize NavDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& /*index*/) const
+QSize NavDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
   return QSize(option.rect.width(), 45);
 }

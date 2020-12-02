@@ -38,8 +38,8 @@
 #include <geometric_shapes/body_operations.h>
 #include <geometric_shapes/shape_operations.h>
 #include <moveit/robot_state/conversions.h>
-#include <moveit/collision_detection_fcl/collision_env_fcl.h>
-#include <geometric_shapes/check_isometry.h>
+#include <moveit/collision_detection_fcl/collision_robot_fcl.h>
+#include <moveit/collision_detection_fcl/collision_world_fcl.h>
 #include <boost/math/constants/constants.hpp>
 #include <tf2_eigen/tf2_eigen.h>
 #include <boost/bind.hpp>
@@ -58,7 +58,7 @@ static double normalizeAngle(double angle)
   return v;
 }
 
-KinematicConstraint::KinematicConstraint(const moveit::core::RobotModelConstPtr& model)
+KinematicConstraint::KinematicConstraint(const robot_model::RobotModelConstPtr& model)
   : type_(UNKNOWN_CONSTRAINT), robot_model_(model), constraint_weight_(std::numeric_limits<double>::epsilon())
 {
 }
@@ -142,14 +142,13 @@ bool JointConstraint::configure(const moveit_msgs::JointConstraint& jc)
 
     // check if we have to wrap angles when computing distances
     joint_is_continuous_ = false;
-    if (joint_model_->getType() == moveit::core::JointModel::REVOLUTE)
+    if (joint_model_->getType() == robot_model::JointModel::REVOLUTE)
     {
-      const moveit::core::RevoluteJointModel* rjoint =
-          static_cast<const moveit::core::RevoluteJointModel*>(joint_model_);
+      const robot_model::RevoluteJointModel* rjoint = static_cast<const robot_model::RevoluteJointModel*>(joint_model_);
       if (rjoint->isContinuous())
         joint_is_continuous_ = true;
     }
-    else if (joint_model_->getType() == moveit::core::JointModel::PLANAR)
+    else if (joint_model_->getType() == robot_model::JointModel::PLANAR)
     {
       if (local_variable_name_ == "theta")
         joint_is_continuous_ = true;
@@ -162,7 +161,7 @@ bool JointConstraint::configure(const moveit_msgs::JointConstraint& jc)
     else
     {
       joint_position_ = jc.position;
-      const moveit::core::VariableBounds& bounds = joint_model_->getVariableBounds(joint_variable_name_);
+      const robot_model::VariableBounds& bounds = joint_model_->getVariableBounds(joint_variable_name_);
 
       if (bounds.min_position_ > joint_position_ + joint_tolerance_above_)
       {
@@ -209,7 +208,7 @@ bool JointConstraint::equal(const KinematicConstraint& other, double margin) con
   return false;
 }
 
-ConstraintEvaluationResult JointConstraint::decide(const moveit::core::RobotState& state, bool verbose) const
+ConstraintEvaluationResult JointConstraint::decide(const robot_state::RobotState& state, bool verbose) const
 {
   if (!joint_model_)
     return ConstraintEvaluationResult(true, 0.0);
@@ -274,7 +273,7 @@ void JointConstraint::print(std::ostream& out) const
     out << "No constraint" << std::endl;
 }
 
-bool PositionConstraint::configure(const moveit_msgs::PositionConstraint& pc, const moveit::core::Transforms& tf)
+bool PositionConstraint::configure(const moveit_msgs::PositionConstraint& pc, const robot_state::Transforms& tf)
 {
   // clearing before we configure to get rid of any old data
   clear();
@@ -320,18 +319,17 @@ bool PositionConstraint::configure(const moveit_msgs::PositionConstraint& pc, co
         ROS_WARN_NAMED("kinematic_constraints", "Constraint region message does not contain enough primitive poses");
         continue;
       }
+      constraint_region_.push_back(bodies::BodyPtr(bodies::createBodyFromShape(shape.get())));
       Eigen::Isometry3d t;
       tf2::fromMsg(pc.constraint_region.primitive_poses[i], t);
-      ASSERT_ISOMETRY(t)  // unsanitized input, could contain a non-isometry
       constraint_region_pose_.push_back(t);
-      if (!mobile_frame_)
+      if (mobile_frame_)
+        constraint_region_.back()->setPose(constraint_region_pose_.back());
+      else
+      {
         tf.transformPose(pc.header.frame_id, constraint_region_pose_.back(), constraint_region_pose_.back());
-
-      const bodies::BodyPtr body(bodies::createEmptyBodyFromShapeType(shape->type));
-      body->setDimensionsDirty(shape.get());
-      body->setPoseDirty(constraint_region_pose_.back());
-      body->updateInternalData();
-      constraint_region_.push_back(body);
+        constraint_region_.back()->setPose(constraint_region_pose_.back());
+      }
     }
     else
       ROS_WARN_NAMED("kinematic_constraints", "Could not construct primitive shape %zu", i);
@@ -348,17 +346,17 @@ bool PositionConstraint::configure(const moveit_msgs::PositionConstraint& pc, co
         ROS_WARN_NAMED("kinematic_constraints", "Constraint region message does not contain enough primitive poses");
         continue;
       }
+      constraint_region_.push_back(bodies::BodyPtr(bodies::createBodyFromShape(shape.get())));
       Eigen::Isometry3d t;
       tf2::fromMsg(pc.constraint_region.mesh_poses[i], t);
-      ASSERT_ISOMETRY(t)  // unsanitized input, could contain a non-isometry
       constraint_region_pose_.push_back(t);
-      if (!mobile_frame_)
+      if (mobile_frame_)
+        constraint_region_.back()->setPose(constraint_region_pose_.back());
+      else
+      {
         tf.transformPose(pc.header.frame_id, constraint_region_pose_.back(), constraint_region_pose_.back());
-      const bodies::BodyPtr body(bodies::createEmptyBodyFromShapeType(shape->type));
-      body->setDimensionsDirty(shape.get());
-      body->setPoseDirty(constraint_region_pose_.back());
-      body->updateInternalData();
-      constraint_region_.push_back(body);
+        constraint_region_.back()->setPose(constraint_region_pose_.back());
+      }
     }
     else
     {
@@ -385,7 +383,7 @@ bool PositionConstraint::equal(const KinematicConstraint& other, double margin) 
     return false;
   const PositionConstraint& o = static_cast<const PositionConstraint&>(other);
 
-  if (link_model_ == o.link_model_ && moveit::core::Transforms::sameFrame(constraint_frame_id_, o.constraint_frame_id_))
+  if (link_model_ == o.link_model_ && robot_state::Transforms::sameFrame(constraint_frame_id_, o.constraint_frame_id_))
   {
     if ((offset_ - o.offset_).norm() > margin)
       return false;
@@ -396,9 +394,8 @@ bool PositionConstraint::equal(const KinematicConstraint& other, double margin) 
       // need to check against all other regions
       for (std::size_t j = 0; j < o.constraint_region_.size(); ++j)
       {
-        // constraint_region_pose_ contain only valid isometries, so diff is also a valid isometry
         Eigen::Isometry3d diff = constraint_region_pose_[i].inverse() * o.constraint_region_pose_[j];
-        if (diff.translation().norm() < margin && diff.linear().isIdentity(margin) &&
+        if (diff.translation().norm() < margin && diff.rotation().isIdentity(margin) &&
             constraint_region_[i]->getType() == o.constraint_region_[j]->getType() &&
             fabs(constraint_region_[i]->computeVolume() - o.constraint_region_[j]->computeVolume()) < margin)
         {
@@ -438,7 +435,7 @@ static inline ConstraintEvaluationResult finishPositionConstraintDecision(const 
   return ConstraintEvaluationResult(result, weight * sqrt(dx * dx + dy * dy + dz * dz));
 }
 
-ConstraintEvaluationResult PositionConstraint::decide(const moveit::core::RobotState& state, bool verbose) const
+ConstraintEvaluationResult PositionConstraint::decide(const robot_state::RobotState& state, bool verbose) const
 {
   if (!link_model_ || constraint_region_.empty())
     return ConstraintEvaluationResult(true, 0.0);
@@ -498,7 +495,7 @@ bool PositionConstraint::enabled() const
   return link_model_ && !constraint_region_.empty();
 }
 
-bool OrientationConstraint::configure(const moveit_msgs::OrientationConstraint& oc, const moveit::core::Transforms& tf)
+bool OrientationConstraint::configure(const moveit_msgs::OrientationConstraint& oc, const robot_state::Transforms& tf)
 {
   // clearing out any old data
   clear();
@@ -572,7 +569,7 @@ bool OrientationConstraint::equal(const KinematicConstraint& other, double margi
   const OrientationConstraint& o = static_cast<const OrientationConstraint&>(other);
 
   if (o.link_model_ == link_model_ &&
-      moveit::core::Transforms::sameFrame(desired_rotation_frame_id_, o.desired_rotation_frame_id_))
+      robot_state::Transforms::sameFrame(desired_rotation_frame_id_, o.desired_rotation_frame_id_))
   {
     if (!desired_rotation_matrix_.isApprox(o.desired_rotation_matrix_))
       return false;
@@ -598,7 +595,7 @@ bool OrientationConstraint::enabled() const
   return link_model_;
 }
 
-ConstraintEvaluationResult OrientationConstraint::decide(const moveit::core::RobotState& state, bool verbose) const
+ConstraintEvaluationResult OrientationConstraint::decide(const robot_state::RobotState& state, bool verbose) const
 {
   if (!link_model_)
     return ConstraintEvaluationResult(true, 0.0);
@@ -606,18 +603,16 @@ ConstraintEvaluationResult OrientationConstraint::decide(const moveit::core::Rob
   Eigen::Vector3d xyz;
   if (mobile_frame_)
   {
-    // getFrameTransform() returns a valid isometry by contract
-    Eigen::Matrix3d tmp = state.getFrameTransform(desired_rotation_frame_id_).linear() * desired_rotation_matrix_;
-    // getGlobalLinkTransform() returns a valid isometry by contract
-    Eigen::Isometry3d diff(tmp.transpose() * state.getGlobalLinkTransform(link_model_).linear());  // valid isometry
-    xyz = diff.linear().eulerAngles(0, 1, 2);
+    Eigen::Matrix3d tmp = state.getFrameTransform(desired_rotation_frame_id_).rotation() * desired_rotation_matrix_;
+    Eigen::Isometry3d diff(tmp.transpose() * state.getGlobalLinkTransform(link_model_).rotation());
+    xyz = diff.rotation().eulerAngles(0, 1, 2);
     // 0,1,2 corresponds to XYZ, the convention used in sampling constraints
   }
   else
   {
-    // diff is valid isometry by construction
-    Eigen::Isometry3d diff(desired_rotation_matrix_inv_ * state.getGlobalLinkTransform(link_model_).linear());
-    xyz = diff.linear().eulerAngles(0, 1, 2);  // 0,1,2 corresponds to XYZ, the convention used in sampling constraints
+    Eigen::Isometry3d diff(desired_rotation_matrix_inv_ * state.getGlobalLinkTransform(link_model_).rotation());
+    xyz =
+        diff.rotation().eulerAngles(0, 1, 2);  // 0,1,2 corresponds to XYZ, the convention used in sampling constraints
   }
 
   xyz(0) = std::min(fabs(xyz(0)), boost::math::constants::pi<double>() - fabs(xyz(0)));
@@ -629,7 +624,7 @@ ConstraintEvaluationResult OrientationConstraint::decide(const moveit::core::Rob
 
   if (verbose)
   {
-    Eigen::Quaterniond q_act(state.getGlobalLinkTransform(link_model_).linear());
+    Eigen::Quaterniond q_act(state.getGlobalLinkTransform(link_model_).rotation());
     Eigen::Quaterniond q_des(desired_rotation_matrix_);
     ROS_INFO_NAMED("kinematic_constraints",
                    "Orientation constraint %s for link '%s'. Quaternion desired: %f %f %f %f, quaternion "
@@ -654,8 +649,8 @@ void OrientationConstraint::print(std::ostream& out) const
     out << "No constraint" << std::endl;
 }
 
-VisibilityConstraint::VisibilityConstraint(const moveit::core::RobotModelConstPtr& model)
-  : KinematicConstraint(model), collision_env_(new collision_detection::CollisionEnvFCL(model))
+VisibilityConstraint::VisibilityConstraint(const robot_model::RobotModelConstPtr& model)
+  : KinematicConstraint(model), collision_robot_(new collision_detection::CollisionRobotFCL(model))
 {
   type_ = VISIBILITY_CONSTRAINT;
 }
@@ -676,7 +671,7 @@ void VisibilityConstraint::clear()
   max_range_angle_ = 0.0;
 }
 
-bool VisibilityConstraint::configure(const moveit_msgs::VisibilityConstraint& vc, const moveit::core::Transforms& tf)
+bool VisibilityConstraint::configure(const moveit_msgs::VisibilityConstraint& vc, const robot_state::Transforms& tf)
 {
   clear();
   target_radius_ = fabs(vc.target_radius);
@@ -708,7 +703,6 @@ bool VisibilityConstraint::configure(const moveit_msgs::VisibilityConstraint& vc
   }
 
   tf2::fromMsg(vc.target_pose.pose, target_pose_);
-  ASSERT_ISOMETRY(target_pose_)  // unsanitized input, could contain a non-isometry
 
   if (tf.isFixedFrame(vc.target_pose.header.frame_id))
   {
@@ -716,8 +710,8 @@ bool VisibilityConstraint::configure(const moveit_msgs::VisibilityConstraint& vc
     target_frame_id_ = tf.getTargetFrame();
     mobile_target_frame_ = false;
     // transform won't change, so apply it now
-    for (Eigen::Vector3d& point : points_)
-      point = target_pose_ * point;
+    for (std::size_t i = 0; i < points_.size(); ++i)
+      points_[i] = target_pose_ * points_[i];
   }
   else
   {
@@ -726,7 +720,6 @@ bool VisibilityConstraint::configure(const moveit_msgs::VisibilityConstraint& vc
   }
 
   tf2::fromMsg(vc.sensor_pose.pose, sensor_pose_);
-  ASSERT_ISOMETRY(sensor_pose_)  // unsanitized input, could contain a non-isometry
 
   if (tf.isFixedFrame(vc.sensor_pose.header.frame_id))
   {
@@ -761,23 +754,21 @@ bool VisibilityConstraint::equal(const KinematicConstraint& other, double margin
     return false;
   const VisibilityConstraint& o = static_cast<const VisibilityConstraint&>(other);
 
-  if (moveit::core::Transforms::sameFrame(target_frame_id_, o.target_frame_id_) &&
-      moveit::core::Transforms::sameFrame(sensor_frame_id_, o.sensor_frame_id_) && cone_sides_ == o.cone_sides_ &&
+  if (robot_state::Transforms::sameFrame(target_frame_id_, o.target_frame_id_) &&
+      robot_state::Transforms::sameFrame(sensor_frame_id_, o.sensor_frame_id_) && cone_sides_ == o.cone_sides_ &&
       sensor_view_direction_ == o.sensor_view_direction_)
   {
     if (fabs(max_view_angle_ - o.max_view_angle_) > margin || fabs(target_radius_ - o.target_radius_) > margin)
       return false;
-    // sensor_pose_ is valid isometry, checked in configure()
-    Eigen::Isometry3d diff = sensor_pose_.inverse() * o.sensor_pose_;  // valid isometry
+    Eigen::Isometry3d diff = sensor_pose_.inverse() * o.sensor_pose_;
     if (diff.translation().norm() > margin)
       return false;
-    if (!diff.linear().isIdentity(margin))
+    if (!diff.rotation().isIdentity(margin))
       return false;
-    // target_pose_ is valid isometry, checked in configure()
-    diff = target_pose_.inverse() * o.target_pose_;  // valid isometry
+    diff = target_pose_.inverse() * o.target_pose_;
     if (diff.translation().norm() > margin)
       return false;
-    if (!diff.linear().isIdentity(margin))
+    if (!diff.rotation().isIdentity(margin))
       return false;
     return true;
   }
@@ -789,7 +780,7 @@ bool VisibilityConstraint::enabled() const
   return target_radius_ > std::numeric_limits<double>::epsilon();
 }
 
-shapes::Mesh* VisibilityConstraint::getVisibilityCone(const moveit::core::RobotState& state) const
+shapes::Mesh* VisibilityConstraint::getVisibilityCone(const robot_state::RobotState& state) const
 {
   // the current pose of the sensor
 
@@ -863,7 +854,7 @@ shapes::Mesh* VisibilityConstraint::getVisibilityCone(const moveit::core::RobotS
   return m;
 }
 
-void VisibilityConstraint::getMarkers(const moveit::core::RobotState& state,
+void VisibilityConstraint::getMarkers(const robot_state::RobotState& state,
                                       visualization_msgs::MarkerArray& markers) const
 {
   shapes::Mesh* m = getVisibilityCone(state);
@@ -892,11 +883,8 @@ void VisibilityConstraint::getMarkers(const moveit::core::RobotState& state,
 
   markers.markers.push_back(mk);
 
-  // getFrameTransform() returns a valid isometry by contract
-  // sensor_pose_ is valid isometry (checked in configure())
   const Eigen::Isometry3d& sp =
       mobile_sensor_frame_ ? state.getFrameTransform(sensor_frame_id_) * sensor_pose_ : sensor_pose_;
-  // target_pose_ is valid isometry (checked in configure())
   const Eigen::Isometry3d& tp =
       mobile_target_frame_ ? state.getFrameTransform(target_frame_id_) * target_pose_ : target_pose_;
 
@@ -914,7 +902,7 @@ void VisibilityConstraint::getMarkers(const moveit::core::RobotState& state,
   mka.scale.y = .15;
   mka.scale.z = 0.0;
   mka.points.resize(2);
-  Eigen::Vector3d d = tp.translation() + tp.linear().col(2) * 0.5;
+  Eigen::Vector3d d = tp.translation() + tp.rotation().col(2) * 0.5;
   mka.points[0].x = tp.translation().x();
   mka.points[0].y = tp.translation().y();
   mka.points[0].z = tp.translation().z();
@@ -927,7 +915,7 @@ void VisibilityConstraint::getMarkers(const moveit::core::RobotState& state,
   mka.color.b = 1.0;
   mka.color.r = 0.0;
 
-  d = sp.translation() + sp.linear().col(2 - sensor_view_direction_) * 0.5;
+  d = sp.translation() + sp.rotation().col(2 - sensor_view_direction_) * 0.5;
   mka.points[0].x = sp.translation().x();
   mka.points[0].y = sp.translation().y();
   mka.points[0].z = sp.translation().z();
@@ -938,27 +926,24 @@ void VisibilityConstraint::getMarkers(const moveit::core::RobotState& state,
   markers.markers.push_back(mka);
 }
 
-ConstraintEvaluationResult VisibilityConstraint::decide(const moveit::core::RobotState& state, bool verbose) const
+ConstraintEvaluationResult VisibilityConstraint::decide(const robot_state::RobotState& state, bool verbose) const
 {
   if (target_radius_ <= std::numeric_limits<double>::epsilon())
     return ConstraintEvaluationResult(true, 0.0);
 
   if (max_view_angle_ > 0.0 || max_range_angle_ > 0.0)
   {
-    // getFrameTransform() returns a valid isometry by contract
-    // sensor_pose_ is valid isometry (checked in configure())
     const Eigen::Isometry3d& sp =
         mobile_sensor_frame_ ? state.getFrameTransform(sensor_frame_id_) * sensor_pose_ : sensor_pose_;
-    // target_pose_ is valid isometry (checked in configure())
     const Eigen::Isometry3d& tp =
         mobile_target_frame_ ? state.getFrameTransform(target_frame_id_) * target_pose_ : target_pose_;
 
     // necessary to do subtraction as SENSOR_Z is 0 and SENSOR_X is 2
-    const Eigen::Vector3d& normal2 = sp.linear().col(2 - sensor_view_direction_);
+    const Eigen::Vector3d& normal2 = sp.rotation().col(2 - sensor_view_direction_);
 
     if (max_view_angle_ > 0.0)
     {
-      const Eigen::Vector3d& normal1 = tp.linear().col(2) * -1.0;  // along Z axis and inverted
+      const Eigen::Vector3d& normal1 = tp.rotation().col(2) * -1.0;  // along Z axis and inverted
       double dp = normal2.dot(normal1);
       double ang = acos(dp);
       if (dp < 0.0)
@@ -1008,7 +993,8 @@ ConstraintEvaluationResult VisibilityConstraint::decide(const moveit::core::Robo
     return ConstraintEvaluationResult(false, 0.0);
 
   // add the visibility cone as an object
-  collision_env_->getWorld()->addToObject("cone", shapes::ShapeConstPtr(m), Eigen::Isometry3d::Identity());
+  collision_detection::CollisionWorldFCL collision_world;
+  collision_world.getWorld()->addToObject("cone", shapes::ShapeConstPtr(m), Eigen::Isometry3d::Identity());
 
   // check for collisions between the robot and the cone
   collision_detection::CollisionRequest req;
@@ -1018,7 +1004,7 @@ ConstraintEvaluationResult VisibilityConstraint::decide(const moveit::core::Robo
   req.contacts = true;
   req.verbose = verbose;
   req.max_contacts = 1;
-  collision_env_->checkRobotCollision(req, res, state, acm);
+  collision_world.checkRobotCollision(req, res, *collision_robot_, state, acm);
 
   if (verbose)
   {
@@ -1027,8 +1013,6 @@ ConstraintEvaluationResult VisibilityConstraint::decide(const moveit::core::Robo
     ROS_INFO_NAMED("kinematic_constraints", "Visibility constraint %ssatisfied. Visibility cone approximation:\n %s",
                    res.collision ? "not " : "", ss.str().c_str());
   }
-
-  collision_env_->getWorld()->removeObject("cone");
 
   return ConstraintEvaluationResult(!res.collision, res.collision ? res.contacts.begin()->second.front().depth : 0.0);
 }
@@ -1040,16 +1024,16 @@ bool VisibilityConstraint::decideContact(const collision_detection::Contact& con
     return true;
   if (contact.body_type_1 == collision_detection::BodyTypes::ROBOT_LINK &&
       contact.body_type_2 == collision_detection::BodyTypes::WORLD_OBJECT &&
-      (moveit::core::Transforms::sameFrame(contact.body_name_1, sensor_frame_id_) ||
-       moveit::core::Transforms::sameFrame(contact.body_name_1, target_frame_id_)))
+      (robot_state::Transforms::sameFrame(contact.body_name_1, sensor_frame_id_) ||
+       robot_state::Transforms::sameFrame(contact.body_name_1, target_frame_id_)))
   {
     ROS_DEBUG_NAMED("kinematic_constraints", "Accepted collision with either sensor or target");
     return true;
   }
   if (contact.body_type_2 == collision_detection::BodyTypes::ROBOT_LINK &&
       contact.body_type_1 == collision_detection::BodyTypes::WORLD_OBJECT &&
-      (moveit::core::Transforms::sameFrame(contact.body_name_2, sensor_frame_id_) ||
-       moveit::core::Transforms::sameFrame(contact.body_name_2, target_frame_id_)))
+      (robot_state::Transforms::sameFrame(contact.body_name_2, sensor_frame_id_) ||
+       robot_state::Transforms::sameFrame(contact.body_name_2, target_frame_id_)))
   {
     ROS_DEBUG_NAMED("kinematic_constraints", "Accepted collision with either sensor or target");
     return true;
@@ -1082,67 +1066,67 @@ void KinematicConstraintSet::clear()
 bool KinematicConstraintSet::add(const std::vector<moveit_msgs::JointConstraint>& jc)
 {
   bool result = true;
-  for (const moveit_msgs::JointConstraint& joint_constraint : jc)
+  for (unsigned int i = 0; i < jc.size(); ++i)
   {
     JointConstraint* ev = new JointConstraint(robot_model_);
-    bool u = ev->configure(joint_constraint);
+    bool u = ev->configure(jc[i]);
     result = result && u;
     kinematic_constraints_.push_back(KinematicConstraintPtr(ev));
-    joint_constraints_.push_back(joint_constraint);
-    all_constraints_.joint_constraints.push_back(joint_constraint);
+    joint_constraints_.push_back(jc[i]);
+    all_constraints_.joint_constraints.push_back(jc[i]);
   }
   return result;
 }
 
 bool KinematicConstraintSet::add(const std::vector<moveit_msgs::PositionConstraint>& pc,
-                                 const moveit::core::Transforms& tf)
+                                 const robot_state::Transforms& tf)
 {
   bool result = true;
-  for (const moveit_msgs::PositionConstraint& position_constraint : pc)
+  for (unsigned int i = 0; i < pc.size(); ++i)
   {
     PositionConstraint* ev = new PositionConstraint(robot_model_);
-    bool u = ev->configure(position_constraint, tf);
+    bool u = ev->configure(pc[i], tf);
     result = result && u;
     kinematic_constraints_.push_back(KinematicConstraintPtr(ev));
-    position_constraints_.push_back(position_constraint);
-    all_constraints_.position_constraints.push_back(position_constraint);
+    position_constraints_.push_back(pc[i]);
+    all_constraints_.position_constraints.push_back(pc[i]);
   }
   return result;
 }
 
 bool KinematicConstraintSet::add(const std::vector<moveit_msgs::OrientationConstraint>& oc,
-                                 const moveit::core::Transforms& tf)
+                                 const robot_state::Transforms& tf)
 {
   bool result = true;
-  for (const moveit_msgs::OrientationConstraint& orientation_constraint : oc)
+  for (unsigned int i = 0; i < oc.size(); ++i)
   {
     OrientationConstraint* ev = new OrientationConstraint(robot_model_);
-    bool u = ev->configure(orientation_constraint, tf);
+    bool u = ev->configure(oc[i], tf);
     result = result && u;
     kinematic_constraints_.push_back(KinematicConstraintPtr(ev));
-    orientation_constraints_.push_back(orientation_constraint);
-    all_constraints_.orientation_constraints.push_back(orientation_constraint);
+    orientation_constraints_.push_back(oc[i]);
+    all_constraints_.orientation_constraints.push_back(oc[i]);
   }
   return result;
 }
 
 bool KinematicConstraintSet::add(const std::vector<moveit_msgs::VisibilityConstraint>& vc,
-                                 const moveit::core::Transforms& tf)
+                                 const robot_state::Transforms& tf)
 {
   bool result = true;
-  for (const moveit_msgs::VisibilityConstraint& visibility_constraint : vc)
+  for (unsigned int i = 0; i < vc.size(); ++i)
   {
     VisibilityConstraint* ev = new VisibilityConstraint(robot_model_);
-    bool u = ev->configure(visibility_constraint, tf);
+    bool u = ev->configure(vc[i], tf);
     result = result && u;
     kinematic_constraints_.push_back(KinematicConstraintPtr(ev));
-    visibility_constraints_.push_back(visibility_constraint);
-    all_constraints_.visibility_constraints.push_back(visibility_constraint);
+    visibility_constraints_.push_back(vc[i]);
+    all_constraints_.visibility_constraints.push_back(vc[i]);
   }
   return result;
 }
 
-bool KinematicConstraintSet::add(const moveit_msgs::Constraints& c, const moveit::core::Transforms& tf)
+bool KinematicConstraintSet::add(const moveit_msgs::Constraints& c, const robot_state::Transforms& tf)
 {
   bool j = add(c.joint_constraints);
   bool p = add(c.position_constraints, tf);
@@ -1151,12 +1135,12 @@ bool KinematicConstraintSet::add(const moveit_msgs::Constraints& c, const moveit
   return j && p && o && v;
 }
 
-ConstraintEvaluationResult KinematicConstraintSet::decide(const moveit::core::RobotState& state, bool verbose) const
+ConstraintEvaluationResult KinematicConstraintSet::decide(const robot_state::RobotState& state, bool verbose) const
 {
   ConstraintEvaluationResult res(true, 0.0);
-  for (const KinematicConstraintPtr& kinematic_constraint : kinematic_constraints_)
+  for (unsigned int i = 0; i < kinematic_constraints_.size(); ++i)
   {
-    ConstraintEvaluationResult r = kinematic_constraint->decide(state, verbose);
+    ConstraintEvaluationResult r = kinematic_constraints_[i]->decide(state, verbose);
     if (!r.satisfied)
       res.satisfied = false;
     res.distance += r.distance;
@@ -1164,7 +1148,7 @@ ConstraintEvaluationResult KinematicConstraintSet::decide(const moveit::core::Ro
   return res;
 }
 
-ConstraintEvaluationResult KinematicConstraintSet::decide(const moveit::core::RobotState& state,
+ConstraintEvaluationResult KinematicConstraintSet::decide(const robot_state::RobotState& state,
                                                           std::vector<ConstraintEvaluationResult>& results,
                                                           bool verbose) const
 {
@@ -1183,27 +1167,27 @@ ConstraintEvaluationResult KinematicConstraintSet::decide(const moveit::core::Ro
 void KinematicConstraintSet::print(std::ostream& out) const
 {
   out << kinematic_constraints_.size() << " kinematic constraints" << std::endl;
-  for (const KinematicConstraintPtr& kinematic_constraint : kinematic_constraints_)
-    kinematic_constraint->print(out);
+  for (unsigned int i = 0; i < kinematic_constraints_.size(); ++i)
+    kinematic_constraints_[i]->print(out);
 }
 
 bool KinematicConstraintSet::equal(const KinematicConstraintSet& other, double margin) const
 {
   // each constraint in this matches some in the other
-  for (const KinematicConstraintPtr& kinematic_constraint : kinematic_constraints_)
+  for (unsigned int i = 0; i < kinematic_constraints_.size(); ++i)
   {
     bool found = false;
     for (unsigned int j = 0; !found && j < other.kinematic_constraints_.size(); ++j)
-      found = kinematic_constraint->equal(*other.kinematic_constraints_[j], margin);
+      found = kinematic_constraints_[i]->equal(*other.kinematic_constraints_[j], margin);
     if (!found)
       return false;
   }
   // each constraint in the other matches some constraint in this
-  for (const KinematicConstraintPtr& kinematic_constraint : other.kinematic_constraints_)
+  for (unsigned int i = 0; i < other.kinematic_constraints_.size(); ++i)
   {
     bool found = false;
     for (unsigned int j = 0; !found && j < kinematic_constraints_.size(); ++j)
-      found = kinematic_constraint->equal(*kinematic_constraints_[j], margin);
+      found = other.kinematic_constraints_[i]->equal(*kinematic_constraints_[j], margin);
     if (!found)
       return false;
   }

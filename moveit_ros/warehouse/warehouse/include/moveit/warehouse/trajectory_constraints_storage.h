@@ -34,7 +34,8 @@
 
 /* Author: Mario Prats, Ioan Sucan */
 
-#pragma once
+#ifndef MOVEIT_MOVEIT_WAREHOUSE_TRAJECTORY_CONSTRAINTS_STORAGE_
+#define MOVEIT_MOVEIT_WAREHOUSE_TRAJECTORY_CONSTRAINTS_STORAGE_
 
 #include "moveit/warehouse/moveit_message_storage.h"
 #include <moveit/macros/class_forward.h>
@@ -78,11 +79,13 @@ public:
   void removeTrajectoryConstraints(const std::string& name, const std::string& robot = "",
                                    const std::string& group = "");
 
-  void reset();
+  void reset(void);
 
 private:
-  void createCollections();
+  void createCollections(void);
 
   TrajectoryConstraintsCollection constraints_collection_;
 };
 }  // namespace moveit_warehouse
+
+#endif

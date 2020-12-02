@@ -91,7 +91,10 @@ PR2ArmIKSolver::PR2ArmIKSolver(const urdf::ModelInterface& robot_model, const st
   search_discretization_angle_ = search_discretization_angle;
   free_angle_ = free_angle;
   root_frame_name_ = root_frame_name;
-  active_ = pr2_arm_ik_.init(robot_model, root_frame_name, tip_frame_name);
+  if (!pr2_arm_ik_.init(robot_model, root_frame_name, tip_frame_name))
+    active_ = false;
+  else
+    active_ = true;
 }
 
 void PR2ArmIKSolver::updateInternalDataStructures()
@@ -294,17 +297,20 @@ bool PR2ArmKinematicsPlugin::initialize(const moveit::core::RobotModel& robot_mo
 
     if (verbose)
     {
-      for (const std::string& joint_name : ik_solver_info_.joint_names)
+      for (unsigned int i = 0; i < ik_solver_info_.joint_names.size(); i++)
       {
-        ROS_DEBUG_NAMED("pr2_arm_kinematics_plugin", "PR2Kinematics:: joint name: %s", joint_name.c_str());
+        ROS_DEBUG_NAMED("pr2_arm_kinematics_plugin", "PR2Kinematics:: joint name: %s",
+                        ik_solver_info_.joint_names[i].c_str());
       }
-      for (const std::string& link_name : ik_solver_info_.link_names)
+      for (unsigned int i = 0; i < ik_solver_info_.link_names.size(); i++)
       {
-        ROS_DEBUG_NAMED("pr2_arm_kinematics_plugin", "PR2Kinematics can solve IK for %s", link_name.c_str());
+        ROS_DEBUG_NAMED("pr2_arm_kinematics_plugin", "PR2Kinematics can solve IK for %s",
+                        ik_solver_info_.link_names[i].c_str());
       }
-      for (const std::string& link_name : fk_solver_info_.link_names)
+      for (unsigned int i = 0; i < fk_solver_info_.link_names.size(); i++)
       {
-        ROS_DEBUG_NAMED("pr2_arm_kinematics_plugin", "PR2Kinematics can solve FK for %s", link_name.c_str());
+        ROS_DEBUG_NAMED("pr2_arm_kinematics_plugin", "PR2Kinematics can solve FK for %s",
+                        fk_solver_info_.link_names[i].c_str());
       }
       ROS_DEBUG_NAMED("pr2_arm_kinematics_plugin", "PR2KinematicsPlugin::active for %s", group_name.c_str());
     }

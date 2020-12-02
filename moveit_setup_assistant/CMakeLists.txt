@@ -30,9 +30,7 @@ find_package(catkin REQUIRED COMPONENTS
   urdf
   srdfdom
 )
-find_package(ompl REQUIRED)
-include_directories(SYSTEM ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS} ${OMPL_INCLUDE_DIRS})
-include_directories(include)
+include_directories(include ${Boost_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS})
 
 # Qt Stuff
 if(rviz_QT_VERSION VERSION_LESS "5")
@@ -49,7 +47,7 @@ add_definitions(-DQT_NO_KEYWORDS)
 # Support new yaml-cpp API.
 find_package(PkgConfig)
 pkg_check_modules(YAMLCPP REQUIRED yaml-cpp>=0.5)
-include_directories(SYSTEM ${YAMLCPP_INCLUDE_DIRS})
+include_directories(${YAMLCPP_INCLUDE_DIRS})
 
 catkin_package(
   INCLUDE_DIRS

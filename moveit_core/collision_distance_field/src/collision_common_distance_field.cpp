@@ -100,7 +100,7 @@ PosedBodyPointDecompositionVectorPtr getCollisionObjectPointDecomposition(const 
   return ret;
 }
 
-PosedBodySphereDecompositionVectorPtr getAttachedBodySphereDecomposition(const moveit::core::AttachedBody* att,
+PosedBodySphereDecompositionVectorPtr getAttachedBodySphereDecomposition(const robot_state::AttachedBody* att,
                                                                          double resolution)
 {
   PosedBodySphereDecompositionVectorPtr ret(new PosedBodySphereDecompositionVector());
@@ -114,7 +114,7 @@ PosedBodySphereDecompositionVectorPtr getAttachedBodySphereDecomposition(const m
   return ret;
 }
 
-PosedBodyPointDecompositionVectorPtr getAttachedBodyPointDecomposition(const moveit::core::AttachedBody* att,
+PosedBodyPointDecompositionVectorPtr getAttachedBodyPointDecomposition(const robot_state::AttachedBody* att,
                                                                        double resolution)
 {
   PosedBodyPointDecompositionVectorPtr ret(new PosedBodyPointDecompositionVector());

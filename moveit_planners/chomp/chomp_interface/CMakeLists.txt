@@ -32,8 +32,8 @@ catkin_package(
   CATKIN_DEPENDS roscpp moveit_core pluginlib
 )
 
-include_directories(include)
-include_directories(SYSTEM
+include_directories(
+  include
   ${catkin_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIRS}

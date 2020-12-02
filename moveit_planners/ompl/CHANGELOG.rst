@@ -2,13 +2,18 @@
 Changelog for package moveit_planners_ompl
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1.1.1 (2020-10-13)
+1.0.7 (2020-11-20)
 ------------------
+* [feature] Melodic backports in ompl interface (cleanup) (`#2277 <https://github.com/ros-planning/moveit/issues/2277>`_)
+  * add consistent named logging to ompl interface
+  * add named logging to the ompl planner service script
+  * Remove dead code from ompl interface (related to subspaces and state validity cache)
+  * add some documentation to the ompl interface
+  * fix clang-tidy warnings in ompl interface
+  * fix some spelling errors in the ompl interface
+  * fix melodic specific clang-tidy warnings in ompl interface
 * [maint] Add comment to MOVEIT_CLASS_FORWARD (`#2315 <https://github.com/ros-planning/moveit/issues/2315>`_)
-* Contributors: Felix von Drigalski
-
-1.1.0 (2020-09-04)
-------------------
+* Contributors: Felix von Drigalski, Jeroen
 
 1.0.6 (2020-08-19)
 ------------------
@@ -154,7 +159,7 @@ Changelog for package moveit_planners_ompl
 * renamed newGoal to new_goal for keeping with formatting
 * setting GroupStateValidityCallbackFn member for constraint_sampler member and implementing callbacks for state validity checking
 * added functions to check validit of state, and also to act as callback for constraint sampler
-* Added copy function from MoveIt robot_state joint values to ompl state
+* Added copy function from MoveIt! robot_state joint values to ompl state
 * fix for demo constraints database linking error
 * Namespaced less useful debug output to allow to be easily silenced using ros console
 * Contributors: Dave Coleman, Dave Hershberger, Sachin Chitta, arjungm

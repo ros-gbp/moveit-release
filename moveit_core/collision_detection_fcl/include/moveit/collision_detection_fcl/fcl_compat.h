@@ -34,7 +34,8 @@
 
 /* Author: Benjamin Scholz */
 
-#pragma once
+#ifndef MOVEIT_COLLISION_DETECTION_FCL_COMPAT_
+#define MOVEIT_COLLISION_DETECTION_FCL_COMPAT_
 
 #include <fcl/config.h>
 
@@ -96,4 +97,5 @@ using OBBRSSd = fcl::OBBRSS;
 class DynamicAABBTreeCollisionManager;
 using DynamicAABBTreeCollisionManagerd = fcl::DynamicAABBTreeCollisionManager;
 }  // namespace fcl
+#endif
 #endif

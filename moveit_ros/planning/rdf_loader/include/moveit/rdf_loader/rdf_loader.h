@@ -34,7 +34,8 @@
 
 /* Author: Ioan Sucan, Mathias Lüdtke, Dave Coleman */
 
-#pragma once
+#ifndef MOVEIT_PLANNING_RDF_LOADER_
+#define MOVEIT_PLANNING_RDF_LOADER_
 
 #include <moveit/macros/class_forward.h>
 #include <urdf/model.h>
@@ -101,3 +102,4 @@ private:
   urdf::ModelInterfaceSharedPtr urdf_;
 };
 }  // namespace rdf_loader
+#endif

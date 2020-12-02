@@ -35,7 +35,8 @@
 
 /* Author: Ioan Sucan */
 
-#pragma once
+#ifndef MOVEIT_CORE_ROBOT_MODEL_JOINT_MODEL_GROUP_
+#define MOVEIT_CORE_ROBOT_MODEL_JOINT_MODEL_GROUP_
 
 #include <moveit/robot_model/joint_model.h>
 #include <moveit/robot_model/link_model.h>
@@ -55,15 +56,15 @@ class JointModelGroup;
 typedef boost::function<kinematics::KinematicsBasePtr(const JointModelGroup*)> SolverAllocatorFn;
 
 /** \brief Map from group instances to allocator functions & bijections */
-using SolverAllocatorMapFn = std::map<const JointModelGroup*, SolverAllocatorFn>;
+typedef std::map<const JointModelGroup*, SolverAllocatorFn> SolverAllocatorMapFn;
 
 /** \brief Map of names to instances for JointModelGroup */
-using JointModelGroupMap = std::map<std::string, JointModelGroup*>;
+typedef std::map<std::string, JointModelGroup*> JointModelGroupMap;
 
 /** \brief Map of names to const instances for JointModelGroup */
-using JointModelGroupMapConst = std::map<std::string, const JointModelGroup*>;
+typedef std::map<std::string, const JointModelGroup*> JointModelGroupMapConst;
 
-using JointBoundsVector = std::vector<const JointModel::Bounds*>;
+typedef std::vector<const JointModel::Bounds*> JointBoundsVector;
 
 class JointModelGroup
 {
@@ -102,7 +103,7 @@ public:
   };
 
   /// Map from group instances to allocator functions & bijections
-  using KinematicsSolverMap = std::map<const JointModelGroup*, KinematicsSolver>;
+  typedef std::map<const JointModelGroup*, KinematicsSolver> KinematicsSolverMap;
 
   JointModelGroup(const std::string& name, const srdf::Model::Group& config,
                   const std::vector<const JointModel*>& joint_vector, const RobotModel* parent_model);
@@ -744,3 +745,5 @@ protected:
 };
 }  // namespace core
 }  // namespace moveit
+
+#endif

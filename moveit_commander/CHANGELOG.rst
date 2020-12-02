@@ -2,22 +2,13 @@
 Changelog for package moveit_commander
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1.1.1 (2020-10-13)
+1.0.7 (2020-11-20)
 ------------------
+* [feature] Python interface improvements.  (`#2356 <https://github.com/ros-planning/moveit/issues/2356>`_)
+* [feature] Fix ROS namespacing in moveit_commander's PSI (`#2347 <https://github.com/ros-planning/moveit/issues/2347>`_)
 * [feature] MGC: Improve exception messages (`#2318 <https://github.com/ros-planning/moveit/issues/2318>`_)
-* [fix] ROS namespacing in moveit_commander's PSI (`#2347 <https://github.com/ros-planning/moveit/issues/2347>`_)
-* [fix] python3 issues (`#2323 <https://github.com/ros-planning/moveit/issues/2323>`_)
-* Contributors: Michael Görner, Peter Mitrano, Robert Haschke
-
-1.1.0 (2020-09-04)
-------------------
 * [feature] Add missing variants of place from list of PlaceLocations and Poses in the python interface (`#2231 <https://github.com/ros-planning/moveit/issues/2231>`_)
-* [fix]     Add default velocity/acceleration scaling factors (`#1890 <https://github.com/ros-planning/moveit/issues/1890>`_)
-* [fix]     Handle the updated plan() function of MoveGroupCommander (`#1640 <https://github.com/ros-planning/moveit/issues/1640>`_)
-* [fix]     Fix `failing tutorial <https://github.com/ros-planning/moveit_tutorials/issues/301>`_ (`#1459 <https://github.com/ros-planning/moveit/issues/1459>`_)
-* [maint]   Update dependencies for python3 in noetic (`#2131 <https://github.com/ros-planning/moveit/issues/2131>`_)
-* [maint]   Better align MoveGroupInterface.plan() with C++ MoveGroup::plan() (`#790 <https://github.com/ros-planning/moveit/issues/790>`_)
-* Contributors: Bence Magyar, Bjar Ne, Dave Coleman, Felix von Drigalski, Gerard Canal, Jafar Abdi, Masaki Murooka, Michael Ferguson, Michael Görner, Pavel-P, Raphael Druon, Robert Haschke, Ryodo Tanaka, Ryosuke Tajima, Sean Yen, v4hn
+* Contributors: Gerard Canal, Michael Görner, Peter Mitrano, Robert Haschke
 
 1.0.6 (2020-08-19)
 ------------------

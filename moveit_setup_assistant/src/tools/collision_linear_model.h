@@ -34,7 +34,8 @@
 
 /* Author: Robert Haschke */
 
-#pragma once
+#ifndef MOVEIT_ROS_MOVEIT_SETUP_ASSISTANT_WIDGETS_COLLISION_LINEAR_MODEL_H
+#define MOVEIT_ROS_MOVEIT_SETUP_ASSISTANT_WIDGETS_COLLISION_LINEAR_MODEL_H
 
 #include <QAbstractProxyModel>
 #include <QSortFilterProxyModel>
@@ -51,7 +52,7 @@ class CollisionLinearModel : public QAbstractProxyModel
   Q_OBJECT
 
 public:
-  CollisionLinearModel(CollisionMatrixModel* src, QObject* parent = nullptr);
+  CollisionLinearModel(CollisionMatrixModel* src, QObject* parent = NULL);
   ~CollisionLinearModel() override;
 
   // reimplement to return the model index in the proxy model that to the sourceIndex from the source model
@@ -81,7 +82,7 @@ class SortFilterProxyModel : public QSortFilterProxyModel
   Q_OBJECT
 
 public:
-  SortFilterProxyModel(QObject* parent = nullptr);
+  SortFilterProxyModel(QObject* parent = 0);
   QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
   void sort(int column, Qt::SortOrder order) override;
   void setShowAll(bool show_all);
@@ -99,3 +100,5 @@ private:
   QVector<int> sort_columns_;  // sorting history
   QVector<int> sort_orders_;   // corresponding sort orders
 };
+
+#endif  // MOVEIT_ROS_MOVEIT_SETUP_ASSISTANT_WIDGETS_COLLISION_LINEAR_MODEL_H

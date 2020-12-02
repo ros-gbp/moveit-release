@@ -35,10 +35,14 @@
 # Author: William Baker
 
 import unittest
+
+import genpy
 import numpy as np
 import rospy
 import rostest
 import os
+
+from moveit_msgs.msg import RobotState
 
 from moveit_commander import RobotCommander, PlanningSceneInterface
 
@@ -55,6 +59,31 @@ class PythonMoveitCommanderTest(unittest.TestCase):
     def tearDown(self):
         pass
 
+    def test_enforce_bounds_empty_state(self):
+        in_msg = RobotState()
+        with self.assertRaises(genpy.DeserializationError):
+            self.group.enforce_bounds(in_msg)
+
+    def test_enforce_bounds(self):
+        in_msg = RobotState()
+        in_msg.joint_state.header.frame_id = 'base_link'
+        in_msg.joint_state.name = ['joint_1', 'joint_2', 'joint_3', 'joint_4', 'joint_5', 'joint_6']
+        in_msg.joint_state.position = [0] * 6
+        in_msg.joint_state.position[0] = 1000
+
+        out_msg = self.group.enforce_bounds(in_msg)
+
+        self.assertEqual(in_msg.joint_state.position[0], 1000)
+        self.assertLess(out_msg.joint_state.position[0], 1000)
+
+    def test_get_current_state(self):
+        expected_state = RobotState()
+        expected_state.joint_state.header.frame_id = 'base_link'
+        expected_state.multi_dof_joint_state.header.frame_id = 'base_link'
+        expected_state.joint_state.name = ['joint_1', 'joint_2', 'joint_3', 'joint_4', 'joint_5', 'joint_6']
+        expected_state.joint_state.position = [0] * 6
+        self.assertEqual(self.group.get_current_state(), expected_state)
+
     def check_target_setting(self, expect, *args):
         if len(args) == 0:
             args = [expect]
@@ -69,7 +98,7 @@ class PythonMoveitCommanderTest(unittest.TestCase):
         self.check_target_setting((0.2,) * n)
         self.check_target_setting(np.zeros(n))
         self.check_target_setting([0.3] * n, {name: 0.3 for name in self.group.get_active_joints()})
-        self.check_target_setting([0.5] + [0.3] * (n - 1), "joint_1", 0.5)
+        self.check_target_setting([0.5] + [0.3]*(n-1), "joint_1", 0.5)
 
     def plan(self, target):
         self.group.set_joint_value_target(target)
@@ -78,10 +107,8 @@ class PythonMoveitCommanderTest(unittest.TestCase):
     def test_validation(self):
         current = np.asarray(self.group.get_current_joint_values())
 
-        success1, plan1, time1, err1 = self.plan(current + 0.2)
-        success2, plan2, time2, err2 = self.plan(current + 0.2)
-        self.assertTrue(success1)
-        self.assertTrue(success2)
+        plan1 = self.plan(current + 0.2)
+        plan2 = self.plan(current + 0.2)
 
         # first plan should execute
         self.assertTrue(self.group.execute(plan1))
@@ -90,8 +117,7 @@ class PythonMoveitCommanderTest(unittest.TestCase):
         self.assertFalse(self.group.execute(plan2))
 
         # newly planned trajectory should execute again
-        success3, plan3, time3, err3 = self.plan(current)
-        self.assertTrue(success3)
+        plan3 = self.plan(current)
         self.assertTrue(self.group.execute(plan3))
 
     def test_planning_scene_interface(self):

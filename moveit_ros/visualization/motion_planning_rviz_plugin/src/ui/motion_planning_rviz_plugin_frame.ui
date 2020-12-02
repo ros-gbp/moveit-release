@@ -1591,7 +1591,7 @@ This is usually achieved by random seeding, which can flip the robot configurati
          <item>
           <widget class="QGroupBox" name="groupBox_5">
            <property name="toolTip">
-            <string>Describes the selected object's pose, geometry and subframes.</string>
+            <string>Describes the selected object's pose and geometry.</string>
            </property>
            <property name="title">
             <string>Object status</string>

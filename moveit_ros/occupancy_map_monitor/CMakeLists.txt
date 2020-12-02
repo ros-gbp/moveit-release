@@ -44,10 +44,11 @@ catkin_package(
     OCTOMAP
 )
 
-include_directories(include)
-include_directories(SYSTEM
-                    ${catkin_INCLUDE_DIRS}
+include_directories(include
                     ${Boost_INCLUDE_DIRS}
+                    ${catkin_INCLUDE_DIRS}
+                    )
+include_directories(SYSTEM
                     ${EIGEN3_INCLUDE_DIRS}
                     ${X11_INCLUDE_DIR}
                     )

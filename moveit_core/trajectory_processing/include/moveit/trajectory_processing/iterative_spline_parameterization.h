@@ -35,7 +35,8 @@
 
 /* Author: Ken Anderson */
 
-#pragma once
+#ifndef MOVEIT_TRAJECTORY_PROCESSING_ITERATIVE_SPLINE_PARAMETERIZATION__
+#define MOVEIT_TRAJECTORY_PROCESSING_ITERATIVE_SPLINE_PARAMETERIZATION__
 
 #include <moveit/robot_trajectory/robot_trajectory.h>
 
@@ -71,7 +72,7 @@ class IterativeSplineParameterization
 {
 public:
   IterativeSplineParameterization(bool add_points = true);
-  ~IterativeSplineParameterization() = default;
+  ~IterativeSplineParameterization();
 
   bool computeTimeStamps(robot_trajectory::RobotTrajectory& trajectory, const double max_velocity_scaling_factor = 1.0,
                          const double max_acceleration_scaling_factor = 1.0) const;
@@ -81,3 +82,5 @@ private:
                      /// If false, move the 2nd and 2nd-last points.
 };
 }  // namespace trajectory_processing
+
+#endif

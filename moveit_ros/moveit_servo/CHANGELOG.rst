@@ -2,23 +2,20 @@
 Changelog for package moveit_servo
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1.1.1 (2020-10-13)
+1.0.7 (2020-11-20)
 ------------------
+* [feature] Cleanup current state handling in servo (`#2372 <https://github.com/ros-planning/moveit/issues/2372>`_)
+* [feature] Servo namespacing logic (`#2354 <https://github.com/ros-planning/moveit/issues/2354>`_)
 * [feature] A library for servoing toward a moving pose (`#2203 <https://github.com/ros-planning/moveit/issues/2203>`_)
 * [feature] Refactor velocity limit enforcement and add a unit test (`#2260 <https://github.com/ros-planning/moveit/issues/2260>`_)
-* [fix] Servo thread interruption (`#2314 <https://github.com/ros-planning/moveit/issues/2314>`_)
-* [fix] Servo heap-buffer-overflow bug (`#2307 <https://github.com/ros-planning/moveit/issues/2307>`_)
-* [maint] Cleanup MSA includes (`#2351 <https://github.com/ros-planning/moveit/issues/2351>`_)
-* Contributors: AndyZe, Robert Haschke, Tyler Weaver
-
-1.1.0 (2020-09-04)
-------------------
-* [feature] Update last_sent_command\_ at ServoCalcs start (`#2249 <https://github.com/ros-planning/moveit/issues/2249>`_)
 * [feature] Add a utility to print collision pairs (`#2275 <https://github.com/ros-planning/moveit/issues/2275>`_)
-* [fix] Various fixes for upcoming Noetic release (`#2180 <https://github.com/ros-planning/moveit/issues/2180>`_)
+* [feature] Update last_sent_command\_ at ServoCalcs start (`#2249 <https://github.com/ros-planning/moveit/issues/2249>`_)
+* [fix] Fix servo trajectory point timestamping (`#2375 <https://github.com/ros-planning/moveit/issues/2375>`_)
+* [fix] Fix ordering of windup args to control_toolbox::Pid (`#2370 <https://github.com/ros-planning/moveit/issues/2370>`_)
+* [fix] Fix Servo thread interruption (`#2314 <https://github.com/ros-planning/moveit/issues/2314>`_)
+* [fix] Servo heap-buffer-overflow bug (`#2307 <https://github.com/ros-planning/moveit/issues/2307>`_)
 * [maint] add soname version to moveit_servo (`#2266 <https://github.com/ros-planning/moveit/issues/2266>`_)
-* [maint] delete python integration tests (`#2186 <https://github.com/ros-planning/moveit/issues/2186>`_)
-* Contributors: AdamPettinger, AndyZe, Robert Haschke, Ruofan Xu, Tyler Weaver, v4hn
+* Contributors: AdamPettinger, AndyZe, Jere Liukkonen, Nathan Brooks, Robert Haschke, Tyler Weaver
 
 1.0.6 (2020-08-19)
 ------------------
@@ -137,63 +134,3 @@ Changelog for package moveit_servo
   * Better comments in config file, add spacenav_node dependency
   * Add spacenav_node to CMakeLists.
 * Contributors: AdamPettinger, AndyZe, Ayush Garg, Dale Koenig, Dave Coleman, Jonathan Binney, Paul Verhoeckx, Henning Kayser, Jafar Abdi, John Stechschulte, Mike Lautman, Robert Haschke, SansoneG, jschleicher, Tyler Weaver, rfeistenauer
-
-1.0.1 (2019-03-08)
-------------------
-
-1.0.0 (2019-02-24)
-------------------
-
-0.10.8 (2018-12-24)
--------------------
-
-0.10.5 (2018-11-01)
--------------------
-
-0.10.4 (2018-10-29 19:44)
--------------------------
-
-0.10.3 (2018-10-29 04:12)
--------------------------
-
-0.10.2 (2018-10-24)
--------------------
-
-0.10.1 (2018-05-25)
--------------------
-
-0.10.0 (2018-05-22)
--------------------
-
-0.9.11 (2017-12-25)
--------------------
-
-0.9.10 (2017-12-09)
--------------------
-
-0.9.9 (2017-08-06)
-------------------
-
-0.9.8 (2017-06-21)
-------------------
-
-0.9.7 (2017-06-05)
-------------------
-
-0.9.6 (2017-04-12)
-------------------
-
-0.9.5 (2017-03-08)
-------------------
-
-0.9.4 (2017-02-06)
-------------------
-
-0.9.3 (2016-11-16)
-------------------
-
-0.9.2 (2016-11-05)
-------------------
-
-0.9.1 (2016-10-21)
-------------------

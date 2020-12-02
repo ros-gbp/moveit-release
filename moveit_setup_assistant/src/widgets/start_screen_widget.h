@@ -34,7 +34,8 @@
 
 /* Author: Dave Coleman */
 
-#pragma once
+#ifndef MOVEIT_MOVEIT_SETUP_ASSISTANT_WIDGETS_START_SCREEN_WIDGET_
+#define MOVEIT_MOVEIT_SETUP_ASSISTANT_WIDGETS_START_SCREEN_WIDGET_
 
 class QLabel;
 class QProgressBar;
@@ -55,7 +56,7 @@ class SelectModeWidget;
 class LoadPathArgsWidget;
 
 /**
- * \brief Start screen user interface for MoveIt Configuration Assistant
+ * \brief Start screen user interface for MoveIt! Configuration Assistant
  */
 class StartScreenWidget : public SetupScreenWidget
 {
@@ -67,7 +68,7 @@ public:
   // ******************************************************************************************
 
   /**
-   * \brief Start screen user interface for MoveIt Configuration Assistant
+   * \brief Start screen user interface for MoveIt! Configuration Assistant
    */
   StartScreenWidget(QWidget* parent, const MoveItConfigDataPtr& config_data);
 
@@ -186,3 +187,5 @@ public:
   QLabel* widget_instructions_;
 };
 }  // namespace moveit_setup_assistant
+
+#endif

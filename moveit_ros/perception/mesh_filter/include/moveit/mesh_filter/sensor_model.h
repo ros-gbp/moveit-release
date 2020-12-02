@@ -34,7 +34,8 @@
 
 /* Author: Suat Gedikli */
 
-#pragma once
+#ifndef MOVEIT_MESH_FILTER_SENSOR_MODEL_
+#define MOVEIT_MESH_FILTER_SENSOR_MODEL_
 
 #include <moveit/macros/class_forward.h>
 #include <Eigen/Core>  // for Vector3f
@@ -169,3 +170,5 @@ public:
   virtual ~SensorModel();
 };
 }  // namespace mesh_filter
+
+#endif

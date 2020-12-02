@@ -34,7 +34,8 @@
 
 /* Author: Ioan Sucan */
 
-#pragma once
+#ifndef MOVEIT_OMPL_INTERFACE_DETAIL_CONSTRAINT_APPROXIMATION_
+#define MOVEIT_OMPL_INTERFACE_DETAIL_CONSTRAINT_APPROXIMATION_
 
 #include <moveit/macros/declare_ptr.h>
 #include <planning_scene/planning_scene.h>
@@ -74,3 +75,5 @@ struct ConstraintApproximation
 
 MOVEIT_DECLARE_PTR(ConstraintApproximations, std::vector<ConstraintApproximation>)
 }  // namespace ompl_interface
+
+#endif

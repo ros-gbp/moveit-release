@@ -47,7 +47,6 @@
 
 namespace occupancy_map_monitor
 {
-static const std::string LOGNAME = "occupancy_map_monitor";
 PointCloudOctomapUpdater::PointCloudOctomapUpdater()
   : OccupancyMapUpdater("PointCloudUpdater")
   , private_nh_("~")
@@ -85,7 +84,7 @@ bool PointCloudOctomapUpdater::setParams(XmlRpc::XmlRpcValue& params)
   }
   catch (XmlRpc::XmlRpcException& ex)
   {
-    ROS_ERROR_STREAM_NAMED(LOGNAME, "XmlRpc Exception: " << ex.getMessage());
+    ROS_ERROR("XmlRpc Exception: %s", ex.getMessage().c_str());
     return false;
   }
 
@@ -114,13 +113,13 @@ void PointCloudOctomapUpdater::start()
     point_cloud_filter_ = new tf2_ros::MessageFilter<sensor_msgs::PointCloud2>(*point_cloud_subscriber_, *tf_buffer_,
                                                                                monitor_->getMapFrame(), 5, root_nh_);
     point_cloud_filter_->registerCallback(boost::bind(&PointCloudOctomapUpdater::cloudMsgCallback, this, _1));
-    ROS_INFO_NAMED(LOGNAME, "Listening to '%s' using message filter with target frame '%s'", point_cloud_topic_.c_str(),
-                   point_cloud_filter_->getTargetFramesString().c_str());
+    ROS_INFO("Listening to '%s' using message filter with target frame '%s'", point_cloud_topic_.c_str(),
+             point_cloud_filter_->getTargetFramesString().c_str());
   }
   else
   {
     point_cloud_subscriber_->registerCallback(boost::bind(&PointCloudOctomapUpdater::cloudMsgCallback, this, _1));
-    ROS_INFO_NAMED(LOGNAME, "Listening to '%s'", point_cloud_topic_.c_str());
+    ROS_INFO("Listening to '%s'", point_cloud_topic_.c_str());
   }
 }
 
@@ -143,7 +142,7 @@ ShapeHandle PointCloudOctomapUpdater::excludeShape(const shapes::ShapeConstPtr& 
   if (shape_mask_)
     h = shape_mask_->addShape(shape, scale_, padding_);
   else
-    ROS_ERROR_NAMED(LOGNAME, "Shape filter not yet initialized!");
+    ROS_ERROR("Shape filter not yet initialized!");
   return h;
 }
 
@@ -163,14 +162,14 @@ bool PointCloudOctomapUpdater::getShapeTransform(ShapeHandle h, Eigen::Isometry3
   return it != transform_cache_.end();
 }
 
-void PointCloudOctomapUpdater::updateMask(const sensor_msgs::PointCloud2& /*cloud*/,
-                                          const Eigen::Vector3d& /*sensor_origin*/, std::vector<int>& /*mask*/)
+void PointCloudOctomapUpdater::updateMask(const sensor_msgs::PointCloud2& cloud, const Eigen::Vector3d& sensor_origin,
+                                          std::vector<int>& mask)
 {
 }
 
 void PointCloudOctomapUpdater::cloudMsgCallback(const sensor_msgs::PointCloud2::ConstPtr& cloud_msg)
 {
-  ROS_DEBUG_NAMED(LOGNAME, "Received a new point cloud message");
+  ROS_DEBUG("Received a new point cloud message");
   ros::WallTime start = ros::WallTime::now();
 
   if (max_update_rate_ > 0)
@@ -200,7 +199,7 @@ void PointCloudOctomapUpdater::cloudMsgCallback(const sensor_msgs::PointCloud2::
       }
       catch (tf2::TransformException& ex)
       {
-        ROS_ERROR_STREAM_NAMED(LOGNAME, "Transform error of sensor data: " << ex.what() << "; quitting callback");
+        ROS_ERROR_STREAM("Transform error of sensor data: " << ex.what() << "; quitting callback");
         return;
       }
     }
@@ -215,7 +214,7 @@ void PointCloudOctomapUpdater::cloudMsgCallback(const sensor_msgs::PointCloud2::
 
   if (!updateTransformCache(cloud_msg->header.frame_id, cloud_msg->header.stamp))
   {
-    ROS_ERROR_THROTTLE_NAMED(1, LOGNAME, "Transform cache was not updated. Self-filtering may fail.");
+    ROS_ERROR_THROTTLE(1, "Transform cache was not updated. Self-filtering may fail.");
     return;
   }
 
@@ -298,18 +297,18 @@ void PointCloudOctomapUpdater::cloudMsgCallback(const sensor_msgs::PointCloud2::
     }
 
     /* compute the free cells along each ray that ends at an occupied cell */
-    for (const octomap::OcTreeKey& occupied_cell : occupied_cells)
-      if (tree_->computeRayKeys(sensor_origin, tree_->keyToCoord(occupied_cell), key_ray_))
+    for (octomap::KeySet::iterator it = occupied_cells.begin(), end = occupied_cells.end(); it != end; ++it)
+      if (tree_->computeRayKeys(sensor_origin, tree_->keyToCoord(*it), key_ray_))
         free_cells.insert(key_ray_.begin(), key_ray_.end());
 
     /* compute the free cells along each ray that ends at a model cell */
-    for (const octomap::OcTreeKey& model_cell : model_cells)
-      if (tree_->computeRayKeys(sensor_origin, tree_->keyToCoord(model_cell), key_ray_))
+    for (octomap::KeySet::iterator it = model_cells.begin(), end = model_cells.end(); it != end; ++it)
+      if (tree_->computeRayKeys(sensor_origin, tree_->keyToCoord(*it), key_ray_))
         free_cells.insert(key_ray_.begin(), key_ray_.end());
 
     /* compute the free cells along each ray that ends at a clipped cell */
-    for (const octomap::OcTreeKey& clip_cell : clip_cells)
-      if (tree_->computeRayKeys(sensor_origin, tree_->keyToCoord(clip_cell), key_ray_))
+    for (octomap::KeySet::iterator it = clip_cells.begin(), end = clip_cells.end(); it != end; ++it)
+      if (tree_->computeRayKeys(sensor_origin, tree_->keyToCoord(*it), key_ray_))
         free_cells.insert(key_ray_.begin(), key_ray_.end());
   }
   catch (...)
@@ -321,36 +320,36 @@ void PointCloudOctomapUpdater::cloudMsgCallback(const sensor_msgs::PointCloud2::
   tree_->unlockRead();
 
   /* cells that overlap with the model are not occupied */
-  for (const octomap::OcTreeKey& model_cell : model_cells)
-    occupied_cells.erase(model_cell);
+  for (octomap::KeySet::iterator it = model_cells.begin(), end = model_cells.end(); it != end; ++it)
+    occupied_cells.erase(*it);
 
   /* occupied cells are not free */
-  for (const octomap::OcTreeKey& occupied_cell : occupied_cells)
-    free_cells.erase(occupied_cell);
+  for (octomap::KeySet::iterator it = occupied_cells.begin(), end = occupied_cells.end(); it != end; ++it)
+    free_cells.erase(*it);
 
   tree_->lockWrite();
 
   try
   {
     /* mark free cells only if not seen occupied in this cloud */
-    for (const octomap::OcTreeKey& free_cell : free_cells)
-      tree_->updateNode(free_cell, false);
+    for (octomap::KeySet::iterator it = free_cells.begin(), end = free_cells.end(); it != end; ++it)
+      tree_->updateNode(*it, false);
 
     /* now mark all occupied cells */
-    for (const octomap::OcTreeKey& occupied_cell : occupied_cells)
-      tree_->updateNode(occupied_cell, true);
+    for (octomap::KeySet::iterator it = occupied_cells.begin(), end = occupied_cells.end(); it != end; ++it)
+      tree_->updateNode(*it, true);
 
     // set the logodds to the minimum for the cells that are part of the model
     const float lg = tree_->getClampingThresMinLog() - tree_->getClampingThresMaxLog();
-    for (const octomap::OcTreeKey& model_cell : model_cells)
-      tree_->updateNode(model_cell, lg);
+    for (octomap::KeySet::iterator it = model_cells.begin(), end = model_cells.end(); it != end; ++it)
+      tree_->updateNode(*it, lg);
   }
   catch (...)
   {
-    ROS_ERROR_NAMED(LOGNAME, "Internal error while updating octree");
+    ROS_ERROR("Internal error while updating octree");
   }
   tree_->unlockWrite();
-  ROS_DEBUG_NAMED(LOGNAME, "Processed point cloud in %lf ms", (ros::WallTime::now() - start).toSec() * 1000.0);
+  ROS_DEBUG("Processed point cloud in %lf ms", (ros::WallTime::now() - start).toSec() * 1000.0);
   tree_->triggerUpdateCallback();
 
   if (filtered_cloud)

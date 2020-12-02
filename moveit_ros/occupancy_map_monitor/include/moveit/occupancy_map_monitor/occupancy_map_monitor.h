@@ -34,7 +34,8 @@
 
 /* Author: Ioan Sucan, Jon Binney */
 
-#pragma once
+#ifndef MOVEIT_PERCEPTION_OCCUPANCY_MAP_MONITOR_
+#define MOVEIT_PERCEPTION_OCCUPANCY_MAP_MONITOR_
 
 #include <vector>
 #include <string>
@@ -159,3 +160,5 @@ private:
   bool active_;
 };
 }  // namespace occupancy_map_monitor
+
+#endif

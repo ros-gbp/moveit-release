@@ -34,7 +34,8 @@
 
 /* Author: Ioan Sucan */
 
-#pragma once
+#ifndef MOVEIT_MOVE_GROUP_GET_PLANNING_SCENE_CAPABILITY_
+#define MOVEIT_MOVE_GROUP_GET_PLANNING_SCENE_CAPABILITY_
 
 #include <moveit/move_group/move_group_capability.h>
 
@@ -48,3 +49,5 @@ public:
   void initialize() override;
 };
 }  // namespace move_group
+
+#endif

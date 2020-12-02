@@ -34,7 +34,8 @@
 
 /* Author: Suat Gedikli */
 
-#pragma once
+#ifndef MOVEIT_MESH_FILTER_FILTER_JOB_
+#define MOVEIT_MESH_FILTER_FILTER_JOB_
 
 #include <moveit/macros/class_forward.h>
 #include <boost/thread/condition.hpp>
@@ -141,3 +142,4 @@ private:
   boost::function<void()> exec_;
 };
 }  // namespace mesh_filter
+#endif

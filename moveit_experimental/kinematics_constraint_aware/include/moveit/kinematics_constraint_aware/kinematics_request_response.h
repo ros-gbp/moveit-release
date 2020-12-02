@@ -35,7 +35,8 @@
  * Author: Sachin Chitta
  *********************************************************************/
 
-#pragma once
+#ifndef MOVEIT_KINEMATICS_CONSTRAINT_AWARE_KINEMATICS_REQUEST_RESPONSE_
+#define MOVEIT_KINEMATICS_CONSTRAINT_AWARE_KINEMATICS_REQUEST_RESPONSE_
 
 // System
 #include <boost/shared_ptr.hpp>
@@ -43,7 +44,7 @@
 // ROS msgs
 #include <geometry_msgs/PoseStamped.h>
 
-// MoveIt
+// MoveIt!
 #include <moveit_msgs/MoveItErrorCodes.h>
 #include <moveit/robot_model/robot_model.h>
 #include <moveit/robot_state/robot_state.h>
@@ -68,7 +69,7 @@ public:
 
   std::vector<std::string> ik_link_names_;
 
-  moveit::core::RobotStatePtr robot_state_;
+  robot_state::RobotStatePtr robot_state_;
 
   kinematic_constraints::KinematicConstraintSetPtr constraints_;
 
@@ -78,7 +79,7 @@ public:
 
   bool check_for_collisions_;
 
-  moveit::core::StateValidityCallbackFn constraint_callback_;
+  robot_state::StateValidityCallbackFn constraint_callback_;
 };
 
 /**
@@ -93,7 +94,7 @@ public:
 
   virtual ~KinematicsResponse(){};
 
-  moveit::core::RobotStatePtr solution_;
+  robot_state::RobotStatePtr solution_;
 
   std::vector<kinematic_constraints::ConstraintEvaluationResult> constraint_eval_results_;
 
@@ -104,3 +105,5 @@ public:
   bool result_;
 };
 }  // namespace kinematics_constraint_aware
+
+#endif

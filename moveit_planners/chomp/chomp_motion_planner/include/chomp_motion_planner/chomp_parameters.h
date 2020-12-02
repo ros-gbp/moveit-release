@@ -34,7 +34,8 @@
 
 /* Author: Mrinal Kalakrishnan */
 
-#pragma once
+#ifndef CHOMP_PARAMETERS_H_
+#define CHOMP_PARAMETERS_H_
 
 #include <ros/ros.h>
 
@@ -97,3 +98,5 @@ public:
 };
 
 }  // namespace chomp
+
+#endif /* CHOMP_PARAMETERS_H_ */

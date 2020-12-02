@@ -32,7 +32,8 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-#pragma once
+#ifndef _BRESENHAM3D_
+#define _BRESENHAM3D_
 
 #include <vector>
 #include <iostream>
@@ -55,3 +56,5 @@ void get_bresenham3d_parameters(int p1x, int p1y, int p1z, int p2x, int p2y, int
 void get_current_point3d(bresenham3d_param_t* params, int* x, int* y, int* z);
 
 int get_next_point3d(bresenham3d_param_t* params);
+
+#endif
