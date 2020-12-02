@@ -48,7 +48,7 @@
 
 namespace collision_detection
 {
-MOVEIT_CLASS_FORWARD(AllowedCollisionMatrix);
+MOVEIT_CLASS_FORWARD(AllowedCollisionMatrix);  // Defines AllowedCollisionMatrixPtr, ConstPtr, WeakPtr... etc
 
 /** \brief The types of bodies that are considered for collision */
 namespace BodyTypes
@@ -152,6 +152,9 @@ struct CollisionResult
     contacts.clear();
     cost_sources.clear();
   }
+
+  /** \brief Throttled warning printing the first collision pair, if any. All collisions are logged at DEBUG level */
+  void print() const;
 
   /** \brief True if collision was found, false otherwise */
   bool collision;
@@ -329,19 +332,6 @@ struct DistanceResultsData
     link_names[0] = "";
     link_names[1] = "";
     normal.setZero();
-  }
-
-  /// Update structure data given DistanceResultsData object
-  void operator=(const DistanceResultsData& other)
-  {
-    distance = other.distance;
-    nearest_points[0] = other.nearest_points[0];
-    nearest_points[1] = other.nearest_points[1];
-    link_names[0] = other.link_names[0];
-    link_names[1] = other.link_names[1];
-    body_types[0] = other.body_types[0];
-    body_types[1] = other.body_types[1];
-    normal = other.normal;
   }
 
   /// Compare if the distance is less than another
