@@ -38,26 +38,21 @@
 #define MOVEIT_MOVEIT_SETUP_ASSISTANT_WIDGETS_ROBOT_POSES_WIDGET_
 
 // Qt
-#include <QWidget>
-#include <QVBoxLayout>
-#include <QHBoxLayout>
-#include <QScrollArea>
-#include <QGroupBox>
-#include <QLabel>
-#include <QPushButton>
-#include <QTableWidget>
-#include <QStackedLayout>
-#include <QString>
-#include <QComboBox>
+class QComboBox;
+class QLabel;
+class QLineEdit;
+class QPushButton;
+class QScrollArea;
+class QSlider;
+class QStackedWidget;
+class QTableWidget;
+class QVBoxLayout;
 
 // SA
 #ifndef Q_MOC_RUN
 #include <moveit/setup_assistant/tools/moveit_config_data.h>
-#include <moveit/planning_scene/planning_scene.h>  // for collision stuff
-#include <ros/ros.h>
 #endif
 
-#include "header_widget.h"
 #include "setup_screen_widget.h"  // a base class for screens in the setup assistant
 
 namespace moveit_setup_assistant
@@ -84,7 +79,7 @@ public:
   QPushButton* btn_delete_;
   QPushButton* btn_save_;
   QPushButton* btn_cancel_;
-  QStackedLayout* stacked_layout_;
+  QStackedWidget* stacked_widget_;
   QScrollArea* scroll_area_;
   QVBoxLayout* column2_;
   QLineEdit* pose_name_field_;
