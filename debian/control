@@ -1,0 +1,12 @@
+Source: ros-noetic-moveit-kinematics
+Section: misc
+Priority: optional
+Maintainer: Dave Coleman <dave@picknik.ai>
+Build-Depends: debhelper (>= 9.0.0), libeigen3-dev, liborocos-kdl-dev, ros-noetic-catkin, ros-noetic-moveit-core, ros-noetic-moveit-resources-fanuc-description, ros-noetic-moveit-resources-fanuc-moveit-config, ros-noetic-moveit-resources-panda-description, ros-noetic-moveit-resources-panda-moveit-config, ros-noetic-moveit-ros-planning, ros-noetic-pluginlib (>= 1.11.2), ros-noetic-roscpp, ros-noetic-rostest, ros-noetic-tf2, ros-noetic-tf2-kdl, ros-noetic-xmlrpcpp
+Homepage: http://moveit.ros.org
+Standards-Version: 3.9.2
+
+Package: ros-noetic-moveit-kinematics
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, libeigen3-dev, liborocos-kdl-dev, liburdfdom-tools, python3-lxml, python3-yaml, ros-noetic-moveit-core, ros-noetic-pluginlib (>= 1.11.2), ros-noetic-roscpp, ros-noetic-tf2, ros-noetic-tf2-kdl
+Description: Package for all inverse kinematics solvers in MoveIt
