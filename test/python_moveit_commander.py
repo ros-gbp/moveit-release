@@ -35,10 +35,14 @@
 # Author: William Baker
 
 import unittest
+
+import genpy
 import numpy as np
 import rospy
 import rostest
 import os
+
+from moveit_msgs.msg import RobotState
 
 from moveit_commander import RobotCommander, PlanningSceneInterface
 
@@ -55,20 +59,63 @@ class PythonMoveitCommanderTest(unittest.TestCase):
     def tearDown(self):
         pass
 
+    def test_enforce_bounds_empty_state(self):
+        in_msg = RobotState()
+        with self.assertRaises(genpy.DeserializationError):
+            self.group.enforce_bounds(in_msg)
+
+    def test_enforce_bounds(self):
+        in_msg = RobotState()
+        in_msg.joint_state.header.frame_id = "base_link"
+        in_msg.joint_state.name = [
+            "joint_1",
+            "joint_2",
+            "joint_3",
+            "joint_4",
+            "joint_5",
+            "joint_6",
+        ]
+        in_msg.joint_state.position = [0] * 6
+        in_msg.joint_state.position[0] = 1000
+
+        out_msg = self.group.enforce_bounds(in_msg)
+
+        self.assertEqual(in_msg.joint_state.position[0], 1000)
+        self.assertLess(out_msg.joint_state.position[0], 1000)
+
+    def test_get_current_state(self):
+        expected_state = RobotState()
+        expected_state.joint_state.header.frame_id = "base_link"
+        expected_state.multi_dof_joint_state.header.frame_id = "base_link"
+        expected_state.joint_state.name = [
+            "joint_1",
+            "joint_2",
+            "joint_3",
+            "joint_4",
+            "joint_5",
+            "joint_6",
+        ]
+        expected_state.joint_state.position = [0] * 6
+        self.assertEqual(self.group.get_current_state(), expected_state)
+
     def check_target_setting(self, expect, *args):
         if len(args) == 0:
             args = [expect]
         self.group.set_joint_value_target(*args)
         res = self.group.get_joint_value_target()
-        self.assertTrue(np.all(np.asarray(res) == np.asarray(expect)),
-                        "Setting failed for %s, values: %s" % (type(args[0]), res))
+        self.assertTrue(
+            np.all(np.asarray(res) == np.asarray(expect)),
+            "Setting failed for %s, values: %s" % (type(args[0]), res),
+        )
 
     def test_target_setting(self):
         n = self.group.get_variable_count()
         self.check_target_setting([0.1] * n)
         self.check_target_setting((0.2,) * n)
         self.check_target_setting(np.zeros(n))
-        self.check_target_setting([0.3] * n, {name: 0.3 for name in self.group.get_active_joints()})
+        self.check_target_setting(
+            [0.3] * n, {name: 0.3 for name in self.group.get_active_joints()}
+        )
         self.check_target_setting([0.5] + [0.3] * (n - 1), "joint_1", 0.5)
 
     def plan(self, target):
@@ -98,9 +145,9 @@ class PythonMoveitCommanderTest(unittest.TestCase):
         planning_scene = PlanningSceneInterface()
 
 
-if __name__ == '__main__':
-    PKGNAME = 'moveit_ros_planning_interface'
-    NODENAME = 'moveit_test_python_moveit_commander'
+if __name__ == "__main__":
+    PKGNAME = "moveit_ros_planning_interface"
+    NODENAME = "moveit_test_python_moveit_commander"
     rospy.init_node(NODENAME)
     rostest.rosrun(PKGNAME, NODENAME, PythonMoveitCommanderTest)
 
