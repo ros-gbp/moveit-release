@@ -38,6 +38,12 @@
 
 #pragma once
 
+// C++
+#include <condition_variable>
+#include <mutex>
+#include <thread>
+#include <atomic>
+
 // ROS
 #include <control_msgs/JointJog.h>
 #include <geometry_msgs/TwistStamped.h>
@@ -57,7 +63,6 @@
 #include <moveit_servo/servo_parameters.h>
 #include <moveit_servo/status_codes.h>
 #include <moveit_servo/low_pass_filter.h>
-#include <moveit_servo/joint_state_subscriber.h>
 
 namespace moveit_servo
 {
@@ -65,13 +70,9 @@ class ServoCalcs
 {
 public:
   ServoCalcs(ros::NodeHandle& nh, ServoParameters& parameters,
-             const planning_scene_monitor::PlanningSceneMonitorPtr& planning_scene_monitor,
-             const std::shared_ptr<JointStateSubscriber>& joint_state_subscriber, std::string& ros_namespace);
+             const planning_scene_monitor::PlanningSceneMonitorPtr& planning_scene_monitor);
 
-  ~ServoCalcs()
-  {
-    timer_.stop();
-  }
+  ~ServoCalcs();
 
   /** \brief Start the timer where we do work and publish outputs */
   void start();
@@ -104,9 +105,18 @@ public:
    */
   void changeRobotLinkCommandFrame(const std::string& new_command_frame);
 
+  // Give test access to private/protected methods
+  friend class ServoFixture;
+
 private:
-  /** \brief Timer method */
-  void run(const ros::TimerEvent& timer_event);
+  /** \brief Run the main calculation loop */
+  void mainCalcLoop();
+
+  /** \brief Do calculations for a single iteration. Publish one outgoing command */
+  void calculateSingleIteration();
+
+  /** \brief Stop the currently running thread */
+  void stop();
 
   /** \brief Do servoing calculations for Cartesian twist commands. */
   bool cartesianServoCalcs(geometry_msgs::TwistStamped& cmd, trajectory_msgs::JointTrajectory& joint_trajectory);
@@ -115,7 +125,7 @@ private:
   bool jointServoCalcs(const control_msgs::JointJog& cmd, trajectory_msgs::JointTrajectory& joint_trajectory);
 
   /** \brief Parse the incoming joint msg for the joints of our MoveGroup */
-  bool updateJoints();
+  void updateJoints();
 
   /** \brief If incoming velocity commands are from a unitless joystick, scale them to physical units.
    * Also, multiply by timestep to calculate a position change.
@@ -220,9 +230,6 @@ private:
   // Pointer to the collision environment
   planning_scene_monitor::PlanningSceneMonitorPtr planning_scene_monitor_;
 
-  // Subscriber to the latest joint states
-  const std::shared_ptr<JointStateSubscriber> joint_state_subscriber_;
-
   // Track the number of cycles during which motion has not occurred.
   // Will avoid re-publishing zero velocities endlessly.
   int zero_velocity_count_ = 0;
@@ -244,7 +251,7 @@ private:
 
   const moveit::core::JointModelGroup* joint_model_group_;
 
-  moveit::core::RobotStatePtr kinematic_state_;
+  moveit::core::RobotStatePtr current_state_;
 
   // incoming_joint_state_ is the incoming message. It may contain passive joints or other joints we don't care about.
   // (mutex protected below)
@@ -259,8 +266,6 @@ private:
   trajectory_msgs::JointTrajectoryConstPtr last_sent_command_;
 
   // ROS
-  ros::Timer timer_;
-  ros::Duration period_;
   ros::Subscriber joint_state_sub_;
   ros::Subscriber twist_stamped_sub_;
   ros::Subscriber joint_cmd_sub_;
@@ -272,9 +277,13 @@ private:
   ros::ServiceServer control_dimensions_server_;
   ros::ServiceServer reset_servo_status_;
 
+  // Main tracking / result publisher loop
+  std::thread thread_;
+  bool stop_requested_;
+
   // Status
   StatusCode status_ = StatusCode::NO_WARNING;
-  bool paused_ = false;
+  std::atomic<bool> paused_;
   bool twist_command_is_stale_ = false;
   bool joint_command_is_stale_ = false;
   bool ok_to_publish_ = false;
@@ -294,11 +303,8 @@ private:
   // The dimesions to control. In the command frame. [x, y, z, roll, pitch, yaw]
   std::array<bool, 6> control_dimensions_ = { { true, true, true, true, true, true } };
 
-  // Amount we sleep when waiting
-  ros::Rate default_sleep_rate_ = 100;
-
-  // latest_state_mutex_ is used to protect the state below it
-  mutable std::mutex latest_state_mutex_;
+  // input_mutex_ is used to protect the state below it
+  mutable std::mutex input_mutex_;
   Eigen::Isometry3d tf_moveit_to_robot_cmd_frame_;
   Eigen::Isometry3d tf_moveit_to_ee_frame_;
   geometry_msgs::TwistStampedConstPtr latest_twist_stamped_;
@@ -307,5 +313,9 @@ private:
   ros::Time latest_joint_command_stamp_ = ros::Time(0.);
   bool latest_nonzero_twist_stamped_ = false;
   bool latest_nonzero_joint_cmd_ = false;
+
+  // input condition variable used for low latency mode
+  std::condition_variable input_cv_;
+  bool new_input_cmd_ = false;
 };
 }  // namespace moveit_servo
