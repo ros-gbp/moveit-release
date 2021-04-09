@@ -32,11 +32,11 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-/* Author: Dave Coleman and Tyler Weaver
-   Desc:   Test for the C++ interface to moveit_servo
+/* Author: Tyler Weaver, Andy Zelenak
+   Desc:   Basic functionality tests
 */
 
-// C++
+// System
 #include <string>
 
 // ROS
@@ -49,8 +49,7 @@
 #include <moveit_servo/make_shared_from_pool.h>
 #include <moveit_servo/servo.h>
 
-static const std::string LOGNAME = "servo_cpp_interface_test";
-static constexpr double LARGEST_ALLOWABLE_PANDA_VEL = 2.8710;  // to test joint velocity limit enforcement
+static const std::string LOGNAME = "basic_servo_tests";
 
 namespace moveit_servo
 {
@@ -82,36 +81,19 @@ public:
   {
   }
 
-  bool waitForFirstStatus()
-  {
-    auto msg = ros::topic::waitForMessage<std_msgs::Int8>(servo_->getParameters().status_topic, nh_, ros::Duration(1));
-    return static_cast<bool>(msg);
-  }
-
 protected:
+  void enforceVelLimits(Eigen::ArrayXd& delta_theta)
+  {
+    servo_->servo_calcs_->enforceVelLimits(delta_theta);
+  }
   ros::NodeHandle nh_{ "~" };
   planning_scene_monitor::PlanningSceneMonitorPtr planning_scene_monitor_;
   moveit_servo::ServoPtr servo_;
 };  // class ServoFixture
 
-TEST_F(ServoFixture, StartStopTest)
-{
-  servo_->start();
-  EXPECT_TRUE(waitForFirstStatus()) << "Timeout waiting for Status message";
-  servo_->setPaused(true);
-
-  ros::Duration(1.0).sleep();
-
-  // Start and stop again
-  servo_->setPaused(false);
-  EXPECT_TRUE(waitForFirstStatus()) << "Timeout waiting for Status message";
-  servo_->setPaused(true);
-}
-
 TEST_F(ServoFixture, SendTwistStampedTest)
 {
   servo_->start();
-  EXPECT_TRUE(waitForFirstStatus()) << "Timeout waiting for Status message";
 
   auto parameters = servo_->getParameters();
 
@@ -128,7 +110,9 @@ TEST_F(ServoFixture, SendTwistStampedTest)
   const double publish_period = parameters.publish_period;
   const size_t num_commands = static_cast<size_t>(test_duration / publish_period);
 
-  ros::Rate publish_rate(1. / publish_period);
+  // Set the rate differently from the publish period from the parameters to show that
+  // the number of outputs is set by the number of commands sent and not the rate they are sent.
+  ros::Rate publish_rate(2. / publish_period);
 
   // Send a few Cartesian velocity commands
   for (size_t i = 0; i < num_commands && ros::ok(); ++i)
@@ -152,7 +136,6 @@ TEST_F(ServoFixture, SendTwistStampedTest)
 TEST_F(ServoFixture, SendJointServoTest)
 {
   servo_->start();
-  EXPECT_TRUE(waitForFirstStatus()) << "Timeout waiting for Status message";
 
   auto parameters = servo_->getParameters();
 
@@ -169,7 +152,9 @@ TEST_F(ServoFixture, SendJointServoTest)
   const double publish_period = parameters.publish_period;
   const size_t num_commands = static_cast<size_t>(test_duration / publish_period);
 
-  ros::Rate publish_rate(1. / publish_period);
+  // Set the rate differently from the publish period from the parameters to show that
+  // the number of outputs is set by the number of commands sent and not the rate they are sent.
+  ros::Rate publish_rate(2. / publish_period);
 
   // Send a few joint velocity commands
   for (size_t i = 0; i < num_commands && ros::ok(); ++i)
@@ -185,74 +170,75 @@ TEST_F(ServoFixture, SendJointServoTest)
   }
 
   EXPECT_GT(received_count, num_commands - 20);
+  EXPECT_GT(received_count, (unsigned)0);
   EXPECT_LT(received_count, num_commands + 20);
   servo_->setPaused(true);
 }
 
-TEST_F(ServoFixture, JointVelocityEnforcementTest)
+// This a friend test of a private member function
+TEST_F(ServoFixture, EnforceVelLimitsTest)
 {
-  servo_->start();
-  EXPECT_TRUE(waitForFirstStatus()) << "Timeout waiting for Status message";
-
   auto parameters = servo_->getParameters();
-  double publish_period = parameters.publish_period;
+  const double publish_period = parameters.publish_period;
 
-  // count trajectory messages sent by servo
-  size_t received_count = 0;
-  trajectory_msgs::JointTrajectory joint_command_from_servo;
-  trajectory_msgs::JointTrajectory prev_joint_command_from_servo;
-  boost::function<void(const trajectory_msgs::JointTrajectoryConstPtr&)> traj_callback =
-      [&](const trajectory_msgs::JointTrajectoryConstPtr& msg) {
-        ++received_count;
-        // Store a series of two commands so we can calculate velocities
-        // from positions
-        prev_joint_command_from_servo = joint_command_from_servo;
-        joint_command_from_servo = *msg;
+  // Request joint angle changes that are too fast, given the control period in servo settings YAML file.
+  Eigen::ArrayXd delta_theta(7);
+  delta_theta[0] = 0;  // rad
+  delta_theta[1] = 0.01;
+  delta_theta[2] = 0.02;
+  delta_theta[3] = 0.03;
+  delta_theta[4] = 0.04;
+  delta_theta[5] = 0.05;
+  delta_theta[6] = 0.06;
 
-        // Start running checks when we have at least two datapoints
-        if (received_count > 1)
-        {
-          // Need a sequence of two commands to calculate a velocity
-          EXPECT_GT(joint_command_from_servo.points.size(), (unsigned)0);
-          EXPECT_GT(prev_joint_command_from_servo.points.size(), (unsigned)0);
-          EXPECT_EQ(prev_joint_command_from_servo.points.size(), joint_command_from_servo.points.size());
-          // No velocities larger than the largest allowable Panda velocity
-          for (size_t joint_index = 0; joint_index < joint_command_from_servo.points[0].positions.size(); ++joint_index)
-          {
-            double joint_velocity = (joint_command_from_servo.points[0].positions[joint_index] -
-                                     prev_joint_command_from_servo.points[0].positions[joint_index]) /
-                                    publish_period;
-            EXPECT_LE(joint_velocity, LARGEST_ALLOWABLE_PANDA_VEL);
-          }
-        }
-      };
-  auto traj_sub = nh_.subscribe(parameters.command_out_topic, 1, traj_callback);
+  // Store the original joint commands for comparison before applying velocity scaling.
+  Eigen::ArrayXd orig_delta_theta = delta_theta;
+  enforceVelLimits(delta_theta);
 
-  // Create publisher to send servo commands
-  auto twist_stamped_pub = nh_.advertise<geometry_msgs::TwistStamped>(parameters.cartesian_command_in_topic, 1);
-
-  constexpr double test_duration = 1.0;
-  const size_t num_commands = static_cast<size_t>(test_duration / publish_period);
-
-  ros::Rate publish_rate(1. / publish_period);
-
-  // Send a few Cartesian commands with very high velocity
-  for (size_t i = 0; i < num_commands && ros::ok(); ++i)
+  // From Panda arm MoveIt joint_limits.yaml. The largest velocity limits for a joint.
+  const double panda_max_joint_vel = 2.610;  // rad/s
+  const double velocity_scaling_factor = panda_max_joint_vel / (orig_delta_theta.maxCoeff() / publish_period);
+  const double tolerance = 5e-3;
+  for (int i = 0; i < 7; ++i)
   {
-    auto msg = moveit::util::make_shared_from_pool<geometry_msgs::TwistStamped>();
-    msg->header.stamp = ros::Time::now();
-    msg->header.frame_id = "panda_link0";
-    msg->twist.linear.x = 10.0;
-    msg->twist.angular.y = 5 * LARGEST_ALLOWABLE_PANDA_VEL;
-
-    // Send the message
-    twist_stamped_pub.publish(msg);
-    publish_rate.sleep();
+    EXPECT_NEAR(orig_delta_theta(i) * velocity_scaling_factor, delta_theta(i), tolerance);
   }
 
-  EXPECT_GT(received_count, num_commands - 20);
-  EXPECT_LT(received_count, num_commands + 20);
-  servo_->setPaused(true);
+  // Now, negative joint angle deltas. Some will result to velocities
+  // greater than the arm joint velocity limits.
+  delta_theta[0] = 0;  // rad
+  delta_theta[1] = -0.01;
+  delta_theta[2] = -0.02;
+  delta_theta[3] = -0.03;
+  delta_theta[4] = -0.04;
+  delta_theta[5] = -0.05;
+  delta_theta[6] = -0.06;
+
+  // Store the original joint commands for comparison before applying velocity scaling.
+  orig_delta_theta = delta_theta;
+  enforceVelLimits(delta_theta);
+  for (int i = 0; i < 7; ++i)
+  {
+    EXPECT_NEAR(orig_delta_theta(i) * velocity_scaling_factor, delta_theta(i), tolerance);
+  }
+
+  // Final test with joint angle deltas that will result in velocities
+  // below the lowest Panda arm joint velocity limit.
+  delta_theta[0] = 0;  // rad
+  delta_theta[1] = -0.013;
+  delta_theta[2] = 0.023;
+  delta_theta[3] = -0.004;
+  delta_theta[4] = 0.021;
+  delta_theta[5] = 0.012;
+  delta_theta[6] = 0.0075;
+
+  // Store the original joint commands for comparison before applying velocity scaling.
+  orig_delta_theta = delta_theta;
+  enforceVelLimits(delta_theta);
+  for (int i = 0; i < 7; ++i)
+  {
+    EXPECT_NEAR(orig_delta_theta(i), delta_theta(i), tolerance);
+  }
 }
 }  // namespace moveit_servo
 
