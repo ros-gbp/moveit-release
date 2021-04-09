@@ -6,15 +6,14 @@
 
 - [Overview of MoveIt](https://moveit.ros.org)
 - [Installation Instructions](https://moveit.ros.org/install/)
-- [Documentation](https://moveit.ros.org/documentation/)
+- [Documentation](https://moveit.ros.org/documentation/source-code-api/)
 - [Get Involved](https://moveit.ros.org/about/get_involved/)
 
 ## Branches Policy
 
 - We develop latest features on ``master``.
 - The ``*-devel`` branches correspond to released and stable versions of MoveIt for specific distributions of ROS.
-- Bug fixes occationally get backported to these released versions of MoveIt.
-- The next version of MoveIt 1.0 will be branched to ``noetic-devel`` around June 2020.
+- Bug fixes occasionally get backported to these released versions of MoveIt.
 - For MoveIt 2 development, see [moveit2](https://github.com/ros-planning/moveit2).
 
 ## MoveIt Status
@@ -23,8 +22,9 @@
 
 service    | Kinetic | Melodic | Master
 ---------- | ------- | ------- | ------
-Travis     | [![Build Status](https://travis-ci.com/ros-planning/moveit.svg?branch=kinetic-devel)](https://travis-ci.com/ros-planning/moveit/branches) | [![Build Status](https://travis-ci.com/ros-planning/moveit.svg?branch=melodic-devel)](https://travis-ci.com/ros-planning/moveit/branches) | [![Build Status](https://travis-ci.com/ros-planning/moveit.svg?branch=master)](https://travis-ci.com/ros-planning/moveit/branches) |
-build farm | [![Build Status](http://build.ros.org/buildStatus/icon?job=Kdev__moveit__ubuntu_xenial_amd64)](http://build.ros.org/job/Kdev__moveit__ubuntu_xenial_amd64) | [![Build Status](http://build.ros.org/buildStatus/icon?job=Mdev__moveit__ubuntu_bionic_amd64)](http://build.ros.org/job/Mdev__moveit__ubuntu_bionic_amd64) | N/A |
+GitHub | [![Format](https://github.com/ros-planning/moveit/actions/workflows/format.yml/badge.svg?branch=kinetic-devel)](https://github.com/ros-planning/moveit/actions/workflows/format.yml?branch=kinetic-devel) [![BuildAndTest](https://github.com/ros-planning/moveit/actions/workflows/industrial_ci_action.yml/badge.svg?branch=kinetic-devel)](https://github.com/ros-planning/moveit/actions/workflows/industrial_ci_action.yml?branch=kinetic-devel) | [![Format](https://github.com/ros-planning/moveit/actions/workflows/format.yml/badge.svg?branch=melodic-devel)](https://github.com/ros-planning/moveit/actions/workflows/format.yml?branch=melodic-devel) [![BuildAndTest](https://github.com/ros-planning/moveit/actions/workflows/industrial_ci_action.yml/badge.svg?branch=melodic-devel)](https://github.com/ros-planning/moveit/actions/workflows/industrial_ci_action.yml?branch=melodic-devel) | [![Format](https://github.com/ros-planning/moveit/actions/workflows/format.yml/badge.svg?branch=master)](https://github.com/ros-planning/moveit/actions/workflows/format.yml?branch=master) [![BuildAndTest](https://github.com/ros-planning/moveit/actions/workflows/industrial_ci_action.yml/badge.svg?branch=master)](https://github.com/ros-planning/moveit/actions/workflows/industrial_ci_action.yml?branch=master) |
+CodeCov | [![codecov](https://codecov.io/gh/ros-planning/moveit/branch/kinetic-devel/graph/badge.svg?token=W7uHKcY0ly)](https://codecov.io/gh/ros-planning/moveit) | [![codecov](https://codecov.io/gh/ros-planning/moveit/branch/melodic-devel/graph/badge.svg?token=W7uHKcY0ly)](https://codecov.io/gh/ros-planning/moveit) | [![codecov](https://codecov.io/gh/ros-planning/moveit/branch/master/graph/badge.svg?token=W7uHKcY0ly)](https://codecov.io/gh/ros-planning/moveit) |
+build farm | [![Build Status](http://build.ros.org/buildStatus/icon?job=Kdev__moveit__ubuntu_xenial_amd64)](http://build.ros.org/job/Kdev__moveit__ubuntu_xenial_amd64) | [![Build Status](http://build.ros.org/buildStatus/icon?job=Mdev__moveit__ubuntu_bionic_amd64)](http://build.ros.org/job/Mdev__moveit__ubuntu_bionic_amd64) | [![Build Status](http://build.ros.org/buildStatus/icon?job=Ndev__moveit__ubuntu_focal_amd64)](https://build.ros.org/job/Ndev__moveit__ubuntu_focal_amd64/) |
 
 ### Licenses
 
@@ -79,3 +79,8 @@ geometric_shapes | [![Build Status](http://build.ros.org/buildStatus/icon?job=Ks
 rviz_marker_tools |  |  |  |  | [![Build Status](http://build.ros.org/buildStatus/icon?job=Nsrc_uF__rviz_marker_tools__ubuntu_focal__source)](http://build.ros.org/view/Nsrc_uF/job/Nsrc_uF__rviz_marker_tools__ubuntu_focal__source) | [![Build Status](http://build.ros.org/buildStatus/icon?job=Nbin_uF64__rviz_marker_tools__ubuntu_focal_amd64__binary)](http://build.ros.org/view/Nbin_uF64/job/Nbin_uF64__rviz_marker_tools__ubuntu_focal_amd64__binary)
 rviz_visual_tools | [![Build Status](http://build.ros.org/buildStatus/icon?job=Ksrc_uX__rviz_visual_tools__ubuntu_xenial__source)](http://build.ros.org/view/Ksrc_uX/job/Ksrc_uX__rviz_visual_tools__ubuntu_xenial__source) | [![Build Status](http://build.ros.org/buildStatus/icon?job=Kbin_uX64__rviz_visual_tools__ubuntu_xenial_amd64__binary)](http://build.ros.org/view/Kbin_uX64/job/Kbin_uX64__rviz_visual_tools__ubuntu_xenial_amd64__binary) | [![Build Status](http://build.ros.org/buildStatus/icon?job=Msrc_uB__rviz_visual_tools__ubuntu_bionic__source)](http://build.ros.org/view/Msrc_uB/job/Msrc_uB__rviz_visual_tools__ubuntu_bionic__source) | [![Build Status](http://build.ros.org/buildStatus/icon?job=Mbin_uB64__rviz_visual_tools__ubuntu_bionic_amd64__binary)](http://build.ros.org/view/Mbin_uB64/job/Mbin_uB64__rviz_visual_tools__ubuntu_bionic_amd64__binary) | [![Build Status](http://build.ros.org/buildStatus/icon?job=Nsrc_uF__rviz_visual_tools__ubuntu_focal__source)](http://build.ros.org/view/Nsrc_uF/job/Nsrc_uF__rviz_visual_tools__ubuntu_focal__source) | [![Build Status](http://build.ros.org/buildStatus/icon?job=Nbin_uF64__rviz_visual_tools__ubuntu_focal_amd64__binary)](http://build.ros.org/view/Nbin_uF64/job/Nbin_uF64__rviz_visual_tools__ubuntu_focal_amd64__binary)
 srdfdom | [![Build Status](http://build.ros.org/buildStatus/icon?job=Ksrc_uX__srdfdom__ubuntu_xenial__source)](http://build.ros.org/view/Ksrc_uX/job/Ksrc_uX__srdfdom__ubuntu_xenial__source) | [![Build Status](http://build.ros.org/buildStatus/icon?job=Kbin_uX64__srdfdom__ubuntu_xenial_amd64__binary)](http://build.ros.org/view/Kbin_uX64/job/Kbin_uX64__srdfdom__ubuntu_xenial_amd64__binary) | [![Build Status](http://build.ros.org/buildStatus/icon?job=Msrc_uB__srdfdom__ubuntu_bionic__source)](http://build.ros.org/view/Msrc_uB/job/Msrc_uB__srdfdom__ubuntu_bionic__source) | [![Build Status](http://build.ros.org/buildStatus/icon?job=Mbin_uB64__srdfdom__ubuntu_bionic_amd64__binary)](http://build.ros.org/view/Mbin_uB64/job/Mbin_uB64__srdfdom__ubuntu_bionic_amd64__binary) | [![Build Status](http://build.ros.org/buildStatus/icon?job=Nsrc_uF__srdfdom__ubuntu_focal__source)](http://build.ros.org/view/Nsrc_uF/job/Nsrc_uF__srdfdom__ubuntu_focal__source) | [![Build Status](http://build.ros.org/buildStatus/icon?job=Nbin_uF64__srdfdom__ubuntu_focal_amd64__binary)](http://build.ros.org/view/Nbin_uF64/job/Nbin_uF64__srdfdom__ubuntu_focal_amd64__binary)
+
+
+## Stargazers over time
+
+[![Stargazers over time](https://starchart.cc/ros-planning/moveit.svg)](https://starchart.cc/ros-planning/moveit)
