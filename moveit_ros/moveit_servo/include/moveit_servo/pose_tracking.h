@@ -39,6 +39,7 @@
 #pragma once
 
 #include <atomic>
+#include <boost/optional.hpp>
 #include <control_toolbox/pid.h>
 #include <moveit_servo/make_shared_from_pool.h>
 #include <moveit_servo/servo.h>
@@ -85,17 +86,13 @@ class PoseTracking
 {
 public:
   /** \brief Constructor. Loads ROS parameters under the given namespace. */
-  PoseTracking(const planning_scene_monitor::PlanningSceneMonitorPtr& planning_scene_monitor,
-               const std::string& parameter_ns = "");
+  PoseTracking(const ros::NodeHandle& nh, const planning_scene_monitor::PlanningSceneMonitorPtr& planning_scene_monitor);
 
   PoseTrackingStatusCode moveToPose(const Eigen::Vector3d& positional_tolerance, const double angular_tolerance,
                                     const double target_pose_timeout);
 
   /** \brief A method for a different thread to stop motion and return early from control loop */
-  void stopMotion()
-  {
-    stop_requested_ = true;
-  }
+  void stopMotion();
 
   /** \brief Change PID parameters. Motion is stopped before the udpate */
   void updatePIDConfig(const double x_proportional_gain, const double x_integral_gain, const double x_derivative_gain,
@@ -114,6 +111,9 @@ public:
    * @return true if a valid transform was available
    */
   bool getCommandFrameTransform(geometry_msgs::TransformStamped& transform);
+
+  /** \brief Re-initialize the target pose to an empty message. Can be used to reset motion between waypoints. */
+  void resetTargetPose();
 
   // moveit_servo::Servo instance. Public so we can access member functions like setPaused()
   std::unique_ptr<moveit_servo::Servo> servo_;
@@ -171,6 +171,7 @@ private:
   Eigen::Isometry3d command_frame_transform_;
   ros::Time command_frame_transform_stamp_;
   geometry_msgs::PoseStamped target_pose_;
+  mutable std::mutex target_pose_mtx_;
 
   // Subscribe to target pose
   ros::Subscriber target_pose_sub_;
@@ -184,10 +185,7 @@ private:
   // Flag that a different thread has requested a stop.
   std::atomic<bool> stop_requested_;
 
-  // Read parameters from this namespace
-  std::string parameter_ns_;
-
-  double angular_error_;
+  boost::optional<double> angular_error_;
 };
 
 // using alias
