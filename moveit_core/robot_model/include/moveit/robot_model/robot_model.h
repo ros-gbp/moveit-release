@@ -35,8 +35,7 @@
 
 /* Author: Ioan Sucan */
 
-#ifndef MOVEIT_CORE_ROBOT_MODEL_
-#define MOVEIT_CORE_ROBOT_MODEL_
+#pragma once
 
 #include <moveit/macros/class_forward.h>
 #include <moveit/exceptions/exceptions.h>
@@ -54,10 +53,10 @@
 #include <Eigen/Geometry>
 #include <iostream>
 
-/** \brief Main namespace for MoveIt! */
+/** \brief Main namespace for MoveIt */
 namespace moveit
 {
-/** \brief Core components of MoveIt! */
+/** \brief Core components of MoveIt */
 namespace core
 {
 MOVEIT_CLASS_FORWARD(RobotModel);  // Defines RobotModelPtr, ConstPtr, WeakPtr... etc
@@ -91,7 +90,7 @@ public:
   /** \brief Return true if the model is empty (has no root link, no joints) */
   bool isEmpty() const
   {
-    return root_link_ == NULL;
+    return root_link_ == nullptr;
   }
 
   /** \brief Get the parsed URDF model */
@@ -164,6 +163,12 @@ public:
     return active_joint_model_vector_const_;
   }
 
+  /** \brief Get the array of active joint names, in the order they appear in the robot state. */
+  const std::vector<std::string>& getActiveJointModelNames() const
+  {
+    return active_joint_model_names_vector_;
+  }
+
   /** \brief Get the array of joints that are active (not fixed, not mimic) in this model */
   const std::vector<JointModel*>& getActiveJointModels()
   {
@@ -226,17 +231,19 @@ public:
     return getRootLink()->getName();
   }
 
-  /** \brief Check if a link exists. Return true if it does. */
+  /** \brief Check if a link exists. Return true if it does.
+   *
+   * If this is followed by a call to getLinkModel(), better use the latter with the has_link argument */
   bool hasLinkModel(const std::string& name) const;
 
   /** \brief Get a link by its name. Output error and return NULL when the link is missing. */
-  const LinkModel* getLinkModel(const std::string& link) const;
+  const LinkModel* getLinkModel(const std::string& link, bool* has_link = nullptr) const;
 
   /** \brief Get a link by its index. Output error and return NULL when the link is missing. */
   const LinkModel* getLinkModel(int index) const;
 
   /** \brief Get a link by its name. Output error and return NULL when the link is missing. */
-  LinkModel* getLinkModel(const std::string& link);
+  LinkModel* getLinkModel(const std::string& link, bool* has_link = nullptr);
 
   /** \brief Get the latest link upwards the kinematic tree, which is only connected via fixed joints
    *
@@ -337,7 +344,17 @@ public:
   }
   double getMaximumExtent(const JointBoundsVector& active_joint_bounds) const;
 
+  /** \brief Return the sum of joint distances between two states. Only considers active joints. */
   double distance(const double* state1, const double* state2) const;
+
+  /**
+   * Interpolate between "from" state, to "to" state. Mimic joints are correctly updated.
+   *
+   * @param from interpolate from this state
+   * @param to to this state
+   * @param t a fraction in the range [0 1]. If 1, the result matches "to" state exactly.
+   * @param state holds the result
+   */
   void interpolate(const double* from, const double* to, double t, double* state) const;
 
   /** \name Access to joint groups
@@ -504,6 +521,9 @@ protected:
   /** \brief The vector of joints in the model, in the order they appear in the state vector */
   std::vector<JointModel*> active_joint_model_vector_;
 
+  /** \brief The vector of joint names that corresponds to active_joint_model_vector_ */
+  std::vector<std::string> active_joint_model_names_vector_;
+
   /** \brief The vector of joints in the model, in the order they appear in the state vector */
   std::vector<const JointModel*> active_joint_model_vector_const_;
 
@@ -618,5 +638,3 @@ protected:
 
 namespace robot_model = moveit::core;
 namespace robot_state = moveit::core;
-
-#endif

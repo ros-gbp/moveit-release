@@ -34,8 +34,7 @@
 
 /* Author: Dave Coleman */
 
-#ifndef MOVEIT_ROS_MOVEIT_SETUP_ASSISTANT_WIDGETS_HEADER_WIDGET_
-#define MOVEIT_ROS_MOVEIT_SETUP_ASSISTANT_WIDGETS_HEADER_WIDGET_
+#pragma once
 
 #include <QWidget>
 #include <QFrame>
@@ -120,5 +119,3 @@ public:
   void setArgsEnabled(bool enabled = true);
 };
 }  // namespace moveit_setup_assistant
-
-#endif

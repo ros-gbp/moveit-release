@@ -34,13 +34,13 @@
 
 /* Author: Ioan Sucan */
 
-#ifndef MOVEIT_OMPL_INTERFACE_DETAIL_PROJECTION_EVALUATORS_
-#define MOVEIT_OMPL_INTERFACE_DETAIL_PROJECTION_EVALUATORS_
+#pragma once
 
 #include <ompl/config.h>
 #include <ompl/base/ProjectionEvaluator.h>
 #include <moveit/ompl_interface/detail/threadsafe_state_storage.h>
 
+// TODO: remove when ROS Lunar and older are no longer supported
 #if OMPL_VERSION_VALUE >= 1004000  // Version greater than 1.4.0
 typedef Eigen::Ref<Eigen::VectorXd> OMPLProjection;
 #else  // All other versions
@@ -64,7 +64,7 @@ public:
 
 private:
   const ModelBasedPlanningContext* planning_context_;
-  const robot_model::LinkModel* link_;
+  const moveit::core::LinkModel* link_;
   TSStateStorage tss_;
 };
 
@@ -83,5 +83,3 @@ private:
   std::vector<unsigned int> variables_;
 };
 }  // namespace ompl_interface
-
-#endif

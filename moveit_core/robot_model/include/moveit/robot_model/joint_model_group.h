@@ -35,8 +35,7 @@
 
 /* Author: Ioan Sucan */
 
-#ifndef MOVEIT_CORE_ROBOT_MODEL_JOINT_MODEL_GROUP_
-#define MOVEIT_CORE_ROBOT_MODEL_JOINT_MODEL_GROUP_
+#pragma once
 
 #include <moveit/robot_model/joint_model.h>
 #include <moveit/robot_model/link_model.h>
@@ -56,15 +55,15 @@ class JointModelGroup;
 typedef boost::function<kinematics::KinematicsBasePtr(const JointModelGroup*)> SolverAllocatorFn;
 
 /** \brief Map from group instances to allocator functions & bijections */
-typedef std::map<const JointModelGroup*, SolverAllocatorFn> SolverAllocatorMapFn;
+using SolverAllocatorMapFn = std::map<const JointModelGroup*, SolverAllocatorFn>;
 
 /** \brief Map of names to instances for JointModelGroup */
-typedef std::map<std::string, JointModelGroup*> JointModelGroupMap;
+using JointModelGroupMap = std::map<std::string, JointModelGroup*>;
 
 /** \brief Map of names to const instances for JointModelGroup */
-typedef std::map<std::string, const JointModelGroup*> JointModelGroupMapConst;
+using JointModelGroupMapConst = std::map<std::string, const JointModelGroup*>;
 
-typedef std::vector<const JointModel::Bounds*> JointBoundsVector;
+using JointBoundsVector = std::vector<const JointModel::Bounds*>;
 
 class JointModelGroup
 {
@@ -103,7 +102,7 @@ public:
   };
 
   /// Map from group instances to allocator functions & bijections
-  typedef std::map<const JointModelGroup*, KinematicsSolver> KinematicsSolverMap;
+  using KinematicsSolverMap = std::map<const JointModelGroup*, KinematicsSolver>;
 
   JointModelGroup(const std::string& name, const srdf::Model::Group& config,
                   const std::vector<const JointModel*>& joint_vector, const RobotModel* parent_model);
@@ -412,6 +411,13 @@ public:
     return variable_count_;
   }
 
+  /** \brief Get the number of variables that describe the active joints in this joint group. This excludes variables
+      necessary for mimic joints. */
+  unsigned int getActiveVariableCount() const
+  {
+    return active_variable_count_;
+  }
+
   /** \brief Set the names of the subgroups for this group */
   void setSubgroupNames(const std::vector<std::string>& subgroups);
 
@@ -695,6 +701,9 @@ protected:
   /** \brief The number of variables necessary to describe this group of joints */
   unsigned int variable_count_;
 
+  /** \brief The number of variables necessary to describe the active joints in this group of joints */
+  unsigned int active_variable_count_;
+
   /** \brief True if the state of this group is contiguous within the full robot state; this also means that
       the index values in variable_index_list_ are consecutive integers */
   bool is_contiguous_index_list_;
@@ -745,5 +754,3 @@ protected:
 };
 }  // namespace core
 }  // namespace moveit
-
-#endif

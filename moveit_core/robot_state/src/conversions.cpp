@@ -132,19 +132,19 @@ static inline void _robotStateToMultiDOFJointState(const RobotState& state, sens
   const std::vector<const JointModel*>& js = state.getRobotModel()->getMultiDOFJointModels();
   mjs.joint_names.clear();
   mjs.transforms.clear();
-  for (std::size_t i = 0; i < js.size(); ++i)
+  for (const JointModel* joint_model : js)
   {
     geometry_msgs::TransformStamped p;
-    if (state.dirtyJointTransform(js[i]))
+    if (state.dirtyJointTransform(joint_model))
     {
       Eigen::Isometry3d t;
       t.setIdentity();
-      js[i]->computeTransform(state.getJointPositions(js[i]), t);
+      joint_model->computeTransform(state.getJointPositions(joint_model), t);
       p = tf2::eigenToTransform(t);
     }
     else
-      p = tf2::eigenToTransform(state.getJointTransform(js[i]));
-    mjs.joint_names.push_back(js[i]->getName());
+      p = tf2::eigenToTransform(state.getJointTransform(joint_model));
+    mjs.joint_names.push_back(joint_model->getName());
     mjs.transforms.push_back(p.transform);
   }
   mjs.header.frame_id = state.getRobotModel()->getModelFrame();
@@ -192,8 +192,8 @@ static void _attachedBodyToMsg(const AttachedBody& attached_body, moveit_msgs::A
   aco.detach_posture = attached_body.getDetachPosture();
   const std::set<std::string>& touch_links = attached_body.getTouchLinks();
   aco.touch_links.clear();
-  for (std::set<std::string>::const_iterator it = touch_links.begin(); it != touch_links.end(); ++it)
-    aco.touch_links.push_back(*it);
+  for (const std::string& touch_link : touch_links)
+    aco.touch_links.push_back(touch_link);
   aco.object.header.frame_id = aco.link_name;
   aco.object.id = attached_body.getName();
 
@@ -216,6 +216,15 @@ static void _attachedBodyToMsg(const AttachedBody& attached_body, moveit_msgs::A
       p = tf2::toMsg(ab_tf[j]);
       sv.addToObject(sm, p);
     }
+  }
+  aco.object.subframe_names.clear();
+  aco.object.subframe_poses.clear();
+  for (const auto& frame_pair : attached_body.getSubframeTransforms())
+  {
+    aco.object.subframe_names.push_back(frame_pair.first);
+    geometry_msgs::Pose pose;
+    pose = tf2::toMsg(frame_pair.second);
+    aco.object.subframe_poses.push_back(pose);
   }
 }
 
@@ -241,6 +250,12 @@ static void _msgToAttachedBody(const Transforms* tf, const moveit_msgs::Attached
       if (aco.object.planes.size() != aco.object.plane_poses.size())
       {
         ROS_ERROR_NAMED(LOGNAME, "Number of planes does not match number of poses in collision object message");
+        return;
+      }
+
+      if (aco.object.subframe_poses.size() != aco.object.subframe_names.size())
+      {
+        ROS_ERROR_NAMED(LOGNAME, "Number of subframe poses does not match number of subframe names in message");
         return;
       }
 
@@ -285,25 +300,39 @@ static void _msgToAttachedBody(const Transforms* tf, const moveit_msgs::Attached
           }
         }
 
-        // transform poses to link frame
+        moveit::core::FixedTransformsMap subframe_poses;
+        for (std::size_t i = 0; i < aco.object.subframe_poses.size(); ++i)
+        {
+          Eigen::Isometry3d p;
+          tf2::fromMsg(aco.object.subframe_poses[i], p);
+          std::string name = aco.object.subframe_names[i];
+          subframe_poses[name] = p;
+        }
+
+        // Transform shape poses and subframes to link frame
         if (!Transforms::sameFrame(aco.object.header.frame_id, aco.link_name))
         {
+          bool frame_found = false;
           Eigen::Isometry3d t0;
-          if (state.knowsFrameTransform(aco.object.header.frame_id))
-            t0 = state.getFrameTransform(aco.object.header.frame_id);
-          else if (tf && tf->canTransform(aco.object.header.frame_id))
-            t0 = tf->getTransform(aco.object.header.frame_id);
-          else
+          t0 = state.getFrameTransform(aco.object.header.frame_id, &frame_found);
+          if (!frame_found)
           {
-            t0.setIdentity();
-            ROS_ERROR_NAMED(LOGNAME,
-                            "Cannot properly transform from frame '%s'. "
-                            "The pose of the attached body may be incorrect",
-                            aco.object.header.frame_id.c_str());
+            if (tf && tf->canTransform(aco.object.header.frame_id))
+              t0 = tf->getTransform(aco.object.header.frame_id);
+            else
+            {
+              t0.setIdentity();
+              ROS_ERROR_NAMED(LOGNAME,
+                              "Cannot properly transform from frame '%s'. "
+                              "The pose of the attached body may be incorrect",
+                              aco.object.header.frame_id.c_str());
+            }
           }
           Eigen::Isometry3d t = state.getGlobalLinkTransform(lm).inverse() * t0;
-          for (std::size_t i = 0; i < poses.size(); ++i)
-            poses[i] = t * poses[i];
+          for (Eigen::Isometry3d& pose : poses)
+            pose = t * pose;
+          for (auto& subframe_pose : subframe_poses)
+            subframe_pose.second = t * subframe_pose.second;
         }
 
         if (shapes.empty())
@@ -316,7 +345,8 @@ static void _msgToAttachedBody(const Transforms* tf, const moveit_msgs::Attached
                             "The robot state already had an object named '%s' attached to link '%s'. "
                             "The object was replaced.",
                             aco.object.id.c_str(), aco.link_name.c_str());
-          state.attachBody(aco.object.id, shapes, poses, aco.touch_links, aco.link_name, aco.detach_posture);
+          state.attachBody(aco.object.id, shapes, poses, aco.touch_links, aco.link_name, aco.detach_posture,
+                           subframe_poses);
           ROS_DEBUG_NAMED(LOGNAME, "Attached object '%s' to link '%s'", aco.object.id.c_str(), aco.link_name.c_str());
         }
       }
@@ -354,8 +384,8 @@ static bool _robotStateMsgToRobotStateHelper(const Transforms* tf, const moveit_
   {
     if (!robot_state.is_diff)
       state.clearAttachedBodies();
-    for (std::size_t i = 0; i < robot_state.attached_collision_objects.size(); ++i)
-      _msgToAttachedBody(tf, robot_state.attached_collision_objects[i], state);
+    for (const moveit_msgs::AttachedCollisionObject& attached_collision_object : robot_state.attached_collision_objects)
+      _msgToAttachedBody(tf, attached_collision_object, state);
   }
 
   return valid;
@@ -418,12 +448,12 @@ void robotStateToJointStateMsg(const RobotState& state, sensor_msgs::JointState&
   const std::vector<const JointModel*>& js = state.getRobotModel()->getSingleDOFJointModels();
   joint_state = sensor_msgs::JointState();
 
-  for (std::size_t i = 0; i < js.size(); ++i)
+  for (const JointModel* joint_model : js)
   {
-    joint_state.name.push_back(js[i]->getName());
-    joint_state.position.push_back(state.getVariablePosition(js[i]->getFirstVariableIndex()));
+    joint_state.name.push_back(joint_model->getName());
+    joint_state.position.push_back(state.getVariablePosition(joint_model->getFirstVariableIndex()));
     if (state.hasVelocities())
-      joint_state.velocity.push_back(state.getVariableVelocity(js[i]->getFirstVariableIndex()));
+      joint_state.velocity.push_back(state.getVariableVelocity(joint_model->getFirstVariableIndex()));
   }
 
   // if inconsistent number of velocities are specified, discard them
@@ -493,9 +523,9 @@ void robotStateToStream(const RobotState& state, std::ostream& out,
   std::stringstream headers;
   std::stringstream joints;
 
-  for (std::size_t j = 0; j < joint_groups_ordering.size(); ++j)
+  for (const std::string& joint_group_id : joint_groups_ordering)
   {
-    const JointModelGroup* jmg = state.getRobotModel()->getJointModelGroup(joint_groups_ordering[j]);
+    const JointModelGroup* jmg = state.getRobotModel()->getJointModelGroup(joint_group_id);
 
     // Output name of variables
     if (include_header)

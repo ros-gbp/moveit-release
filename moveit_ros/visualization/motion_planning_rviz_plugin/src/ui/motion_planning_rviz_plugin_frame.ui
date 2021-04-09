@@ -58,6 +58,16 @@
              </widget>
             </item>
             <item>
+             <widget class="QComboBox" name="planning_pipeline_combo_box">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+             </widget>
+            </item>
+            <item>
              <widget class="QComboBox" name="planning_algorithm_combo_box">
               <property name="sizePolicy">
                <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
@@ -1591,7 +1601,7 @@ This is usually achieved by random seeding, which can flip the robot configurati
          <item>
           <widget class="QGroupBox" name="groupBox_5">
            <property name="toolTip">
-            <string>Describes the selected object's pose and geometry.</string>
+            <string>Describes the selected object's pose, geometry and subframes.</string>
            </property>
            <property name="title">
             <string>Object status</string>

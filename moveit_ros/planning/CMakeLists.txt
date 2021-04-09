@@ -49,6 +49,7 @@ set(THIS_PACKAGE_INCLUDE_DIRS
     trajectory_execution_manager/include
     plan_execution/include
     collision_plugin_loader/include
+    moveit_cpp/include
 )
 
 catkin_package(
@@ -62,6 +63,7 @@ catkin_package(
     moveit_plan_execution
     moveit_planning_scene_monitor
     moveit_collision_plugin_loader
+    moveit_cpp
   INCLUDE_DIRS
     ${THIS_PACKAGE_INCLUDE_DIRS}
   CATKIN_DEPENDS
@@ -78,13 +80,11 @@ catkin_package(
     EIGEN3
 )
 
-include_directories(${THIS_PACKAGE_INCLUDE_DIRS}
+include_directories(${THIS_PACKAGE_INCLUDE_DIRS})
+include_directories(SYSTEM
                     ${catkin_INCLUDE_DIRS}
                     ${Boost_INCLUDE_DIRS}
-)
-include_directories(SYSTEM
-                    ${EIGEN3_INCLUDE_DIRS}
-)
+                    ${EIGEN3_INCLUDE_DIRS})
 
 add_subdirectory(rdf_loader)
 add_subdirectory(collision_plugin_loader)
@@ -97,6 +97,7 @@ add_subdirectory(planning_scene_monitor)
 add_subdirectory(planning_components_tools)
 add_subdirectory(trajectory_execution_manager)
 add_subdirectory(plan_execution)
+add_subdirectory(moveit_cpp)
 
 install(
   FILES

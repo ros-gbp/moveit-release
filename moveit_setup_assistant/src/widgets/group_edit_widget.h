@@ -34,8 +34,7 @@
 
 /* Author: Dave Coleman */
 
-#ifndef MOVEIT_ROS_MOVEIT_SETUP_ASSISTANT_WIDGETS_GROUP_EDIT_WIDGET_
-#define MOVEIT_ROS_MOVEIT_SETUP_ASSISTANT_WIDGETS_GROUP_EDIT_WIDGET_
+#pragma once
 
 #include <QWidget>
 class QComboBox;
@@ -131,5 +130,3 @@ private:
   // ******************************************************************************************
 };
 }  // namespace moveit_setup_assistant
-
-#endif

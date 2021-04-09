@@ -1,7 +1,8 @@
-<package format="2">
+<?xml version="1.0"?>
+<package format="3">
   <name>moveit_core</name>
-  <version>1.0.7</version>
-  <description>Core libraries used by MoveIt!</description>
+  <version>1.1.2</version>
+  <description>Core libraries used by MoveIt</description>
   <author email="isucan@google.com">Ioan Sucan</author>
   <author email="robot.moveit@gmail.com">Sachin Chitta</author>
   <author email="acorn.pooley@sri.com">Acorn Pooley</author>
@@ -9,7 +10,7 @@
   <maintainer email="dave@picknik.ai">Dave Coleman</maintainer>
   <maintainer email="me@v4hn.de">Michael Görner</maintainer>
   <maintainer email="mferguson@fetchrobotics.com">Michael Ferguson</maintainer>
-  <maintainer email="moveit_releasers@googlegroups.com">MoveIt! Release Team</maintainer>
+  <maintainer email="moveit_releasers@googlegroups.com">MoveIt Release Team</maintainer>
 
   <license>BSD</license>
   <url type="website">http://moveit.ros.org</url>
@@ -22,8 +23,10 @@
   <depend>assimp</depend>
   <depend>boost</depend>
   <depend>eigen</depend>
+  <depend>bullet</depend>
   <depend>eigen_stl_containers</depend>
-  <depend>libfcl-dev</depend>
+  <depend condition="$ROS_DISTRO != noetic">libfcl-dev</depend>
+  <depend condition="$ROS_DISTRO == noetic">fcl</depend>
   <depend version_gte="0.5.2">geometric_shapes</depend>
   <depend>geometry_msgs</depend>
   <depend>kdl_parser</depend>
@@ -34,6 +37,7 @@
   <depend>moveit_msgs</depend>
   <depend>octomap</depend>
   <depend>octomap_msgs</depend>
+  <depend>pybind11_catkin</depend>
   <depend>random_numbers</depend>
   <depend>roslib</depend>
   <depend>rostime</depend>
@@ -52,11 +56,12 @@
   <test_depend>moveit_resources_pr2_description</test_depend>
   <test_depend>angles</test_depend>
   <test_depend>tf2_kdl</test_depend>
-  <test_depend>orocos_kdl</test_depend>
+  <test_depend condition="$ROS_DISTRO != noetic">orocos_kdl</test_depend>
+  <test_depend condition="$ROS_DISTRO == noetic">liborocos-kdl-dev</test_depend>
   <test_depend>rosunit</test_depend>
-  <test_depend>code_coverage</test_depend>
 
   <export>
     <moveit_core plugin="${prefix}/collision_detector_fcl_description.xml"/>
+    <moveit_core plugin="${prefix}/collision_detector_bullet_description.xml"/>
   </export>
 </package>

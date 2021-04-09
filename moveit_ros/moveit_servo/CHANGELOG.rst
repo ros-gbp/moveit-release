@@ -2,20 +2,44 @@
 Changelog for package moveit_servo
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1.0.7 (2020-11-20)
+1.1.2 (2021-04-08)
 ------------------
-* [feature] Cleanup current state handling in servo (`#2372 <https://github.com/ros-planning/moveit/issues/2372>`_)
-* [feature] Servo namespacing logic (`#2354 <https://github.com/ros-planning/moveit/issues/2354>`_)
+* Fix formatting errors
+* Halt Servo command on Pose Tracking stop (`#2501 <https://github.com/ros-planning/moveit/issues/2501>`_)
+* stop_requested\_ flag clearing fix (`#2537 <https://github.com/ros-planning/moveit/issues/2537>`_)
+* Add missing include (`#2519 <https://github.com/ros-planning/moveit/issues/2519>`_)
+* Refactor Servo velocity bounds enforcement (`#2471 <https://github.com/ros-planning/moveit/issues/2471>`_)
+* Protect paused\_ flag, for thread safety (`#2494 <https://github.com/ros-planning/moveit/issues/2494>`_)
+* Do not break out of loop -- need to update low pass filters (`#2496 <https://github.com/ros-planning/moveit/issues/2496>`_)
+* Fix initial angle error is always 0 (`#2464 <https://github.com/ros-planning/moveit/issues/2464>`_)
+* Add an important sleep in Servo pose tracking (`#2463 <https://github.com/ros-planning/moveit/issues/2463>`_)
+* Prevent moveit_servo transforms between fixed frames from causing timeout (`#2418 <https://github.com/ros-planning/moveit/issues/2418>`_)
+* Low latency mode (`#2401 <https://github.com/ros-planning/moveit/issues/2401>`_)
+* Move timer initialization down to fix potential race condition
+* Fix pose tracking race condition (`#2395 <https://github.com/ros-planning/moveit/issues/2395>`_)
+* Cleanup current state handling in servo (`#2372 <https://github.com/ros-planning/moveit/issues/2372>`_)
+* Change servo namespacing logic (`#2354 <https://github.com/ros-planning/moveit/issues/2354>`_)
+* Fix servo trajectory point timestamping (`#2375 <https://github.com/ros-planning/moveit/issues/2375>`_)
+* Fix ordering of windup args to control_toolbox::Pid (`#2370 <https://github.com/ros-planning/moveit/issues/2370>`_)
+* Contributors: AdamPettinger, AndyZe, Jere Liukkonen, Michael Görner, Nathan Brooks, Tyler Weaver, parunapu
+
+1.1.1 (2020-10-13)
+------------------
 * [feature] A library for servoing toward a moving pose (`#2203 <https://github.com/ros-planning/moveit/issues/2203>`_)
 * [feature] Refactor velocity limit enforcement and add a unit test (`#2260 <https://github.com/ros-planning/moveit/issues/2260>`_)
-* [feature] Add a utility to print collision pairs (`#2275 <https://github.com/ros-planning/moveit/issues/2275>`_)
-* [feature] Update last_sent_command\_ at ServoCalcs start (`#2249 <https://github.com/ros-planning/moveit/issues/2249>`_)
-* [fix] Fix servo trajectory point timestamping (`#2375 <https://github.com/ros-planning/moveit/issues/2375>`_)
-* [fix] Fix ordering of windup args to control_toolbox::Pid (`#2370 <https://github.com/ros-planning/moveit/issues/2370>`_)
-* [fix] Fix Servo thread interruption (`#2314 <https://github.com/ros-planning/moveit/issues/2314>`_)
+* [fix] Servo thread interruption (`#2314 <https://github.com/ros-planning/moveit/issues/2314>`_)
 * [fix] Servo heap-buffer-overflow bug (`#2307 <https://github.com/ros-planning/moveit/issues/2307>`_)
+* [maint] Cleanup MSA includes (`#2351 <https://github.com/ros-planning/moveit/issues/2351>`_)
+* Contributors: AndyZe, Robert Haschke, Tyler Weaver
+
+1.1.0 (2020-09-04)
+------------------
+* [feature] Update last_sent_command\_ at ServoCalcs start (`#2249 <https://github.com/ros-planning/moveit/issues/2249>`_)
+* [feature] Add a utility to print collision pairs (`#2275 <https://github.com/ros-planning/moveit/issues/2275>`_)
+* [fix] Various fixes for upcoming Noetic release (`#2180 <https://github.com/ros-planning/moveit/issues/2180>`_)
 * [maint] add soname version to moveit_servo (`#2266 <https://github.com/ros-planning/moveit/issues/2266>`_)
-* Contributors: AdamPettinger, AndyZe, Jere Liukkonen, Nathan Brooks, Robert Haschke, Tyler Weaver
+* [maint] delete python integration tests (`#2186 <https://github.com/ros-planning/moveit/issues/2186>`_)
+* Contributors: AdamPettinger, AndyZe, Robert Haschke, Ruofan Xu, Tyler Weaver, v4hn
 
 1.0.6 (2020-08-19)
 ------------------
@@ -134,3 +158,63 @@ Changelog for package moveit_servo
   * Better comments in config file, add spacenav_node dependency
   * Add spacenav_node to CMakeLists.
 * Contributors: AdamPettinger, AndyZe, Ayush Garg, Dale Koenig, Dave Coleman, Jonathan Binney, Paul Verhoeckx, Henning Kayser, Jafar Abdi, John Stechschulte, Mike Lautman, Robert Haschke, SansoneG, jschleicher, Tyler Weaver, rfeistenauer
+
+1.0.1 (2019-03-08)
+------------------
+
+1.0.0 (2019-02-24)
+------------------
+
+0.10.8 (2018-12-24)
+-------------------
+
+0.10.5 (2018-11-01)
+-------------------
+
+0.10.4 (2018-10-29 19:44)
+-------------------------
+
+0.10.3 (2018-10-29 04:12)
+-------------------------
+
+0.10.2 (2018-10-24)
+-------------------
+
+0.10.1 (2018-05-25)
+-------------------
+
+0.10.0 (2018-05-22)
+-------------------
+
+0.9.11 (2017-12-25)
+-------------------
+
+0.9.10 (2017-12-09)
+-------------------
+
+0.9.9 (2017-08-06)
+------------------
+
+0.9.8 (2017-06-21)
+------------------
+
+0.9.7 (2017-06-05)
+------------------
+
+0.9.6 (2017-04-12)
+------------------
+
+0.9.5 (2017-03-08)
+------------------
+
+0.9.4 (2017-02-06)
+------------------
+
+0.9.3 (2016-11-16)
+------------------
+
+0.9.2 (2016-11-05)
+------------------
+
+0.9.1 (2016-10-21)
+------------------

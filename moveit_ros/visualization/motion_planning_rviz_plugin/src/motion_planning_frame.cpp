@@ -82,6 +82,17 @@ MotionPlanningFrame::MotionPlanningFrame(MotionPlanningDisplay* pdisplay, rviz::
   connect(planning_display_, SIGNAL(queryStartStateChanged()), joints_tab_, SLOT(queryStartStateChanged()));
   connect(planning_display_, SIGNAL(queryGoalStateChanged()), joints_tab_, SLOT(queryGoalStateChanged()));
 
+  // Set initial velocity and acceleration scaling factors from ROS parameters
+  double factor;
+  nh_.param<double>("robot_description_planning/default_velocity_scaling_factor", factor, 0.1);
+  ui_->velocity_scaling_factor->setValue(factor);
+  nh_.param<double>("robot_description_planning/default_acceleration_scaling_factor", factor, 0.1);
+  ui_->acceleration_scaling_factor->setValue(factor);
+
+  // Query default planning pipeline id
+  nh_.getParam(planning_display_->getMoveGroupNS() + "/move_group/default_planning_pipeline",
+               default_planning_pipeline_);
+
   // connect bottons to actions; each action usually registers the function pointer for the actual computation,
   // to keep the GUI more responsive (using the background job processing)
   connect(ui_->plan_button, SIGNAL(clicked()), this, SLOT(planButtonClicked()));
@@ -103,8 +114,8 @@ MotionPlanningFrame::MotionPlanningFrame(MotionPlanningDisplay* pdisplay, rviz::
   connect(ui_->allow_looking, SIGNAL(toggled(bool)), this, SLOT(allowLookingToggled(bool)));
   connect(ui_->allow_replanning, SIGNAL(toggled(bool)), this, SLOT(allowReplanningToggled(bool)));
   connect(ui_->allow_external_program, SIGNAL(toggled(bool)), this, SLOT(allowExternalProgramCommunication(bool)));
-  connect(ui_->planning_algorithm_combo_box, SIGNAL(currentIndexChanged(int)), this,
-          SLOT(planningAlgorithmIndexChanged(int)));
+  connect(ui_->planning_pipeline_combo_box, SIGNAL(currentIndexChanged(int)), this,
+          SLOT(planningPipelineIndexChanged(int)));
   connect(ui_->planning_algorithm_combo_box, SIGNAL(currentIndexChanged(int)), this,
           SLOT(planningAlgorithmIndexChanged(int)));
   connect(ui_->clear_scene_button, SIGNAL(clicked()), this, SLOT(clearScene()));
@@ -241,8 +252,8 @@ void MotionPlanningFrame::approximateIKChanged(int state)
 void MotionPlanningFrame::setItemSelectionInList(const std::string& item_name, bool selection, QListWidget* list)
 {
   QList<QListWidgetItem*> found_items = list->findItems(QString(item_name.c_str()), Qt::MatchExactly);
-  for (int i = 0; i < found_items.size(); ++i)
-    found_items[i]->setSelected(selection);
+  for (QListWidgetItem* found_item : found_items)
+    found_item->setSelected(selection);
 }
 
 void MotionPlanningFrame::allowExternalProgramCommunication(bool enable)
@@ -286,7 +297,7 @@ void MotionPlanningFrame::fillPlanningGroupOptions()
   const QSignalBlocker planning_group_blocker(ui_->planning_group_combo_box);
   ui_->planning_group_combo_box->clear();
 
-  const robot_model::RobotModelConstPtr& kmodel = planning_display_->getRobotModel();
+  const moveit::core::RobotModelConstPtr& kmodel = planning_display_->getRobotModel();
   for (const std::string& group_name : kmodel->getJointModelGroupNames())
     ui_->planning_group_combo_box->addItem(QString::fromStdString(group_name));
 }
@@ -301,11 +312,11 @@ void MotionPlanningFrame::fillStateSelectionOptions()
   if (!planning_display_->getPlanningSceneMonitor())
     return;
 
-  const robot_model::RobotModelConstPtr& robot_model = planning_display_->getRobotModel();
+  const moveit::core::RobotModelConstPtr& robot_model = planning_display_->getRobotModel();
   std::string group = planning_display_->getCurrentPlanningGroup();
   if (group.empty())
     return;
-  const robot_model::JointModelGroup* jmg = robot_model->getJointModelGroup(group);
+  const moveit::core::JointModelGroup* jmg = robot_model->getJointModelGroup(group);
   if (jmg)
   {
     ui_->start_state_combo_box->addItem(QString("<random valid>"));
@@ -325,10 +336,10 @@ void MotionPlanningFrame::fillStateSelectionOptions()
     {
       ui_->start_state_combo_box->insertSeparator(ui_->start_state_combo_box->count());
       ui_->goal_state_combo_box->insertSeparator(ui_->goal_state_combo_box->count());
-      for (std::size_t i = 0; i < known_states.size(); ++i)
+      for (const std::string& known_state : known_states)
       {
-        ui_->start_state_combo_box->addItem(QString::fromStdString(known_states[i]));
-        ui_->goal_state_combo_box->addItem(QString::fromStdString(known_states[i]));
+        ui_->start_state_combo_box->addItem(QString::fromStdString(known_state));
+        ui_->goal_state_combo_box->addItem(QString::fromStdString(known_state));
       }
     }
 
@@ -346,7 +357,7 @@ void MotionPlanningFrame::changePlanningGroupHelper()
   planning_display_->addMainLoopJob(
       boost::bind(&MotionPlanningFrame::populateConstraintsList, this, std::vector<std::string>()));
 
-  const robot_model::RobotModelConstPtr& robot_model = planning_display_->getRobotModel();
+  const moveit::core::RobotModelConstPtr& robot_model = planning_display_->getRobotModel();
   std::string group = planning_display_->getCurrentPlanningGroup();
   planning_display_->addMainLoopJob(
       boost::bind(&MotionPlanningParamWidget::setGroupName, ui_->planner_param_treeview, group));
@@ -387,8 +398,8 @@ void MotionPlanningFrame::changePlanningGroupHelper()
       move_group_->allowReplanning(ui_->allow_replanning->isChecked());
       bool has_unique_endeffector = !move_group_->getEndEffectorLink().empty();
       planning_display_->addMainLoopJob([=]() { ui_->use_cartesian_path->setEnabled(has_unique_endeffector); });
-      moveit_msgs::PlannerInterfaceDescription desc;
-      if (move_group_->getInterfaceDescription(desc))
+      std::vector<moveit_msgs::PlannerInterfaceDescription> desc;
+      if (move_group_->getInterfaceDescriptions(desc))
         planning_display_->addMainLoopJob(boost::bind(&MotionPlanningFrame::populatePlannersList, this, desc));
       planning_display_->addBackgroundJob(boost::bind(&MotionPlanningFrame::populateConstraintsList, this),
                                           "populateConstraintsList");
@@ -582,7 +593,7 @@ void MotionPlanningFrame::tabChanged(int index)
     selectedCollisionObjectChanged();
 }
 
-void MotionPlanningFrame::updateSceneMarkers(float wall_dt, float ros_dt)
+void MotionPlanningFrame::updateSceneMarkers(float wall_dt, float /*ros_dt*/)
 {
   if (scene_marker_)
     scene_marker_->update(wall_dt);

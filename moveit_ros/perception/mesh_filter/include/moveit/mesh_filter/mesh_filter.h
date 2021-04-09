@@ -34,14 +34,12 @@
 
 /* Author: Suat Gedikli */
 
-#ifndef MOVEIT_MESH_FILTER_MESHFILTER_
-#define MOVEIT_MESH_FILTER_MESHFILTER_
+#pragma once
 
 #include <map>
 #include <moveit/macros/declare_ptr.h>
 #include <moveit/mesh_filter/gl_renderer.h>
 #include <moveit/mesh_filter/mesh_filter_base.h>
-#include <boost/function.hpp>
 
 // forward declarations
 namespace shapes
@@ -111,4 +109,3 @@ const typename SensorType::Parameters& MeshFilter<SensorType>::parameters() cons
 }
 
 }  // namespace mesh_filter
-#endif

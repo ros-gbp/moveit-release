@@ -66,8 +66,15 @@ class PythonMoveitCommanderTest(unittest.TestCase):
 
     def test_enforce_bounds(self):
         in_msg = RobotState()
-        in_msg.joint_state.header.frame_id = 'base_link'
-        in_msg.joint_state.name = ['joint_1', 'joint_2', 'joint_3', 'joint_4', 'joint_5', 'joint_6']
+        in_msg.joint_state.header.frame_id = "base_link"
+        in_msg.joint_state.name = [
+            "joint_1",
+            "joint_2",
+            "joint_3",
+            "joint_4",
+            "joint_5",
+            "joint_6",
+        ]
         in_msg.joint_state.position = [0] * 6
         in_msg.joint_state.position[0] = 1000
 
@@ -78,9 +85,16 @@ class PythonMoveitCommanderTest(unittest.TestCase):
 
     def test_get_current_state(self):
         expected_state = RobotState()
-        expected_state.joint_state.header.frame_id = 'base_link'
-        expected_state.multi_dof_joint_state.header.frame_id = 'base_link'
-        expected_state.joint_state.name = ['joint_1', 'joint_2', 'joint_3', 'joint_4', 'joint_5', 'joint_6']
+        expected_state.joint_state.header.frame_id = "base_link"
+        expected_state.multi_dof_joint_state.header.frame_id = "base_link"
+        expected_state.joint_state.name = [
+            "joint_1",
+            "joint_2",
+            "joint_3",
+            "joint_4",
+            "joint_5",
+            "joint_6",
+        ]
         expected_state.joint_state.position = [0] * 6
         self.assertEqual(self.group.get_current_state(), expected_state)
 
@@ -89,16 +103,20 @@ class PythonMoveitCommanderTest(unittest.TestCase):
             args = [expect]
         self.group.set_joint_value_target(*args)
         res = self.group.get_joint_value_target()
-        self.assertTrue(np.all(np.asarray(res) == np.asarray(expect)),
-                        "Setting failed for %s, values: %s" % (type(args[0]), res))
+        self.assertTrue(
+            np.all(np.asarray(res) == np.asarray(expect)),
+            "Setting failed for %s, values: %s" % (type(args[0]), res),
+        )
 
     def test_target_setting(self):
         n = self.group.get_variable_count()
         self.check_target_setting([0.1] * n)
         self.check_target_setting((0.2,) * n)
         self.check_target_setting(np.zeros(n))
-        self.check_target_setting([0.3] * n, {name: 0.3 for name in self.group.get_active_joints()})
-        self.check_target_setting([0.5] + [0.3]*(n-1), "joint_1", 0.5)
+        self.check_target_setting(
+            [0.3] * n, {name: 0.3 for name in self.group.get_active_joints()}
+        )
+        self.check_target_setting([0.5] + [0.3] * (n - 1), "joint_1", 0.5)
 
     def plan(self, target):
         self.group.set_joint_value_target(target)
@@ -107,8 +125,10 @@ class PythonMoveitCommanderTest(unittest.TestCase):
     def test_validation(self):
         current = np.asarray(self.group.get_current_joint_values())
 
-        plan1 = self.plan(current + 0.2)
-        plan2 = self.plan(current + 0.2)
+        success1, plan1, time1, err1 = self.plan(current + 0.2)
+        success2, plan2, time2, err2 = self.plan(current + 0.2)
+        self.assertTrue(success1)
+        self.assertTrue(success2)
 
         # first plan should execute
         self.assertTrue(self.group.execute(plan1))
@@ -117,16 +137,17 @@ class PythonMoveitCommanderTest(unittest.TestCase):
         self.assertFalse(self.group.execute(plan2))
 
         # newly planned trajectory should execute again
-        plan3 = self.plan(current)
+        success3, plan3, time3, err3 = self.plan(current)
+        self.assertTrue(success3)
         self.assertTrue(self.group.execute(plan3))
 
     def test_planning_scene_interface(self):
         planning_scene = PlanningSceneInterface()
 
 
-if __name__ == '__main__':
-    PKGNAME = 'moveit_ros_planning_interface'
-    NODENAME = 'moveit_test_python_moveit_commander'
+if __name__ == "__main__":
+    PKGNAME = "moveit_ros_planning_interface"
+    NODENAME = "moveit_test_python_moveit_commander"
     rospy.init_node(NODENAME)
     rostest.rosrun(PKGNAME, NODENAME, PythonMoveitCommanderTest)
 

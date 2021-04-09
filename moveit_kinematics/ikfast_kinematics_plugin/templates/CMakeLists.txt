@@ -13,11 +13,11 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   tf2_kdl
   tf2_eigen
-  eigen_conversions
 )
 find_package(LAPACK REQUIRED)
 
-include_directories(${catkin_INCLUDE_DIRS} include)
+include_directories(include)
+include_directories(SYSTEM ${catkin_INCLUDE_DIRS})
 
 catkin_package()
 

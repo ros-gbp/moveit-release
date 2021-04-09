@@ -34,8 +34,7 @@
 
 /* Author: Ryan Luna */
 
-#ifndef MOVEIT_ROS_BENCHMARKS_BENCHMARK_EXECUTOR_
-#define MOVEIT_ROS_BENCHMARKS_BENCHMARK_EXECUTOR_
+#pragma once
 
 #include <moveit/benchmarks/BenchmarkOptions.h>
 
@@ -46,7 +45,7 @@
 #include <moveit/warehouse/state_storage.h>
 #include <moveit/warehouse/constraints_storage.h>
 #include <moveit/warehouse/trajectory_constraints_storage.h>
-#include <moveit/planning_interface/planning_interface.h>
+#include <moveit/planning_pipeline/planning_pipeline.h>
 #include <warehouse_ros/database_loader.h>
 #include <pluginlib/class_loader.hpp>
 
@@ -211,8 +210,7 @@ protected:
 
   BenchmarkOptions options_;
 
-  std::shared_ptr<pluginlib::ClassLoader<planning_interface::PlannerManager>> planner_plugin_loader_;
-  std::map<std::string, planning_interface::PlannerManagerPtr> planner_interfaces_;
+  std::map<std::string, planning_pipeline::PlanningPipelinePtr> planning_pipelines_;
 
   std::vector<PlannerBenchmarkData> benchmark_data_;
 
@@ -224,5 +222,3 @@ protected:
   std::vector<QueryCompletionEventFunction> query_end_fns_;
 };
 }  // namespace moveit_ros_benchmarks
-
-#endif

@@ -34,8 +34,7 @@
 
 /* Author: Suat Gedikli */
 
-#ifndef MOVEIT_MESH_FILTER_GLRENDERER_
-#define MOVEIT_MESH_FILTER_GLRENDERER_
+#pragma once
 
 #include <moveit/macros/class_forward.h>
 #include <GL/glew.h>
@@ -45,7 +44,9 @@
 #include <GL/gl.h>
 #endif
 #include <string>
-#include <boost/thread.hpp>
+#include <thread>
+#include <mutex>
+#include <map>
 
 namespace mesh_filter
 {
@@ -295,12 +296,11 @@ private:
   float cy_;
 
   /** \brief map from thread id to OpenGL context */
-  static std::map<boost::thread::id, std::pair<unsigned, GLuint> > context_;
+  static std::map<std::thread::id, std::pair<unsigned, GLuint> > context_;
 
   /* \brief lock for context map */
-  static boost::mutex context_lock_;
+  static std::mutex context_lock_;
 
   static bool glutInitialized_;
 };
 }  // namespace mesh_filter
-#endif

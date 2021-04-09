@@ -34,8 +34,7 @@
 
 /* Author: Ioan Sucan */
 
-#ifndef MOVEIT_PLANNING_SCENE_MONITOR_TRAJECTORY_MONITOR_
-#define MOVEIT_PLANNING_SCENE_MONITOR_TRAJECTORY_MONITOR_
+#pragma once
 
 #include <moveit/macros/class_forward.h>
 #include <moveit/planning_scene_monitor/current_state_monitor.h>
@@ -45,8 +44,7 @@
 
 namespace planning_scene_monitor
 {
-typedef boost::function<void(const robot_state::RobotStateConstPtr& state, const ros::Time& stamp)>
-    TrajectoryStateAddedCallback;
+using TrajectoryStateAddedCallback = boost::function<void(const moveit::core::RobotStateConstPtr&, const ros::Time&)>;
 
 MOVEIT_CLASS_FORWARD(TrajectoryMonitor);  // Defines TrajectoryMonitorPtr, ConstPtr, WeakPtr... etc
 
@@ -107,5 +105,3 @@ private:
   TrajectoryStateAddedCallback state_add_callback_;
 };
 }  // namespace planning_scene_monitor
-
-#endif

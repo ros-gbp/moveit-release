@@ -34,8 +34,7 @@
 
 /* Author: Ioan Sucan, Adam Leeper */
 
-#ifndef MOVEIT_ROBOT_INTERACTION_ROBOT_INTERACTION_
-#define MOVEIT_ROBOT_INTERACTION_ROBOT_INTERACTION_
+#pragma once
 
 #include <visualization_msgs/InteractiveMarkerFeedback.h>
 #include <visualization_msgs/InteractiveMarker.h>
@@ -76,10 +75,10 @@ public:
   /// The topic name on which the internal Interactive Marker Server operates
   static const std::string INTERACTIVE_MARKER_TOPIC;
 
-  RobotInteraction(const robot_model::RobotModelConstPtr& robot_model, const std::string& ns = "");
+  RobotInteraction(const moveit::core::RobotModelConstPtr& robot_model, const std::string& ns = "");
   virtual ~RobotInteraction();
 
-  const std::string& getServerTopic(void) const
+  const std::string& getServerTopic() const
   {
     return topic_;
   }
@@ -140,7 +139,7 @@ public:
   // is needed to actually remove the markers from the display.
   void clearInteractiveMarkers();
 
-  const robot_model::RobotModelConstPtr& getRobotModel() const
+  const moveit::core::RobotModelConstPtr& getRobotModel() const
   {
     return robot_model_;
   }
@@ -180,7 +179,7 @@ private:
   // return the diameter of the sphere that certainly can enclose the AABB of the links in this group
   double computeGroupMarkerSize(const std::string& group);
   void computeMarkerPose(const InteractionHandlerPtr& handler, const EndEffectorInteraction& eef,
-                         const robot_state::RobotState& robot_state, geometry_msgs::Pose& pose,
+                         const moveit::core::RobotState& robot_state, geometry_msgs::Pose& pose,
                          geometry_msgs::Pose& control_to_eef_tf) const;
 
   void addEndEffectorMarkers(const InteractionHandlerPtr& handler, const EndEffectorInteraction& eef,
@@ -199,7 +198,7 @@ private:
   boost::condition_variable new_feedback_condition_;
   std::map<std::string, visualization_msgs::InteractiveMarkerFeedbackConstPtr> feedback_map_;
 
-  robot_model::RobotModelConstPtr robot_model_;
+  moveit::core::RobotModelConstPtr robot_model_;
 
   std::vector<EndEffectorInteraction> active_eef_;
   std::vector<JointInteraction> active_vj_;
@@ -233,5 +232,3 @@ private:
   KinematicOptionsMapPtr kinematic_options_map_;
 };
 }  // namespace robot_interaction
-
-#endif

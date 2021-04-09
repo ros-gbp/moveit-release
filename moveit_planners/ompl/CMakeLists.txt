@@ -19,7 +19,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rosconsole
   pluginlib
-  tf2_ros
+  tf2
   dynamic_reconfigure
   )
 
@@ -40,9 +40,10 @@ catkin_package(
     OMPL
 )
 
-include_directories(ompl_interface/include
-                    ${Boost_INCLUDE_DIRS}
+include_directories(ompl_interface/include)
+include_directories(SYSTEM
                     ${catkin_INCLUDE_DIRS}
+                    ${Boost_INCLUDE_DIRS}
                     ${OMPL_INCLUDE_DIRS})
 
 add_subdirectory(ompl_interface)

@@ -34,8 +34,7 @@
 
 /* Author: Mrinal Kalakrishnan, Ken Anderson, E. Gil Jones */
 
-#ifndef MOVEIT_DISTANCE_FIELD_DISTANCE_FIELD_H
-#define MOVEIT_DISTANCE_FIELD_DISTANCE_FIELD_H
+#pragma once
 
 #include <moveit/macros/class_forward.h>
 #include <moveit/distance_field/voxel_grid.h>
@@ -67,9 +66,9 @@ namespace distance_field
 /// \brief The plane to visualize
 enum PlaneVisualizationType
 {
-  XYPlane,
-  XZPlane,
-  YZPlane
+  XY_PLANE,
+  XZ_PLANE,
+  YZ_PLANE
 };
 
 MOVEIT_CLASS_FORWARD(DistanceField);  // Defines DistanceFieldPtr, ConstPtr, WeakPtr... etc
@@ -624,5 +623,3 @@ protected:
 };
 
 }  // namespace distance_field
-
-#endif  // MOVEIT_DISTANCE_FIELD_DISTANCE_FIELD_H

@@ -36,8 +36,7 @@
  *   POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MOVEIT_TRAJECTORY_PROCESSING_TIME_OPTIMAL_TRAJECTORY_GENERATION_H
-#define MOVEIT_TRAJECTORY_PROCESSING_TIME_OPTIMAL_TRAJECTORY_GENERATION_H
+#pragma once
 
 #include <Eigen/Core>
 #include <list>
@@ -96,7 +95,7 @@ public:
   Trajectory(const Path& path, const Eigen::VectorXd& max_velocity, const Eigen::VectorXd& max_acceleration,
              double time_step = 0.001);
 
-  ~Trajectory(void);
+  ~Trajectory();
 
   /** @brief Call this method after constructing the object to make sure the
      trajectory generation succeeded without errors. If this method returns
@@ -176,5 +175,3 @@ private:
   const double min_angle_change_;
 };
 }  // namespace trajectory_processing
-
-#endif  // MOVEIT_TRAJECTORY_PROCESSING_TIME_OPTIMAL_TRAJECTORY_GENERATION_H

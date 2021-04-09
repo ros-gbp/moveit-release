@@ -39,6 +39,11 @@
 #include <moveit/profiler/profiler.h>
 #include <ros/ros.h>
 
+namespace ompl_interface
+{
+constexpr char LOGNAME[] = "state_validity_checker";
+}  // namespace ompl_interface
+
 ompl_interface::StateValidityChecker::StateValidityChecker(const ModelBasedPlanningContext* pc)
   : ompl::base::StateValidityChecker(pc->getOMPLSimpleSetup()->getSpaceInformation())
   , planning_context_(pc)
@@ -70,18 +75,19 @@ void ompl_interface::StateValidityChecker::setVerbose(bool flag)
 
 bool ompl_interface::StateValidityChecker::isValid(const ompl::base::State* state, bool verbose) const
 {
+  // Use cached validity if it is available
   if (state->as<ModelBasedStateSpace::StateType>()->isValidityKnown())
     return state->as<ModelBasedStateSpace::StateType>()->isMarkedValid();
 
   if (!si_->satisfiesBounds(state))
   {
     if (verbose)
-      ROS_INFO_NAMED("state_validity_checker", "State outside bounds");
+      ROS_INFO_NAMED(LOGNAME, "State outside bounds");
     const_cast<ob::State*>(state)->as<ModelBasedStateSpace::StateType>()->markInvalid();
     return false;
   }
 
-  robot_state::RobotState* robot_state = tss_.getStateStorage();
+  moveit::core::RobotState* robot_state = tss_.getStateStorage();
   planning_context_->getOMPLStateSpace()->copyToRobotState(*robot_state, state);
 
   // check path constraints
@@ -116,6 +122,7 @@ bool ompl_interface::StateValidityChecker::isValid(const ompl::base::State* stat
 
 bool ompl_interface::StateValidityChecker::isValid(const ompl::base::State* state, double& dist, bool verbose) const
 {
+  // Use cached validity and distance if they are available
   if (state->as<ModelBasedStateSpace::StateType>()->isValidityKnown() &&
       state->as<ModelBasedStateSpace::StateType>()->isGoalDistanceKnown())
   {
@@ -126,12 +133,12 @@ bool ompl_interface::StateValidityChecker::isValid(const ompl::base::State* stat
   if (!si_->satisfiesBounds(state))
   {
     if (verbose)
-      ROS_INFO_NAMED("state_validity_checker", "State outside bounds");
+      ROS_INFO_NAMED(LOGNAME, "State outside bounds");
     const_cast<ob::State*>(state)->as<ModelBasedStateSpace::StateType>()->markInvalid(0.0);
     return false;
   }
 
-  robot_state::RobotState* robot_state = tss_.getStateStorage();
+  moveit::core::RobotState* robot_state = tss_.getStateStorage();
   planning_context_->getOMPLStateSpace()->copyToRobotState(*robot_state, state);
 
   // check path constraints
@@ -166,7 +173,7 @@ double ompl_interface::StateValidityChecker::cost(const ompl::base::State* state
 {
   double cost = 0.0;
 
-  robot_state::RobotState* robot_state = tss_.getStateStorage();
+  moveit::core::RobotState* robot_state = tss_.getStateStorage();
   planning_context_->getOMPLStateSpace()->copyToRobotState(*robot_state, state);
 
   // Calculates cost from a summation of distance to obstacles times the size of the obstacle
@@ -181,7 +188,7 @@ double ompl_interface::StateValidityChecker::cost(const ompl::base::State* state
 
 double ompl_interface::StateValidityChecker::clearance(const ompl::base::State* state) const
 {
-  robot_state::RobotState* robot_state = tss_.getStateStorage();
+  moveit::core::RobotState* robot_state = tss_.getStateStorage();
   planning_context_->getOMPLStateSpace()->copyToRobotState(*robot_state, state);
 
   collision_detection::CollisionResult res;

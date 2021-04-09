@@ -34,8 +34,7 @@
 
 /* Author: Acorn Pooley, Ioan Sucan, Sachin Chitta */
 
-#ifndef MOVEIT_COLLISION_DETECTION_WORLD_DIFF_
-#define MOVEIT_COLLISION_DETECTION_WORLD_DIFF_
+#pragma once
 
 #include <moveit/collision_detection/world.h>
 #include <moveit/macros/class_forward.h>
@@ -77,7 +76,7 @@ public:
     return changes_;
   }
 
-  typedef std::map<std::string, World::Action>::const_iterator const_iterator;
+  using const_iterator = std::map<std::string, World::Action>::const_iterator;
   /** iterator pointing to first change */
   const_iterator begin() const
   {
@@ -112,7 +111,7 @@ public:
 
 private:
   /** \brief Notification function */
-  void notify(const World::ObjectConstPtr&, World::Action);
+  void notify(const World::ObjectConstPtr& /*obj*/, World::Action /*action*/);
 
   /** keep changes in a map so they can be coalesced */
   std::map<std::string, World::Action> changes_;
@@ -124,5 +123,3 @@ private:
   WorldWeakPtr world_;
 };
 }  // namespace collision_detection
-
-#endif
