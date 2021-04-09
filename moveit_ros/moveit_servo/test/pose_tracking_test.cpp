@@ -78,10 +78,9 @@ public:
         planning_scene_monitor::PlanningSceneMonitor::DEFAULT_PLANNING_SCENE_WORLD_TOPIC,
         false /* skip octomap monitor */);
 
-    tracker_ = std::make_shared<moveit_servo::PoseTracking>(planning_scene_monitor_, "");
+    tracker_ = std::make_shared<moveit_servo::PoseTracking>(nh_, planning_scene_monitor_);
 
-    target_pose_pub_ =
-        nh_.advertise<geometry_msgs::PoseStamped>("/pose_tracking_test/target_pose", 1 /* queue */, true /* latch */);
+    target_pose_pub_ = nh_.advertise<geometry_msgs::PoseStamped>("target_pose", 1 /* queue */, true /* latch */);
 
     // Tolerance for pose seeking
     translation_tolerance_ << TRANSLATION_TOLERANCE, TRANSLATION_TOLERANCE, TRANSLATION_TOLERANCE;
@@ -91,7 +90,7 @@ public:
   }
 
 protected:
-  ros::NodeHandle nh_;
+  ros::NodeHandle nh_{ "~" };
   planning_scene_monitor::PlanningSceneMonitorPtr planning_scene_monitor_;
   Eigen::Vector3d translation_tolerance_;
   moveit_servo::PoseTrackingPtr tracker_;
@@ -142,6 +141,11 @@ TEST_F(PoseTrackingFixture, OutgoingMsgTest)
   });
 
   ros::Duration(ROS_PUB_SUB_DELAY).sleep();
+
+  // resetTargetPose() can be used to clear the target pose and wait for a new one, e.g. when moving between multiple
+  // waypoints
+  tracker_->resetTargetPose();
+
   tracker_->moveToPose(translation_tolerance_, ROTATION_TOLERANCE, 1 /* target pose timeout */);
 
   target_pub_thread.join();
