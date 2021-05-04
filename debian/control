@@ -1,0 +1,12 @@
+Source: ros-noetic-moveit-fake-controller-manager
+Section: misc
+Priority: optional
+Maintainer: Michael Görner <me@v4hn.de>
+Build-Depends: debhelper (>= 9.0.0), ros-noetic-catkin, ros-noetic-moveit-core, ros-noetic-moveit-ros-planning, ros-noetic-pluginlib (>= 1.11.2), ros-noetic-roscpp
+Homepage: http://moveit.ros.org
+Standards-Version: 3.9.2
+
+Package: ros-noetic-moveit-fake-controller-manager
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-noetic-moveit-core, ros-noetic-moveit-ros-planning, ros-noetic-pluginlib (>= 1.11.2), ros-noetic-roscpp
+Description: A fake controller manager plugin for MoveIt.
