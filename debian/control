@@ -1,0 +1,12 @@
+Source: ros-noetic-moveit-servo
+Section: misc
+Priority: optional
+Maintainer: Blake Anderson <blakeanderson@utexas.edu>
+Build-Depends: debhelper (>= 9.0.0), ros-noetic-catkin, ros-noetic-control-msgs, ros-noetic-control-toolbox, ros-noetic-geometry-msgs, ros-noetic-moveit-msgs, ros-noetic-moveit-resources-panda-moveit-config, ros-noetic-moveit-ros-planning-interface, ros-noetic-rosparam-shortcuts, ros-noetic-rostest, ros-noetic-sensor-msgs, ros-noetic-std-msgs, ros-noetic-std-srvs, ros-noetic-tf2-eigen, ros-noetic-trajectory-msgs
+Homepage: https://ros-planning.github.io/moveit_tutorials
+Standards-Version: 3.9.2
+
+Package: ros-noetic-moveit-servo
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-noetic-control-msgs, ros-noetic-control-toolbox, ros-noetic-geometry-msgs, ros-noetic-joy-teleop, ros-noetic-moveit-msgs, ros-noetic-moveit-ros-planning-interface, ros-noetic-rosparam-shortcuts, ros-noetic-sensor-msgs, ros-noetic-spacenav-node, ros-noetic-std-msgs, ros-noetic-std-srvs, ros-noetic-tf2-eigen, ros-noetic-trajectory-msgs
+Description: Provides real-time manipulator Cartesian and joint servoing.
