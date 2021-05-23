@@ -1,0 +1,12 @@
+Source: ros-noetic-pilz-industrial-motion-planner-testutils
+Section: misc
+Priority: optional
+Maintainer: Alexander Gutenkunst <a.gutenkunst@pilz.de>
+Build-Depends: debhelper (>= 9.0.0), ros-noetic-catkin, ros-noetic-moveit-core, ros-noetic-moveit-msgs, ros-noetic-tf2-eigen
+Homepage: http://moveit.ros.org
+Standards-Version: 3.9.2
+
+Package: ros-noetic-pilz-industrial-motion-planner-testutils
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-noetic-moveit-commander, ros-noetic-moveit-core, ros-noetic-moveit-msgs
+Description: Helper scripts and functionality to test industrial motion generation
