@@ -1,0 +1,12 @@
+Source: ros-noetic-pilz-industrial-motion-planner
+Section: misc
+Priority: optional
+Maintainer: Alexander Gutenkunst <a.gutenkunst@pilz.de>
+Build-Depends: debhelper (>= 9.0.0), liborocos-kdl-dev, ros-noetic-catkin, ros-noetic-cmake-modules, ros-noetic-code-coverage, ros-noetic-joint-limits-interface, ros-noetic-moveit-core, ros-noetic-moveit-msgs, ros-noetic-moveit-resources-panda-moveit-config, ros-noetic-moveit-resources-prbt-moveit-config, ros-noetic-moveit-resources-prbt-pg70-support, ros-noetic-moveit-resources-prbt-support, ros-noetic-moveit-ros-move-group, ros-noetic-moveit-ros-planning, ros-noetic-moveit-ros-planning-interface, ros-noetic-pilz-industrial-motion-planner-testutils, ros-noetic-pluginlib, ros-noetic-roscpp, ros-noetic-rostest, ros-noetic-rosunit, ros-noetic-tf2, ros-noetic-tf2-eigen, ros-noetic-tf2-geometry-msgs, ros-noetic-tf2-kdl, ros-noetic-tf2-ros
+Homepage: http://moveit.ros.org
+Standards-Version: 3.9.2
+
+Package: ros-noetic-pilz-industrial-motion-planner
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, liborocos-kdl-dev, ros-noetic-joint-limits-interface, ros-noetic-moveit-core, ros-noetic-moveit-msgs, ros-noetic-moveit-ros-move-group, ros-noetic-moveit-ros-planning, ros-noetic-moveit-ros-planning-interface, ros-noetic-pluginlib, ros-noetic-roscpp, ros-noetic-tf2, ros-noetic-tf2-eigen, ros-noetic-tf2-geometry-msgs, ros-noetic-tf2-kdl, ros-noetic-tf2-ros
+Description: MoveIt plugin to generate industrial trajectories PTP, LIN, CIRC and sequences thereof.
