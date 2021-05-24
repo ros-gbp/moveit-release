@@ -1,0 +1,12 @@
+Source: ros-melodic-pilz-industrial-motion-planner-testutils
+Section: misc
+Priority: optional
+Maintainer: Alexander Gutenkunst <a.gutenkunst@pilz.de>
+Build-Depends: debhelper (>= 9.0.0), ros-melodic-catkin, ros-melodic-eigen-conversions, ros-melodic-moveit-core, ros-melodic-moveit-msgs
+Homepage: http://moveit.ros.org
+Standards-Version: 3.9.2
+
+Package: ros-melodic-pilz-industrial-motion-planner-testutils
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-melodic-moveit-commander, ros-melodic-moveit-core, ros-melodic-moveit-msgs
+Description: Helper scripts and functionality to test industrial motion generation
