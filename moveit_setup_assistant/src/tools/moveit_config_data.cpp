@@ -518,6 +518,8 @@ bool MoveItConfigData::outputFakeControllersYAML(const std::string& file_path)
     const std::vector<const robot_model::JointModel*>& joint_models = joint_model_group->getActiveJointModels();
     emitter << YAML::Key << "name";
     emitter << YAML::Value << "fake_" + group_it->name_ + "_controller";
+    emitter << YAML::Key << "type";
+    emitter << YAML::Value << "$(arg execution_type)";
     emitter << YAML::Key << "joints";
     emitter << YAML::Value << YAML::BeginSeq;
 
@@ -572,6 +574,10 @@ bool MoveItConfigData::outputFakeControllersYAML(const std::string& file_path)
     emitter << YAML::Newline;
     emitter << YAML::Comment(" - group: " + default_group_name) << YAML::Newline;
     emitter << YAML::Comment("   pose: home") << YAML::Newline;
+
+    // Add empty list for valid yaml
+    emitter << YAML::BeginSeq;
+    emitter << YAML::EndSeq;
   }
 
   emitter << YAML::EndMap;
@@ -1389,7 +1395,8 @@ bool MoveItConfigData::inputPlanningContextLaunch(const std::string& file_path)
   // find the kinematics section
   TiXmlHandle doc(&launch_document);
   TiXmlElement* kinematics_group = doc.FirstChild("launch").FirstChild("group").ToElement();
-  while (kinematics_group && kinematics_group->Attribute("ns") != std::string("$(arg robot_description)_kinematics"))
+  while (kinematics_group && kinematics_group->Attribute("ns") &&
+         kinematics_group->Attribute("ns") != std::string("$(arg robot_description)_kinematics"))
   {
     kinematics_group = kinematics_group->NextSiblingElement("group");
   }
