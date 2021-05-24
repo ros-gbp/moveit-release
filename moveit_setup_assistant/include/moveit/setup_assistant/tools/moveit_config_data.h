@@ -34,7 +34,8 @@
 
 /* Author: Dave Coleman */
 
-#pragma once
+#ifndef MOVEIT_MOVEIT_SETUP_ASSISTANT_TOOLS_MOVEIT_CONFIG_DATA_
+#define MOVEIT_MOVEIT_SETUP_ASSISTANT_TOOLS_MOVEIT_CONFIG_DATA_
 
 #include <moveit/macros/class_forward.h>
 #include <moveit/planning_scene/planning_scene.h>                     // for getting kinematic model
@@ -42,8 +43,6 @@
 #include <yaml-cpp/yaml.h>                                            // outputing yaml config files
 #include <urdf/model.h>                                               // to share throughout app
 #include <srdfdom/srdf_writer.h>                                      // for writing srdf data
-
-#include <utility>
 
 namespace moveit_setup_assistant
 {
@@ -56,8 +55,8 @@ static const std::string ROBOT_DESCRIPTION = "robot_description";
 static const std::string MOVEIT_ROBOT_STATE = "moveit_robot_state";
 
 // Default kin solver values
-static const double DEFAULT_KIN_SOLVER_SEARCH_RESOLUTION = 0.005;
-static const double DEFAULT_KIN_SOLVER_TIMEOUT = 0.005;
+static const double DEFAULT_KIN_SOLVER_SEARCH_RESOLUTION_ = 0.005;
+static const double DEFAULT_KIN_SOLVER_TIMEOUT_ = 0.005;
 
 // ******************************************************************************************
 // Structs
@@ -145,15 +144,15 @@ public:
 
   void setName(std::string name)
   {
-    name_ = std::move(name);
+    name_ = name;
   };
   void setValue(std::string value)
   {
-    value_ = std::move(value);
+    value_ = value;
   };
   void setComment(std::string comment)
   {
-    comment_ = std::move(comment);
+    comment_ = comment;
   };
   std::string getName()
   {
@@ -177,7 +176,7 @@ private:
 MOVEIT_CLASS_FORWARD(MoveItConfigData);  // Defines MoveItConfigDataPtr, ConstPtr, WeakPtr... etc
 
 /** \brief This class is shared with all widgets and contains the common configuration data
-    needed for generating each robot's MoveIt configuration package.
+    needed for generating each robot's MoveIt! configuration package.
 
     All SRDF data is contained in a subclass of this class -
     srdf_writer.cpp. This class also contains the functions for writing
@@ -205,7 +204,7 @@ public:
   };
   unsigned long changes;  // bitfield of changes (composed of InformationFields)
 
-  // All of the data needed for creating a MoveIt Configuration Files
+  // All of the data needed for creating a MoveIt! Configuration Files
 
   // ******************************************************************************************
   // URDF Data
@@ -283,7 +282,7 @@ public:
   void setRobotModel(const moveit::core::RobotModelPtr& robot_model);
 
   /// Provide a shared kinematic model loader
-  moveit::core::RobotModelConstPtr getRobotModel();
+  robot_model::RobotModelConstPtr getRobotModel();
 
   /// Update the Kinematic Model with latest SRDF modifications
   void updateRobotModel();
@@ -430,7 +429,7 @@ public:
   bool createFullSRDFPath(const std::string& package_path);
 
   /**
-   * Input .setup_assistant file - contains data used for the MoveIt Setup Assistant
+   * Input .setup_assistant file - contains data used for the MoveIt! Setup Assistant
    *
    * @param file_path path to .setup_assistant file
    * @return true if the file was read correctly
@@ -512,9 +511,9 @@ public:
    * \param jm2 - a pointer to the second joint model to compare
    * \return bool of alphabetical sorting comparison
    */
-  struct JointModelCompare
+  struct joint_model_compare
   {
-    bool operator()(const moveit::core::JointModel* jm1, const moveit::core::JointModel* jm2) const
+    bool operator()(const robot_model::JointModel* jm1, const robot_model::JointModel* jm2) const
     {
       return jm1->getName() < jm2->getName();
     }
@@ -529,7 +528,7 @@ private:
   std::vector<std::map<std::string, GenericParameter> > sensors_plugin_config_parameter_list_;
 
   /// Shared kinematic model
-  moveit::core::RobotModelPtr robot_model_;
+  robot_model::RobotModelPtr robot_model_;
 
   /// ROS Controllers config data
   std::vector<ROSControlConfig> ros_controllers_config_;
@@ -539,3 +538,5 @@ private:
 };
 
 }  // namespace moveit_setup_assistant
+
+#endif

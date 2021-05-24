@@ -44,7 +44,6 @@ from moveit_msgs.msg import (
     MoveItErrorCodes,
     TrajectoryConstraints,
     PlannerInterfaceDescription,
-    MotionPlanRequest,
 )
 from sensor_msgs.msg import JointState
 import rospy
@@ -533,20 +532,12 @@ class MoveGroupCommander(object):
         """ Specify the amount of time to be used for motion planning. """
         return self._g.get_planning_time()
 
-    def set_planning_pipeline_id(self, planning_pipeline):
-        """ Specify which planning pipeline to use when motion planning (e.g. ompl, pilz_industrial_motion_planner) """
-        self._g.set_planning_pipeline_id(planning_pipeline)
-
-    def get_planning_pipeline_id(self, planning_pipeline):
-        """ Get the current planning_pipeline_id (e.g. ompl, pilz_industrial_motion_planner) """
-        self._g.get_planning_pipeline_id(planning_pipeline)
-
     def set_planner_id(self, planner_id):
-        """ Specify which planner of the currently selected pipeline to use when motion planning (e.g. RRTConnect, LIN) """
+        """ Specify which planner to use when motion planning """
         self._g.set_planner_id(planner_id)
 
     def get_planner_id(self):
-        """ Get the current planner_id (e.g. RRTConnect, LIN) of the currently selected pipeline """
+        """ Get the current planner_id """
         return self._g.get_planner_id()
 
     def set_num_planning_attempts(self, num_planning_attempts):
@@ -569,8 +560,7 @@ class MoveGroupCommander(object):
                     )
 
     def set_max_velocity_scaling_factor(self, value):
-        """Set a scaling factor to reduce the maximum joint velocities. Allowed values are in (0,1].
-        The default value is set in the joint_limits.yaml of the moveit_config package."""
+        """ Set a scaling factor for optionally reducing the maximum joint velocity. Allowed values are in (0,1]. """
         if value > 0 and value <= 1:
             self._g.set_max_velocity_scaling_factor(value)
         else:
@@ -579,8 +569,7 @@ class MoveGroupCommander(object):
             )
 
     def set_max_acceleration_scaling_factor(self, value):
-        """Set a scaling factor to reduce the maximum joint accelerations. Allowed values are in (0,1].
-        The default value is set in the joint_limits.yaml of the moveit_config package."""
+        """ Set a scaling factor for optionally reducing the maximum joint acceleration. Allowed values are in (0,1]. """
         if value > 0 and value <= 1:
             self._g.set_max_acceleration_scaling_factor(value)
         else:
@@ -600,10 +589,10 @@ class MoveGroupCommander(object):
         elif type(joints) is Pose:
             self.set_pose_target(joints)
 
-        elif joints is not None:
+        elif not joints is None:
             try:
                 self.set_joint_value_target(self.get_remembered_joint_values()[joints])
-            except TypeError:
+            except:
                 self.set_joint_value_target(joints)
         if wait:
             return self._g.move()
@@ -611,37 +600,21 @@ class MoveGroupCommander(object):
             return self._g.async_move()
 
     def plan(self, joints=None):
-        """Return a tuple of the motion planning results such as
-        (success flag : boolean, trajectory message : RobotTrajectory,
-         planning time : float, error code : MoveitErrorCodes)"""
+        """ Return a motion plan (a RobotTrajectory) to the set goal state (or specified by the joints argument) """
         if type(joints) is JointState:
             self.set_joint_value_target(joints)
 
         elif type(joints) is Pose:
             self.set_pose_target(joints)
 
-        elif joints is not None:
+        elif not joints is None:
             try:
                 self.set_joint_value_target(self.get_remembered_joint_values()[joints])
-            except MoveItCommanderException:
+            except:
                 self.set_joint_value_target(joints)
-
-        (error_code_msg, trajectory_msg, planning_time) = self._g.plan()
-
-        error_code = MoveItErrorCodes()
-        error_code.deserialize(error_code_msg)
         plan = RobotTrajectory()
-        return (
-            error_code.val == MoveItErrorCodes.SUCCESS,
-            plan.deserialize(trajectory_msg),
-            planning_time,
-            error_code,
-        )
-
-    def construct_motion_plan_request(self):
-        """ Returns a MotionPlanRequest filled with the current goals of the move_group_interface"""
-        mpr = MotionPlanRequest()
-        return mpr.deserialize(self._g.construct_motion_plan_request())
+        plan.deserialize(self._g.compute_plan())
+        return plan
 
     def compute_cartesian_path(
         self,

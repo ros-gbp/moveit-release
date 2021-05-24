@@ -34,7 +34,8 @@
 
 /* Author: Ioan Sucan */
 
-#pragma once
+#ifndef MOVEIT_MOVEIT_WAREHOUSE_MOVEIT_MESSAGE_STORAGE_
+#define MOVEIT_MOVEIT_WAREHOUSE_MOVEIT_MESSAGE_STORAGE_
 
 #include <warehouse_ros/database_connection.h>
 #include <vector>
@@ -65,3 +66,5 @@ protected:
 /// \brief Load a database connection
 typename warehouse_ros::DatabaseConnection::Ptr loadDatabase();
 }  // namespace moveit_warehouse
+
+#endif

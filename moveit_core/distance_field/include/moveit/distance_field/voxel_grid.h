@@ -34,7 +34,8 @@
 
 /* Author: Mrinal Kalakrishnan, Acorn Pooley */
 
-#pragma once
+#ifndef MOVEIT_DISTANCE_FIELD_VOXEL_GRID_
+#define MOVEIT_DISTANCE_FIELD_VOXEL_GRID_
 
 #include <algorithm>
 #include <cmath>
@@ -341,7 +342,7 @@ protected:
 template <typename T>
 VoxelGrid<T>::VoxelGrid(double size_x, double size_y, double size_z, double resolution, double origin_x,
                         double origin_y, double origin_z, T default_object)
-  : data_(nullptr)
+  : data_(NULL)
 {
   resize(size_x, size_y, size_z, resolution, origin_x, origin_y, origin_z, default_object);
 }
@@ -368,7 +369,7 @@ void VoxelGrid<T>::resize(double size_x, double size_y, double size_z, double re
                           double origin_y, double origin_z, T default_object)
 {
   delete[] data_;
-  data_ = nullptr;
+  data_ = NULL;
 
   size_[DIM_X] = size_x;
   size_[DIM_Y] = size_y;
@@ -441,7 +442,7 @@ inline double VoxelGrid<T>::getResolution() const
 }
 
 template <typename T>
-inline double VoxelGrid<T>::getResolution(Dimension /*dim*/) const
+inline double VoxelGrid<T>::getResolution(Dimension dim) const
 {
   return resolution_;
 }
@@ -461,12 +462,12 @@ inline int VoxelGrid<T>::getNumCells(Dimension dim) const
 template <typename T>
 inline const T& VoxelGrid<T>::operator()(double x, double y, double z) const
 {
-  int cell_x = getCellFromLocation(DIM_X, x);
-  int cell_y = getCellFromLocation(DIM_Y, y);
-  int cell_z = getCellFromLocation(DIM_Z, z);
-  if (!isCellValid(cell_x, cell_y, cell_z))
+  int cellX = getCellFromLocation(DIM_X, x);
+  int cellY = getCellFromLocation(DIM_Y, y);
+  int cellZ = getCellFromLocation(DIM_Z, z);
+  if (!isCellValid(cellX, cellY, cellZ))
     return default_object_;
-  return getCell(cell_x, cell_y, cell_z);
+  return getCell(cellX, cellY, cellZ);
 }
 
 template <typename T>
@@ -578,3 +579,4 @@ inline bool VoxelGrid<T>::worldToGrid(const Eigen::Vector3d& world, Eigen::Vecto
 }
 
 }  // namespace distance_field
+#endif

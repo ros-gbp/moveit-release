@@ -34,7 +34,8 @@
 
 /* Author: Dave Coleman */
 
-#pragma once
+#ifndef MOVEIT_MOVEIT_SETUP_ASSISTANT_WIDGETS_KINEMATIC_CHAIN_WIDGET_
+#define MOVEIT_MOVEIT_SETUP_ASSISTANT_WIDGETS_KINEMATIC_CHAIN_WIDGET_
 
 #include <QWidget>
 class QLabel;
@@ -69,9 +70,9 @@ public:
   /// Set the link field with previous value
   void setSelected(const std::string& base_link, const std::string& tip_link);
 
-  void addLinktoTreeRecursive(const moveit::core::LinkModel* link, const moveit::core::LinkModel* parent);
+  void addLinktoTreeRecursive(const robot_model::LinkModel* link, const robot_model::LinkModel* parent);
 
-  bool addLinkChildRecursive(QTreeWidgetItem* parent, const moveit::core::LinkModel* link,
+  bool addLinkChildRecursive(QTreeWidgetItem* parent, const robot_model::LinkModel* link,
                              const std::string& parent_name);
 
   // ******************************************************************************************
@@ -135,3 +136,5 @@ private:
   // ******************************************************************************************
 };
 }  // namespace moveit_setup_assistant
+
+#endif

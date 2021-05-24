@@ -34,7 +34,8 @@
 
 /* Author: Dave Coleman */
 
-#pragma once
+#ifndef MOVEIT_ROS_MOVEIT_SETUP_ASSISTANT_WIDGETS_NAVIGATION_WIDGET_
+#define MOVEIT_ROS_MOVEIT_SETUP_ASSISTANT_WIDGETS_NAVIGATION_WIDGET_
 
 #include <QListView>
 #include <QStyledItemDelegate>
@@ -53,7 +54,7 @@ class NavigationWidget : public QListView
 {
   Q_OBJECT
 public:
-  explicit NavigationWidget(QWidget* parent = nullptr);
+  explicit NavigationWidget(QWidget* parent = 0);
 
   void setNavs(const QList<QString>& navs);
   void setEnabled(const int& index, bool enabled);
@@ -74,9 +75,11 @@ class NavDelegate : public QStyledItemDelegate
 {
   Q_OBJECT
 public:
-  explicit NavDelegate(QObject* parent = nullptr);
+  explicit NavDelegate(QObject* parent = 0);
 
   QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
   void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 };
 }  // namespace moveit_setup_assistant
+
+#endif

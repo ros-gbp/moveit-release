@@ -81,7 +81,7 @@ public:
     }
 
     /* actually create each controller */
-    for (int i = 0; i < controller_list.size(); ++i)  // NOLINT(modernize-loop-convert)
+    for (int i = 0; i < controller_list.size(); ++i)
     {
       if (!controller_list[i].hasMember("name") || !controller_list[i].hasMember("joints"))
       {
@@ -140,7 +140,7 @@ public:
     }
 
     robot_model_loader::RobotModelLoader robot_model_loader(ROBOT_DESCRIPTION);
-    const moveit::core::RobotModelPtr& robot_model = robot_model_loader.getModel();
+    const robot_model::RobotModelPtr& robot_model = robot_model_loader.getModel();
     moveit::core::RobotState robot_state(robot_model);
     typedef std::map<std::string, double> JointPoseMap;
     JointPoseMap joints;
@@ -169,21 +169,22 @@ public:
         ROS_INFO_NAMED("loadInitialJointValues", "Set joints of group '%s' to pose '%s'.", group_name.c_str(),
                        pose_name.c_str());
 
-        for (const std::string& joint_name : joint_names)
+        for (std::vector<std::string>::const_iterator jit = joint_names.begin(), end = joint_names.end(); jit != end;
+             ++jit)
         {
-          const moveit::core::JointModel* jm = robot_state.getJointModel(joint_name);
+          const moveit::core::JointModel* jm = robot_state.getJointModel(*jit);
           if (!jm)
           {
-            ROS_WARN_STREAM_NAMED("loadInitialJointValues", "Unknown joint: " << joint_name);
+            ROS_WARN_STREAM_NAMED("loadInitialJointValues", "Unknown joint: " << *jit);
             continue;
           }
           if (jm->getVariableCount() != 1)
           {
-            ROS_WARN_STREAM_NAMED("loadInitialJointValues", "Cannot handle multi-variable joint: " << joint_name);
+            ROS_WARN_STREAM_NAMED("loadInitialJointValues", "Cannot handle multi-variable joint: " << *jit);
             continue;
           }
 
-          joints[joint_name] = robot_state.getJointPositions(jm)[0];
+          joints[*jit] = robot_state.getJointPositions(jm)[0];
         }
       }
       catch (...)
@@ -194,10 +195,10 @@ public:
     }
 
     // fill the joint state
-    for (const auto& name_pos_pair : joints)
+    for (JointPoseMap::const_iterator it = joints.begin(), end = joints.end(); it != end; ++it)
     {
-      js.name.push_back(name_pos_pair.first);
-      js.position.push_back(name_pos_pair.second);
+      js.name.push_back(it->first);
+      js.position.push_back(it->second);
     }
     return js;
   }
@@ -270,8 +271,7 @@ public:
   }
 
   /* Cannot switch our controllers */
-  bool switchControllers(const std::vector<std::string>& /*activate*/,
-                         const std::vector<std::string>& /*deactivate*/) override
+  bool switchControllers(const std::vector<std::string>& activate, const std::vector<std::string>& deactivate) override
   {
     return false;
   }

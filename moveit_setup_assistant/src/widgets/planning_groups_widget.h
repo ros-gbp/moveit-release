@@ -34,7 +34,8 @@
 
 /* Author: Dave Coleman */
 
-#pragma once
+#ifndef MOVEIT_MOVEIT_SETUP_ASSISTANT_WIDGETS_PLANNING_GROUPS_WIDGET_
+#define MOVEIT_MOVEIT_SETUP_ASSISTANT_WIDGETS_PLANNING_GROUPS_WIDGET_
 
 // Qt
 class QPushButton;
@@ -128,14 +129,14 @@ private Q_SLOTS:
   void alterTree(const QString& link);
 
   /// Called from Double List widget to highlight a link
-  void previewSelectedLink(const std::vector<std::string>& links);
+  void previewSelectedLink(std::vector<std::string> links);
 
   /// Called from Double List widget to highlight a joint
   // void previewClickedJoint( std::string name );
-  void previewSelectedJoints(const std::vector<std::string>& joints);
+  void previewSelectedJoints(std::vector<std::string> joints);
 
   /// Called from Double List widget to highlight a subgroup
-  void previewSelectedSubgroup(const std::vector<std::string>& groups);
+  void previewSelectedSubgroup(std::vector<std::string> groups);
 
 private:
   // ******************************************************************************************
@@ -231,3 +232,5 @@ public:
 };
 
 Q_DECLARE_METATYPE(PlanGroupType);
+
+#endif

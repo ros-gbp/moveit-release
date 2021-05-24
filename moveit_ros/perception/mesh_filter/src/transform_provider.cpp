@@ -129,7 +129,7 @@ void TransformProvider::updateTransforms()
   }
 
   static tf2::Stamped<Eigen::Isometry3d> input_transform, output_transform;
-  static moveit::core::RobotStatePtr robot_state;
+  static robot_state::RobotStatePtr robot_state;
   robot_state = psm_->getStateMonitor()->getCurrentState();
   try
   {

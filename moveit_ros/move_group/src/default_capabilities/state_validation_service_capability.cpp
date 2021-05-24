@@ -36,7 +36,7 @@
 
 #include "state_validation_service_capability.h"
 #include <moveit/robot_state/conversions.h>
-#include <moveit/utils/message_checks.h>
+#include <moveit/kinematic_constraints/utils.h>
 #include <moveit/collision_detection/collision_tools.h>
 #include <moveit/move_group/capability_names.h>
 
@@ -56,8 +56,8 @@ bool MoveGroupStateValidationService::computeService(moveit_msgs::GetStateValidi
                                                      moveit_msgs::GetStateValidity::Response& res)
 {
   planning_scene_monitor::LockedPlanningSceneRO ls(context_->planning_scene_monitor_);
-  moveit::core::RobotState rs = ls->getCurrentState();
-  moveit::core::robotStateMsgToRobotState(req.robot_state, rs);
+  robot_state::RobotState rs = ls->getCurrentState();
+  robot_state::robotStateMsgToRobotState(req.robot_state, rs);
 
   res.valid = true;
 
@@ -82,10 +82,10 @@ bool MoveGroupStateValidationService::computeService(moveit_msgs::GetStateValidi
     res.valid = false;
     for (collision_detection::CollisionResult::ContactMap::const_iterator it = cres.contacts.begin();
          it != cres.contacts.end(); ++it)
-      for (const collision_detection::Contact& contact : it->second)
+      for (std::size_t k = 0; k < it->second.size(); ++k)
       {
         res.contacts.resize(res.contacts.size() + 1);
-        collision_detection::contactToMsg(contact, res.contacts.back());
+        collision_detection::contactToMsg(it->second[k], res.contacts.back());
         res.contacts.back().header.frame_id = ls->getPlanningFrame();
         res.contacts.back().header.stamp = time_now;
       }
@@ -93,14 +93,15 @@ bool MoveGroupStateValidationService::computeService(moveit_msgs::GetStateValidi
 
   // copy cost sources
   res.cost_sources.reserve(cres.cost_sources.size());
-  for (const collision_detection::CostSource& cost_source : cres.cost_sources)
+  for (std::set<collision_detection::CostSource>::const_iterator it = cres.cost_sources.begin();
+       it != cres.cost_sources.end(); ++it)
   {
     res.cost_sources.resize(res.cost_sources.size() + 1);
-    collision_detection::costSourceToMsg(cost_source, res.cost_sources.back());
+    collision_detection::costSourceToMsg(*it, res.cost_sources.back());
   }
 
   // evaluate constraints
-  if (!moveit::core::isEmpty(req.constraints))
+  if (!kinematic_constraints::isEmpty(req.constraints))
   {
     kinematic_constraints::KinematicConstraintSet kset(ls->getRobotModel());
     kset.add(req.constraints, ls->getTransforms());

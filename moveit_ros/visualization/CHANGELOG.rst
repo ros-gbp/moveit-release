@@ -2,38 +2,22 @@
 Changelog for package moveit_ros_visualization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1.1.5 (2021-05-23)
+1.0.8 (2021-05-23)
 ------------------
-
-1.1.4 (2021-05-12)
-------------------
-
-1.1.3 (2021-04-29)
-------------------
-* Several minor fixups in PlanningSceneDisplay (`#2618 <https://github.com/ros-planning/moveit/issues/2618>`_)
-* Contributors: Michael Görner, Robert Haschke
-
-1.1.2 (2021-04-08)
-------------------
-* Fix various issues in PlanningScene / MotionPlanning displays (`#2588 <https://github.com/ros-planning/moveit/issues/2588>`_)
-* Support multiple planning pipelines with MoveGroup via MoveItCpp (`#2127 <https://github.com/ros-planning/moveit/issues/2127>`_)
-* Allow selecting planning pipeline in RViz MotionPlanningDisplay
+* Remove unused model_is_loading\_
+* Fix deadlock in PlanningSceneDisplay
+* Call renderPlanningScene() only if planning_scene_render\_ is valid
+* Keep MotionPlanningFrame hidden on Display::reset()
 * Catch exceptions during RobotModel loading in rviz (`#2468 <https://github.com/ros-planning/moveit/issues/2468>`_)
 * Fix QObject::connect: Cannot queue arguments of type 'QVector<int>' (`#2392 <https://github.com/ros-planning/moveit/issues/2392>`_)
-* Contributors: Henning Kayser, Michael Görner, Robert Haschke, Simon Schmeisser, Tyler Weaver
+* Contributors: Robert Haschke, Simon Schmeisser, Tyler Weaver
 
-1.1.1 (2020-10-13)
+1.0.7 (2020-11-20)
 ------------------
 * [feature] Clean up Rviz Motion Planning plugin, add tooltips (`#2310 <https://github.com/ros-planning/moveit/issues/2310>`_)
-* [fix]     "Clear Octomap" button, disable when no octomap is published (`#2320 <https://github.com/ros-planning/moveit/issues/2320>`_)
-* [fix]     clang-tidy warning (`#2334 <https://github.com/ros-planning/moveit/issues/2334>`_)
-* [fix]     python3 issues (`#2323 <https://github.com/ros-planning/moveit/issues/2323>`_)
-* [maint]   Cleanup MSA includes (`#2351 <https://github.com/ros-planning/moveit/issues/2351>`_)
-* [maint]   Add comment to MOVEIT_CLASS_FORWARD (`#2315 <https://github.com/ros-planning/moveit/issues/2315>`_)
-* Contributors: Felix von Drigalski, Michael Görner, Robert Haschke
-
-1.1.0 (2020-09-04)
-------------------
+* [fix] Fix "Clear Octomap" button, disable when no octomap is published (`#2320 <https://github.com/ros-planning/moveit/issues/2320>`_)
+* [maint] Add comment to MOVEIT_CLASS_FORWARD (`#2315 <https://github.com/ros-planning/moveit/issues/2315>`_)
+* Contributors: Felix von Drigalski, Robert Haschke
 
 1.0.6 (2020-08-19)
 ------------------

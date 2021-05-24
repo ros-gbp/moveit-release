@@ -34,7 +34,8 @@
 
 /** \Author: Benjamin Cohen /bcohen@willowgarage.com, E. Gil Jones **/
 
-#pragma once
+#ifndef _ENVIRONMENT_CHAIN3D_TYPES_H_
+#define _ENVIRONMENT_CHAIN3D_TYPES_H_
 
 #include <vector>
 #include <planning_models/robot_model.h>
@@ -317,3 +318,5 @@ protected:
   double delta_;
 };
 }  // namespace sbpl_interface
+
+#endif

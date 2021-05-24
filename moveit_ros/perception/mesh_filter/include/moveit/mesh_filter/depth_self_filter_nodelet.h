@@ -34,7 +34,8 @@
 
 /* Author: Suat Gedikli */
 
-#pragma once
+#ifndef MOVEIT_DEPTH_SELF_FILTER_NODELET_
+#define MOVEIT_DEPTH_SELF_FILTER_NODELET_
 
 #include <nodelet/nodelet.h>
 #include <image_transport/image_transport.h>
@@ -129,3 +130,5 @@ private:
 };
 
 }  // namespace mesh_filter
+
+#endif

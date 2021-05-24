@@ -35,7 +35,8 @@
  * Author: Sachin Chitta
  *********************************************************************/
 
-#pragma once
+#ifndef MOVEIT_KINEMATICS_CONSTRAINT_AWARE_
+#define MOVEIT_KINEMATICS_CONSTRAINT_AWARE_
 
 // System
 #include <boost/function.hpp>
@@ -50,7 +51,7 @@
 // Plugin
 #include <moveit/kinematics_base/kinematics_base.h>
 
-// MoveIt
+// MoveIt!
 #include <moveit/robot_model/robot_model.h>
 #include <moveit/robot_state/robot_state.h>
 #include <moveit/planning_scene/planning_scene.h>
@@ -74,7 +75,7 @@ public:
    * @param group_name The name of the group to configure this solver for
    * @return False if any error occurs
    */
-  KinematicsConstraintAware(const moveit::core::RobotModelConstPtr& kinematic_model, const std::string& group_name);
+  KinematicsConstraintAware(const robot_model::RobotModelConstPtr& kinematic_model, const std::string& group_name);
 
   /** @brief Solve the planning problem
    * @param planning_scene A const reference to the planning scene
@@ -101,14 +102,14 @@ public:
     return group_name_;
   }
 
-  const moveit::core::RobotModelConstPtr& getRobotModel() const
+  const robot_model::RobotModelConstPtr& getRobotModel() const
   {
     return kinematic_model_;
   }
 
 private:
   EigenSTL::vector_Isometry3d transformPoses(const planning_scene::PlanningSceneConstPtr& planning_scene,
-                                             const moveit::core::RobotState& kinematic_state,
+                                             const robot_state::RobotState& kinematic_state,
                                              const std::vector<geometry_msgs::PoseStamped>& poses,
                                              const std::string& target_frame) const;
 
@@ -118,20 +119,20 @@ private:
                              kinematics_constraint_aware::KinematicsResponse& kinematics_response) const;
 
   geometry_msgs::Pose getTipFramePose(const planning_scene::PlanningSceneConstPtr& planning_scene,
-                                      const moveit::core::RobotState& kinematic_state, const geometry_msgs::Pose& pose,
+                                      const robot_state::RobotState& kinematic_state, const geometry_msgs::Pose& pose,
                                       const std::string& link_name, unsigned int sub_group_index) const;
 
   bool validityCallbackFn(const planning_scene::PlanningSceneConstPtr& planning_scene,
                           const kinematics_constraint_aware::KinematicsRequest& request,
                           kinematics_constraint_aware::KinematicsResponse& response,
-                          moveit::core::JointStateGroup* joint_state_group,
+                          robot_state::JointStateGroup* joint_state_group,
                           const std::vector<double>& joint_group_variable_values) const;
 
   std::vector<std::string> sub_groups_names_;
 
-  moveit::core::RobotModelConstPtr kinematic_model_;
+  robot_model::RobotModelConstPtr kinematic_model_;
 
-  const moveit::core::JointModelGroup* joint_model_group_;
+  const robot_model::JointModelGroup* joint_model_group_;
 
   std::string group_name_;
 
@@ -140,3 +141,5 @@ private:
   unsigned int ik_attempts_;
 };
 }  // namespace kinematics_constraint_aware
+
+#endif

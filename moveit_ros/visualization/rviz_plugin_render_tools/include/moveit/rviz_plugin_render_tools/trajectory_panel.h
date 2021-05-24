@@ -34,7 +34,8 @@
 
 /* Author: Yannick Jonetzko */
 
-#pragma once
+#ifndef MOVEIT_TRAJECTORY_RVIZ_PLUGIN_TRAJECTORY_PANEL_
+#define MOVEIT_TRAJECTORY_RVIZ_PLUGIN_TRAJECTORY_PANEL_
 
 #ifndef Q_MOC_RUN
 #include <ros/ros.h>
@@ -53,7 +54,7 @@ class TrajectoryPanel : public rviz::Panel
   Q_OBJECT
 
 public:
-  TrajectoryPanel(QWidget* parent = nullptr);
+  TrajectoryPanel(QWidget* parent = 0);
 
   ~TrajectoryPanel() override;
 
@@ -92,3 +93,5 @@ protected:
 };
 
 }  // namespace moveit_rviz_plugin
+
+#endif

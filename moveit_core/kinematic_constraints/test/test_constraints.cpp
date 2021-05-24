@@ -55,14 +55,14 @@ protected:
   }
 
 protected:
-  moveit::core::RobotModelPtr robot_model_;
+  robot_model::RobotModelPtr robot_model_;
 };
 
 TEST_F(LoadPlanningModelsPr2, JointConstraintsSimple)
 {
-  moveit::core::RobotState robot_state(robot_model_);
+  robot_state::RobotState robot_state(robot_model_);
   robot_state.setToDefaultValues();
-  moveit::core::Transforms tf(robot_model_->getModelFrame());
+  robot_state::Transforms tf(robot_model_->getModelFrame());
 
   kinematic_constraints::JointConstraint jc(robot_model_);
   moveit_msgs::JointConstraint jcm;
@@ -175,10 +175,10 @@ TEST_F(LoadPlanningModelsPr2, JointConstraintsSimple)
 
 TEST_F(LoadPlanningModelsPr2, JointConstraintsCont)
 {
-  moveit::core::RobotState robot_state(robot_model_);
+  robot_state::RobotState robot_state(robot_model_);
   robot_state.setToDefaultValues();
   robot_state.update();
-  moveit::core::Transforms tf(robot_model_->getModelFrame());
+  robot_state::Transforms tf(robot_model_->getModelFrame());
 
   kinematic_constraints::JointConstraint jc(robot_model_);
   moveit_msgs::JointConstraint jcm;
@@ -306,7 +306,7 @@ TEST_F(LoadPlanningModelsPr2, JointConstraintsCont)
 
 TEST_F(LoadPlanningModelsPr2, JointConstraintsMultiDOF)
 {
-  moveit::core::RobotState robot_state(robot_model_);
+  robot_state::RobotState robot_state(robot_model_);
   robot_state.setToDefaultValues();
 
   kinematic_constraints::JointConstraint jc(robot_model_);
@@ -357,10 +357,10 @@ TEST_F(LoadPlanningModelsPr2, JointConstraintsMultiDOF)
 
 TEST_F(LoadPlanningModelsPr2, PositionConstraintsFixed)
 {
-  moveit::core::RobotState robot_state(robot_model_);
+  robot_state::RobotState robot_state(robot_model_);
   robot_state.setToDefaultValues();
   robot_state.update(true);
-  moveit::core::Transforms tf(robot_model_->getModelFrame());
+  robot_state::Transforms tf(robot_model_->getModelFrame());
   kinematic_constraints::PositionConstraint pc(robot_model_);
   moveit_msgs::PositionConstraint pcm;
 
@@ -433,9 +433,9 @@ TEST_F(LoadPlanningModelsPr2, PositionConstraintsFixed)
 
 TEST_F(LoadPlanningModelsPr2, PositionConstraintsMobile)
 {
-  moveit::core::RobotState robot_state(robot_model_);
+  robot_state::RobotState robot_state(robot_model_);
   robot_state.setToDefaultValues();
-  moveit::core::Transforms tf(robot_model_->getModelFrame());
+  robot_state::Transforms tf(robot_model_->getModelFrame());
   robot_state.update();
 
   kinematic_constraints::PositionConstraint pc(robot_model_);
@@ -510,9 +510,9 @@ TEST_F(LoadPlanningModelsPr2, PositionConstraintsMobile)
 
 TEST_F(LoadPlanningModelsPr2, PositionConstraintsEquality)
 {
-  moveit::core::RobotState robot_state(robot_model_);
+  robot_state::RobotState robot_state(robot_model_);
   robot_state.setToDefaultValues();
-  moveit::core::Transforms tf(robot_model_->getModelFrame());
+  robot_state::Transforms tf(robot_model_->getModelFrame());
 
   kinematic_constraints::PositionConstraint pc(robot_model_);
   kinematic_constraints::PositionConstraint pc2(robot_model_);
@@ -596,10 +596,10 @@ TEST_F(LoadPlanningModelsPr2, PositionConstraintsEquality)
 
 TEST_F(LoadPlanningModelsPr2, OrientationConstraintsSimple)
 {
-  moveit::core::RobotState robot_state(robot_model_);
+  robot_state::RobotState robot_state(robot_model_);
   robot_state.setToDefaultValues();
   robot_state.update();
-  moveit::core::Transforms tf(robot_model_->getModelFrame());
+  robot_state::Transforms tf(robot_model_->getModelFrame());
 
   kinematic_constraints::OrientationConstraint oc(robot_model_);
 
@@ -663,10 +663,10 @@ TEST_F(LoadPlanningModelsPr2, OrientationConstraintsSimple)
 
 TEST_F(LoadPlanningModelsPr2, VisibilityConstraintsSimple)
 {
-  moveit::core::RobotState robot_state(robot_model_);
+  robot_state::RobotState robot_state(robot_model_);
   robot_state.setToDefaultValues();
   robot_state.update();
-  moveit::core::Transforms tf(robot_model_->getModelFrame());
+  robot_state::Transforms tf(robot_model_->getModelFrame());
 
   kinematic_constraints::VisibilityConstraint vc(robot_model_);
   moveit_msgs::VisibilityConstraint vcm;
@@ -701,23 +701,23 @@ TEST_F(LoadPlanningModelsPr2, VisibilityConstraintsSimple)
 
   // very slight angle, so still ok
   vcm.target_pose.pose.orientation.y = 0.03;
-  vcm.target_pose.pose.orientation.w = sqrt(1 - pow(vcm.target_pose.pose.orientation.y, 2));
+  vcm.target_pose.pose.orientation.w = .9995;
   EXPECT_TRUE(vc.configure(vcm, tf));
   EXPECT_TRUE(vc.decide(robot_state, true).satisfied);
 
   // a little bit more puts it over
   vcm.target_pose.pose.orientation.y = 0.06;
-  vcm.target_pose.pose.orientation.w = sqrt(1 - pow(vcm.target_pose.pose.orientation.y, 2));
+  vcm.target_pose.pose.orientation.w = .9981;
   EXPECT_TRUE(vc.configure(vcm, tf));
   EXPECT_FALSE(vc.decide(robot_state, true).satisfied);
 }
 
 TEST_F(LoadPlanningModelsPr2, VisibilityConstraintsPR2)
 {
-  moveit::core::RobotState robot_state(robot_model_);
+  robot_state::RobotState robot_state(robot_model_);
   robot_state.setToDefaultValues();
   robot_state.update();
-  moveit::core::Transforms tf(robot_model_->getModelFrame());
+  robot_state::Transforms tf(robot_model_->getModelFrame());
 
   kinematic_constraints::VisibilityConstraint vc(robot_model_);
   moveit_msgs::VisibilityConstraint vcm;
@@ -788,9 +788,9 @@ TEST_F(LoadPlanningModelsPr2, VisibilityConstraintsPR2)
 
 TEST_F(LoadPlanningModelsPr2, TestKinematicConstraintSet)
 {
-  moveit::core::RobotState robot_state(robot_model_);
+  robot_state::RobotState robot_state(robot_model_);
   robot_state.setToDefaultValues();
-  moveit::core::Transforms tf(robot_model_->getModelFrame());
+  robot_state::Transforms tf(robot_model_->getModelFrame());
 
   kinematic_constraints::KinematicConstraintSet kcs(robot_model_);
   EXPECT_TRUE(kcs.empty());
@@ -854,9 +854,9 @@ TEST_F(LoadPlanningModelsPr2, TestKinematicConstraintSet)
 
 TEST_F(LoadPlanningModelsPr2, TestKinematicConstraintSetEquality)
 {
-  moveit::core::RobotState robot_state(robot_model_);
+  robot_state::RobotState robot_state(robot_model_);
   robot_state.setToDefaultValues();
-  moveit::core::Transforms tf(robot_model_->getModelFrame());
+  robot_state::Transforms tf(robot_model_->getModelFrame());
 
   kinematic_constraints::KinematicConstraintSet kcs(robot_model_);
   kinematic_constraints::KinematicConstraintSet kcs2(robot_model_);

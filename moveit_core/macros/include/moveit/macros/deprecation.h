@@ -32,10 +32,11 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-#pragma once
+#ifndef MOVEIT_MACROS_DEPRECATION_
+#define MOVEIT_MACROS_DEPRECATION_
 
 /** \def MOVEIT_DEPRECATED
-    Deprecated macro that marks functions as deprecated (TODO: Remove for Noetic) */
+    Deprecated macro that marks functions as deprecated */
 
 #warning "The usage of MOVEIT_DEPRECATED is deprecated. Use the CPP14 [[deprecated]] instead."
 #ifdef __GNUC__
@@ -46,4 +47,6 @@
 #define MOVEIT_DEPRECATED __attribute__((deprecated("MoveIt: Use of this method is deprecated")))
 #else
 #define MOVEIT_DEPRECATED /* Nothing */
+#endif
+
 #endif

@@ -34,7 +34,8 @@
 
 /* Author: Ioan Sucan, Jon Binney */
 
-#pragma once
+#ifndef MOVEIT_OCCUPANCY_MAP_MONITOR_OCCUPANCY_MAP_
+#define MOVEIT_OCCUPANCY_MAP_MONITOR_OCCUPANCY_MAP_
 
 #include <octomap/octomap.h>
 #include <boost/thread/locks.hpp>
@@ -83,8 +84,8 @@ public:
     tree_mutex_.unlock();
   }
 
-  using ReadLock = boost::shared_lock<boost::shared_mutex>;
-  using WriteLock = boost::unique_lock<boost::shared_mutex>;
+  typedef boost::shared_lock<boost::shared_mutex> ReadLock;
+  typedef boost::unique_lock<boost::shared_mutex> WriteLock;
 
   ReadLock reading()
   {
@@ -96,7 +97,7 @@ public:
     return WriteLock(tree_mutex_);
   }
 
-  void triggerUpdateCallback()
+  void triggerUpdateCallback(void)
   {
     if (update_callback_)
       update_callback_();
@@ -113,6 +114,8 @@ private:
   boost::function<void()> update_callback_;
 };
 
-using OccMapTreePtr = std::shared_ptr<OccMapTree>;
-using OccMapTreeConstPtr = std::shared_ptr<const OccMapTree>;
+typedef std::shared_ptr<OccMapTree> OccMapTreePtr;
+typedef std::shared_ptr<const OccMapTree> OccMapTreeConstPtr;
 }  // namespace occupancy_map_monitor
+
+#endif

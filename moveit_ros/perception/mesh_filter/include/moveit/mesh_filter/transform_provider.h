@@ -34,7 +34,8 @@
 
 /* Author: Suat Gedikli */
 
-#pragma once
+#ifndef MOVEIT_MESH_FILTER_TRANSFORM_PROVIDER_
+#define MOVEIT_MESH_FILTER_TRANSFORM_PROVIDER_
 
 #include <string>
 #include <moveit/macros/class_forward.h>
@@ -164,3 +165,4 @@ private:
   /** \brief update rate in Hz*/
   ros::Rate update_rate_;
 };
+#endif

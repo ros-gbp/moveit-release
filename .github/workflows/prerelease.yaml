@@ -11,7 +11,7 @@ jobs:
   default:
     strategy:
       matrix:
-        distro: [noetic]
+        distro: [melodic]
 
     env:
       # https://github.com/ros-industrial/industrial_ci/issues/666

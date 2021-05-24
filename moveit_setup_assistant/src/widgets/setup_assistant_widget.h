@@ -34,7 +34,8 @@
 
 /* Author: Dave Coleman */
 
-#pragma once
+#ifndef MOVEIT_ROS_MOVEIT_SETUP_ASSISTANT_WIDGETS_SETUP_ASSISTANT_WIDGET_
+#define MOVEIT_ROS_MOVEIT_SETUP_ASSISTANT_WIDGETS_SETUP_ASSISTANT_WIDGET_
 
 // Qt
 class QSplitter;
@@ -225,3 +226,5 @@ private:
   // ******************************************************************************************
 };
 }  // namespace moveit_setup_assistant
+
+#endif

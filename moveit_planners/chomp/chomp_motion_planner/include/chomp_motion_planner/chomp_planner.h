@@ -34,11 +34,12 @@
 
 /* Author: E. Gil Jones */
 
-#pragma once
+#ifndef _CHOMP_PLANNER_H_
+#define _CHOMP_PLANNER_H_
 
 #include <chomp_motion_planner/chomp_parameters.h>
-#include <moveit/planning_interface/planning_request.h>
-#include <moveit/planning_interface/planning_response.h>
+#include <moveit_msgs/MotionPlanDetailedResponse.h>
+#include <moveit_msgs/MotionPlanRequest.h>
 #include <moveit/planning_scene/planning_scene.h>
 
 namespace chomp
@@ -46,11 +47,12 @@ namespace chomp
 class ChompPlanner
 {
 public:
-  ChompPlanner() = default;
-  virtual ~ChompPlanner() = default;
+  ChompPlanner();
+  virtual ~ChompPlanner(){};
 
-  bool solve(const planning_scene::PlanningSceneConstPtr& planning_scene,
-             const planning_interface::MotionPlanRequest& req, const ChompParameters& params,
-             planning_interface::MotionPlanDetailedResponse& res) const;
+  bool solve(const planning_scene::PlanningSceneConstPtr& planning_scene, const moveit_msgs::MotionPlanRequest& req,
+             const ChompParameters& params, moveit_msgs::MotionPlanDetailedResponse& res) const;
 };
 }  // namespace chomp
+
+#endif

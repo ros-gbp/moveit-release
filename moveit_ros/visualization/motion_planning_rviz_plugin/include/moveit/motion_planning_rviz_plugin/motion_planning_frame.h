@@ -34,7 +34,8 @@
 
 /* Author: Ioan Sucan */
 
-#pragma once
+#ifndef MOVEIT_MOTION_PLANNING_RVIZ_PLUGIN_MOTION_PLANNING_FRAME_
+#define MOVEIT_MOTION_PLANNING_RVIZ_PLUGIN_MOTION_PLANNING_FRAME_
 
 #include <QWidget>
 #include <QTreeWidgetItem>
@@ -102,7 +103,7 @@ class MotionPlanningFrame : public QWidget
 
 public:
   MotionPlanningFrame(const MotionPlanningFrame&) = delete;
-  MotionPlanningFrame(MotionPlanningDisplay* pdisplay, rviz::DisplayContext* context, QWidget* parent = nullptr);
+  MotionPlanningFrame(MotionPlanningDisplay* pdisplay, rviz::DisplayContext* context, QWidget* parent = 0);
   ~MotionPlanningFrame() override;
 
   void changePlanningGroup();
@@ -138,8 +139,6 @@ protected:
   typedef std::map<std::string, moveit_msgs::RobotState> RobotStateMap;
   typedef std::pair<std::string, moveit_msgs::RobotState> RobotStatePair;
   RobotStateMap robot_states_;
-  std::string default_planning_pipeline_;
-  std::vector<moveit_msgs::PlannerInterfaceDescription> planner_descriptions_;
 
 Q_SIGNALS:
   void planningFinished();
@@ -149,7 +148,6 @@ private Q_SLOTS:
 
   // Context tab
   void databaseConnectButtonClicked();
-  void planningPipelineIndexChanged(int index);
   void planningAlgorithmIndexChanged(int index);
   void resetDbButtonClicked();
   void approximateIKChanged(int state);
@@ -226,8 +224,7 @@ private:
   void computeDatabaseConnectButtonClicked();
   void computeDatabaseConnectButtonClickedHelper(int mode);
   void computeResetDbButtonClicked(const std::string& db);
-  void populatePlannersList(const std::vector<moveit_msgs::PlannerInterfaceDescription>& desc);
-  void populatePlannerDescription(const moveit_msgs::PlannerInterfaceDescription& desc);
+  void populatePlannersList(const moveit_msgs::PlannerInterfaceDescription& desc);
 
   // Planning tab
   void computePlanButtonClicked();
@@ -240,7 +237,7 @@ private:
   void populateConstraintsList(const std::vector<std::string>& constr);
   void configureForPlanning();
   void configureWorkspace();
-  void updateQueryStateHelper(moveit::core::RobotState& state, const std::string& v);
+  void updateQueryStateHelper(robot_state::RobotState& state, const std::string& v);
   void fillStateSelectionOptions();
   void fillPlanningGroupOptions();
   void startStateTextChangedExec(const std::string& start_state);
@@ -255,7 +252,7 @@ private:
   void computeImportGeometryFromText(const std::string& path);
   void computeExportGeometryAsText(const std::string& path);
   visualization_msgs::InteractiveMarker
-  createObjectMarkerMsg(const collision_detection::CollisionEnv::ObjectConstPtr& obj);
+  createObjectMarkerMsg(const collision_detection::CollisionWorld::ObjectConstPtr& obj);
 
   // Stored scenes tab
   void computeSaveSceneButtonClicked();
@@ -269,7 +266,7 @@ private:
   void checkPlanningSceneTreeEnabledButtons();
 
   // States tab
-  void saveRobotStateButtonClicked(const moveit::core::RobotState& state);
+  void saveRobotStateButtonClicked(const robot_state::RobotState& state);
   void populateRobotStatesList();
 
   // Pick and place
@@ -325,7 +322,7 @@ private:
   ros::Publisher planning_scene_publisher_;
   ros::Publisher planning_scene_world_publisher_;
 
-  collision_detection::CollisionEnv::ObjectConstPtr scaled_object_;
+  collision_detection::CollisionWorld::ObjectConstPtr scaled_object_;
 
   std::vector<std::pair<std::string, bool> > known_collision_objects_;
   long unsigned int known_collision_objects_version_;
@@ -375,3 +372,5 @@ void MotionPlanningFrame::waitForAction(const T& action, const ros::NodeHandle& 
     ROS_DEBUG("Connected to '%s'", name.c_str());
 };
 }  // namespace moveit_rviz_plugin
+
+#endif

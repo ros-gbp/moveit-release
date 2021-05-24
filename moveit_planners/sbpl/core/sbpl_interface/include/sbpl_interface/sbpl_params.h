@@ -32,7 +32,8 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-#pragma once
+#ifndef _SBPL_PARAMS_H_
+#define _SBPL_PARAMS_H_
 
 #include <iostream>
 #include <string>
@@ -202,3 +203,5 @@ public:
   std::vector<std::string> motion_primitive_type_names_;
 };
 }  // namespace sbpl_interface
+
+#endif

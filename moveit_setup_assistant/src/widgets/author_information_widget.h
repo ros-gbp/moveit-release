@@ -34,7 +34,8 @@
 
 /* Author: Dave Coleman, Michael 'v4hn' Goerner */
 
-#pragma once
+#ifndef MOVEIT_ROS_MOVEIT_SETUP_ASSISTANT_WIDGETS_AUTHOR_INFORMATION_WIDGET_
+#define MOVEIT_ROS_MOVEIT_SETUP_ASSISTANT_WIDGETS_AUTHOR_INFORMATION_WIDGET_
 
 class QLineEdit;
 
@@ -82,3 +83,5 @@ private:
 };
 
 }  // namespace moveit_setup_assistant
+
+#endif

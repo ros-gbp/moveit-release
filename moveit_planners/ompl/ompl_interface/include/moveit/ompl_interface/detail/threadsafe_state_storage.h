@@ -34,7 +34,8 @@
 
 /* Author: Ioan Sucan */
 
-#pragma once
+#ifndef MOVEIT_OMPL_INTERFACE_DEATIL_THREADSAFE_STATE_STORAGE_
+#define MOVEIT_OMPL_INTERFACE_DEATIL_THREADSAFE_STATE_STORAGE_
 
 #include <moveit/robot_state/robot_state.h>
 #include <thread>
@@ -45,15 +46,16 @@ namespace ompl_interface
 class TSStateStorage
 {
 public:
-  TSStateStorage(const moveit::core::RobotModelPtr& robot_model);
-  TSStateStorage(const moveit::core::RobotState& start_state);
+  TSStateStorage(const robot_model::RobotModelPtr& robot_model);
+  TSStateStorage(const robot_state::RobotState& start_state);
   ~TSStateStorage();
 
-  moveit::core::RobotState* getStateStorage() const;
+  robot_state::RobotState* getStateStorage() const;
 
 private:
-  moveit::core::RobotState start_state_;
-  mutable std::map<std::thread::id, moveit::core::RobotState*> thread_states_;
+  robot_state::RobotState start_state_;
+  mutable std::map<std::thread::id, robot_state::RobotState*> thread_states_;
   mutable std::mutex lock_;
 };
 }  // namespace ompl_interface
+#endif

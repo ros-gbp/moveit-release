@@ -34,7 +34,8 @@
 
 /* Author: Ioan Sucan */
 
-#pragma once
+#ifndef MOVEIT_KINEMATIC_CONSTRAINTS_UTILS_
+#define MOVEIT_KINEMATIC_CONSTRAINTS_UTILS_
 
 #include <moveit_msgs/Constraints.h>
 #include <geometry_msgs/PointStamped.h>
@@ -66,7 +67,7 @@ namespace kinematic_constraints
 moveit_msgs::Constraints mergeConstraints(const moveit_msgs::Constraints& first, const moveit_msgs::Constraints& second);
 
 /** \brief Check if any constraints were specified */
-[[deprecated("Use moveit/utils/message_checks.h instead")]] bool isEmpty(const moveit_msgs::Constraints& constr);
+bool isEmpty(const moveit_msgs::Constraints& constr);
 
 std::size_t countIndividualConstraints(const moveit_msgs::Constraints& constr);
 
@@ -82,8 +83,8 @@ std::size_t countIndividualConstraints(const moveit_msgs::Constraints& constr);
  *
  * @return A full constraint message containing all the joint constraints
  */
-moveit_msgs::Constraints constructGoalConstraints(const moveit::core::RobotState& state,
-                                                  const moveit::core::JointModelGroup* jmg, double tolerance_below,
+moveit_msgs::Constraints constructGoalConstraints(const robot_state::RobotState& state,
+                                                  const robot_model::JointModelGroup* jmg, double tolerance_below,
                                                   double tolerance_above);
 
 /**
@@ -97,8 +98,8 @@ moveit_msgs::Constraints constructGoalConstraints(const moveit::core::RobotState
  *
  * @return A full constraint message containing all the joint constraints
  */
-moveit_msgs::Constraints constructGoalConstraints(const moveit::core::RobotState& state,
-                                                  const moveit::core::JointModelGroup* jmg,
+moveit_msgs::Constraints constructGoalConstraints(const robot_state::RobotState& state,
+                                                  const robot_model::JointModelGroup* jmg,
                                                   double tolerance = std::numeric_limits<double>::epsilon());
 
 /**
@@ -199,18 +200,6 @@ moveit_msgs::Constraints constructGoalConstraints(const std::string& link_name,
  * @return was the construction successful?
  */
 bool constructConstraints(XmlRpc::XmlRpcValue& params, moveit_msgs::Constraints& constraints);
-
-/**
- * \brief Resolves frames used in constraints to links in the robot model.
- *
- * The link_name field of a constraint is changed from the name of an object's frame or subframe
- * to the name of the robot link that the object is attached to.
- *
- * This is used in a planning request adapter which ensures that the planning problem is defined
- * properly (the attached objects' frames are not known to the planner).
- *
- * @param [in] state The RobotState used to resolve frames.
- * @param [in] constraints The constraint to resolve.
- */
-bool resolveConstraintFrames(const moveit::core::RobotState& state, moveit_msgs::Constraints& constraints);
 }  // namespace kinematic_constraints
+
+#endif

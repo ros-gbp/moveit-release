@@ -33,7 +33,8 @@
 
 /* Author: Mohamad Ayman */
 
-#pragma once
+#ifndef MOVEIT_ROS_MOVEIT_SETUP_ASSISTANT_WIDGETS_CONTROLLER_EDIT_WIDGET_H
+#define MOVEIT_ROS_MOVEIT_SETUP_ASSISTANT_WIDGETS_CONTROLLER_EDIT_WIDGET_H
 
 #include <QWidget>
 class QComboBox;
@@ -141,3 +142,5 @@ private:
   moveit_setup_assistant::MoveItConfigDataPtr config_data_;
 };
 }  // namespace moveit_setup_assistant
+
+#endif

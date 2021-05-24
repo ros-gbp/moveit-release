@@ -383,7 +383,9 @@ inline geometry_msgs::Quaternion fromEuler(double a, double b, double c)
   q1 = q1 * tf2::Quaternion(qvy, b);
   q1 = q1 * tf2::Quaternion(qvz, c);
 
-  return tf2::toMsg(q1);
+  geometry_msgs::Quaternion msg;
+  tf2::convert(q1, msg);
+  return msg;
 }
 
 /**

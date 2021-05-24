@@ -9,7 +9,7 @@ add_definitions(-Wno-unused-parameter)
 add_definitions(-Werror)
 
 find_package(catkin REQUIRED COMPONENTS
-  tf2_eigen
+  eigen_conversions
   moveit_core
   moveit_msgs
 )

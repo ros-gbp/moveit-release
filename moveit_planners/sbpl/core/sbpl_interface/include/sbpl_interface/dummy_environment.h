@@ -32,7 +32,8 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-#pragma once
+#ifndef _DUMMY_ENVIRONMENT_H_
+#define _DUMMY_ENVIRONMENT_H_
 
 class DummyEnvironment : public DiscreteSpaceInformation
 {
@@ -99,3 +100,5 @@ public:
   {
   }
 };
+
+#endif

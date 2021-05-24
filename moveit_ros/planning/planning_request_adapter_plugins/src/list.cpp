@@ -56,18 +56,17 @@ int main(int argc, char** argv)
 
   const std::vector<std::string>& classes = loader->getDeclaredClasses();
   std::cout << "Available planning request adapter plugins:" << std::endl;
-  for (const std::string& adapter_plugin_name : classes)
+  for (std::size_t i = 0; i < classes.size(); ++i)
   {
-    std::cout << " \t " << adapter_plugin_name << std::endl;
+    std::cout << " \t " << classes[i] << std::endl;
     planning_request_adapter::PlanningRequestAdapterConstPtr ad;
     try
     {
-      ad = loader->createUniqueInstance(adapter_plugin_name);
+      ad = loader->createUniqueInstance(classes[i]);
     }
     catch (pluginlib::PluginlibException& ex)
     {
-      std::cout << " \t\t  Exception while planning adapter plugin '" << adapter_plugin_name << "': " << ex.what()
-                << std::endl;
+      std::cout << " \t\t  Exception while planning adapter plugin '" << classes[i] << "': " << ex.what() << std::endl;
     }
     if (ad)
       std::cout << " \t\t  " << ad->getDescription() << std::endl;

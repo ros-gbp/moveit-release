@@ -252,7 +252,7 @@ void EndEffectorsWidget::showNewScreen()
 // ******************************************************************************************
 // Edit whatever element is selected
 // ******************************************************************************************
-void EndEffectorsWidget::editDoubleClicked(int /*row*/, int /*column*/)
+void EndEffectorsWidget::editDoubleClicked(int row, int column)
 {
   editSelected();
 }
@@ -260,7 +260,7 @@ void EndEffectorsWidget::editDoubleClicked(int /*row*/, int /*column*/)
 // ******************************************************************************************
 // Preview whatever element is selected
 // ******************************************************************************************
-void EndEffectorsWidget::previewClicked(int /*row*/, int /*column*/)
+void EndEffectorsWidget::previewClicked(int row, int column)
 {
   // Get list of all selected items
   QList<QTableWidgetItem*> selected = data_table_->selectedItems();
@@ -370,10 +370,11 @@ void EndEffectorsWidget::loadGroupsComboBox()
   parent_group_name_field_->addItem("");  // optional setting
 
   // Add all group names to combo box
-  for (srdf::Model::Group& group : config_data_->srdf_->groups_)
+  for (std::vector<srdf::Model::Group>::iterator group_it = config_data_->srdf_->groups_.begin();
+       group_it != config_data_->srdf_->groups_.end(); ++group_it)
   {
-    group_name_field_->addItem(group.name_.c_str());
-    parent_group_name_field_->addItem(group.name_.c_str());
+    group_name_field_->addItem(group_it->name_.c_str());
+    parent_group_name_field_->addItem(group_it->name_.c_str());
   }
 }
 
@@ -386,10 +387,10 @@ void EndEffectorsWidget::loadParentComboBox()
   parent_name_field_->clear();
 
   // Get all links in robot model
-  std::vector<const moveit::core::LinkModel*> link_models = config_data_->getRobotModel()->getLinkModels();
+  std::vector<const robot_model::LinkModel*> link_models = config_data_->getRobotModel()->getLinkModels();
 
   // Add all links to combo box
-  for (std::vector<const moveit::core::LinkModel*>::const_iterator link_it = link_models.begin();
+  for (std::vector<const robot_model::LinkModel*>::const_iterator link_it = link_models.begin();
        link_it < link_models.end(); ++link_it)
   {
     parent_name_field_->addItem((*link_it)->getName().c_str());
@@ -404,12 +405,13 @@ srdf::Model::EndEffector* EndEffectorsWidget::findEffectorByName(const std::stri
   // Find the group state we are editing based on the effector name
   srdf::Model::EndEffector* searched_group = nullptr;  // used for holding our search results
 
-  for (srdf::Model::EndEffector& end_effector : config_data_->srdf_->end_effectors_)
+  for (std::vector<srdf::Model::EndEffector>::iterator effector_it = config_data_->srdf_->end_effectors_.begin();
+       effector_it != config_data_->srdf_->end_effectors_.end(); ++effector_it)
   {
-    if (end_effector.name_ == name)  // string match
+    if (effector_it->name_ == name)  // string match
     {
-      searched_group = &end_effector;  // convert to pointer from iterator
-      break;                           // we are done searching
+      searched_group = &(*effector_it);  // convert to pointer from iterator
+      break;                             // we are done searching
     }
   }
 
@@ -520,7 +522,7 @@ void EndEffectorsWidget::doneEditing()
     return;
   }
 
-  const moveit::core::JointModelGroup* jmg =
+  const robot_model::JointModelGroup* jmg =
       config_data_->getRobotModel()->getJointModelGroup(group_name_field_->currentText().toStdString());
   /*
   if (jmg->hasLinkModel(parent_name_field_->currentText().toStdString()))
@@ -613,16 +615,17 @@ void EndEffectorsWidget::loadDataTable()
 
   // Loop through every end effector
   int row = 0;
-  for (const auto& eef : config_data_->srdf_->end_effectors_)
+  for (std::vector<srdf::Model::EndEffector>::const_iterator data_it = config_data_->srdf_->end_effectors_.begin();
+       data_it != config_data_->srdf_->end_effectors_.end(); ++data_it)
   {
     // Create row elements
-    QTableWidgetItem* data_name = new QTableWidgetItem(eef.name_.c_str());
+    QTableWidgetItem* data_name = new QTableWidgetItem(data_it->name_.c_str());
     data_name->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
-    QTableWidgetItem* group_name = new QTableWidgetItem(eef.component_group_.c_str());
+    QTableWidgetItem* group_name = new QTableWidgetItem(data_it->component_group_.c_str());
     group_name->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
-    QTableWidgetItem* parent_name = new QTableWidgetItem(eef.parent_link_.c_str());
+    QTableWidgetItem* parent_name = new QTableWidgetItem(data_it->parent_link_.c_str());
     group_name->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
-    QTableWidgetItem* parent_group_name = new QTableWidgetItem(eef.parent_group_.c_str());
+    QTableWidgetItem* parent_group_name = new QTableWidgetItem(data_it->parent_group_.c_str());
     parent_group_name->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
 
     // Add to table
