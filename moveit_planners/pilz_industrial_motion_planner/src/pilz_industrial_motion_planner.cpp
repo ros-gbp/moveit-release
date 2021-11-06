@@ -70,8 +70,8 @@ bool CommandPlanner::initialize(const moveit::core::RobotModelConstPtr& model, c
       ros::NodeHandle(PARAM_NAMESPACE_LIMTS));
 
   // Load the planning context loader
-  planner_context_loader.reset(new pluginlib::ClassLoader<PlanningContextLoader>(
-      "pilz_industrial_motion_planner", "pilz_industrial_motion_planner::PlanningContextLoader"));
+  planner_context_loader = std::make_unique<pluginlib::ClassLoader<PlanningContextLoader>>(
+      "pilz_industrial_motion_planner", "pilz_industrial_motion_planner::PlanningContextLoader");
 
   // List available plugins
   const std::vector<std::string>& factories = planner_context_loader->getDeclaredClasses();
@@ -127,7 +127,7 @@ CommandPlanner::getPlanningContext(const planning_scene::PlanningSceneConstPtr& 
   // Check that a loaded for this request exists
   if (!canServiceRequest(req))
   {
-    ROS_ERROR_STREAM("No ContextLoader for planner_id " << req.planner_id.c_str() << " found. Planning not possible.");
+    ROS_ERROR_STREAM("No ContextLoader for planner_id '" << req.planner_id.c_str() << "' found. Planning not possible.");
     return nullptr;
   }
 
