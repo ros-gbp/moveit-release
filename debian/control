@@ -1,0 +1,12 @@
+Source: ros-noetic-moveit-core
+Section: misc
+Priority: optional
+Maintainer: Dave Coleman <dave@picknik.ai>
+Build-Depends: debhelper (>= 9.0.0), libassimp-dev, libboost-all-dev, libbullet-dev, libconsole-bridge-dev, libeigen3-dev, liborocos-kdl-dev, liburdfdom-dev, liburdfdom-headers-dev, pkg-config, python3-dev, ros-noetic-angles, ros-noetic-catkin, ros-noetic-eigen-stl-containers, ros-noetic-fcl, ros-noetic-geometric-shapes (>= 0.5.2), ros-noetic-geometry-msgs, ros-noetic-kdl-parser, ros-noetic-moveit-msgs, ros-noetic-moveit-resources-panda-moveit-config, ros-noetic-moveit-resources-pr2-description, ros-noetic-octomap, ros-noetic-octomap-msgs, ros-noetic-pluginlib, ros-noetic-pybind11-catkin, ros-noetic-random-numbers, ros-noetic-rosconsole, ros-noetic-roslib, ros-noetic-rostime, ros-noetic-rosunit, ros-noetic-sensor-msgs, ros-noetic-shape-msgs, ros-noetic-srdfdom, ros-noetic-std-msgs, ros-noetic-tf2-eigen, ros-noetic-tf2-geometry-msgs, ros-noetic-tf2-kdl, ros-noetic-trajectory-msgs, ros-noetic-urdf, ros-noetic-visualization-msgs, ros-noetic-xmlrpcpp
+Homepage: http://moveit.ros.org
+Standards-Version: 3.9.2
+
+Package: ros-noetic-moveit-core
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, libassimp-dev, libboost-all-dev, libbullet-dev, libconsole-bridge-dev, libeigen3-dev, liburdfdom-dev, liburdfdom-headers-dev, python3-dev, ros-noetic-eigen-stl-containers, ros-noetic-fcl, ros-noetic-geometric-shapes (>= 0.5.2), ros-noetic-geometry-msgs, ros-noetic-kdl-parser, ros-noetic-moveit-msgs, ros-noetic-octomap, ros-noetic-octomap-msgs, ros-noetic-pluginlib, ros-noetic-pybind11-catkin, ros-noetic-random-numbers, ros-noetic-rosconsole, ros-noetic-roslib, ros-noetic-rostime, ros-noetic-sensor-msgs, ros-noetic-shape-msgs, ros-noetic-srdfdom, ros-noetic-std-msgs, ros-noetic-tf2-eigen, ros-noetic-tf2-geometry-msgs, ros-noetic-trajectory-msgs, ros-noetic-urdf, ros-noetic-visualization-msgs, ros-noetic-xmlrpcpp
+Description: Core libraries used by MoveIt
