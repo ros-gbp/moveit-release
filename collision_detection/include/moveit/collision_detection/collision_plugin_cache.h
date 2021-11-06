@@ -1,7 +1,7 @@
 /*********************************************************************
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2013, Willow Garage, Inc.
+ *  Copyright (c) 2014 Fetch Robotics Inc.
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -14,7 +14,7 @@
  *     copyright notice, this list of conditions and the following
  *     disclaimer in the documentation and/or other materials provided
  *     with the distribution.
- *   * Neither the name of the Willow Garage nor the names of its
+ *   * Neither the name of Fetch Robotics nor the names of its
  *     contributors may be used to endorse or promote products derived
  *     from this software without specific prior written permission.
  *
@@ -32,20 +32,32 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-/* Author: Acorn Pooley, Ioan Sucan */
-
 #pragma once
 
-#include <moveit/collision_detection/collision_detector_allocator.h>
-#include <moveit/collision_distance_field/collision_env_hybrid.h>
+#include <moveit/macros/class_forward.h>
+#include <moveit/collision_detection/collision_plugin.h>
 
 namespace collision_detection
 {
-/** \brief An allocator for Hybrid collision detectors */
-class CollisionDetectorAllocatorHybrid
-  : public CollisionDetectorAllocatorTemplate<CollisionEnvHybrid, CollisionDetectorAllocatorHybrid>
+/** Helper class to activate a specific collision plugin for a PlanningScene */
+class CollisionPluginCache
 {
 public:
-  const std::string& getName() const override;
+  CollisionPluginCache();
+  ~CollisionPluginCache();
+
+  /**
+   * @brief Activate a specific collision plugin for the given planning scene instance.
+   * @param name The plugin name.
+   * @param scene The planning scene instance.
+   * @param exclusive If true, sets the new plugin to be the only one.
+   * @return success / failure
+   */
+  bool activate(const std::string& name, const planning_scene::PlanningScenePtr& scene, bool exclusive);
+
+private:
+  MOVEIT_CLASS_FORWARD(CollisionPluginCacheImpl);
+  CollisionPluginCacheImplPtr cache_;
 };
+
 }  // namespace collision_detection
