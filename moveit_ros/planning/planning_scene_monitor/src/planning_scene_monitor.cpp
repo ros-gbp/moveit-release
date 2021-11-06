@@ -141,7 +141,7 @@ PlanningSceneMonitor::PlanningSceneMonitor(const planning_scene::PlanningScenePt
 {
   root_nh_.setCallbackQueue(&queue_);
   nh_.setCallbackQueue(&queue_);
-  spinner_.reset(new ros::AsyncSpinner(1, &queue_));
+  spinner_ = std::make_shared<ros::AsyncSpinner>(1, &queue_);
   spinner_->start();
   initialize(scene);
 }
@@ -195,7 +195,7 @@ void PlanningSceneMonitor::initialize(const planning_scene::PlanningScenePtr& sc
     {
       try
       {
-        scene_.reset(new planning_scene::PlanningScene(rm_loader_->getModel()));
+        scene_ = std::make_shared<planning_scene::PlanningScene>(rm_loader_->getModel());
         configureCollisionMatrix(scene_);
         configureDefaultPadding();
 
@@ -326,7 +326,8 @@ void PlanningSceneMonitor::startPublishingPlanningScene(SceneUpdateType update_t
     planning_scene_publisher_ = nh_.advertise<moveit_msgs::PlanningScene>(planning_scene_topic, 100, false);
     ROS_INFO_NAMED(LOGNAME, "Publishing maintained planning scene on '%s'", planning_scene_topic.c_str());
     monitorDiffs(true);
-    publish_planning_scene_.reset(new boost::thread(boost::bind(&PlanningSceneMonitor::scenePublishingThread, this)));
+    publish_planning_scene_ =
+        std::make_unique<boost::thread>(boost::bind(&PlanningSceneMonitor::scenePublishingThread, this));
   }
 }
 
@@ -338,7 +339,7 @@ void PlanningSceneMonitor::scenePublishingThread()
   {
     moveit_msgs::PlanningScene msg;
     {
-      occupancy_map_monitor::OccMapTree::ReadLock lock;
+      collision_detection::OccMapTree::ReadLock lock;
       if (octomap_monitor_)
         lock = octomap_monitor_->getOcTreePtr()->reading();
       scene_->getPlanningSceneMsg(msg);
@@ -365,7 +366,7 @@ void PlanningSceneMonitor::scenePublishingThread()
             is_full = true;
           else
           {
-            occupancy_map_monitor::OccMapTree::ReadLock lock;
+            collision_detection::OccMapTree::ReadLock lock;
             if (octomap_monitor_)
               lock = octomap_monitor_->getOcTreePtr()->reading();
             scene_->getPlanningSceneDiffMsg(msg);
@@ -395,7 +396,7 @@ void PlanningSceneMonitor::scenePublishingThread()
           }
           if (is_full)
           {
-            occupancy_map_monitor::OccMapTree::ReadLock lock;
+            collision_detection::OccMapTree::ReadLock lock;
             if (octomap_monitor_)
               lock = octomap_monitor_->getOcTreePtr()->reading();
             scene_->getPlanningSceneMsg(msg);
@@ -604,7 +605,7 @@ bool PlanningSceneMonitor::newPlanningSceneMessage(const moveit_msgs::PlanningSc
     }
   }
 
-  // if we have a diff, try to more accuratelly determine the update type
+  // if we have a diff, try to more accurately determine the update type
   if (scene.is_diff)
   {
     bool no_other_scene_upd = (scene.name.empty() || scene.name == old_scene_name) &&
@@ -842,7 +843,7 @@ void PlanningSceneMonitor::excludeWorldObjectFromOctree(const collision_detectio
     occupancy_map_monitor::ShapeHandle h = octomap_monitor_->excludeShape(obj->shapes_[i]);
     if (h)
     {
-      collision_body_shape_handles_[obj->id_].push_back(std::make_pair(h, &obj->shape_poses_[i]));
+      collision_body_shape_handles_[obj->id_].push_back(std::make_pair(h, &obj->global_shape_poses_[i]));
       found = true;
     }
   }
@@ -1038,7 +1039,7 @@ bool PlanningSceneMonitor::getShapeTransformCache(const std::string& target_fram
       for (std::size_t k = 0; k < attached_body_shape_handle.second.size(); ++k)
         cache[attached_body_shape_handle.second[k].first] =
             transform *
-            attached_body_shape_handle.first->getFixedTransforms()[attached_body_shape_handle.second[k].second];
+            attached_body_shape_handle.first->getShapePosesInLinkFrame()[attached_body_shape_handle.second[k].second];
     }
     {
       tf_buffer_->canTransform(target_frame, scene_->getPlanningFrame(), target_time,
@@ -1090,7 +1091,8 @@ void PlanningSceneMonitor::startWorldGeometryMonitor(const std::string& collisio
   {
     if (!octomap_monitor_)
     {
-      octomap_monitor_.reset(new occupancy_map_monitor::OccupancyMapMonitor(tf_buffer_, scene_->getPlanningFrame()));
+      octomap_monitor_ =
+          std::make_unique<occupancy_map_monitor::OccupancyMapMonitor>(tf_buffer_, scene_->getPlanningFrame());
       excludeRobotLinksFromOctree();
       excludeAttachedBodiesFromOctree();
       excludeWorldObjectsFromOctree();
@@ -1126,7 +1128,7 @@ void PlanningSceneMonitor::startStateMonitor(const std::string& joint_states_top
   if (scene_)
   {
     if (!current_state_monitor_)
-      current_state_monitor_.reset(new CurrentStateMonitor(getRobotModel(), tf_buffer_, root_nh_));
+      current_state_monitor_ = std::make_shared<CurrentStateMonitor>(getRobotModel(), tf_buffer_, root_nh_);
     current_state_monitor_->addUpdateCallback(boost::bind(&PlanningSceneMonitor::onStateUpdate, this, _1));
     current_state_monitor_->startStateMonitor(joint_states_topic);
 
@@ -1311,7 +1313,7 @@ void PlanningSceneMonitor::clearUpdateCallbacks()
 void PlanningSceneMonitor::setPlanningScenePublishingFrequency(double hz)
 {
   publish_planning_scene_frequency_ = hz;
-  ROS_DEBUG_NAMED(LOGNAME, "Maximum frquency for publishing a planning scene is now %lf Hz",
+  ROS_DEBUG_NAMED(LOGNAME, "Maximum frequency for publishing a planning scene is now %lf Hz",
                   publish_planning_scene_frequency_);
 }
 
@@ -1422,17 +1424,37 @@ void PlanningSceneMonitor::configureDefaultPadding()
     return;
   }
 
-  // Ensure no leading slash creates a bad param server address
-  const std::string robot_description =
+  // print deprecation warning if necessary
+  // TODO: remove this warning after 06/2022
+  const std::string old_robot_description =
       (robot_description_[0] == '/') ? robot_description_.substr(1) : robot_description_;
+  if (nh_.resolveName(old_robot_description) != nh_.resolveName(robot_description_))
+  {
+    if (nh_.hasParam(old_robot_description + "_planning/default_robot_padding") ||
+        nh_.hasParam(old_robot_description + "_planning/default_robot_scale") ||
+        nh_.hasParam(old_robot_description + "_planning/default_object_padding") ||
+        nh_.hasParam(old_robot_description + "_planning/default_attached_padding") ||
+        nh_.hasParam(old_robot_description + "_planning/default_robot_link_padding") ||
+        nh_.hasParam(old_robot_description + "_planning/default_robot_link_scale"))
+    {
+      ROS_WARN_STREAM_NAMED(LOGNAME, "The path for the padding parameters has changed!\n"
+                                     "Old parameter path: '"
+                                         << nh_.resolveName(old_robot_description + "_planning/")
+                                         << "'\n"
+                                            "New parameter path: '"
+                                         << nh_.resolveName(robot_description_ + "_planning/")
+                                         << "'\n"
+                                            "Ignoring old parameters. Please update your moveit config!");
+    }
+  }
 
-  nh_.param(robot_description + "_planning/default_robot_padding", default_robot_padd_, 0.0);
-  nh_.param(robot_description + "_planning/default_robot_scale", default_robot_scale_, 1.0);
-  nh_.param(robot_description + "_planning/default_object_padding", default_object_padd_, 0.0);
-  nh_.param(robot_description + "_planning/default_attached_padding", default_attached_padd_, 0.0);
-  nh_.param(robot_description + "_planning/default_robot_link_padding", default_robot_link_padd_,
+  nh_.param(robot_description_ + "_planning/default_robot_padding", default_robot_padd_, 0.0);
+  nh_.param(robot_description_ + "_planning/default_robot_scale", default_robot_scale_, 1.0);
+  nh_.param(robot_description_ + "_planning/default_object_padding", default_object_padd_, 0.0);
+  nh_.param(robot_description_ + "_planning/default_attached_padding", default_attached_padd_, 0.0);
+  nh_.param(robot_description_ + "_planning/default_robot_link_padding", default_robot_link_padd_,
             std::map<std::string, double>());
-  nh_.param(robot_description + "_planning/default_robot_link_scale", default_robot_link_scale_,
+  nh_.param(robot_description_ + "_planning/default_robot_link_scale", default_robot_link_scale_,
             std::map<std::string, double>());
 
   ROS_DEBUG_STREAM_NAMED(LOGNAME, "Loaded " << default_robot_link_padd_.size() << " default link paddings");
