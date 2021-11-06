@@ -61,10 +61,16 @@ RobotState::RobotState(const RobotModelConstPtr& robot_model)
   , has_velocity_(false)
   , has_acceleration_(false)
   , has_effort_(false)
-  , dirty_link_transforms_(robot_model_->getRootJoint())
+  , dirty_link_transforms_(nullptr)
   , dirty_collision_body_transforms_(nullptr)
   , rng_(nullptr)
 {
+  if (robot_model == nullptr)
+  {
+    throw std::invalid_argument("RobotState cannot be constructed with nullptr RobotModelConstPtr");
+  }
+
+  dirty_link_transforms_ = robot_model_->getRootJoint();
   allocMemory();
   initTransforms();
 }
@@ -171,9 +177,7 @@ void RobotState::copyFrom(const RobotState& other)
   // copy attached bodies
   clearAttachedBodies();
   for (const std::pair<const std::string, AttachedBody*>& it : other.attached_body_map_)
-    attachBody(it.second->getName(), it.second->getShapes(), it.second->getFixedTransforms(),
-               it.second->getTouchLinks(), it.second->getAttachedLinkName(), it.second->getDetachPosture(),
-               it.second->getSubframeTransforms());
+    attachBody(new AttachedBody(*it.second));
 }
 
 bool RobotState::checkJointTransforms(const JointModel* joint) const
@@ -299,33 +303,46 @@ void RobotState::setToRandomPositions(const JointModelGroup* group, random_numbe
   updateMimicJoints(group);
 }
 
-void RobotState::setToRandomPositionsNearBy(const JointModelGroup* group, const RobotState& near,
+void RobotState::setToRandomPositionsNearBy(const JointModelGroup* group, const RobotState& seed,
                                             const std::vector<double>& distances)
 {
   // we do not make calls to RobotModel for random number generation because mimic joints
   // could trigger updates outside the state of the group itself
   random_numbers::RandomNumberGenerator& rng = getRandomNumberGenerator();
+  setToRandomPositionsNearBy(group, seed, distances, rng);
+}
+
+void RobotState::setToRandomPositionsNearBy(const JointModelGroup* group, const RobotState& seed,
+                                            const std::vector<double>& distances,
+                                            random_numbers::RandomNumberGenerator& rng)
+{
   const std::vector<const JointModel*>& joints = group->getActiveJointModels();
   assert(distances.size() == joints.size());
   for (std::size_t i = 0; i < joints.size(); ++i)
   {
     const int idx = joints[i]->getFirstVariableIndex();
     joints[i]->getVariableRandomPositionsNearBy(rng, position_ + joints[i]->getFirstVariableIndex(),
-                                                near.position_ + idx, distances[i]);
+                                                seed.position_ + idx, distances[i]);
   }
   updateMimicJoints(group);
 }
 
-void RobotState::setToRandomPositionsNearBy(const JointModelGroup* group, const RobotState& near, double distance)
+void RobotState::setToRandomPositionsNearBy(const JointModelGroup* group, const RobotState& seed, double distance)
 {
   // we do not make calls to RobotModel for random number generation because mimic joints
   // could trigger updates outside the state of the group itself
   random_numbers::RandomNumberGenerator& rng = getRandomNumberGenerator();
+  setToRandomPositionsNearBy(group, seed, distance, rng);
+}
+
+void RobotState::setToRandomPositionsNearBy(const JointModelGroup* group, const RobotState& seed, double distance,
+                                            random_numbers::RandomNumberGenerator& rng)
+{
   const std::vector<const JointModel*>& joints = group->getActiveJointModels();
   for (const JointModel* joint : joints)
   {
     const int idx = joint->getFirstVariableIndex();
-    joint->getVariableRandomPositionsNearBy(rng, position_ + joint->getFirstVariableIndex(), near.position_ + idx,
+    joint->getVariableRandomPositionsNearBy(rng, position_ + joint->getFirstVariableIndex(), seed.position_ + idx,
                                             distance);
   }
   updateMimicJoints(group);
@@ -453,7 +470,7 @@ void RobotState::setVariableEffort(const std::map<std::string, double>& variable
 {
   markEffort();
   for (const std::pair<const std::string, double>& it : variable_map)
-    acceleration_[robot_model_->getVariableIndex(it.first)] = it.second;
+    effort_[robot_model_->getVariableIndex(it.first)] = it.second;
 }
 
 void RobotState::setVariableEffort(const std::map<std::string, double>& variable_map,
@@ -780,6 +797,31 @@ void RobotState::updateStateWithLinkAt(const LinkModel* link, const Eigen::Isome
     it->second->computeTransform(global_link_transforms_[it->second->getAttachedLink()->getLinkIndex()]);
 }
 
+const LinkModel* RobotState::getRigidlyConnectedParentLinkModel(const std::string& frame) const
+{
+  const moveit::core::LinkModel* link{ nullptr };
+
+  size_t idx = 0;
+  if ((idx = frame.find('/')) != std::string::npos)
+  {  // resolve sub frame
+    std::string object{ frame.substr(0, idx) };
+    if (!hasAttachedBody(object))
+      return nullptr;
+    auto body{ getAttachedBody(object) };
+    if (!body->hasSubframeTransform(frame))
+      return nullptr;
+    link = body->getAttachedLink();
+  }
+  else if (hasAttachedBody(frame))
+  {
+    link = getAttachedBody(frame)->getAttachedLink();
+  }
+  else if (getRobotModel()->hasLinkModel(frame))
+    link = getLinkModel(frame);
+
+  return getRobotModel()->getRigidlyConnectedParentLinkModel(link);
+}
+
 bool RobotState::satisfiesBounds(double margin) const
 {
   const std::vector<const JointModel*>& jm = robot_model_->getActiveJointModels();
@@ -957,13 +999,14 @@ void RobotState::attachBody(AttachedBody* attached_body)
     attached_body_update_callback_(attached_body, true);
 }
 
-void RobotState::attachBody(const std::string& id, const std::vector<shapes::ShapeConstPtr>& shapes,
+void RobotState::attachBody(const std::string& id, const Eigen::Isometry3d& pose,
+                            const std::vector<shapes::ShapeConstPtr>& shapes,
                             const EigenSTL::vector_Isometry3d& shape_poses, const std::set<std::string>& touch_links,
                             const std::string& link, const trajectory_msgs::JointTrajectory& detach_posture,
                             const moveit::core::FixedTransformsMap& subframe_poses)
 {
   const LinkModel* l = robot_model_->getLinkModel(link);
-  attachBody(new AttachedBody(l, id, shapes, shape_poses, touch_links, detach_posture, subframe_poses));
+  attachBody(new AttachedBody(l, id, pose, shapes, shape_poses, touch_links, detach_posture, subframe_poses));
 }
 
 void RobotState::getAttachedBodies(std::vector<const AttachedBody*>& attached_bodies) const
@@ -1097,30 +1140,17 @@ const Eigen::Isometry3d& RobotState::getFrameInfo(const std::string& frame_id, c
   std::map<std::string, AttachedBody*>::const_iterator jt = attached_body_map_.find(frame_id);
   if (jt != attached_body_map_.end())
   {
-    const EigenSTL::vector_Isometry3d& tf = jt->second->getGlobalCollisionBodyTransforms();
-    if (tf.empty())
-    {
-      ROS_ERROR_NAMED(LOGNAME, "Attached body '%s' has no geometry associated to it. No transform to return.",
-                      frame_id.c_str());
-      robot_link = nullptr;
-      frame_found = false;
-      return IDENTITY_TRANSFORM;
-    }
-    if (tf.size() > 1)
-      ROS_DEBUG_NAMED(LOGNAME,
-                      "There are multiple geometries associated to attached body '%s'. "
-                      "Returning the transform for the first one.",
-                      frame_id.c_str());
+    const Eigen::Isometry3d& transform = jt->second->getGlobalPose();
     robot_link = jt->second->getAttachedLink();
     frame_found = true;
     BOOST_VERIFY(checkLinkTransforms());
-    return tf[0];
+    return transform;
   }
 
   // Check if an AttachedBody has a subframe with name frame_id
   for (const std::pair<const std::string, AttachedBody*>& body : attached_body_map_)
   {
-    const auto& transform = body.second->getGlobalSubframeTransform(frame_id, &frame_found);
+    const Eigen::Isometry3d& transform = body.second->getGlobalSubframeTransform(frame_id, &frame_found);
     if (frame_found)
     {
       robot_link = body.second->getAttachedLink();
@@ -1573,8 +1603,10 @@ bool RobotState::setFromIK(const JointModelGroup* jmg, const EigenSTL::vector_Is
     std::string error_msg;
     if (!solver->supportsGroup(jmg, &error_msg))
     {
+      // skirt around clang-diagnostic-potentially-evaluated-expression
+      const kinematics::KinematicsBase& solver_ref = *solver;
       ROS_ERROR_NAMED(LOGNAME, "Kinematics solver %s does not support joint group %s.  Error: %s",
-                      typeid(*solver).name(), jmg->getName().c_str(), error_msg.c_str());
+                      typeid(solver_ref).name(), jmg->getName().c_str(), error_msg.c_str());
       valid_solver = false;
     }
   }
@@ -1594,7 +1626,7 @@ bool RobotState::setFromIK(const JointModelGroup* jmg, const EigenSTL::vector_Is
     }
   }
 
-  // Check that no, or only one set of consistency limits have been passed in, and choose that one
+  // Check that no, or only one set of consistency limits has been passed in, and choose that one
   std::vector<double> consistency_limits;
   if (consistency_limit_sets.size() > 1)
   {
@@ -1653,15 +1685,8 @@ bool RobotState::setFromIK(const JointModelGroup* jmg, const EigenSTL::vector_Is
         if (hasAttachedBody(pose_frame))
         {
           const AttachedBody* body = getAttachedBody(pose_frame);
-          const EigenSTL::vector_Isometry3d& ab_trans = body->getFixedTransforms();
-          if (ab_trans.size() != 1)
-          {
-            ROS_ERROR_NAMED(LOGNAME, "Cannot use an attached body "
-                                     "with multiple geometries as a reference frame.");
-            return false;
-          }
           pose_frame = body->getAttachedLinkName();
-          pose = pose * ab_trans[0].inverse();
+          pose = pose * body->getPose().inverse();
         }
         if (pose_frame != solver_tip_frame)
         {
@@ -1786,7 +1811,7 @@ bool RobotState::setFromIKSubgroups(const JointModelGroup* jmg, const EigenSTL::
                                     const std::vector<std::string>& tips_in,
                                     const std::vector<std::vector<double> >& consistency_limits, double timeout,
                                     const GroupStateValidityCallbackFn& constraint,
-                                    const kinematics::KinematicsQueryOptions& options)
+                                    const kinematics::KinematicsQueryOptions& /*options*/)
 {
   // Assume we have already ran setFromIK() and those checks
 
@@ -1866,14 +1891,8 @@ bool RobotState::setFromIKSubgroups(const JointModelGroup* jmg, const EigenSTL::
       if (hasAttachedBody(pose_frame))
       {
         const AttachedBody* body = getAttachedBody(pose_frame);
-        const EigenSTL::vector_Isometry3d& ab_trans = body->getFixedTransforms();  // valid isometries by contract
-        if (ab_trans.size() != 1)
-        {
-          ROS_ERROR_NAMED(LOGNAME, "Cannot use an attached body with multiple geometries as a reference frame.");
-          return false;
-        }
         pose_frame = body->getAttachedLinkName();
-        pose = pose * ab_trans[0].inverse();  // valid isometry
+        pose = pose * body->getPose().inverse();  // valid isometry
       }
       if (pose_frame != solver_tip_frame)
       {
@@ -2209,7 +2228,7 @@ void RobotState::printTransforms(std::ostream& out) const
   }
 }
 
-std::string RobotState::getStateTreeString(const std::string& prefix) const
+std::string RobotState::getStateTreeString() const
 {
   std::stringstream ss;
   ss << "ROBOT: " << robot_model_->getName() << std::endl;
