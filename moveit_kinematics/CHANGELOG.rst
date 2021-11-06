@@ -2,17 +2,51 @@
 Changelog for package moveit_kinematics
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1.0.8 (2021-05-23)
+1.1.6 (2021-11-06)
 ------------------
-* Improve ikfast QUIET handling (`#2685 <https://github.com/ros-planning/moveit/issues/2685>`_)
-* ikfast script: install sympy 0.7.1 from git (`#2650 <https://github.com/ros-planning/moveit/issues/2650>`_)
-* Python3 compatibility for ikfast's round_collada_numbers.py (`#2473 <https://github.com/ros-planning/moveit/issues/2473>`_)
-* Contributors: Tobias Fischer, ags-dy, Robert Haschke
+* Use newly introduced cmake macro ``moveit_build_options()`` from ``moveit_core``
+* clang-tidy: modernize-make-shared, modernize-make-unique (`#2762 <https://github.com/ros-planning/moveit/issues/2762>`_)
+* Contributors: Robert Haschke, pvanlaar
 
-1.0.7 (2020-11-20)
+1.1.5 (2021-05-23)
 ------------------
-* [fix] Fix IKfast tests (`#2331 <https://github.com/ros-planning/moveit/issues/2331>`_)
-* Contributors: Robert Haschke
+
+1.1.4 (2021-05-12)
+------------------
+* Fix ikfast script: install sympy 0.7.1 from git (`#2650 <https://github.com/ros-planning/moveit/issues/2650>`_)
+* Contributors: ags-dy
+
+1.1.3 (2021-04-29)
+------------------
+
+1.1.2 (2021-04-08)
+------------------
+* Fix formatting errors
+* Replaced eigen+kdl conversions with tf2_eigen + tf2_kdl (`#2472 <https://github.com/ros-planning/moveit/issues/2472>`_)
+* Python3 compatibility for ikfast's round_collada_numbers.py (`#2473 <https://github.com/ros-planning/moveit/issues/2473>`_)
+* Contributors: Tobias Fischer, Tyler Weaver, petkovich
+
+1.1.1 (2020-10-13)
+------------------
+* [fix] various issues with Noetic build (`#2327 <https://github.com/ros-planning/moveit/issues/2327>`_)
+* [fix] python3 issues (`#2323 <https://github.com/ros-planning/moveit/issues/2323>`_)
+* Contributors: G.A. vd. Hoorn, Michael Görner, Robert Haschke
+
+1.1.0 (2020-09-04)
+------------------
+* [feature] Implementation of parameter TranslationXY2D IKFast (`#1949 <https://github.com/ros-planning/moveit/issues/1949>`_)
+* [fix] Various fixes for upcoming Noetic release (`#2180 <https://github.com/ros-planning/moveit/issues/2180>`_)
+* [fix] Delete IKCache copy constructor (`#1750 <https://github.com/ros-planning/moveit/issues/1750>`_)
+* [maint] Move NOLINT instructions to intended positions (`#2058 <https://github.com/ros-planning/moveit/issues/2058>`_)
+* [maint] clang-tidy fixes (`#2050 <https://github.com/ros-planning/moveit/issues/2050>`_) (`#2004 <https://github.com/ros-planning/moveit/issues/2004>`_, `#1419 <https://github.com/ros-planning/moveit/issues/1419>`_)
+* [maint] Replace namespaces robot_state and robot_model with moveit::core (`#1924 <https://github.com/ros-planning/moveit/issues/1924>`_)
+* [maint] Fix various build issues on Windows (`#1880 <https://github.com/ros-planning/moveit/issues/1880>`_)
+* [maint] Fix compiler warnings (`#1773 <https://github.com/ros-planning/moveit/issues/1773>`_)
+* [maint] Switch from include guards to pragma once (`#1615 <https://github.com/ros-planning/moveit/issues/1615>`_)
+* [maint] Use CMAKE_CXX_STANDARD to enforce c++14 for portability (`#1607 <https://github.com/ros-planning/moveit/issues/1607>`_)
+* [maint] Remove ! from MoveIt name (`#1590 <https://github.com/ros-planning/moveit/issues/1590>`_)
+* [maint] Relax dependencies of moveit_kinematics (`#1529 <https://github.com/ros-planning/moveit/issues/1529>`_)
+* Contributors: Ayush Garg, Christian Henkel, Dave Coleman, Henning Kayser, Immanuel Martini, Jonathan Binney, Markus Vieth, Martin Günther, Michael Ferguson, Michael Görner, Robert Haschke, Sean Yen, Tyler Weaver, Yu, Yan, edetleon, jschleicher, v4hn
 
 1.0.6 (2020-08-19)
 ------------------

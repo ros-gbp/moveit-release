@@ -214,7 +214,7 @@ bool KDLKinematicsPlugin::initialize(const moveit::core::RobotModel& robot_model
   unsigned int joint_counter = 0;
   for (std::size_t i = 0; i < kdl_chain_.getNrOfSegments(); ++i)
   {
-    const robot_model::JointModel* jm = robot_model_->getJointModel(kdl_chain_.segments[i].getJoint().getName());
+    const moveit::core::JointModel* jm = robot_model_->getJointModel(kdl_chain_.segments[i].getJoint().getName());
 
     // first check whether it belongs to the set of active joints in the group
     if (jm->getMimic() == nullptr && jm->getVariableCount() > 0)
@@ -240,26 +240,26 @@ bool KDLKinematicsPlugin::initialize(const moveit::core::RobotModel& robot_model
       }
     }
   }
-  for (std::size_t i = 0; i < mimic_joints_.size(); ++i)
+  for (JointMimic& mimic_joint : mimic_joints_)
   {
-    if (!mimic_joints_[i].active)
+    if (!mimic_joint.active)
     {
-      const robot_model::JointModel* joint_model =
-          joint_model_group_->getJointModel(mimic_joints_[i].joint_name)->getMimic();
-      for (std::size_t j = 0; j < mimic_joints_.size(); ++j)
+      const moveit::core::JointModel* joint_model =
+          joint_model_group_->getJointModel(mimic_joint.joint_name)->getMimic();
+      for (JointMimic& mimic_joint_recal : mimic_joints_)
       {
-        if (mimic_joints_[j].joint_name == joint_model->getName())
+        if (mimic_joint_recal.joint_name == joint_model->getName())
         {
-          mimic_joints_[i].map_index = mimic_joints_[j].map_index;
+          mimic_joint.map_index = mimic_joint_recal.map_index;
         }
       }
     }
   }
 
   // Setup the joint state groups that we need
-  state_.reset(new robot_state::RobotState(robot_model_));
+  state_ = std::make_shared<moveit::core::RobotState>(robot_model_);
 
-  fk_solver_.reset(new KDL::ChainFkSolverPos_recursive(kdl_chain_));
+  fk_solver_ = std::make_unique<KDL::ChainFkSolverPos_recursive>(kdl_chain_);
 
   initialized_ = true;
   ROS_DEBUG_NAMED("kdl", "KDL solver initialized");
@@ -278,7 +278,7 @@ bool KDLKinematicsPlugin::getPositionIK(const geometry_msgs::Pose& ik_pose, cons
   std::vector<double> consistency_limits;
 
   // limit search to a single attempt by setting a timeout of zero
-  return searchPositionIK(ik_pose, ik_seed_state, 0.0, solution, IKCallbackFn(), error_code, consistency_limits,
+  return searchPositionIK(ik_pose, ik_seed_state, 0.0, consistency_limits, solution, IKCallbackFn(), error_code,
                           options);
 }
 
@@ -289,7 +289,7 @@ bool KDLKinematicsPlugin::searchPositionIK(const geometry_msgs::Pose& ik_pose, c
 {
   std::vector<double> consistency_limits;
 
-  return searchPositionIK(ik_pose, ik_seed_state, timeout, solution, IKCallbackFn(), error_code, consistency_limits,
+  return searchPositionIK(ik_pose, ik_seed_state, timeout, consistency_limits, solution, IKCallbackFn(), error_code,
                           options);
 }
 
@@ -298,7 +298,7 @@ bool KDLKinematicsPlugin::searchPositionIK(const geometry_msgs::Pose& ik_pose, c
                                            std::vector<double>& solution, moveit_msgs::MoveItErrorCodes& error_code,
                                            const kinematics::KinematicsQueryOptions& options) const
 {
-  return searchPositionIK(ik_pose, ik_seed_state, timeout, solution, IKCallbackFn(), error_code, consistency_limits,
+  return searchPositionIK(ik_pose, ik_seed_state, timeout, consistency_limits, solution, IKCallbackFn(), error_code,
                           options);
 }
 
@@ -309,7 +309,7 @@ bool KDLKinematicsPlugin::searchPositionIK(const geometry_msgs::Pose& ik_pose, c
                                            const kinematics::KinematicsQueryOptions& options) const
 {
   std::vector<double> consistency_limits;
-  return searchPositionIK(ik_pose, ik_seed_state, timeout, solution, solution_callback, error_code, consistency_limits,
+  return searchPositionIK(ik_pose, ik_seed_state, timeout, consistency_limits, solution, solution_callback, error_code,
                           options);
 }
 
@@ -317,17 +317,6 @@ bool KDLKinematicsPlugin::searchPositionIK(const geometry_msgs::Pose& ik_pose, c
                                            double timeout, const std::vector<double>& consistency_limits,
                                            std::vector<double>& solution, const IKCallbackFn& solution_callback,
                                            moveit_msgs::MoveItErrorCodes& error_code,
-                                           const kinematics::KinematicsQueryOptions& options) const
-{
-  return searchPositionIK(ik_pose, ik_seed_state, timeout, solution, solution_callback, error_code, consistency_limits,
-                          options);
-}
-
-bool KDLKinematicsPlugin::searchPositionIK(const geometry_msgs::Pose& ik_pose, const std::vector<double>& ik_seed_state,
-                                           double timeout, std::vector<double>& solution,
-                                           const IKCallbackFn& solution_callback,
-                                           moveit_msgs::MoveItErrorCodes& error_code,
-                                           const std::vector<double>& consistency_limits,
                                            const kinematics::KinematicsQueryOptions& options) const
 {
   ros::WallTime start_time = ros::WallTime::now();

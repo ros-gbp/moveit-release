@@ -34,8 +34,7 @@
 
 /* Author: Suat Gedikli */
 
-#ifndef MOVEIT_DEPTH_SELF_FILTER_NODELET_
-#define MOVEIT_DEPTH_SELF_FILTER_NODELET_
+#pragma once
 
 #include <nodelet/nodelet.h>
 #include <image_transport/image_transport.h>
@@ -106,10 +105,10 @@ private:
   int queue_size_;
   TransformProvider transform_provider_;
 
-  cv_bridge::CvImagePtr filtered_depth_ptr_;
-  cv_bridge::CvImagePtr filtered_label_ptr_;
-  cv_bridge::CvImagePtr model_depth_ptr_;
-  cv_bridge::CvImagePtr model_label_ptr_;
+  std::shared_ptr<cv_bridge::CvImage> filtered_depth_ptr_;
+  std::shared_ptr<cv_bridge::CvImage> filtered_label_ptr_;
+  std::shared_ptr<cv_bridge::CvImage> model_depth_ptr_;
+  std::shared_ptr<cv_bridge::CvImage> model_label_ptr_;
   /** \brief distance of near clipping plane*/
   double near_clipping_plane_distance_;
 
@@ -130,5 +129,3 @@ private:
 };
 
 }  // namespace mesh_filter
-
-#endif

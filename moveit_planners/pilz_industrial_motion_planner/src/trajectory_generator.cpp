@@ -36,8 +36,6 @@
 
 #include <cassert>
 
-#include <eigen_conversions/eigen_kdl.h>
-#include <eigen_conversions/eigen_msg.h>
 #include <kdl/velocityprofile_trap.hpp>
 #include <moveit/robot_state/conversions.h>
 
@@ -187,7 +185,7 @@ void TrajectoryGenerator::checkGoalConstraints(
   if (goal_constraints.size() != 1)
   {
     std::ostringstream os;
-    os << "Exaclty one goal constraint required, but " << goal_constraints.size() << " goal constraints given";
+    os << "Exactly one goal constraint required, but " << goal_constraints.size() << " goal constraints given";
     throw NotExactlyOneGoalConstraintGiven(os.str());
   }
 
@@ -216,23 +214,13 @@ void TrajectoryGenerator::validateRequest(const planning_interface::MotionPlanRe
   checkGoalConstraints(req.goal_constraints, req.start_state.joint_state.name, req.group_name);
 }
 
-void TrajectoryGenerator::convertToRobotTrajectory(const trajectory_msgs::JointTrajectory& joint_trajectory,
-                                                   const moveit_msgs::RobotState& start_state,
-                                                   robot_trajectory::RobotTrajectory& robot_trajectory) const
-{
-  moveit::core::RobotState start_rs(robot_model_);
-  start_rs.setToDefaultValues();
-  moveit::core::robotStateMsgToRobotState(start_state, start_rs, false);
-  robot_trajectory.setRobotTrajectoryMsg(start_rs, joint_trajectory);
-}
-
-void TrajectoryGenerator::setSuccessResponse(const std::string& group_name, const moveit_msgs::RobotState& start_state,
+void TrajectoryGenerator::setSuccessResponse(const moveit::core::RobotState& start_state, const std::string& group_name,
                                              const trajectory_msgs::JointTrajectory& joint_trajectory,
                                              const ros::Time& planning_start,
                                              planning_interface::MotionPlanResponse& res) const
 {
   robot_trajectory::RobotTrajectoryPtr rt(new robot_trajectory::RobotTrajectory(robot_model_, group_name));
-  convertToRobotTrajectory(joint_trajectory, start_state, *rt);
+  rt->setRobotTrajectoryMsg(start_state, joint_trajectory);
 
   res.trajectory_ = rt;
   res.error_code_.val = moveit_msgs::MoveItErrorCodes::SUCCESS;
@@ -269,7 +257,8 @@ TrajectoryGenerator::cartesianTrapVelocityProfile(const double& max_velocity_sca
   return vp_trans;
 }
 
-bool TrajectoryGenerator::generate(const planning_interface::MotionPlanRequest& req,
+bool TrajectoryGenerator::generate(const planning_scene::PlanningSceneConstPtr& scene,
+                                   const planning_interface::MotionPlanRequest& req,
                                    planning_interface::MotionPlanResponse& res, double sampling_time)
 {
   ROS_INFO_STREAM("Generating " << req.planner_id << " trajectory...");
@@ -302,7 +291,7 @@ bool TrajectoryGenerator::generate(const planning_interface::MotionPlanRequest& 
   MotionPlanInfo plan_info;
   try
   {
-    extractMotionPlanInfo(req, plan_info);
+    extractMotionPlanInfo(scene, req, plan_info);
   }
   catch (const MoveItErrorCodeException& ex)
   {
@@ -315,7 +304,7 @@ bool TrajectoryGenerator::generate(const planning_interface::MotionPlanRequest& 
   trajectory_msgs::JointTrajectory joint_trajectory;
   try
   {
-    plan(req, plan_info, sampling_time, joint_trajectory);
+    plan(scene, req, plan_info, sampling_time, joint_trajectory);
   }
   catch (const MoveItErrorCodeException& ex)
   {
@@ -325,7 +314,9 @@ bool TrajectoryGenerator::generate(const planning_interface::MotionPlanRequest& 
     return false;
   }
 
-  setSuccessResponse(req.group_name, req.start_state, joint_trajectory, planning_begin, res);
+  moveit::core::RobotState start_state(scene->getCurrentState());
+  moveit::core::robotStateMsgToRobotState(req.start_state, start_state, true);
+  setSuccessResponse(start_state, req.group_name, joint_trajectory, planning_begin, res);
   return true;
 }
 

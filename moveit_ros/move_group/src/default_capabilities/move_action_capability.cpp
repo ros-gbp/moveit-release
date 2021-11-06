@@ -41,6 +41,7 @@
 #include <moveit/plan_execution/plan_with_sensing.h>
 #include <moveit/trajectory_processing/trajectory_tools.h>
 #include <moveit/kinematic_constraints/utils.h>
+#include <moveit/utils/message_checks.h>
 #include <moveit/move_group/capability_names.h>
 
 namespace move_group
@@ -53,8 +54,8 @@ MoveGroupMoveAction::MoveGroupMoveAction()
 void MoveGroupMoveAction::initialize()
 {
   // start the move action server
-  move_action_server_.reset(new actionlib::SimpleActionServer<moveit_msgs::MoveGroupAction>(
-      root_node_handle_, MOVE_ACTION, boost::bind(&MoveGroupMoveAction::executeMoveCallback, this, _1), false));
+  move_action_server_ = std::make_unique<actionlib::SimpleActionServer<moveit_msgs::MoveGroupAction>>(
+      root_node_handle_, MOVE_ACTION, boost::bind(&MoveGroupMoveAction::executeMoveCallback, this, _1), false);
   move_action_server_->registerPreemptCallback(boost::bind(&MoveGroupMoveAction::preemptMoveCallback, this));
   move_action_server_->start();
 }
@@ -102,10 +103,10 @@ void MoveGroupMoveAction::executeMoveCallbackPlanAndExecute(const moveit_msgs::M
   ROS_INFO_NAMED(getName(), "Combined planning and execution request received for MoveGroup action. "
                             "Forwarding to planning and execution pipeline.");
 
-  if (planning_scene::PlanningScene::isEmpty(goal->planning_options.planning_scene_diff))
+  if (moveit::core::isEmpty(goal->planning_options.planning_scene_diff))
   {
     planning_scene_monitor::LockedPlanningSceneRO lscene(context_->planning_scene_monitor_);
-    const robot_state::RobotState& current_state = lscene->getCurrentState();
+    const moveit::core::RobotState& current_state = lscene->getCurrentState();
 
     // check to see if the desired constraints are already met
     for (std::size_t i = 0; i < goal->request.goal_constraints.size(); ++i)
@@ -122,10 +123,9 @@ void MoveGroupMoveAction::executeMoveCallbackPlanAndExecute(const moveit_msgs::M
   plan_execution::PlanExecution::Options opt;
 
   const moveit_msgs::MotionPlanRequest& motion_plan_request =
-      planning_scene::PlanningScene::isEmpty(goal->request.start_state) ? goal->request :
-                                                                          clearRequestStartState(goal->request);
+      moveit::core::isEmpty(goal->request.start_state) ? goal->request : clearRequestStartState(goal->request);
   const moveit_msgs::PlanningScene& planning_scene_diff =
-      planning_scene::PlanningScene::isEmpty(goal->planning_options.planning_scene_diff.robot_state) ?
+      moveit::core::isEmpty(goal->planning_options.planning_scene_diff.robot_state) ?
           goal->planning_options.planning_scene_diff :
           clearSceneRobotState(goal->planning_options.planning_scene_diff);
 
@@ -168,7 +168,7 @@ void MoveGroupMoveAction::executeMoveCallbackPlanOnly(const moveit_msgs::MoveGro
   // lock the scene so that it does not modify the world representation while diff() is called
   planning_scene_monitor::LockedPlanningSceneRO lscene(context_->planning_scene_monitor_);
   const planning_scene::PlanningSceneConstPtr& the_scene =
-      (planning_scene::PlanningScene::isEmpty(goal->planning_options.planning_scene_diff)) ?
+      (moveit::core::isEmpty(goal->planning_options.planning_scene_diff)) ?
           static_cast<const planning_scene::PlanningSceneConstPtr&>(lscene) :
           lscene->diff(goal->planning_options.planning_scene_diff);
   planning_interface::MotionPlanResponse res;
@@ -180,9 +180,17 @@ void MoveGroupMoveAction::executeMoveCallbackPlanOnly(const moveit_msgs::MoveGro
     return;
   }
 
+  // Select planning_pipeline to handle request
+  const planning_pipeline::PlanningPipelinePtr planning_pipeline = resolvePlanningPipeline(goal->request.pipeline_id);
+  if (!planning_pipeline)
+  {
+    action_res.error_code.val = moveit_msgs::MoveItErrorCodes::FAILURE;
+    return;
+  }
+
   try
   {
-    context_->planning_pipeline_->generatePlan(the_scene, goal->request, res);
+    planning_pipeline->generatePlan(the_scene, goal->request, res);
   }
   catch (std::exception& ex)
   {
@@ -200,12 +208,21 @@ bool MoveGroupMoveAction::planUsingPlanningPipeline(const planning_interface::Mo
 {
   setMoveState(PLANNING);
 
-  planning_scene_monitor::LockedPlanningSceneRO lscene(plan.planning_scene_monitor_);
   bool solved = false;
   planning_interface::MotionPlanResponse res;
+
+  // Select planning_pipeline to handle request
+  const planning_pipeline::PlanningPipelinePtr planning_pipeline = resolvePlanningPipeline(req.pipeline_id);
+  if (!planning_pipeline)
+  {
+    res.error_code_.val = moveit_msgs::MoveItErrorCodes::FAILURE;
+    return solved;
+  }
+
+  planning_scene_monitor::LockedPlanningSceneRO lscene(plan.planning_scene_monitor_);
   try
   {
-    solved = context_->planning_pipeline_->generatePlan(plan.planning_scene_, req, res);
+    solved = planning_pipeline->generatePlan(plan.planning_scene_, req, res);
   }
   catch (std::exception& ex)
   {

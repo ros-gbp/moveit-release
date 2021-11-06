@@ -2,17 +2,53 @@
 Changelog for package moveit_ros_move_group
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1.0.8 (2021-05-23)
+1.1.6 (2021-11-06)
 ------------------
-* Fix missing isEmpty() check in compute_ik service (`#2544 <https://github.com/ros-planning/moveit/issues/2544>`_)
-* Contributors: Michael Görner
+* Use newly introduced cmake macro ``moveit_build_options()`` from ``moveit_core``
+* Introduce a reference frame for collision objects (`#2037 <https://github.com/ros-planning/moveit/issues/2037>`_)
+* clang-tidy: modernize-make-shared, modernize-make-unique (`#2762 <https://github.com/ros-planning/moveit/issues/2762>`_)
+* Contributors: Felix von Drigalski, Robert Haschke, pvanlaar
 
-1.0.7 (2020-11-20)
+1.1.5 (2021-05-23)
+------------------
+
+1.1.4 (2021-05-12)
+------------------
+
+1.1.3 (2021-04-29)
+------------------
+
+1.1.2 (2021-04-08)
+------------------
+* Fix formatting errors
+* Support multiple planning pipelines with MoveGroup via MoveItCpp (`#2127 <https://github.com/ros-planning/moveit/issues/2127>`_)
+* Run multiple planning pipelines with MoveGroup using MoveItCpp
+* Fix missing isEmpty check in compute_ik service (`#2544 <https://github.com/ros-planning/moveit/issues/2544>`_)
+* Contributors: Henning Kayser, Michael Görner, Tyler Weaver
+
+1.1.1 (2020-10-13)
+------------------
+* [fix] Let the max number of contacts be the amount of world objects + link models with geometry (`#2355 <https://github.com/ros-planning/moveit/issues/2355>`_)
+* [maint] Add comment to MOVEIT_CLASS_FORWARD (`#2315 <https://github.com/ros-planning/moveit/issues/2315>`_)
+* Contributors: Felix von Drigalski, Loy van Beek, Michael Görner, v4hn
+
+1.1.0 (2020-09-04)
 ------------------
 * [feature] Start new joint_state_publisher_gui on param use_gui (`#2257 <https://github.com/ros-planning/moveit/issues/2257>`_)
-* [feature] Let the max number of contacts be the amount of world objects + link models with geometry (`#2361 <https://github.com/ros-planning/moveit/issues/2361>`_)
-* [maint] Add comment to MOVEIT_CLASS_FORWARD (`#2315 <https://github.com/ros-planning/moveit/issues/2315>`_)
-* Contributors: Felix von Drigalski, Loy van Beek, Michael Görner, Yoan Mollard, v4hn
+* [feature] TfPublisher: fixup and add attached collsion objects (`#1792 <https://github.com/ros-planning/moveit/issues/1792>`_)
+* [feature] move_group capability for publishing planning scene frames to the tf system (`#1761 <https://github.com/ros-planning/moveit/issues/1761>`_)
+* [feature] get_planning_scene_service: return full scene when nothing was requested (`#1424 <https://github.com/ros-planning/moveit/issues/1424>`_)
+* [feature] Separate source file for CartesianInterpolator (`#1149 <https://github.com/ros-planning/moveit/issues/1149>`_)
+* [fix]   Various fixes for upcoming Noetic release (`#2180 <https://github.com/ros-planning/moveit/issues/2180>`_)
+* [fix]   Fix TfPublisher subframe publishing (`#2002 <https://github.com/ros-planning/moveit/issues/2002>`_)
+* [maint] Fix compiler warnings (`#1773 <https://github.com/ros-planning/moveit/issues/1773>`_)
+* [maint] clang-tidy fixes (`#2050 <https://github.com/ros-planning/moveit/issues/2050>`_) (`#2004 <https://github.com/ros-planning/moveit/issues/2004>`_, `#1419 <https://github.com/ros-planning/moveit/issues/1419>`_)
+* [maint] Optional cpp version setting (`#2166 <https://github.com/ros-planning/moveit/issues/2166>`_)
+* [maint] Replace namespaces robot_state and robot_model with moveit::core (`#1924 <https://github.com/ros-planning/moveit/issues/1924>`_)
+* [maint] Move isEmpty() test functions to moveit_core/utils (`#1627 <https://github.com/ros-planning/moveit/issues/1627>`_)
+* [maint] Switch from include guards to pragma once (`#1615 <https://github.com/ros-planning/moveit/issues/1615>`_)
+* [maint] Remove ! from MoveIt name (`#1590 <https://github.com/ros-planning/moveit/issues/1590>`_)
+* Contributors: Dave Coleman, Mike Lautman, Robert Haschke, Felix von Drigalski, Jens P, Jonathan Binney, JonasTietz, Michael Görner, Tyler Weaver, Yoan Mollard, Yu, Yan, v4hn
 
 1.0.6 (2020-08-19)
 ------------------

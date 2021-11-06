@@ -34,8 +34,7 @@
 
 /* Author: Ioan Sucan */
 
-#ifndef MOVEIT_PLANNING_INTERFACE_PLANNING_INTERFACE_
-#define MOVEIT_PLANNING_INTERFACE_PLANNING_INTERFACE_
+#pragma once
 
 #include <moveit/macros/class_forward.h>
 #include <moveit/planning_interface/planning_request.h>
@@ -48,7 +47,7 @@ namespace planning_scene
 MOVEIT_CLASS_FORWARD(PlanningScene);  // Defines PlanningScenePtr, ConstPtr, WeakPtr... etc
 }
 
-/** \brief This namespace includes the base class for MoveIt! planners */
+/** \brief This namespace includes the base class for MoveIt planners */
 namespace planning_interface
 {
 /**
@@ -147,7 +146,7 @@ protected:
 
 MOVEIT_CLASS_FORWARD(PlannerManager);  // Defines PlannerManagerPtr, ConstPtr, WeakPtr... etc
 
-/** \brief Base class for a MoveIt! planner */
+/** \brief Base class for a MoveIt planner */
 class PlannerManager
 {
 public:
@@ -164,7 +163,7 @@ public:
   /// It is assumed that motion plans will be computed for the robot described by \e model and that any exposed ROS
   /// functionality
   /// or required ROS parameters are namespaced by \e ns
-  virtual bool initialize(const robot_model::RobotModelConstPtr& model, const std::string& ns);
+  virtual bool initialize(const moveit::core::RobotModelConstPtr& model, const std::string& ns);
 
   /// Get \brief a short string that identifies the planning interface
   virtual std::string getDescription() const;
@@ -213,5 +212,3 @@ protected:
 };
 
 }  // namespace planning_interface
-
-#endif

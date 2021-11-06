@@ -164,7 +164,7 @@ void FollowJointTrajectoryControllerHandle::configure(XmlRpc::XmlRpcValue& confi
   }
   else if (isArray(config))  // or an array of JointTolerance msgs
   {
-    for (int i = 0; i < config.size(); ++i)
+    for (int i = 0; i < config.size(); ++i)  // NOLINT(modernize-loop-convert)
     {
       control_msgs::JointTolerance& tol = getTolerance(tolerances, config[i]["name"]);
       for (ToleranceVariables var : { POSITION, VELOCITY, ACCELERATION })
@@ -199,13 +199,13 @@ void FollowJointTrajectoryControllerHandle::controllerDoneCallback(
 {
   // Output custom error message for FollowJointTrajectoryResult if necessary
   if (!result)
-    ROS_WARN_STREAM_NAMED(LOGNAME, "Controller " << name_ << " done, no result returned");
+    ROS_WARN_STREAM_NAMED(LOGNAME, "Controller '" << name_ << "' done, no result returned");
   else if (result->error_code == control_msgs::FollowJointTrajectoryResult::SUCCESSFUL)
-    ROS_INFO_STREAM_NAMED(LOGNAME, "Controller " << name_ << " successfully finished");
+    ROS_INFO_STREAM_NAMED(LOGNAME, "Controller '" << name_ << "' successfully finished");
   else
-    ROS_WARN_STREAM_NAMED(LOGNAME, "Controller " << name_ << " failed with error "
-                                                 << errorCodeToMessage(result->error_code) << ": "
-                                                 << result->error_string);
+    ROS_WARN_STREAM_NAMED(LOGNAME, "Controller '" << name_ << "' failed with error "
+                                                  << errorCodeToMessage(result->error_code) << ": "
+                                                  << result->error_string);
   finishControllerExecution(state);
 }
 
@@ -215,7 +215,7 @@ void FollowJointTrajectoryControllerHandle::controllerActiveCallback()
 }
 
 void FollowJointTrajectoryControllerHandle::controllerFeedbackCallback(
-    const control_msgs::FollowJointTrajectoryFeedbackConstPtr& feedback)
+    const control_msgs::FollowJointTrajectoryFeedbackConstPtr& /* feedback */)
 {
 }
 

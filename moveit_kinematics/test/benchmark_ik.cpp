@@ -76,14 +76,14 @@ int main(int argc, char* argv[])
   spinner.start();
 
   robot_model_loader::RobotModelLoader robot_model_loader;
-  const robot_model::RobotModelPtr& kinematic_model = robot_model_loader.getModel();
+  const moveit::core::RobotModelPtr& kinematic_model = robot_model_loader.getModel();
   planning_scene::PlanningScene planning_scene(kinematic_model);
-  robot_state::RobotState& kinematic_state = planning_scene.getCurrentStateNonConst();
+  moveit::core::RobotState& kinematic_state = planning_scene.getCurrentStateNonConst();
   collision_detection::CollisionRequest collision_request;
   collision_detection::CollisionResult collision_result;
   std::chrono::duration<double> ik_time(0);
   std::chrono::time_point<std::chrono::system_clock> start;
-  std::vector<robot_state::JointModelGroup*> groups;
+  std::vector<moveit::core::JointModelGroup*> groups;
   std::vector<std::string> end_effectors;
 
   if (group == "all")
@@ -147,16 +147,9 @@ int main(int argc, char* argv[])
                        ik_time.count() / (double)i, i, 100. * num_failed_calls / i,
                        100. * num_self_collisions / (num_self_collisions + i));
     }
-    if (i != 0)
-    {
-      ROS_INFO_NAMED("cached_ik.measure_ik_call_cost", "Summary for group %s: %g %g %g", group->getName().c_str(),
-                     ik_time.count() / (double)i, 100. * num_failed_calls / i,
-                     100. * num_self_collisions / (num_self_collisions + i));
-    }
-    else
-    {
-      ROS_WARN_NAMED("cached_ik.measure_ik_call_cost", "Failure: No valid start positions found.");
-    }
+    ROS_INFO_NAMED("cached_ik.measure_ik_call_cost", "Summary for group %s: %g %g %g", group->getName().c_str(),
+                   ik_time.count() / (double)i, 100. * num_failed_calls / i,
+                   100. * num_self_collisions / (num_self_collisions + i));
   }
 
   ros::shutdown();

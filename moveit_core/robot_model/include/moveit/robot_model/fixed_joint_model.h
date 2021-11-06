@@ -34,8 +34,7 @@
 
 /* Author: Ioan Sucan */
 
-#ifndef MOVEIT_CORE_ROBOT_MODEL_FIXED_JOINT_MODEL_
-#define MOVEIT_CORE_ROBOT_MODEL_FIXED_JOINT_MODEL_
+#pragma once
 
 #include <moveit/robot_model/joint_model.h>
 
@@ -53,7 +52,7 @@ public:
   void getVariableRandomPositions(random_numbers::RandomNumberGenerator& rng, double* values,
                                   const Bounds& other_bounds) const override;
   void getVariableRandomPositionsNearBy(random_numbers::RandomNumberGenerator& rng, double* values,
-                                        const Bounds& other_bounds, const double* near,
+                                        const Bounds& other_bounds, const double* seed,
                                         const double distance) const override;
   bool enforcePositionBounds(double* values, const Bounds& other_bounds) const override;
   bool satisfiesPositionBounds(const double* values, const Bounds& other_bounds, double margin) const override;
@@ -68,5 +67,3 @@ public:
 };
 }  // namespace core
 }  // namespace moveit
-
-#endif

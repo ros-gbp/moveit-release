@@ -2,21 +2,88 @@
 Changelog for package moveit_ros_planning
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1.0.8 (2021-05-23)
+1.1.6 (2021-11-06)
 ------------------
+* Use newly introduced cmake macro ``moveit_build_options()`` from ``moveit_core``
+* Split ``CollisionPluginLoader`` (`#2834 <https://github.com/ros-planning/moveit/issues/2834>`_)
+
+  To avoid circular dependencies, but enable reuse of the ``CollisionPluginLoader``, the non-ROS part was moved into ``moveit_core/moveit_collision_detection.so``
+  and the ROS part (reading the plugin name from the parameter server) into ``moveit_ros_planning/moveit_collision_plugin_loader.so`` (as before).
+* Introduce a reference frame for collision objects (`#2037 <https://github.com/ros-planning/moveit/issues/2037>`_)
+* Fix RDFLoader: uninitialized member (`#2806 <https://github.com/ros-planning/moveit/issues/2806>`_)
+* Add missing dependencies to generated dynamic_reconfigure headers (`#2772 <https://github.com/ros-planning/moveit/issues/2772>`_)
+* clang-tidy: modernize-make-shared, modernize-make-unique (`#2762 <https://github.com/ros-planning/moveit/issues/2762>`_)
+* PSM: Read padding parameters from correct namespace (`#2706 <https://github.com/ros-planning/moveit/issues/2706>`_)
+* Load ``max_safe_path_cost`` into namespace ``sense_for_plan`` (`#2703 <https://github.com/ros-planning/moveit/issues/2703>`_)
+* Fix order of member initialization (`#2687 <https://github.com/ros-planning/moveit/issues/2687>`_)
+* Move ``OccMapTree`` to ``moveit_core/collision_detection`` (`#2684 <https://github.com/ros-planning/moveit/issues/2684>`_)
+* Contributors: Felix von Drigalski, Martin Günther, Mathias Lüdtke, Michael Görner, Robert Haschke, Simon Schmeisser, Tyler Weaver, pvanlaar, werner291
+
+1.1.5 (2021-05-23)
+------------------
+* Revert "Lock the octomap/octree while collision checking (`#2683 <https://github.com/ros-planning/moveit/issues/2683>`_)
 * Unify and simplify CSM::haveCompleteState overloads (`#2663 <https://github.com/ros-planning/moveit/issues/2663>`_)
-* FixStartStateBounds: Copy attached bodies when adapting the start state (`#2398 <https://github.com/ros-planning/moveit/issues/2398>`_)
+* Contributors: Michael Görner
+
+1.1.4 (2021-05-12)
+------------------
+* Lock the octomap/octree while collision checking (`#2596 <https://github.com/ros-planning/moveit/issues/2596>`_)
+* Use private NodeHandle instead of child for PlanningPipeline topics (`#2652 <https://github.com/ros-planning/moveit/issues/2652>`_)
+* Print an error if the planning pipelines are empty (`#2639 <https://github.com/ros-planning/moveit/issues/2639>`_)
+* Simplify logic in PSM (`#2632 <https://github.com/ros-planning/moveit/issues/2632>`_)
+* Contributors: Henning Kayser, Luc Bettaieb, Michael Görner, Simon Schmeisser, Rojas Rafael
+
+1.1.3 (2021-04-29)
+------------------
+
+1.1.2 (2021-04-08)
+------------------
+* Fix formatting errors
 * PlanExecution: Correctly handle preempt-requested flag (`#2554 <https://github.com/ros-planning/moveit/issues/2554>`_)
+* Support multiple planning pipelines with MoveGroup via MoveItCpp (`#2127 <https://github.com/ros-planning/moveit/issues/2127>`_)
+* Move moveit_cpp to moveit_ros_planning
+  Deprecate namespace ``moveit::planning_interface::`` in favor of ``moveit_cpp::``
 * thread safety in clear octomap & only update geometry (`#2500 <https://github.com/ros-planning/moveit/issues/2500>`_)
 * Fix some typos in comments (`#2466 <https://github.com/ros-planning/moveit/issues/2466>`_)
-* Simplify logic in PSM (`#2632 <https://github.com/ros-planning/moveit/issues/2632>`_) (`#2637 <https://github.com/ros-planning/moveit/issues/2637>`_)
-* Contributors: Jafar Abdi, Michael Görner, Robert Haschke, Simon Schmeisser, Tyler Weaver, Udbhavbisarya23
+* FixStartStateBounds: Copy attached bodies when adapting the start state (`#2398 <https://github.com/ros-planning/moveit/issues/2398>`_)
+* Contributors: Henning Kayser, Michael Görner, Robert Haschke, Simon Schmeisser, Tyler Weaver, Udbhavbisarya23
 
-1.0.7 (2020-11-20)
+1.1.1 (2020-10-13)
 ------------------
-* [fix] Fix "Clear Octomap" button, disable when no octomap is published (`#2320 <https://github.com/ros-planning/moveit/issues/2320>`_)
+* [fix] some clang-tidy issues on Travis (`#2337 <https://github.com/ros-planning/moveit/issues/2337>`_)
+* [fix] various issues with Noetic build (`#2327 <https://github.com/ros-planning/moveit/issues/2327>`_)
+* [fix] "Clear Octomap" button, disable when no octomap is published (`#2320 <https://github.com/ros-planning/moveit/issues/2320>`_)
 * [maint] Add comment to MOVEIT_CLASS_FORWARD (`#2315 <https://github.com/ros-planning/moveit/issues/2315>`_)
-* Contributors: Felix von Drigalski
+* Contributors: Felix von Drigalski, Robert Haschke
+
+1.1.0 (2020-09-04)
+------------------
+* [feature] Use Eigen::Transform::linear() instead of rotation() (`#1964 <https://github.com/ros-planning/moveit/issues/1964>`_)
+* [feature] Bullet collision detection (`#1839 <https://github.com/ros-planning/moveit/issues/1839>`_) (`#1504 <https://github.com/ros-planning/moveit/issues/1504>`_)
+* [feature] Allow different controllers for execution (`#1832 <https://github.com/ros-planning/moveit/issues/1832>`_)
+* [feature] Adding continuous collision detection to Bullet (`#1551 <https://github.com/ros-planning/moveit/issues/1551>`_)
+* [feature] plan_execution: refine logging for invalid paths (`#1705 <https://github.com/ros-planning/moveit/issues/1705>`_)
+* [feature] Unified Collision Environment Integration (`#1584 <https://github.com/ros-planning/moveit/issues/1584>`_)
+* [feature] Allow ROS namespaces for planning request adapters (`#1530 <https://github.com/ros-planning/moveit/issues/1530>`_)
+* [feature] Add named frames to CollisionObjects (`#1439 <https://github.com/ros-planning/moveit/issues/1439>`_)
+* [feature] get_planning_scene_service: return full scene when nothing was requested (`#1424 <https://github.com/ros-planning/moveit/issues/1424>`_)
+* [fix] Various fixes for upcoming Noetic release (`#2180 <https://github.com/ros-planning/moveit/issues/2180>`_)
+* [fix] Initialize zero dynamics in CurrentStateMonitor (`#1883 <https://github.com/ros-planning/moveit/issues/1883>`_)
+* [fix] memory leak (`#1526 <https://github.com/ros-planning/moveit/issues/1526>`_)
+* [maint] Adapt repository for splitted moveit_resources layout (`#2199 <https://github.com/ros-planning/moveit/issues/2199>`_)
+* [maint] partially transition unused test bin to rostest (`#2158 <https://github.com/ros-planning/moveit/issues/2158>`_)
+* [maint] Optional cpp version setting (`#2166 <https://github.com/ros-planning/moveit/issues/2166>`_)
+* [maint] clang-tidy fixes (`#2050 <https://github.com/ros-planning/moveit/issues/2050>`_, `#2004 <https://github.com/ros-planning/moveit/issues/2004>`_, `#1419 <https://github.com/ros-planning/moveit/issues/1419>`_)
+* [maint] Fix usage of panda_moveit_config (`#1904 <https://github.com/ros-planning/moveit/issues/1904>`_)
+* [maint] Replace namespaces robot_state and robot_model with moveit::core (`#1924 <https://github.com/ros-planning/moveit/issues/1924>`_)
+* [maint] Adapt cmake for Bullet (`#1744 <https://github.com/ros-planning/moveit/issues/1744>`_)
+* [maint] Readme for speed benchmark (`#1648 <https://github.com/ros-planning/moveit/issues/1648>`_)
+* [maint] Fix compiler warnings (`#1773 <https://github.com/ros-planning/moveit/issues/1773>`_)
+* [maint] Improve variable naming in RobotModelLoader (`#1759 <https://github.com/ros-planning/moveit/issues/1759>`_)
+* [maint] Move isEmpty() test functions to moveit_core/utils (`#1627 <https://github.com/ros-planning/moveit/issues/1627>`_)
+* [maint] Switch from include guards to pragma once (`#1615 <https://github.com/ros-planning/moveit/issues/1615>`_)
+* [maint] Remove ! from MoveIt name (`#1590 <https://github.com/ros-planning/moveit/issues/1590>`_)
+* Contributors: Ayush Garg, Bianca Homberg, Dave Coleman, Felix von Drigalski, Henning Kayser, Jens P, Jonathan Binney, Markus Vieth, Martin Pecka, Max Krichenbauer, Michael Görner, Robert Haschke, Sean Yen, Simon Schmeisser, Tyler Weaver, Yu, Yan, jschleicher, livanov93, llach
 
 1.0.6 (2020-08-19)
 ------------------

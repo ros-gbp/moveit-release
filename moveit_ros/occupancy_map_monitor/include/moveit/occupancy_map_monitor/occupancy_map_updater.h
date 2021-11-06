@@ -34,23 +34,20 @@
 
 /* Author: Ioan Sucan, Jon Binney */
 
-#ifndef MOVEIT_OCCUPANCY_MAP_MONITOR_OCCUPANCY_MAP_UPDATER_
-#define MOVEIT_OCCUPANCY_MAP_MONITOR_OCCUPANCY_MAP_UPDATER_
+#pragma once
 
 #include <moveit/macros/class_forward.h>
-#include <moveit/occupancy_map_monitor/occupancy_map.h>
+#include <moveit/collision_detection/occupancy_map.h>
 #include <geometric_shapes/shapes.h>
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
 namespace occupancy_map_monitor
 {
-typedef unsigned int ShapeHandle;
-typedef std::map<ShapeHandle, Eigen::Isometry3d, std::less<ShapeHandle>,
-                 Eigen::aligned_allocator<std::pair<const ShapeHandle, Eigen::Isometry3d> > >
-    ShapeTransformCache;
-typedef boost::function<bool(const std::string& target_frame, const ros::Time& target_time, ShapeTransformCache& cache)>
-    TransformCacheProvider;
+using ShapeHandle = unsigned int;
+using ShapeTransformCache = std::map<ShapeHandle, Eigen::Isometry3d, std::less<ShapeHandle>,
+                                     Eigen::aligned_allocator<std::pair<const ShapeHandle, Eigen::Isometry3d> > >;
+using TransformCacheProvider = boost::function<bool(const std::string&, const ros::Time&, ShapeTransformCache&)>;
 
 class OccupancyMapMonitor;
 
@@ -101,7 +98,7 @@ public:
 protected:
   OccupancyMapMonitor* monitor_;
   std::string type_;
-  OccMapTreePtr tree_;
+  collision_detection::OccMapTreePtr tree_;
   TransformCacheProvider transform_provider_callback_;
   ShapeTransformCache transform_cache_;
   bool debug_info_;
@@ -112,5 +109,3 @@ protected:
   static void readXmlParam(XmlRpc::XmlRpcValue& params, const std::string& param_name, unsigned int* value);
 };
 }  // namespace occupancy_map_monitor
-
-#endif

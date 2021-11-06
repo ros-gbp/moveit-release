@@ -41,6 +41,8 @@
 #include <geometric_shapes/shapes.h>
 #include <geometric_shapes/shape_operations.h>
 #include <Eigen/Eigen>
+
+#include <memory>
 #include <stdexcept>
 #include <sstream>
 
@@ -58,8 +60,8 @@ mesh_filter::MeshFilterBase::MeshFilterBase(const TransformCallback& transform_c
                                             const std::string& filter_vertex_shader,
                                             const std::string& filter_fragment_shader)
   : sensor_parameters_(sensor_parameters.clone())
-  , next_handle_(FirstLabel)  // 0 and 1 are reserved!
-  , min_handle_(FirstLabel)
+  , next_handle_(FIRST_LABEL)  // 0 and 1 are reserved!
+  , min_handle_(FIRST_LABEL)
   , stop_(false)
   , transform_callback_(transform_callback)
   , padding_scale_(1.0)
@@ -75,12 +77,12 @@ void mesh_filter::MeshFilterBase::initialize(const std::string& render_vertex_sh
                                              const std::string& filter_vertex_shader,
                                              const std::string& filter_fragment_shader)
 {
-  mesh_renderer_.reset(new GLRenderer(sensor_parameters_->getWidth(), sensor_parameters_->getHeight(),
-                                      sensor_parameters_->getNearClippingPlaneDistance(),
-                                      sensor_parameters_->getFarClippingPlaneDistance()));
-  depth_filter_.reset(new GLRenderer(sensor_parameters_->getWidth(), sensor_parameters_->getHeight(),
-                                     sensor_parameters_->getNearClippingPlaneDistance(),
-                                     sensor_parameters_->getFarClippingPlaneDistance()));
+  mesh_renderer_ = std::make_shared<GLRenderer>(sensor_parameters_->getWidth(), sensor_parameters_->getHeight(),
+                                                sensor_parameters_->getNearClippingPlaneDistance(),
+                                                sensor_parameters_->getFarClippingPlaneDistance());
+  depth_filter_ = std::make_shared<GLRenderer>(sensor_parameters_->getWidth(), sensor_parameters_->getHeight(),
+                                               sensor_parameters_->getNearClippingPlaneDistance(),
+                                               sensor_parameters_->getFarClippingPlaneDistance());
 
   mesh_renderer_->setShadersFromString(render_vertex_shader, render_fragment_shader);
   depth_filter_->setShadersFromString(filter_vertex_shader, filter_fragment_shader);
@@ -188,7 +190,7 @@ mesh_filter::MeshHandle mesh_filter::MeshFilterBase::addMesh(const shapes::Mesh&
 
 void mesh_filter::MeshFilterBase::addMeshHelper(MeshHandle handle, const shapes::Mesh* cmesh)
 {
-  meshes_[handle] = GLMeshPtr(new GLMesh(*cmesh, handle));
+  meshes_[handle] = std::make_shared<GLMesh>(*cmesh, handle);
 }
 
 void mesh_filter::MeshFilterBase::removeMesh(MeshHandle handle)
@@ -321,9 +323,9 @@ void mesh_filter::MeshFilterBase::doFilter(const void* sensor_data, const int en
   glUniform3f(padding_coefficients_id, padding_coefficients[0], padding_coefficients[1], padding_coefficients[2]);
 
   Eigen::Isometry3d transform;
-  for (std::map<MeshHandle, GLMeshPtr>::const_iterator mesh_it = meshes_.begin(); mesh_it != meshes_.end(); ++mesh_it)
-    if (transform_callback_(mesh_it->first, transform))
-      mesh_it->second->render(transform);
+  for (const std::pair<const MeshHandle, GLMeshPtr>& mesh : meshes_)
+    if (transform_callback_(mesh.first, transform))
+      mesh.second->render(transform);
 
   mesh_renderer_->end();
 

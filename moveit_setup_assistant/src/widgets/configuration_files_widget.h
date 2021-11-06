@@ -34,8 +34,7 @@
 
 /* Author: Dave Coleman */
 
-#ifndef MOVEIT_ROS_MOVEIT_SETUP_ASSISTANT_WIDGETS_CONFIGURATION_FILES_WIDGET_
-#define MOVEIT_ROS_MOVEIT_SETUP_ASSISTANT_WIDGETS_CONFIGURATION_FILES_WIDGET_
+#pragma once
 
 #include <QList>
 class QLabel;
@@ -118,6 +117,9 @@ private Q_SLOTS:
 
   /// Disable or enable item in gen_files_ array
   void changeCheckedState(QListWidgetItem* item);
+
+  /// Set checked state of all selected items
+  void setCheckSelected(bool checked);
 
 private:
   // ******************************************************************************************
@@ -205,5 +207,3 @@ private:
 };
 
 }  // namespace moveit_setup_assistant
-
-#endif

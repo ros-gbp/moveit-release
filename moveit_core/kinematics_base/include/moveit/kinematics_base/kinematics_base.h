@@ -34,8 +34,7 @@
 
 /* Author: Sachin Chitta, Dave Coleman */
 
-#ifndef MOVEIT_KINEMATICS_BASE_KINEMATICS_BASE_
-#define MOVEIT_KINEMATICS_BASE_KINEMATICS_BASE_
+#pragma once
 
 #include <geometry_msgs/Pose.h>
 #include <moveit_msgs/MoveItErrorCodes.h>
@@ -45,13 +44,15 @@
 #include <boost/function.hpp>
 #include <string>
 
+#include <moveit/moveit_kinematics_base_export.h>
+
 namespace moveit
 {
 namespace core
 {
-MOVEIT_CLASS_FORWARD(JointModelGroup)
-MOVEIT_CLASS_FORWARD(RobotState)
-MOVEIT_CLASS_FORWARD(RobotModel)
+MOVEIT_CLASS_FORWARD(JointModelGroup);
+MOVEIT_CLASS_FORWARD(RobotState);
+MOVEIT_CLASS_FORWARD(RobotModel);
 }  // namespace core
 }  // namespace moveit
 
@@ -76,8 +77,8 @@ enum DiscretizationMethod
   SOME_RANDOM_SAMPLED /**< the discretization for some redundant joint will be randomly generated.
                            The unused redundant joints will be fixed at their current value. */
 };
-}
-typedef DiscretizationMethods::DiscretizationMethod DiscretizationMethod;
+}  // namespace DiscretizationMethods
+using DiscretizationMethod = DiscretizationMethods::DiscretizationMethod;
 
 /*
  * @enum KinematicErrors
@@ -98,8 +99,8 @@ enum KinematicError
   NO_SOLUTION                          /**< A valid joint solution that can reach this pose(s) could not be found */
 
 };
-}
-typedef KinematicErrors::KinematicError KinematicError;
+}  // namespace KinematicErrors
+using KinematicError = KinematicErrors::KinematicError;
 
 /**
  * @struct KinematicsQueryOptions
@@ -145,13 +146,12 @@ MOVEIT_CLASS_FORWARD(KinematicsBase);  // Defines KinematicsBasePtr, ConstPtr, W
 class KinematicsBase
 {
 public:
-  static const double DEFAULT_SEARCH_DISCRETIZATION; /* = 0.1 */
-  static const double DEFAULT_TIMEOUT;               /* = 1.0 */
+  static MOVEIT_KINEMATICS_BASE_EXPORT const double DEFAULT_SEARCH_DISCRETIZATION; /* = 0.1 */
+  static MOVEIT_KINEMATICS_BASE_EXPORT const double DEFAULT_TIMEOUT;               /* = 1.0 */
 
   /** @brief Signature for a callback to validate an IK solution. Typically used for collision checking. */
-  typedef boost::function<void(const geometry_msgs::Pose& ik_pose, const std::vector<double>& ik_solution,
-                               moveit_msgs::MoveItErrorCodes& error_code)>
-      IKCallbackFn;
+  using IKCallbackFn =
+      boost::function<void(const geometry_msgs::Pose&, const std::vector<double>&, moveit_msgs::MoveItErrorCodes&)>;
 
   /**
    * @brief Given a desired pose of the end-effector, compute the joint angles to reach it
@@ -298,8 +298,9 @@ public:
                    double timeout, const std::vector<double>& consistency_limits, std::vector<double>& solution,
                    const IKCallbackFn& solution_callback, moveit_msgs::MoveItErrorCodes& error_code,
                    const kinematics::KinematicsQueryOptions& options = kinematics::KinematicsQueryOptions(),
-                   const moveit::core::RobotState* context_state = NULL) const
+                   const moveit::core::RobotState* context_state = nullptr) const
   {
+    (void)context_state;
     // For IK solvers that do not support multiple poses, fall back to single pose call
     if (ik_poses.size() == 1)
     {
@@ -508,7 +509,7 @@ public:
    *          supported.
    * \return True if the group is supported, false if not.
    */
-  virtual bool supportsGroup(const moveit::core::JointModelGroup* jmg, std::string* error_text_out = NULL) const;
+  virtual bool supportsGroup(const moveit::core::JointModelGroup* jmg, std::string* error_text_out = nullptr) const;
 
   /**
    * @brief  Set the search discretization value for all the redundant joints
@@ -531,10 +532,10 @@ public:
   {
     redundant_joint_discretization_.clear();
     redundant_joint_indices_.clear();
-    for (std::map<int, double>::const_iterator i = discretization.begin(); i != discretization.end(); i++)
+    for (const auto& pair : discretization)
     {
-      redundant_joint_discretization_.insert(*i);
-      redundant_joint_indices_.push_back(i->first);
+      redundant_joint_discretization_.insert(pair);
+      redundant_joint_indices_.push_back(pair.first);
     }
   }
 
@@ -663,6 +664,4 @@ protected:
 private:
   std::string removeSlash(const std::string& str) const;
 };
-};  // namespace kinematics
-
-#endif
+}  // namespace kinematics

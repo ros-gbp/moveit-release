@@ -57,6 +57,19 @@ void MotionPlanningFrame::databaseConnectButtonClicked()
                                       "connect to database");
 }
 
+void MotionPlanningFrame::planningPipelineIndexChanged(int index)
+{
+  // Refresh planner interface description for selected pipeline
+  if (index >= 0 && static_cast<size_t>(index) < planner_descriptions_.size())
+  {
+    // Set the selected pipeline id
+    if (move_group_)
+      move_group_->setPlanningPipelineId(planner_descriptions_[index].pipeline_id);
+
+    populatePlannerDescription(planner_descriptions_[index]);
+  }
+}
+
 void MotionPlanningFrame::planningAlgorithmIndexChanged(int index)
 {
   std::string planner_id = ui_->planning_algorithm_combo_box->itemText(index).toStdString();
@@ -64,6 +77,7 @@ void MotionPlanningFrame::planningAlgorithmIndexChanged(int index)
     planner_id = "";
 
   ui_->planner_param_treeview->setPlannerId(planner_id);
+
   if (move_group_)
     move_group_->setPlannerId(planner_id);
 }
@@ -71,7 +85,7 @@ void MotionPlanningFrame::planningAlgorithmIndexChanged(int index)
 void MotionPlanningFrame::resetDbButtonClicked()
 {
   if (QMessageBox::warning(this, "Data about to be deleted",
-                           "The following dialog will allow you to drop a MoveIt! "
+                           "The following dialog will allow you to drop a MoveIt "
                            "Warehouse database. Are you sure you want to continue?",
                            QMessageBox::Yes | QMessageBox::No) == QMessageBox::No)
     return;
@@ -117,9 +131,9 @@ void MotionPlanningFrame::computeDatabaseConnectButtonClicked()
       conn->setParams(ui_->database_host->text().toStdString(), ui_->database_port->value(), 5.0);
       if (conn->connect())
       {
-        planning_scene_storage_.reset(new moveit_warehouse::PlanningSceneStorage(conn));
-        robot_state_storage_.reset(new moveit_warehouse::RobotStateStorage(conn));
-        constraints_storage_.reset(new moveit_warehouse::ConstraintsStorage(conn));
+        planning_scene_storage_ = std::make_shared<moveit_warehouse::PlanningSceneStorage>(conn);
+        robot_state_storage_ = std::make_shared<moveit_warehouse::RobotStateStorage>(conn);
+        constraints_storage_ = std::make_shared<moveit_warehouse::ConstraintsStorage>(conn);
       }
       else
       {

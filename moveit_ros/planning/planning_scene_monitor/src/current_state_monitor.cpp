@@ -72,8 +72,8 @@ CurrentStateMonitor::~CurrentStateMonitor()
 moveit::core::RobotStatePtr CurrentStateMonitor::getCurrentState() const
 {
   boost::mutex::scoped_lock slock(state_update_lock_);
-  robot_state::RobotState* result = new robot_state::RobotState(robot_state_);
-  return robot_state::RobotStatePtr(result);
+  moveit::core::RobotState* result = new moveit::core::RobotState(robot_state_);
+  return moveit::core::RobotStatePtr(result);
 }
 
 ros::Time CurrentStateMonitor::getCurrentStateTime() const
@@ -85,8 +85,8 @@ ros::Time CurrentStateMonitor::getCurrentStateTime() const
 std::pair<moveit::core::RobotStatePtr, ros::Time> CurrentStateMonitor::getCurrentStateAndTime() const
 {
   boost::mutex::scoped_lock slock(state_update_lock_);
-  robot_state::RobotState* result = new robot_state::RobotState(robot_state_);
-  return std::make_pair(robot_state::RobotStatePtr(result), current_state_time_);
+  moveit::core::RobotState* result = new moveit::core::RobotState(robot_state_);
+  return std::make_pair(moveit::core::RobotStatePtr(result), current_state_time_);
 }
 
 std::map<std::string, double> CurrentStateMonitor::getCurrentStateValues() const
@@ -147,8 +147,8 @@ void CurrentStateMonitor::startStateMonitor(const std::string& joint_states_topi
       joint_state_subscriber_ = nh_.subscribe(joint_states_topic, 25, &CurrentStateMonitor::jointStateCallback, this);
     if (tf_buffer_ && !robot_model_->getMultiDOFJointModels().empty())
     {
-      tf_connection_.reset(new TFConnection(
-          tf_buffer_->_addTransformsChangedListener(boost::bind(&CurrentStateMonitor::tfCallback, this))));
+      tf_connection_ = std::make_shared<TFConnection>(
+          tf_buffer_->_addTransformsChangedListener(boost::bind(&CurrentStateMonitor::tfCallback, this)));
     }
     state_monitor_started_ = true;
     monitor_start_time_ = ros::Time::now();
@@ -313,7 +313,7 @@ void CurrentStateMonitor::jointStateCallback(const sensor_msgs::JointStateConstP
           if (static_cast<const moveit::core::RevoluteJointModel*>(jm)->isContinuous())
             continue;
 
-        const robot_model::VariableBounds& b =
+        const moveit::core::VariableBounds& b =
             jm->getVariableBounds()[0];  // only one variable in the joint, so we get its bounds
 
         // if the read variable is 'almost' within bounds (up to error_ difference), then consider it to be within
@@ -348,8 +348,8 @@ void CurrentStateMonitor::jointStateCallback(const sensor_msgs::JointStateConstP
 
   // callbacks, if needed
   if (update)
-    for (std::size_t i = 0; i < update_callbacks_.size(); ++i)
-      update_callbacks_[i](joint_state);
+    for (JointStateUpdateCallback& update_callback : update_callbacks_)
+      update_callback(joint_state);
 
   // notify waitForCurrentState() *after* potential update callbacks
   state_update_condition_.notify_all();
@@ -365,9 +365,8 @@ void CurrentStateMonitor::tfCallback()
   {
     boost::mutex::scoped_lock _(state_update_lock_);
 
-    for (size_t i = 0; i < multi_dof_joints.size(); i++)
+    for (const moveit::core::JointModel* joint : multi_dof_joints)
     {
-      const moveit::core::JointModel* joint = multi_dof_joints[i];
       const std::string& child_frame = joint->getChildLinkModel()->getName();
       const std::string& parent_frame =
           joint->getParentLinkModel() ? joint->getParentLinkModel()->getName() : robot_model_->getModelFrame();
@@ -394,7 +393,7 @@ void CurrentStateMonitor::tfCallback()
       joint_time_[joint] = latest_common_time;
 
       std::vector<double> new_values(joint->getStateSpaceDimension());
-      const robot_model::LinkModel* link = joint->getChildLinkModel();
+      const moveit::core::LinkModel* link = joint->getChildLinkModel();
       if (link->jointOriginTransformIsIdentity())
         joint->computeVariablePositions(tf2::transformToEigen(transf), new_values.data());
       else
@@ -417,8 +416,8 @@ void CurrentStateMonitor::tfCallback()
     // stub joint state: multi-dof joints are not modelled in the message,
     // but we should still trigger the update callbacks
     sensor_msgs::JointStatePtr joint_state(new sensor_msgs::JointState);
-    for (std::size_t i = 0; i < update_callbacks_.size(); ++i)
-      update_callbacks_[i](joint_state);
+    for (JointStateUpdateCallback& update_callback : update_callbacks_)
+      update_callback(joint_state);
   }
 
   if (update)

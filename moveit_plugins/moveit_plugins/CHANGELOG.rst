@@ -2,11 +2,30 @@
 Changelog for package moveit_plugins
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1.0.8 (2021-05-23)
+1.1.6 (2021-11-06)
 ------------------
 
-1.0.7 (2020-11-20)
+1.1.5 (2021-05-23)
 ------------------
+
+1.1.4 (2021-05-12)
+------------------
+
+1.1.3 (2021-04-29)
+------------------
+
+1.1.2 (2021-04-08)
+------------------
+
+1.1.1 (2020-10-13)
+------------------
+
+1.1.0 (2020-09-04)
+------------------
+* [feature] Use standard cmake text for metapackages (`#1620 <https://github.com/ros-planning/moveit/issues/1620>`_)
+* [feature] Use CMAKE_CXX_STANDARD to enforce c++14 for portability (`#1607 <https://github.com/ros-planning/moveit/issues/1607>`_)
+* [maint] Remove ! from MoveIt name (`#1590 <https://github.com/ros-planning/moveit/issues/1590>`_)
+* Contributors: Dave Coleman, Jonathan Binney, Robert Haschke, Sean Yen, Tyler Weaver
 
 1.0.6 (2020-08-19)
 ------------------

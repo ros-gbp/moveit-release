@@ -35,7 +35,6 @@
 /* Author: Dave Coleman */
 
 #pragma once
-
 #include <QThread>
 class QAbstractItemModel;
 class QAction;
@@ -77,8 +76,8 @@ class DefaultCollisionsWidget : public SetupScreenWidget
 public:
   enum ViewMode
   {
-    MatrixMode = 0,
-    LinearMode = 1
+    MATRIX_MODE = 0,
+    LINEAR_MODE = 1
   };
 
   // ******************************************************************************************
@@ -241,7 +240,7 @@ class MonitorThread : public QThread
   Q_OBJECT
 
 public:
-  MonitorThread(const boost::function<void(unsigned int*)>& f, QProgressBar* progress_bar = NULL);
+  MonitorThread(const boost::function<void(unsigned int*)>& f, QProgressBar* progress_bar = nullptr);
   void run() override;
   void cancel()
   {
@@ -253,7 +252,7 @@ public:
   }
 
 Q_SIGNALS:
-  void progress(int);
+  void progress(int /*_t1*/);
 
 private:
   boost::thread worker_;

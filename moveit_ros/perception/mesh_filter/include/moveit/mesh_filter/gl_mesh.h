@@ -34,8 +34,7 @@
 
 /* Author: Suat Gedikli */
 
-#ifndef MOVEIT_MESH_FILTER_GLMESH_
-#define MOVEIT_MESH_FILTER_GLMESH_
+#pragma once
 
 #include <Eigen/Geometry>  // for Isometry3d
 #include <GL/glew.h>
@@ -84,4 +83,3 @@ private:
   unsigned int mesh_label_;
 };
 }  // namespace mesh_filter
-#endif

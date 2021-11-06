@@ -34,8 +34,7 @@
 
 /* Author: Ioan Sucan */
 
-#ifndef MOVEIT_TRAJECTORY_EXECUTION_MANAGER_TRAJECTORY_EXECUTION_MANAGER_
-#define MOVEIT_TRAJECTORY_EXECUTION_MANAGER_TRAJECTORY_EXECUTION_MANAGER_
+#pragma once
 
 #include <moveit/macros/class_forward.h>
 #include <moveit/robot_model/robot_model.h>
@@ -68,7 +67,7 @@ public:
 
   /// Definition of the function signature that is called when the execution of a pushed trajectory completes
   /// successfully.
-  typedef boost::function<void(std::size_t)> PathSegmentCompleteCallback;
+  using PathSegmentCompleteCallback = boost::function<void(std::size_t)>;
 
   /// Data structure that represents information necessary to execute a trajectory
   struct TrajectoryExecutionContext
@@ -82,11 +81,11 @@ public:
   };
 
   /// Load the controller manager plugin, start listening for events on a topic.
-  TrajectoryExecutionManager(const robot_model::RobotModelConstPtr& robot_model,
+  TrajectoryExecutionManager(const moveit::core::RobotModelConstPtr& robot_model,
                              const planning_scene_monitor::CurrentStateMonitorPtr& csm);
 
   /// Load the controller manager plugin, start listening for events on a topic.
-  TrajectoryExecutionManager(const robot_model::RobotModelConstPtr& robot_model,
+  TrajectoryExecutionManager(const moveit::core::RobotModelConstPtr& robot_model,
                              const planning_scene_monitor::CurrentStateMonitorPtr& csm, bool manage_controllers);
 
   /// Destructor. Cancels all running trajectories (if any)
@@ -304,7 +303,7 @@ private:
   // Name of this class for logging
   const std::string name_ = "trajectory_execution_manager";
 
-  robot_model::RobotModelConstPtr robot_model_;
+  moveit::core::RobotModelConstPtr robot_model_;
   planning_scene_monitor::CurrentStateMonitorPtr csm_;
   ros::NodeHandle node_handle_;
   ros::NodeHandle root_node_handle_;
@@ -362,5 +361,3 @@ private:
   bool wait_for_trajectory_completion_;
 };
 }  // namespace trajectory_execution_manager
-
-#endif

@@ -143,7 +143,7 @@ void ompl_interface::ModelBasedStateSpace::deserialize(ompl::base::State* state,
 unsigned int ompl_interface::ModelBasedStateSpace::getDimension() const
 {
   unsigned int d = 0;
-  for (const robot_model::JointModel* i : joint_model_vector_)
+  for (const moveit::core::JointModel* i : joint_model_vector_)
     d += i->getStateSpaceDimension();
   return d;
 }
@@ -156,7 +156,7 @@ double ompl_interface::ModelBasedStateSpace::getMaximumExtent() const
 double ompl_interface::ModelBasedStateSpace::getMeasure() const
 {
   double m = 1.0;
-  for (const robot_model::JointModel::Bounds* bounds : spec_.joint_bounds_)
+  for (const moveit::core::JointModel::Bounds* bounds : spec_.joint_bounds_)
   {
     for (const moveit::core::VariableBounds& bound : *bounds)
     {
@@ -230,14 +230,14 @@ void ompl_interface::ModelBasedStateSpace::setPlanningVolume(double minX, double
                                                              double minZ, double maxZ)
 {
   for (std::size_t i = 0; i < joint_model_vector_.size(); ++i)
-    if (joint_model_vector_[i]->getType() == robot_model::JointModel::PLANAR)
+    if (joint_model_vector_[i]->getType() == moveit::core::JointModel::PLANAR)
     {
       joint_bounds_storage_[i][0].min_position_ = minX;
       joint_bounds_storage_[i][0].max_position_ = maxX;
       joint_bounds_storage_[i][1].min_position_ = minY;
       joint_bounds_storage_[i][1].max_position_ = maxY;
     }
-    else if (joint_model_vector_[i]->getType() == robot_model::JointModel::FLOATING)
+    else if (joint_model_vector_[i]->getType() == moveit::core::JointModel::FLOATING)
     {
       joint_bounds_storage_[i][0].min_position_ = minX;
       joint_bounds_storage_[i][0].max_position_ = maxX;
@@ -253,8 +253,8 @@ ompl::base::StateSamplerPtr ompl_interface::ModelBasedStateSpace::allocDefaultSt
   class DefaultStateSampler : public ompl::base::StateSampler
   {
   public:
-    DefaultStateSampler(const ompl::base::StateSpace* space, const robot_model::JointModelGroup* group,
-                        const robot_model::JointBoundsVector* joint_bounds)
+    DefaultStateSampler(const ompl::base::StateSpace* space, const moveit::core::JointModelGroup* group,
+                        const moveit::core::JointBoundsVector* joint_bounds)
       : ompl::base::StateSampler(space), joint_model_group_(group), joint_bounds_(joint_bounds)
     {
     }
@@ -279,8 +279,8 @@ ompl::base::StateSamplerPtr ompl_interface::ModelBasedStateSpace::allocDefaultSt
 
   protected:
     random_numbers::RandomNumberGenerator moveit_rng_;
-    const robot_model::JointModelGroup* joint_model_group_;
-    const robot_model::JointBoundsVector* joint_bounds_;
+    const moveit::core::JointModelGroup* joint_model_group_;
+    const moveit::core::JointBoundsVector* joint_bounds_;
   };
 
   return ompl::base::StateSamplerPtr(static_cast<ompl::base::StateSampler*>(
@@ -294,7 +294,7 @@ void ompl_interface::ModelBasedStateSpace::printSettings(std::ostream& out) cons
 
 void ompl_interface::ModelBasedStateSpace::printState(const ompl::base::State* state, std::ostream& out) const
 {
-  for (const robot_model::JointModel* j : joint_model_vector_)
+  for (const moveit::core::JointModel* j : joint_model_vector_)
   {
     out << j->getName() << " = ";
     const int idx = spec_.joint_model_group_->getVariableGroupIndex(j->getName());
@@ -318,7 +318,7 @@ void ompl_interface::ModelBasedStateSpace::printState(const ompl::base::State* s
   out << "Tag: " << state->as<StateType>()->tag << std::endl;
 }
 
-void ompl_interface::ModelBasedStateSpace::copyToRobotState(robot_state::RobotState& rstate,
+void ompl_interface::ModelBasedStateSpace::copyToRobotState(moveit::core::RobotState& rstate,
                                                             const ompl::base::State* state) const
 {
   rstate.setJointGroupPositions(spec_.joint_model_group_, state->as<StateType>()->values);
@@ -326,7 +326,7 @@ void ompl_interface::ModelBasedStateSpace::copyToRobotState(robot_state::RobotSt
 }
 
 void ompl_interface::ModelBasedStateSpace::copyToOMPLState(ompl::base::State* state,
-                                                           const robot_state::RobotState& rstate) const
+                                                           const moveit::core::RobotState& rstate) const
 {
   rstate.copyJointGroupPositions(spec_.joint_model_group_, state->as<StateType>()->values);
   // clear any cached info (such as validity known or not)
@@ -334,7 +334,7 @@ void ompl_interface::ModelBasedStateSpace::copyToOMPLState(ompl::base::State* st
 }
 
 void ompl_interface::ModelBasedStateSpace::copyJointToOMPLState(ompl::base::State* state,
-                                                                const robot_state::RobotState& robot_state,
+                                                                const moveit::core::RobotState& robot_state,
                                                                 const moveit::core::JointModel* joint_model,
                                                                 int ompl_state_joint_index) const
 {

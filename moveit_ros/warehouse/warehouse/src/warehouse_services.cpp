@@ -96,7 +96,8 @@ bool getState(moveit_msgs::GetRobotStateFromWarehouse::Request& request,
 }
 
 bool renameState(moveit_msgs::RenameRobotStateInWarehouse::Request& request,
-                 moveit_msgs::RenameRobotStateInWarehouse::Response& response, moveit_warehouse::RobotStateStorage* rs)
+                 moveit_msgs::RenameRobotStateInWarehouse::Response& /*response*/,
+                 moveit_warehouse::RobotStateStorage* rs)
 {
   if (!rs->hasRobotState(request.old_name, request.robot))
   {
@@ -108,7 +109,7 @@ bool renameState(moveit_msgs::RenameRobotStateInWarehouse::Request& request,
 }
 
 bool deleteState(moveit_msgs::DeleteRobotStateFromWarehouse::Request& request,
-                 moveit_msgs::DeleteRobotStateFromWarehouse::Response& response,
+                 moveit_msgs::DeleteRobotStateFromWarehouse::Response& /*response*/,
                  moveit_warehouse::RobotStateStorage* rs)
 {
   if (!rs->hasRobotState(request.name, request.robot))
@@ -174,8 +175,8 @@ int main(int argc, char** argv)
   else
   {
     ROS_INFO("Previously stored robot states:");
-    for (std::size_t i = 0; i < names.size(); ++i)
-      ROS_INFO(" * %s", names[i].c_str());
+    for (const std::string& name : names)
+      ROS_INFO(" * %s", name.c_str());
   }
 
   boost::function<bool(moveit_msgs::SaveRobotStateToWarehouse::Request & request,
