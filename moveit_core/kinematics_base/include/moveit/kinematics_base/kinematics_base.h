@@ -44,13 +44,15 @@
 #include <boost/function.hpp>
 #include <string>
 
+#include <moveit/moveit_kinematics_base_export.h>
+
 namespace moveit
 {
 namespace core
 {
-MOVEIT_CLASS_FORWARD(JointModelGroup)
-MOVEIT_CLASS_FORWARD(RobotState)
-MOVEIT_CLASS_FORWARD(RobotModel)
+MOVEIT_CLASS_FORWARD(JointModelGroup);
+MOVEIT_CLASS_FORWARD(RobotState);
+MOVEIT_CLASS_FORWARD(RobotModel);
 }  // namespace core
 }  // namespace moveit
 
@@ -144,8 +146,8 @@ MOVEIT_CLASS_FORWARD(KinematicsBase);  // Defines KinematicsBasePtr, ConstPtr, W
 class KinematicsBase
 {
 public:
-  static const double DEFAULT_SEARCH_DISCRETIZATION; /* = 0.1 */
-  static const double DEFAULT_TIMEOUT;               /* = 1.0 */
+  static MOVEIT_KINEMATICS_BASE_EXPORT const double DEFAULT_SEARCH_DISCRETIZATION; /* = 0.1 */
+  static MOVEIT_KINEMATICS_BASE_EXPORT const double DEFAULT_TIMEOUT;               /* = 1.0 */
 
   /** @brief Signature for a callback to validate an IK solution. Typically used for collision checking. */
   using IKCallbackFn =
