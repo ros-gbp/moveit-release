@@ -32,18 +32,87 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
+/* Author: Ioan Sucan, Jon Binney */
+
 #pragma once
 
-/** \def MOVEIT_DEPRECATED
-    Deprecated macro that marks functions as deprecated (TODO: Remove for Noetic) */
+#include <octomap/octomap.h>
+#include <boost/thread/locks.hpp>
+#include <boost/thread/shared_mutex.hpp>
+#include <boost/function.hpp>
+#include <memory>
 
-#warning "The usage of MOVEIT_DEPRECATED is deprecated. Use the CPP14 [[deprecated]] instead."
-#ifdef __GNUC__
-#define MOVEIT_DEPRECATED __attribute__((deprecated))
-#elif defined(_MSC_VER)
-#define MOVEIT_DEPRECATED __declspec(deprecated)
-#elif defined(__clang__)
-#define MOVEIT_DEPRECATED __attribute__((deprecated("MoveIt: Use of this method is deprecated")))
-#else
-#define MOVEIT_DEPRECATED /* Nothing */
-#endif
+namespace collision_detection
+{
+typedef octomap::OcTreeNode OccMapNode;
+
+class OccMapTree : public octomap::OcTree
+{
+public:
+  OccMapTree(double resolution) : octomap::OcTree(resolution)
+  {
+  }
+
+  OccMapTree(const std::string& filename) : octomap::OcTree(filename)
+  {
+  }
+
+  /** @brief lock the underlying octree. it will not be read or written by the
+   *  monitor until unlockTree() is called */
+  void lockRead()
+  {
+    tree_mutex_.lock_shared();
+  }
+
+  /** @brief unlock the underlying octree. */
+  void unlockRead()
+  {
+    tree_mutex_.unlock_shared();
+  }
+
+  /** @brief lock the underlying octree. it will not be read or written by the
+   *  monitor until unlockTree() is called */
+  void lockWrite()
+  {
+    tree_mutex_.lock();
+  }
+
+  /** @brief unlock the underlying octree. */
+  void unlockWrite()
+  {
+    tree_mutex_.unlock();
+  }
+
+  using ReadLock = boost::shared_lock<boost::shared_mutex>;
+  using WriteLock = boost::unique_lock<boost::shared_mutex>;
+
+  ReadLock reading()
+  {
+    return ReadLock(tree_mutex_);
+  }
+
+  WriteLock writing()
+  {
+    return WriteLock(tree_mutex_);
+  }
+
+  void triggerUpdateCallback()
+  {
+    if (update_callback_)
+      update_callback_();
+  }
+
+  /** @brief Set the callback to trigger when updates are received */
+  void setUpdateCallback(const boost::function<void()>& update_callback)
+  {
+    update_callback_ = update_callback;
+  }
+
+private:
+  boost::shared_mutex tree_mutex_;
+  boost::function<void()> update_callback_;
+};
+
+using OccMapTreePtr = std::shared_ptr<OccMapTree>;
+using OccMapTreeConstPtr = std::shared_ptr<const OccMapTree>;
+}  // namespace collision_detection
