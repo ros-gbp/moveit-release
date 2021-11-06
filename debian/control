@@ -1,0 +1,12 @@
+Source: ros-noetic-moveit-plugins
+Section: misc
+Priority: optional
+Maintainer: Michael Görner <me@v4hn.de>
+Build-Depends: debhelper (>= 9.0.0), ros-noetic-catkin
+Homepage: http://moveit.ros.org
+Standards-Version: 3.9.2
+
+Package: ros-noetic-moveit-plugins
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-noetic-moveit-fake-controller-manager, ros-noetic-moveit-ros-control-interface, ros-noetic-moveit-simple-controller-manager
+Description: Metapackage for MoveIt plugins.
