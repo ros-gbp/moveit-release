@@ -1,7 +1,7 @@
 /*********************************************************************
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2012, Willow Garage, Inc.
+ *  Copyright (c) 2021, PickNik Inc.
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -14,7 +14,7 @@
  *     copyright notice, this list of conditions and the following
  *     disclaimer in the documentation and/or other materials provided
  *     with the distribution.
- *   * Neither the name of Willow Garage nor the names of its
+ *   * Neither the name of the copyright holder nor the names of its
  *     contributors may be used to endorse or promote products derived
  *     from this software without specific prior written permission.
  *
@@ -32,49 +32,45 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-/* Author: Jon Binney, Ioan Sucan */
+#pragma once
 
-#include <memory>
-#include <ros/ros.h>
-#include <tf2_ros/transform_listener.h>
-#include <moveit/occupancy_map_monitor/occupancy_map_monitor.h>
-#include <octomap_msgs/conversions.h>
+#include <moveit_msgs/MoveItErrorCodes.h>
 
-static const std::string LOGNAME = "occupancy_map_server";
-
-static void publishOctomap(ros::Publisher* octree_binary_pub, occupancy_map_monitor::OccupancyMapMonitor* server)
+namespace moveit
 {
-  octomap_msgs::Octomap map;
-
-  map.header.frame_id = server->getMapFrame();
-  map.header.stamp = ros::Time::now();
-
-  server->getOcTreePtr()->lockRead();
-  try
-  {
-    if (!octomap_msgs::binaryMapToMsgData(*server->getOcTreePtr(), map.data))
-      ROS_ERROR_THROTTLE_NAMED(1, LOGNAME, "Could not generate OctoMap message");
-  }
-  catch (...)
-  {
-    ROS_ERROR_THROTTLE_NAMED(1, LOGNAME, "Exception thrown while generating OctoMap message");
-  }
-  server->getOcTreePtr()->unlockRead();
-
-  octree_binary_pub->publish(map);
-}
-
-int main(int argc, char** argv)
+namespace core
 {
-  ros::init(argc, argv, "occupancy_map_server");
-  ros::NodeHandle nh;
-  ros::Publisher octree_binary_pub = nh.advertise<octomap_msgs::Octomap>("octomap_binary", 1);
-  std::shared_ptr<tf2_ros::Buffer> buffer = std::make_shared<tf2_ros::Buffer>(ros::Duration(5.0));
-  std::shared_ptr<tf2_ros::TransformListener> listener = std::make_shared<tf2_ros::TransformListener>(*buffer, nh);
-  occupancy_map_monitor::OccupancyMapMonitor server(buffer);
-  server.setUpdateCallback(std::bind(&publishOctomap, &octree_binary_pub, &server));
-  server.startMonitor();
+/**
+ * @brief a wrapper around moveit_msgs::MoveItErrorCodes to make it easier to return an error code message from a function
+ */
+class MoveItErrorCode : public moveit_msgs::MoveItErrorCodes
+{
+public:
+  MoveItErrorCode()
+  {
+    val = 0;
+  }
+  MoveItErrorCode(int code)
+  {
+    val = code;
+  }
+  MoveItErrorCode(const moveit_msgs::MoveItErrorCodes& code)
+  {
+    val = code.val;
+  }
+  explicit operator bool() const
+  {
+    return val == moveit_msgs::MoveItErrorCodes::SUCCESS;
+  }
+  bool operator==(const int c) const
+  {
+    return val == c;
+  }
+  bool operator!=(const int c) const
+  {
+    return val != c;
+  }
+};
 
-  ros::spin();
-  return 0;
-}
+}  // namespace core
+}  // namespace moveit
