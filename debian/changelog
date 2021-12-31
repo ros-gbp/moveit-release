@@ -1,0 +1,301 @@
+ros-noetic-moveit-simple-controller-manager (1.1.7-1focal) focal; urgency=high
+
+  * ``simple_controller_manager``: add ``max_effort`` parameter to ``GripperCommand`` action (#2984 <https://github.com/ros-planning/moveit/issues/2984>)
+  * Switch to ``std::bind`` (#2967 <https://github.com/ros-planning/moveit/issues/2967>)
+  * Contributors: Jochen Sprickerhof, Rick Staa
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Thu, 30 Dec 2021 23:00:00 -0000
+
+ros-noetic-moveit-simple-controller-manager (1.1.6-1focal) focal; urgency=high
+
+  * Use newly introduced cmake macro ``moveit_build_options()`` from ``moveit_core``
+  * clang-tidy: modernize-make-shared, modernize-make-unique (#2762 <https://github.com/ros-planning/moveit/issues/2762>)
+  * Facilitate spotting of empty controller names, using quotes (#2761 <https://github.com/ros-planning/moveit/issues/2761>)
+  * Contributors: G.A. vd. Hoorn, Robert Haschke
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Fri, 05 Nov 2021 23:00:00 -0000
+
+ros-noetic-moveit-simple-controller-manager (1.1.5-1focal) focal; urgency=high
+
+
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Sat, 22 May 2021 22:00:00 -0000
+
+ros-noetic-moveit-simple-controller-manager (1.1.4-1focal) focal; urgency=high
+
+
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Tue, 11 May 2021 22:00:00 -0000
+
+ros-noetic-moveit-simple-controller-manager (1.1.3-1focal) focal; urgency=high
+
+
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Wed, 28 Apr 2021 22:00:00 -0000
+
+ros-noetic-moveit-simple-controller-manager (1.1.2-1focal) focal; urgency=high
+
+
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Wed, 07 Apr 2021 22:00:00 -0000
+
+ros-noetic-moveit-simple-controller-manager (1.1.1-1focal) focal; urgency=high
+
+  * [maint] Add comment to MOVEIT_CLASS_FORWARD (#2315 <https://github.com/ros-planning/moveit/issues/2315>)
+  * Contributors: Felix von Drigalski
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Mon, 12 Oct 2020 22:00:00 -0000
+
+ros-noetic-moveit-simple-controller-manager (1.1.0-1focal) focal; urgency=high
+
+  * [feature] Optional cpp version setting (#2166 <https://github.com/ros-planning/moveit/issues/2166>)
+  * [feature] Allow different controllers for execution #1832 <https://github.com/ros-planning/moveit/issues/1832>)
+  * [feature] ControllerManager: wait for done-callback (#1783 <https://github.com/ros-planning/moveit/issues/1783>)
+  * [feature] Use CMAKE_CXX_STANDARD to enforce c++14 for portability (#1607 <https://github.com/ros-planning/moveit/issues/1607>)
+  * [fix] Various fixes for upcoming Noetic release (#2180 <https://github.com/ros-planning/moveit/issues/2180>)
+  * [fix] Fix errors: catkin_lint 1.6.7 (#1987 <https://github.com/ros-planning/moveit/issues/1987>)
+  * [fix] Fix compiler warnings (#1773 <https://github.com/ros-planning/moveit/issues/1773>)
+  * [fix] Fix binary artifact install locations. (#1575 <https://github.com/ros-planning/moveit/issues/1575>)
+  * [fix] add missing space to log (#1477 <https://github.com/ros-planning/moveit/issues/1477>)
+  * [maint] clang-tidy fixes (#2050 <https://github.com/ros-planning/moveit/issues/2050>, #1419 <https://github.com/ros-planning/moveit/issues/1419>)
+  * [maint] Switch from include guards to pragma once (#1615 <https://github.com/ros-planning/moveit/issues/1615>)
+  * [maint] Remove ! from MoveIt name (#1590 <https://github.com/ros-planning/moveit/issues/1590>)
+  * Contributors: Dave Coleman, Henning Kayser, Jonathan Binney, Leroy Rügemer, Robert Haschke, Sean Yen, Tyler Weaver, Yu, Yan, llach
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Thu, 03 Sep 2020 22:00:00 -0000
+
+ros-noetic-moveit-simple-controller-manager (1.0.6-1focal) focal; urgency=high
+
+  * [maint] Migrate to clang-format-10
+  * Contributors: Robert Haschke
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Tue, 18 Aug 2020 22:00:00 -0000
+
+ros-noetic-moveit-simple-controller-manager (1.0.5-1focal) focal; urgency=high
+
+
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Tue, 07 Jul 2020 22:00:00 -0000
+
+ros-noetic-moveit-simple-controller-manager (1.0.4-1focal) focal; urgency=high
+
+
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Fri, 29 May 2020 22:00:00 -0000
+
+ros-noetic-moveit-simple-controller-manager (1.0.3-1focal) focal; urgency=high
+
+  * [fix]   Handle "default" parameter in MoveitControllerManagers
+    MoveIt{Fake|Simple}ControllerManager::getControllerState() now correctly returns current state
+  * [maint] Fix errors: catkin_lint 1.6.7 (#1987 <https://github.com/ros-planning/moveit/issues/1987>)
+  * [maint] Windows build: Fix binary artifact install locations. (#1575 <https://github.com/ros-planning/moveit/issues/1575>)
+  * [maint] Use CMAKE_CXX_STANDARD to enforce c++14 (#1607 <https://github.com/ros-planning/moveit/issues/1607>)
+  * [fix]   ControllerManager: wait for done-callback (#1783 <https://github.com/ros-planning/moveit/issues/1783>)
+  * Contributors: Robert Haschke, Sean Yen, Luca Lach
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Sat, 25 Apr 2020 22:00:00 -0000
+
+ros-noetic-moveit-simple-controller-manager (1.0.2-1focal) focal; urgency=high
+
+
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Thu, 27 Jun 2019 22:00:00 -0000
+
+ros-noetic-moveit-simple-controller-manager (1.0.1-1focal) focal; urgency=high
+
+  * [improve] Apply clang tidy fix to entire code base (Part 1) (#1366 <https://github.com/ros-planning/moveit/issues/1366>)
+  * Contributors: Yu, Yan
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Thu, 07 Mar 2019 23:00:00 -0000
+
+ros-noetic-moveit-simple-controller-manager (1.0.0-1focal) focal; urgency=high
+
+  * [maintenance] cleanup SimpleControllerManager https://github.com/ros-planning/moveit/pull/1352
+  * Contributors: Robert Haschke
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Sat, 23 Feb 2019 23:00:00 -0000
+
+ros-noetic-moveit-simple-controller-manager (0.10.8-1focal) focal; urgency=high
+
+
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Sun, 23 Dec 2018 23:00:00 -0000
+
+ros-noetic-moveit-simple-controller-manager (0.10.7-1focal) focal; urgency=high
+
+
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Wed, 12 Dec 2018 23:00:00 -0000
+
+ros-noetic-moveit-simple-controller-manager (0.10.6-1focal) focal; urgency=high
+
+  * [maintenance] Code Cleanup (#1196 <https://github.com/ros-planning/moveit/issues/1196>)
+  * Contributors: Robert Haschke
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Sat, 08 Dec 2018 23:00:00 -0000
+
+ros-noetic-moveit-simple-controller-manager (0.10.5-1focal) focal; urgency=high
+
+
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Wed, 31 Oct 2018 23:00:00 -0000
+
+ros-noetic-moveit-simple-controller-manager (0.10.4-1focal) focal; urgency=high
+
+
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Sun, 28 Oct 2018 23:00:00 -0000
+
+ros-noetic-moveit-simple-controller-manager (0.10.3-1focal) focal; urgency=high
+
+
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Sun, 28 Oct 2018 23:00:00 -0000
+
+ros-noetic-moveit-simple-controller-manager (0.10.2-1focal) focal; urgency=high
+
+  * [maintenance] various compiler warnings (#1038 <https://github.com/ros-planning/moveit/issues/1038>)
+  * [maintenance] add minimum required pluginlib version (#927 <https://github.com/ros-planning/moveit/issues/927>)
+  * Contributors: Mikael Arguedas, Mohmmad Ayman, Robert Haschke, mike lautman
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Tue, 23 Oct 2018 22:00:00 -0000
+
+ros-noetic-moveit-simple-controller-manager (0.10.1-1focal) focal; urgency=high
+
+  * switch to ROS_LOGGER from CONSOLE_BRIDGE (#874 <https://github.com/ros-planning/moveit/issues/874>)
+  * Contributors: Mikael Arguedas, Xiaojian Ma
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Thu, 24 May 2018 22:00:00 -0000
+
+ros-noetic-moveit-simple-controller-manager (0.9.11-1focal) focal; urgency=high
+
+
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Sun, 24 Dec 2017 23:00:00 -0000
+
+ros-noetic-moveit-simple-controller-manager (0.9.10-1focal) focal; urgency=high
+
+  * [capability][kinetic onward] optionally wait for controllers indefinitely (#695 <https://github.com/ros-planning/moveit/issues/695>)
+  * Contributors: Bruno Brito, Michael Görner
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Fri, 08 Dec 2017 23:00:00 -0000
+
+ros-noetic-moveit-simple-controller-manager (0.9.9-1focal) focal; urgency=high
+
+
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Sat, 05 Aug 2017 22:00:00 -0000
+
+ros-noetic-moveit-simple-controller-manager (0.9.8-1focal) focal; urgency=high
+
+  * [fix] include order (#529 <https://github.com/ros-planning/moveit/issues/529>)
+  * Contributors: Michael Goerner
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Tue, 20 Jun 2017 22:00:00 -0000
+
+ros-noetic-moveit-simple-controller-manager (0.9.7-1focal) focal; urgency=high
+
+
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Sun, 04 Jun 2017 22:00:00 -0000
+
+ros-noetic-moveit-simple-controller-manager (0.9.6-1focal) focal; urgency=high
+
+
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Tue, 11 Apr 2017 22:00:00 -0000
+
+ros-noetic-moveit-simple-controller-manager (0.9.5-1focal) focal; urgency=high
+
+  * [fix][moveit_ros_warehouse] gcc6 build error #423 <https://github.com/ros-planning/moveit/pull/423>
+  * [enhancement] Remove "catch (...)" instances, catch std::exception instead of std::runtime_error (#445 <https://github.com/ros-planning/moveit/issues/445>)
+  * Contributors: Bence Magyar, Dave Coleman
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Tue, 07 Mar 2017 23:00:00 -0000
+
+ros-noetic-moveit-simple-controller-manager (0.9.4-1focal) focal; urgency=high
+
+  * [fix] assertion error when result not returned (#378 <https://github.com/ros-planning/moveit/issues/378>)
+  * [maintenance] clang-format upgraded to 3.8 (#367 <https://github.com/ros-planning/moveit/issues/367>)
+  * Contributors: Dave Coleman, Michael Ferguson
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Sun, 05 Feb 2017 23:00:00 -0000
+
+ros-noetic-moveit-simple-controller-manager (0.9.3-1focal) focal; urgency=high
+
+
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Tue, 15 Nov 2016 23:00:00 -0000
+
+ros-noetic-moveit-simple-controller-manager (0.5.7-1focal) focal; urgency=high
+
+  * expose headers of moveit_simple_controller_manager
+  * Removed redundant logging information
+  * More informative warning message about multi-dof trajectories.
+  * Contributors: Dave Coleman, Dave Hershberger, Mathias Lüdtke
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Fri, 29 Jan 2016 23:00:00 -0000
+
+ros-noetic-moveit-simple-controller-manager (0.5.6-1focal) focal; urgency=high
+
+  * Allow simple controller manager to ignore virtual joints without failing
+  * Contributors: Dave Coleman
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Sat, 22 Mar 2014 23:00:00 -0000
+
+ros-noetic-moveit-simple-controller-manager (0.5.5-1focal) focal; urgency=high
+
+  * properly fill in the gripper command effort
+  * allow trajectories with >1 points, use the last point of any trajectory
+  * added better error reporting for FollowJointTrajectoryControllers
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Sun, 29 Sep 2013 22:00:00 -0000
+
+ros-noetic-moveit-simple-controller-manager (0.5.4-1focal) focal; urgency=high
+
+
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Mon, 23 Sep 2013 22:00:00 -0000
+
+ros-noetic-moveit-simple-controller-manager (0.5.3-1focal) focal; urgency=high
+
+  * make things a bit more robust
+  * make headers and author definitions aligned the same way; white space fixes
+  * fix #1 <https://github.com/ros-planning/moveit_plugins/issues/1>
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Sun, 22 Sep 2013 22:00:00 -0000
+
+ros-noetic-moveit-simple-controller-manager (0.5.1-1focal) focal; urgency=high
+
+  * ns parameter is now action_ns, get rid of defaults
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Mon, 29 Jul 2013 22:00:00 -0000
+
+ros-noetic-moveit-simple-controller-manager (0.5.0-1focal) focal; urgency=high
+
+  * white space fixes (tabs are now spaces)
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Mon, 15 Jul 2013 22:00:00 -0000
+
+ros-noetic-moveit-simple-controller-manager (0.4.1-1focal) focal; urgency=high
+
+  * minor updates to package.xml
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Tue, 02 Jul 2013 22:00:00 -0000
+
+ros-noetic-moveit-simple-controller-manager (0.4.0-1focal) focal; urgency=high
+
+  * debs look good, bump to 0.4.0
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Wed, 05 Jun 2013 22:00:00 -0000
+
+ros-noetic-moveit-simple-controller-manager (0.1.0-1focal) focal; urgency=high
+
+  * add metapackage, clean up build in controller manager
+  * remove the now dead loaded controller stuff
+  * break out follow/gripper into separate headers
+  * initial working version
+
+ -- Michael Ferguson <mferguson@fetchrobotics.com>  Tue, 04 Jun 2013 22:00:00 -0000
+
+
