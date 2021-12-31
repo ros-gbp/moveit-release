@@ -1,7 +1,7 @@
 /*********************************************************************
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2013, Willow Garage, Inc.
+ *  Copyright (c) 2021, PickNik Inc.
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -14,7 +14,7 @@
  *     copyright notice, this list of conditions and the following
  *     disclaimer in the documentation and/or other materials provided
  *     with the distribution.
- *   * Neither the name of Willow Garage nor the names of its
+ *   * Neither the name of the copyright holder nor the names of its
  *     contributors may be used to endorse or promote products derived
  *     from this software without specific prior written permission.
  *
@@ -32,13 +32,45 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-/* Author: Ioan Sucan */
+#pragma once
 
-#include <moveit/version.h>
-#include <cstdio>
+#include <moveit_msgs/MoveItErrorCodes.h>
 
-int main(int /*argc*/, char** /*argv*/)
+namespace moveit
 {
-  printf("%s\n", MOVEIT_VERSION_STR);
-  return 0;
-}
+namespace core
+{
+/**
+ * @brief a wrapper around moveit_msgs::MoveItErrorCodes to make it easier to return an error code message from a function
+ */
+class MoveItErrorCode : public moveit_msgs::MoveItErrorCodes
+{
+public:
+  MoveItErrorCode()
+  {
+    val = 0;
+  }
+  MoveItErrorCode(int code)
+  {
+    val = code;
+  }
+  MoveItErrorCode(const moveit_msgs::MoveItErrorCodes& code)
+  {
+    val = code.val;
+  }
+  explicit operator bool() const
+  {
+    return val == moveit_msgs::MoveItErrorCodes::SUCCESS;
+  }
+  bool operator==(const int c) const
+  {
+    return val == c;
+  }
+  bool operator!=(const int c) const
+  {
+    return val != c;
+  }
+};
+
+}  // namespace core
+}  // namespace moveit
