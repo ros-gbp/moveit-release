@@ -1,0 +1,159 @@
+ros-melodic-moveit-runtime (1.0.9-1bionic) bionic; urgency=high
+
+
+
+ -- Isaac I. Y. Saito <gm130s@gmail.com>  Sat, 08 Jan 2022 23:00:00 -0000
+
+ros-melodic-moveit-runtime (1.0.8-1bionic) bionic; urgency=high
+
+
+
+ -- Isaac I. Y. Saito <gm130s@gmail.com>  Sat, 22 May 2021 22:00:00 -0000
+
+ros-melodic-moveit-runtime (1.0.7-1bionic) bionic; urgency=high
+
+
+
+ -- Isaac I. Y. Saito <gm130s@gmail.com>  Thu, 19 Nov 2020 23:00:00 -0000
+
+ros-melodic-moveit-runtime (1.0.6-1bionic) bionic; urgency=high
+
+
+
+ -- Isaac I. Y. Saito <gm130s@gmail.com>  Tue, 18 Aug 2020 22:00:00 -0000
+
+ros-melodic-moveit-runtime (1.0.5-1bionic) bionic; urgency=high
+
+
+
+ -- Isaac I. Y. Saito <gm130s@gmail.com>  Tue, 14 Jul 2020 22:00:00 -0000
+
+ros-melodic-moveit-runtime (1.0.4-1bionic) bionic; urgency=high
+
+
+
+ -- Isaac I. Y. Saito <gm130s@gmail.com>  Fri, 29 May 2020 22:00:00 -0000
+
+ros-melodic-moveit-runtime (1.0.3-1bionic) bionic; urgency=high
+
+
+
+ -- Isaac I. Y. Saito <gm130s@gmail.com>  Sat, 25 Apr 2020 22:00:00 -0000
+
+ros-melodic-moveit-runtime (1.0.2-1bionic) bionic; urgency=high
+
+
+
+ -- Isaac I. Y. Saito <gm130s@gmail.com>  Thu, 27 Jun 2019 22:00:00 -0000
+
+ros-melodic-moveit-runtime (1.0.1-1bionic) bionic; urgency=high
+
+
+
+ -- Isaac I. Y. Saito <gm130s@gmail.com>  Thu, 07 Mar 2019 23:00:00 -0000
+
+ros-melodic-moveit-runtime (1.0.0-1bionic) bionic; urgency=high
+
+  * [fix] catkin_lint issues (#1341 <https://github.com/ros-planning/moveit/issues/1341>)
+  * Contributors: Robert Haschke
+
+ -- Isaac I. Y. Saito <gm130s@gmail.com>  Sat, 23 Feb 2019 23:00:00 -0000
+
+ros-melodic-moveit-runtime (0.10.8-1bionic) bionic; urgency=high
+
+
+
+ -- Isaac I. Y. Saito <gm130s@gmail.com>  Sun, 23 Dec 2018 23:00:00 -0000
+
+ros-melodic-moveit-runtime (0.10.7-1bionic) bionic; urgency=high
+
+
+
+ -- Isaac I. Y. Saito <gm130s@gmail.com>  Wed, 12 Dec 2018 23:00:00 -0000
+
+ros-melodic-moveit-runtime (0.10.6-1bionic) bionic; urgency=high
+
+
+
+ -- Isaac I. Y. Saito <gm130s@gmail.com>  Sat, 08 Dec 2018 23:00:00 -0000
+
+ros-melodic-moveit-runtime (0.10.5-1bionic) bionic; urgency=high
+
+
+
+ -- Isaac I. Y. Saito <gm130s@gmail.com>  Wed, 31 Oct 2018 23:00:00 -0000
+
+ros-melodic-moveit-runtime (0.10.4-1bionic) bionic; urgency=high
+
+
+
+ -- Isaac I. Y. Saito <gm130s@gmail.com>  Sun, 28 Oct 2018 23:00:00 -0000
+
+ros-melodic-moveit-runtime (0.10.3-1bionic) bionic; urgency=high
+
+
+
+ -- Isaac I. Y. Saito <gm130s@gmail.com>  Sun, 28 Oct 2018 23:00:00 -0000
+
+ros-melodic-moveit-runtime (0.10.2-1bionic) bionic; urgency=high
+
+
+
+ -- Isaac I. Y. Saito <gm130s@gmail.com>  Tue, 23 Oct 2018 22:00:00 -0000
+
+ros-melodic-moveit-runtime (0.10.1-1bionic) bionic; urgency=high
+
+
+
+ -- Isaac I. Y. Saito <gm130s@gmail.com>  Thu, 24 May 2018 22:00:00 -0000
+
+ros-melodic-moveit-runtime (0.9.11-1bionic) bionic; urgency=high
+
+
+
+ -- Isaac I. Y. Saito <gm130s@gmail.com>  Sun, 24 Dec 2017 23:00:00 -0000
+
+ros-melodic-moveit-runtime (0.9.10-1bionic) bionic; urgency=high
+
+
+
+ -- Isaac I. Y. Saito <gm130s@gmail.com>  Fri, 08 Dec 2017 23:00:00 -0000
+
+ros-melodic-moveit-runtime (0.9.9-1bionic) bionic; urgency=high
+
+
+
+ -- Isaac I. Y. Saito <gm130s@gmail.com>  Sat, 05 Aug 2017 22:00:00 -0000
+
+ros-melodic-moveit-runtime (0.9.8-1bionic) bionic; urgency=high
+
+
+
+ -- Isaac I. Y. Saito <gm130s@gmail.com>  Tue, 20 Jun 2017 22:00:00 -0000
+
+ros-melodic-moveit-runtime (0.9.7-1bionic) bionic; urgency=high
+
+
+
+ -- Isaac I. Y. Saito <gm130s@gmail.com>  Sun, 04 Jun 2017 22:00:00 -0000
+
+ros-melodic-moveit-runtime (0.9.6-1bionic) bionic; urgency=high
+
+
+
+ -- Isaac I. Y. Saito <gm130s@gmail.com>  Tue, 11 Apr 2017 22:00:00 -0000
+
+ros-melodic-moveit-runtime (0.9.5-1bionic) bionic; urgency=high
+
+
+
+ -- Isaac I. Y. Saito <gm130s@gmail.com>  Tue, 07 Mar 2017 23:00:00 -0000
+
+ros-melodic-moveit-runtime (0.9.4-1bionic) bionic; urgency=high
+
+  * Added a new metapackage as a minimum set of moveit-related packages that can be installed on a robot (eliminating development packages).
+  * Contributors: Isaac I.Y. Saito
+
+ -- Isaac I. Y. Saito <gm130s@gmail.com>  Sun, 05 Feb 2017 23:00:00 -0000
+
+
