@@ -1,0 +1,12 @@
+Source: ros-melodic-moveit-ros-perception
+Section: misc
+Priority: optional
+Maintainer: Michael Ferguson <mferguson@fetchrobotics.com>
+Build-Depends: debhelper (>= 9.0.0), freeglut3-dev, libeigen3-dev, libgl1-mesa-dev, libglew-dev, libglu1-mesa-dev, libomp-dev, ros-melodic-catkin, ros-melodic-cv-bridge, ros-melodic-image-transport, ros-melodic-message-filters, ros-melodic-moveit-core, ros-melodic-moveit-msgs, ros-melodic-moveit-ros-occupancy-map-monitor, ros-melodic-moveit-ros-planning, ros-melodic-nodelet, ros-melodic-object-recognition-msgs, ros-melodic-pluginlib (>= 1.11.2), ros-melodic-rosconsole, ros-melodic-roscpp, ros-melodic-rosunit, ros-melodic-sensor-msgs, ros-melodic-tf2, ros-melodic-tf2-eigen, ros-melodic-tf2-geometry-msgs, ros-melodic-tf2-ros, ros-melodic-urdf
+Homepage: http://moveit.ros.org
+Standards-Version: 3.9.2
+
+Package: ros-melodic-moveit-ros-perception
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, freeglut3-dev, libgl1-mesa-dev, libglew-dev, libglu1-mesa-dev, libomp-dev, ros-melodic-cv-bridge, ros-melodic-image-transport, ros-melodic-message-filters, ros-melodic-moveit-core, ros-melodic-moveit-msgs, ros-melodic-moveit-ros-occupancy-map-monitor, ros-melodic-moveit-ros-planning, ros-melodic-nodelet, ros-melodic-object-recognition-msgs, ros-melodic-pluginlib (>= 1.11.2), ros-melodic-rosconsole, ros-melodic-roscpp, ros-melodic-sensor-msgs, ros-melodic-tf2, ros-melodic-tf2-eigen, ros-melodic-tf2-geometry-msgs, ros-melodic-tf2-ros, ros-melodic-urdf
+Description: Components of MoveIt! connecting to perception
