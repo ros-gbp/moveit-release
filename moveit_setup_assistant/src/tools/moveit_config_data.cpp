@@ -519,7 +519,7 @@ bool MoveItConfigData::outputFakeControllersYAML(const std::string& file_path)
     emitter << YAML::Key << "name";
     emitter << YAML::Value << "fake_" + group_it->name_ + "_controller";
     emitter << YAML::Key << "type";
-    emitter << YAML::Value << "$(arg execution_type)";
+    emitter << YAML::Value << "$(arg fake_execution_type)";
     emitter << YAML::Key << "joints";
     emitter << YAML::Value << YAML::BeginSeq;
 
@@ -595,7 +595,7 @@ bool MoveItConfigData::outputFakeControllersYAML(const std::string& file_path)
   return true;  // file created successfully
 }
 
-std::vector<OMPLPlannerDescription> MoveItConfigData::getOMPLPlanners()
+std::vector<OMPLPlannerDescription> MoveItConfigData::getOMPLPlanners() const
 {
   std::vector<OMPLPlannerDescription> planner_des;
 
@@ -1072,20 +1072,17 @@ bool MoveItConfigData::output3DSensorPluginYAML(const std::string& file_path)
   emitter << YAML::Key << "sensors";
   emitter << YAML::Value << YAML::BeginSeq;
 
-  // Can we have more than one plugin config?
-  emitter << YAML::BeginMap;
-
-  // Make sure sensors_plugin_config_parameter_list_ is not empty
-  if (!sensors_plugin_config_parameter_list_.empty())
+  for (auto& sensors_plugin_config : sensors_plugin_config_parameter_list_)
   {
-    for (auto& parameter : sensors_plugin_config_parameter_list_[0])
+    emitter << YAML::BeginMap;
+
+    for (auto& parameter : sensors_plugin_config)
     {
       emitter << YAML::Key << parameter.first;
       emitter << YAML::Value << parameter.second.getValue();
     }
+    emitter << YAML::EndMap;
   }
-
-  emitter << YAML::EndMap;
 
   emitter << YAML::EndSeq;
 
