@@ -1,0 +1,14 @@
+ros-melodic-pilz-industrial-motion-planner-testutils (1.0.9-1bionic) bionic; urgency=high
+
+
+
+ -- Alexander Gutenkunst <a.gutenkunst@pilz.de>  Sat, 08 Jan 2022 23:00:00 -0000
+
+ros-melodic-pilz-industrial-motion-planner-testutils (1.0.8-1bionic) bionic; urgency=high
+
+  * Add pilz_industrial_motion_planner to moveit_planners (#2507 <https://github.com/ros-planning/moveit/issues/2507>)
+  * Contributors: Christian Henkel, Immanuel Martini, Robert Haschke, Tyler Weaver
+
+ -- Alexander Gutenkunst <a.gutenkunst@pilz.de>  Sat, 22 May 2021 22:00:00 -0000
+
+
