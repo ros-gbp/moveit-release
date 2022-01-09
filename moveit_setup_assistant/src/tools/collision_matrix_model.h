@@ -34,7 +34,8 @@
 
 /* Author: Robert Haschke */
 
-#pragma once
+#ifndef MOVEIT_ROS_MOVEIT_SETUP_ASSISTANT_WIDGETS_COLLISION_MATRIX_MODEL_
+#define MOVEIT_ROS_MOVEIT_SETUP_ASSISTANT_WIDGETS_COLLISION_MATRIX_MODEL_
 
 #include <QAbstractTableModel>
 
@@ -58,7 +59,7 @@ public:
 
   // for editing
   Qt::ItemFlags flags(const QModelIndex& index) const override;
-  bool setData(const QModelIndex& /*index*/, const QVariant& value, int role) override;
+  bool setData(const QModelIndex& index, const QVariant& value, int role) override;
   void setEnabled(const QItemSelection& selection, bool value);
   void setEnabled(const QModelIndexList& indexes, bool value);
 
@@ -78,3 +79,5 @@ private:
   QList<QString> q_names;                    // names of links
   QList<int> visual_to_index;                // map from visual index to actual index
 };
+
+#endif  // MOVEIT_ROS_MOVEIT_SETUP_ASSISTANT_WIDGETS_COLLISION_MATRIX_MODEL_

@@ -34,7 +34,8 @@
 
 /* Author: Mark Moll */
 
-#pragma once
+#ifndef MOVEIT_ROS_PLANNING_CACHED_IK_KINEMATICS_PLUGIN_
+#define MOVEIT_ROS_PLANNING_CACHED_IK_KINEMATICS_PLUGIN_
 
 #include <moveit/kinematics_base/kinematics_base.h>
 #include <moveit/kdl_kinematics_plugin/kdl_kinematics_plugin.h>
@@ -98,7 +99,7 @@ public:
   const IKEntry& getBestApproximateIKSolution(const std::vector<Pose>& poses) const;
   /** initialize cache, read from disk if found */
   void initializeCache(const std::string& robot_id, const std::string& group_name, const std::string& cache_name,
-                       const unsigned int num_joints, const Options& opts = Options());
+                       const unsigned int num_joints, Options opts = Options());
   /**
     insert (pose,config) as an entry if it's different enough from the
     most similar cache entry
@@ -177,27 +178,27 @@ protected:
 };
 
 // Helper class to enable/disable initialize() methods with new/old API
-// HasRobotModelApi<T>::value provides a true/false constexpr depending on KinematicsPlugin offers the new Api
+// hasRobotModelAPI<T>::value provides a true/false constexpr depending on KinematicsPlugin offers the new API
 // This uses SFINAE magic: https://jguegant.github.io/blogs/tech/sfinae-introduction.html
 template <typename KinematicsPlugin, typename = bool>
-struct HasRobotModelApi : std::false_type
+struct hasRobotModelAPI : std::false_type
 {
 };
 
 template <typename KinematicsPlugin>
-struct HasRobotModelApi<KinematicsPlugin, decltype(std::declval<KinematicsPlugin&>().initialize(
+struct hasRobotModelAPI<KinematicsPlugin, decltype(std::declval<KinematicsPlugin&>().initialize(
                                               std::declval<const moveit::core::RobotModel&>(), std::string(),
                                               std::string(), std::vector<std::string>(), 0.0))> : std::true_type
 {
 };
 
 template <typename KinematicsPlugin, typename = bool>
-struct HasRobotDescApi : std::false_type
+struct hasRobotDescAPI : std::false_type
 {
 };
 
 template <typename KinematicsPlugin>
-struct HasRobotDescApi<KinematicsPlugin,
+struct hasRobotDescAPI<KinematicsPlugin,
                        decltype(std::declval<KinematicsPlugin&>().KinematicsPlugin::initialize(
                            std::string(), std::string(), std::string(), std::vector<std::string>(), 0.0))>
   : std::true_type
@@ -265,7 +266,7 @@ private:
      availability of API in wrapped KinematicsPlugin class.
      However, as templates and virtual functions cannot be combined, we need helpers initializeImpl(). */
   template <class T = KinematicsPlugin>
-  typename std::enable_if<HasRobotModelApi<T>::value, bool>::type
+  typename std::enable_if<hasRobotModelAPI<T>::value, bool>::type
   initializeImpl(const moveit::core::RobotModel& robot_model, const std::string& group_name,
                  const std::string& base_frame, const std::vector<std::string>& tip_frames,
                  double search_discretization)
@@ -284,7 +285,7 @@ private:
   }
 
   template <class T = KinematicsPlugin>
-  typename std::enable_if<!HasRobotModelApi<T>::value, bool>::type
+  typename std::enable_if<!hasRobotModelAPI<T>::value, bool>::type
   initializeImpl(const moveit::core::RobotModel& /*unused*/, const std::string& /*unused*/,
                  const std::string& /*unused*/, const std::vector<std::string>& /*unused*/, double /*unused*/)
   {
@@ -292,7 +293,7 @@ private:
   }
 
   template <class T = KinematicsPlugin>
-  typename std::enable_if<HasRobotDescApi<T>::value, bool>::type
+  typename std::enable_if<hasRobotDescAPI<T>::value, bool>::type
   initializeImpl(const std::string& robot_description, const std::string& group_name, const std::string& base_frame,
                  const std::string& tip_frame, double search_discretization)
   {
@@ -304,7 +305,7 @@ private:
   }
 
   template <class T = KinematicsPlugin>
-  typename std::enable_if<!HasRobotDescApi<T>::value, bool>::type
+  typename std::enable_if<!hasRobotDescAPI<T>::value, bool>::type
   initializeImpl(const std::string& /*unused*/, const std::string& /*unused*/, const std::string& /*unused*/,
                  const std::string& /*unused*/, double /*unused*/)
   {
@@ -348,3 +349,4 @@ public:
 }  // namespace cached_ik_kinematics_plugin
 
 #include "cached_ik_kinematics_plugin-inl.h"
+#endif

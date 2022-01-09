@@ -91,19 +91,19 @@ TEST_F(LoadPlanningModelsPr2, StateSpace)
 TEST_F(LoadPlanningModelsPr2, StateSpaces)
 {
   ompl_interface::ModelBasedStateSpaceSpecification spec1(robot_model_, "right_arm");
-  ompl_interface::JointModelStateSpace ss1(spec1);
+  ompl_interface::ModelBasedStateSpace ss1(spec1);
   ss1.setup();
 
   ompl_interface::ModelBasedStateSpaceSpecification spec2(robot_model_, "left_arm");
-  ompl_interface::JointModelStateSpace ss2(spec2);
+  ompl_interface::ModelBasedStateSpace ss2(spec2);
   ss2.setup();
 
   ompl_interface::ModelBasedStateSpaceSpecification spec3(robot_model_, "whole_body");
-  ompl_interface::JointModelStateSpace ss3(spec3);
+  ompl_interface::ModelBasedStateSpace ss3(spec3);
   ss3.setup();
 
   ompl_interface::ModelBasedStateSpaceSpecification spec4(robot_model_, "arms");
-  ompl_interface::JointModelStateSpace ss4(spec4);
+  ompl_interface::ModelBasedStateSpace ss4(spec4);
   ss4.setup();
 
   std::ofstream fout("ompl_interface_test_state_space_diagram2.dot");
@@ -130,13 +130,13 @@ TEST_F(LoadPlanningModelsPr2, StateSpaceCopy)
   }
   EXPECT_TRUE(passed);
 
-  moveit::core::RobotState robot_state(robot_model_);
+  robot_state::RobotState robot_state(robot_model_);
   robot_state.setToRandomPositions();
   EXPECT_TRUE(robot_state.distance(robot_state) < EPSILON);
   ompl::base::State* state = joint_model_state_space.allocState();
   for (int i = 0; i < 10; ++i)
   {
-    moveit::core::RobotState robot_state2(robot_state);
+    robot_state::RobotState robot_state2(robot_state);
     EXPECT_TRUE(robot_state.distance(robot_state2) < EPSILON);
     joint_model_state_space.copyToOMPLState(state, robot_state);
     robot_state.setToRandomPositions(

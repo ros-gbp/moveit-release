@@ -42,7 +42,6 @@
 #include <kdl/trajectory.hpp>
 #include <moveit/planning_interface/planning_interface.h>
 #include <moveit/robot_model/robot_model.h>
-#include <moveit/planning_scene/planning_scene.h>
 
 #include "pilz_industrial_motion_planner/joint_limits_extension.h"
 #include "pilz_industrial_motion_planner/limits_container.h"
@@ -104,10 +103,10 @@ public:
    * @param res: motion plan response
    * @param sampling_time: sampling time of the generate trajectory
    * @return motion plan succeed/fail, detailed information in motion plan
-   * response
+   * responce
    */
-  bool generate(const planning_scene::PlanningSceneConstPtr& scene, const planning_interface::MotionPlanRequest& req,
-                planning_interface::MotionPlanResponse& res, double sampling_time = 0.1);
+  bool generate(const planning_interface::MotionPlanRequest& req, planning_interface::MotionPlanResponse& res,
+                double sampling_time = 0.1);
 
 protected:
   /**
@@ -145,16 +144,13 @@ private:
    * @brief Extract needed information from a motion plan request in order to
    * simplify
    * further usages.
-   * @param scene: planning scene
    * @param req: motion plan request
    * @param info: information extracted from motion plan request which is
    * necessary for the planning
    */
-  virtual void extractMotionPlanInfo(const planning_scene::PlanningSceneConstPtr& scene,
-                                     const planning_interface::MotionPlanRequest& req, MotionPlanInfo& info) const = 0;
+  virtual void extractMotionPlanInfo(const planning_interface::MotionPlanRequest& req, MotionPlanInfo& info) const = 0;
 
-  virtual void plan(const planning_scene::PlanningSceneConstPtr& scene,
-                    const planning_interface::MotionPlanRequest& req, const MotionPlanInfo& plan_info,
+  virtual void plan(const planning_interface::MotionPlanRequest& req, const MotionPlanInfo& plan_info,
                     const double& sampling_time, trajectory_msgs::JointTrajectory& joint_trajectory) = 0;
 
 private:
@@ -204,7 +200,7 @@ private:
   /**
    * @brief set MotionPlanResponse from joint trajectory
    */
-  void setSuccessResponse(const moveit::core::RobotState& start_rs, const std::string& group_name,
+  void setSuccessResponse(const std::string& group_name, const moveit_msgs::RobotState& start_state,
                           const trajectory_msgs::JointTrajectory& joint_trajectory, const ros::Time& planning_start,
                           planning_interface::MotionPlanResponse& res) const;
 
@@ -223,7 +219,7 @@ private:
    *     - The start state velocity is below
    * TrajectoryGenerator::VELOCITY_TOLERANCE
    */
-  void checkStartState(const moveit_msgs::RobotState& start_state, const std::string& group) const;
+  void checkStartState(const moveit_msgs::RobotState& start_state) const;
 
   void checkGoalConstraints(const moveit_msgs::MotionPlanRequest::_goal_constraints_type& goal_constraints,
                             const std::vector<std::string>& expected_joint_names, const std::string& group_name) const;
@@ -234,12 +230,11 @@ private:
 
   void checkCartesianGoalConstraint(const moveit_msgs::Constraints& constraint, const std::string& group_name) const;
 
-private:
-  /**
-   * @return joint state message including only active joints in group
-   */
-  sensor_msgs::JointState filterGroupValues(const sensor_msgs::JointState& robot_state, const std::string& group) const;
+  void convertToRobotTrajectory(const trajectory_msgs::JointTrajectory& joint_trajectory,
+                                const moveit_msgs::RobotState& start_state,
+                                robot_trajectory::RobotTrajectory& robot_trajectory) const;
 
+private:
   /**
    * @return True if scaling factor is valid, otherwise false.
    */

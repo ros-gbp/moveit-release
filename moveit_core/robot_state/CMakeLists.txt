@@ -1,10 +1,14 @@
 set(MOVEIT_LIB_NAME moveit_robot_state)
 
+if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+  # clang is picky about typeid(*solver)
+  add_compile_options(-Wno-potentially-evaluated-expression)
+endif()
+
 add_library(${MOVEIT_LIB_NAME}
   src/attached_body.cpp
   src/conversions.cpp
   src/robot_state.cpp
-  src/cartesian_interpolator.cpp
 )
 set_target_properties(${MOVEIT_LIB_NAME} PROPERTIES VERSION "${${PROJECT_NAME}_VERSION}")
 
@@ -26,9 +30,6 @@ if(CATKIN_ENABLE_TESTING)
   # As an executable, this benchmark is not run as a test by default
   add_executable(robot_state_benchmark test/robot_state_benchmark.cpp)
   target_link_libraries(robot_state_benchmark ${MOVEIT_LIB_NAME} moveit_test_utils ${GTEST_LIBRARIES})
-
-  catkin_add_gtest(test_cartesian_interpolator test/test_cartesian_interpolator.cpp)
-  target_link_libraries(test_cartesian_interpolator ${MOVEIT_LIB_NAME} moveit_test_utils)
 
   catkin_add_gtest(test_robot_state_complex test/test_kinematic_complex.cpp)
   target_link_libraries(test_robot_state_complex ${MOVEIT_LIB_NAME} moveit_test_utils)

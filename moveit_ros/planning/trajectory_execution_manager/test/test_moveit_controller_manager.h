@@ -34,7 +34,8 @@
 
 /* Author: Ioan Sucan */
 
-#pragma once
+#ifndef TEST_MOVEIT_CONTROLLER_MANAGER_
+#define TEST_MOVEIT_CONTROLLER_MANAGER_
 
 #include <moveit/controller_manager/controller_manager.h>
 
@@ -47,7 +48,7 @@ public:
   {
   }
 
-  bool sendTrajectory(const moveit_msgs::RobotTrajectory& /*trajectory*/) override
+  bool sendTrajectory(const moveit_msgs::RobotTrajectory& trajectory) override
   {
     return true;
   }
@@ -59,7 +60,6 @@ public:
 
   bool waitForExecution(const ros::Duration& timeout = ros::Duration(0)) override
   {
-    (void)timeout;
     return false;
   }
 
@@ -142,15 +142,15 @@ public:
 
   bool switchControllers(const std::vector<std::string>& activate, const std::vector<std::string>& deactivate) override
   {
-    for (const std::string& controller : deactivate)
+    for (std::size_t i = 0; i < deactivate.size(); ++i)
     {
-      controllers_[controller] &= ~ACTIVE;
-      std::cout << "Deactivated controller " << controller << std::endl;
+      controllers_[deactivate[i]] &= ~ACTIVE;
+      std::cout << "Deactivated controller " << deactivate[i] << std::endl;
     }
-    for (const std::string& controller : activate)
+    for (std::size_t i = 0; i < activate.size(); ++i)
     {
-      controllers_[controller] |= ACTIVE;
-      std::cout << "Activated controller " << controller << std::endl;
+      controllers_[activate[i]] |= ACTIVE;
+      std::cout << "Activated controller " << activate[i] << std::endl;
     }
     return true;
   }
@@ -160,3 +160,4 @@ protected:
   std::map<std::string, std::vector<std::string> > controller_joints_;
 };
 }  // namespace test_moveit_controller_manager
+#endif

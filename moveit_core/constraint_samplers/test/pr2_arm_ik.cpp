@@ -261,9 +261,9 @@ void PR2ArmIK::computeIKShoulderPan(const Eigen::Isometry3f& g_in, const double&
   std::cout << "ComputeIK::theta3:" << numerator << "," << denominator << "," << std::endl << theta4[0] << std::endl;
 #endif
 
-  for (double theta : theta4)
+  for (int jj = 0; jj < 2; jj++)
   {
-    t4 = theta;
+    t4 = theta4[jj];
     cost4 = cos(t4);
     sint4 = sin(t4);
 
@@ -284,9 +284,9 @@ void PR2ArmIK::computeIKShoulderPan(const Eigen::Isometry3f& g_in, const double&
     if (!solveCosineEqn(at, bt, ct, theta2[0], theta2[1]))
       continue;
 
-    for (double theta : theta2)
+    for (int ii = 0; ii < 2; ii++)
     {
-      t2 = theta;
+      t2 = theta2[ii];
       if (!checkJointLimits(t2, 1))
         continue;
 
@@ -304,9 +304,9 @@ void PR2ArmIK::computeIKShoulderPan(const Eigen::Isometry3f& g_in, const double&
       if (!solveCosineEqn(at, bt, ct, theta3[0], theta3[1]))
         continue;
 
-      for (double theta : theta3)
+      for (int kk = 0; kk < 2; kk++)
       {
-        t3 = theta;
+        t3 = theta3[kk];
 
         if (!checkJointLimits(angles::normalize_angle(t3), 2))
           continue;
@@ -527,9 +527,9 @@ void PR2ArmIK::computeIKShoulderRoll(const Eigen::Isometry3f& g_in, const double
   theta4[1] = -theta4[0];
   theta4[3] = -theta4[2];
 
-  for (double theta : theta4)
+  for (int jj = 0; jj < 4; jj++)
   {
-    t4 = theta;
+    t4 = theta4[jj];
 
     if (!checkJointLimits(t4, 3))
     {
@@ -550,9 +550,9 @@ void PR2ArmIK::computeIKShoulderRoll(const Eigen::Isometry3f& g_in, const double
     if (!solveCosineEqn(at, bt, ct, theta2[0], theta2[1]))
       continue;
 
-    for (double theta : theta2)
+    for (int ii = 0; ii < 2; ii++)
     {
-      t2 = theta;
+      t2 = theta2[ii];
 #ifdef DEBUG
       std::cout << "t2 " << t2 << std::endl;
 #endif
@@ -575,9 +575,9 @@ void PR2ArmIK::computeIKShoulderRoll(const Eigen::Isometry3f& g_in, const double
         continue;
       }
 
-      for (double theta : theta1)
+      for (int kk = 0; kk < 2; kk++)
       {
-        t1 = theta;
+        t1 = theta1[kk];
 #ifdef DEBUG
         std::cout << "t1 " << t1 << std::endl;
 #endif
@@ -785,5 +785,5 @@ bool PR2ArmIK::checkJointLimits(const double& joint_value, const int& joint_num)
   else
     jv = angles::normalize_angle(joint_value * angle_multipliers_[joint_num]);
 
-  return !(jv < min_angles_[joint_num] || jv > max_angles_[joint_num]);
+  return not(jv < min_angles_[joint_num] || jv > max_angles_[joint_num]);
 }

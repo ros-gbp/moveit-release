@@ -34,7 +34,8 @@
 
 /* Author: Ioan Sucan */
 
-#pragma once
+#ifndef MOVEIT_CONSTRAINT_SAMPLERS_CONSTRAINT_SAMPLER_MANAGER_
+#define MOVEIT_CONSTRAINT_SAMPLERS_CONSTRAINT_SAMPLER_MANAGER_
 
 #include <moveit/constraint_samplers/constraint_sampler_allocator.h>
 #include <moveit/macros/class_forward.h>
@@ -143,3 +144,5 @@ private:
       sampler_alloc_; /**< \brief Holds the constraint sampler allocators, which will be tested in order  */
 };
 }  // namespace constraint_samplers
+
+#endif

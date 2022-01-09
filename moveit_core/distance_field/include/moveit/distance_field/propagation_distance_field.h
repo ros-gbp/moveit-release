@@ -34,7 +34,8 @@
 
 /* Author: Mrinal Kalakrishnan, Ken Anderson */
 
-#pragma once
+#ifndef MOVEIT_DISTANCE_FIELD_PROPAGATION_DISTANCE_FIELD_
+#define MOVEIT_DISTANCE_FIELD_PROPAGATION_DISTANCE_FIELD_
 
 #include <moveit/distance_field/voxel_grid.h>
 #include <moveit/distance_field/distance_field.h>
@@ -54,7 +55,7 @@ namespace distance_field
  * \brief Struct for sorting type Eigen::Vector3i for use in sorted
  * std containers.  Sorts in z order, then y order, then x order.
  */
-struct CompareEigenVector3i
+struct compareEigen_Vector3i
 {
   bool operator()(const Eigen::Vector3i& loc_1, const Eigen::Vector3i& loc_2) const
   {
@@ -447,7 +448,7 @@ public:
 
 private:
   /** Typedef for set of integer indices */
-  typedef std::set<Eigen::Vector3i, CompareEigenVector3i, Eigen::aligned_allocator<Eigen::Vector3i>> VoxelSet;
+  typedef std::set<Eigen::Vector3i, compareEigen_Vector3i, Eigen::aligned_allocator<Eigen::Vector3i>> VoxelSet;
   /**
    * \brief Initializes the field, resetting the voxel grid and
    * building a sqrt lookup table for efficiency based on
@@ -599,3 +600,5 @@ inline double PropagationDistanceField::getDistance(const PropDistanceFieldVoxel
   return sqrt_table_[object.distance_square_] - sqrt_table_[object.negative_distance_square_];
 }
 }  // namespace distance_field
+
+#endif

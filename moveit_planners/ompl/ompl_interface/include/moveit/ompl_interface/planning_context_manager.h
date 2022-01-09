@@ -34,52 +34,23 @@
 
 /* Author: Ioan Sucan */
 
-#pragma once
+#ifndef MOVEIT_OMPL_INTERFACE_PLANNING_CONTEXT_MANAGER_
+#define MOVEIT_OMPL_INTERFACE_PLANNING_CONTEXT_MANAGER_
 
 #include <moveit/ompl_interface/model_based_planning_context.h>
 #include <moveit/ompl_interface/parameterization/model_based_state_space_factory.h>
 #include <moveit/constraint_samplers/constraint_sampler_manager.h>
 #include <moveit/macros/class_forward.h>
 
-#include <ompl/base/PlannerDataStorage.h>
-
 #include <string>
 #include <map>
 
 namespace ompl_interface
 {
-class MultiQueryPlannerAllocator
-{
-public:
-  MultiQueryPlannerAllocator() = default;
-  ~MultiQueryPlannerAllocator();
-
-  template <typename T>
-  ob::PlannerPtr allocatePlanner(const ob::SpaceInformationPtr& si, const std::string& new_name,
-                                 const ModelBasedPlanningContextSpecification& spec);
-
-private:
-  template <typename T>
-  ob::PlannerPtr allocatePlannerImpl(const ob::SpaceInformationPtr& si, const std::string& new_name,
-                                     const ModelBasedPlanningContextSpecification& spec, bool load_planner_data = false,
-                                     bool store_planner_data = false, const std::string& file_path = "");
-
-  template <typename T>
-  inline ob::Planner* allocatePersistentPlanner(const ob::PlannerData& data);
-
-  // Storing multi-query planners
-  std::map<std::string, ob::PlannerPtr> planners_;
-
-  std::map<std::string, std::string> planner_data_storage_paths_;
-
-  // Store and load planner data
-  ob::PlannerDataStorage storage_;
-};
-
 class PlanningContextManager
 {
 public:
-  PlanningContextManager(moveit::core::RobotModelConstPtr robot_model,
+  PlanningContextManager(robot_model::RobotModelConstPtr robot_model,
                          constraint_samplers::ConstraintSamplerManagerPtr csm);
   ~PlanningContextManager();
 
@@ -164,10 +135,12 @@ public:
     minimum_waypoint_count_ = mwc;
   }
 
-  const moveit::core::RobotModelConstPtr& getRobotModel() const
+  const robot_model::RobotModelConstPtr& getRobotModel() const
   {
     return robot_model_;
   }
+
+  ModelBasedPlanningContextPtr getPlanningContext(const std::string& config, const std::string& factory_type = "") const;
 
   /** \brief Returns a planning context to OMPLInterface, which in turn passes it to OMPLPlannerManager.
    *
@@ -180,8 +153,7 @@ public:
    * */
   ModelBasedPlanningContextPtr getPlanningContext(const planning_scene::PlanningSceneConstPtr& planning_scene,
                                                   const planning_interface::MotionPlanRequest& req,
-                                                  moveit_msgs::MoveItErrorCodes& error_code, const ros::NodeHandle& nh,
-                                                  bool use_constraints_approximations) const;
+                                                  moveit_msgs::MoveItErrorCodes& error_code) const;
 
   void registerPlannerAllocator(const std::string& planner_id, const ConfiguredPlannerAllocator& pa)
   {
@@ -213,9 +185,6 @@ protected:
   void registerDefaultPlanners();
   void registerDefaultStateSpaces();
 
-  template <typename T>
-  void registerPlannerAllocatorHelper(const std::string& planner_id);
-
   /** \brief This is the function that constructs new planning contexts if no previous ones exist that are suitable */
   ModelBasedPlanningContextPtr getPlanningContext(const planning_interface::PlannerConfigurationSettings& config,
                                                   const StateSpaceFactoryTypeSelector& factory_selector,
@@ -227,7 +196,7 @@ protected:
                                                               const moveit_msgs::MotionPlanRequest& req) const;
 
   /** \brief The kinematic model for which motion plans are computed */
-  moveit::core::RobotModelConstPtr robot_model_;
+  robot_model::RobotModelConstPtr robot_model_;
 
   constraint_samplers::ConstraintSamplerManagerPtr constraint_sampler_manager_;
 
@@ -262,11 +231,10 @@ protected:
   /// needed)
   unsigned int minimum_waypoint_count_;
 
-  /// Multi-query planner allocator
-  MultiQueryPlannerAllocator planner_allocator_;
-
 private:
   MOVEIT_STRUCT_FORWARD(CachedContexts);
   CachedContextsPtr cached_contexts_;
 };
 }  // namespace ompl_interface
+
+#endif

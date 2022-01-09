@@ -34,7 +34,8 @@
 
 /* Author: E. Gil Jones */
 
-#pragma once
+#ifndef CHOMP_INTERFACE_CHOMP_INTERFACE_H
+#define CHOMP_INTERFACE_CHOMP_INTERFACE_H
 
 #include <chomp_motion_planner/chomp_planner.h>
 #include <chomp_motion_planner/chomp_parameters.h>
@@ -63,3 +64,5 @@ protected:
   chomp::ChompParameters params_;
 };
 }  // namespace chomp_interface
+
+#endif

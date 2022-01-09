@@ -2,51 +2,16 @@
 Changelog for package moveit_simple_controller_manager
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1.1.7 (2021-12-31)
-------------------
-* ``simple_controller_manager``: add ``max_effort`` parameter to ``GripperCommand`` action (`#2984 <https://github.com/ros-planning/moveit/issues/2984>`_)
-* Switch to ``std::bind`` (`#2967 <https://github.com/ros-planning/moveit/issues/2967>`_)
-* Contributors: Jochen Sprickerhof, Rick Staa
-
-1.1.6 (2021-11-06)
-------------------
-* Use newly introduced cmake macro ``moveit_build_options()`` from ``moveit_core``
-* clang-tidy: modernize-make-shared, modernize-make-unique (`#2762 <https://github.com/ros-planning/moveit/issues/2762>`_)
-* Facilitate spotting of empty controller names, using quotes (`#2761 <https://github.com/ros-planning/moveit/issues/2761>`_)
-* Contributors: G.A. vd. Hoorn, Robert Haschke
-
-1.1.5 (2021-05-23)
+1.0.9 (2022-01-09)
 ------------------
 
-1.1.4 (2021-05-12)
+1.0.8 (2021-05-23)
 ------------------
 
-1.1.3 (2021-04-29)
-------------------
-
-1.1.2 (2021-04-08)
-------------------
-
-1.1.1 (2020-10-13)
+1.0.7 (2020-11-20)
 ------------------
 * [maint] Add comment to MOVEIT_CLASS_FORWARD (`#2315 <https://github.com/ros-planning/moveit/issues/2315>`_)
 * Contributors: Felix von Drigalski
-
-1.1.0 (2020-09-04)
-------------------
-* [feature] Optional cpp version setting (`#2166 <https://github.com/ros-planning/moveit/issues/2166>`_)
-* [feature] Allow different controllers for execution `#1832 <https://github.com/ros-planning/moveit/issues/1832>`_)
-* [feature] ControllerManager: wait for done-callback (`#1783 <https://github.com/ros-planning/moveit/issues/1783>`_)
-* [feature] Use CMAKE_CXX_STANDARD to enforce c++14 for portability (`#1607 <https://github.com/ros-planning/moveit/issues/1607>`_)
-* [fix] Various fixes for upcoming Noetic release (`#2180 <https://github.com/ros-planning/moveit/issues/2180>`_)
-* [fix] Fix errors: catkin_lint 1.6.7 (`#1987 <https://github.com/ros-planning/moveit/issues/1987>`_)
-* [fix] Fix compiler warnings (`#1773 <https://github.com/ros-planning/moveit/issues/1773>`_)
-* [fix] Fix binary artifact install locations. (`#1575 <https://github.com/ros-planning/moveit/issues/1575>`_)
-* [fix] add missing space to log (`#1477 <https://github.com/ros-planning/moveit/issues/1477>`_)
-* [maint] clang-tidy fixes (`#2050 <https://github.com/ros-planning/moveit/issues/2050>`_, `#1419 <https://github.com/ros-planning/moveit/issues/1419>`_)
-* [maint] Switch from include guards to pragma once (`#1615 <https://github.com/ros-planning/moveit/issues/1615>`_)
-* [maint] Remove ! from MoveIt name (`#1590 <https://github.com/ros-planning/moveit/issues/1590>`_)
-* Contributors: Dave Coleman, Henning Kayser, Jonathan Binney, Leroy Rügemer, Robert Haschke, Sean Yen, Tyler Weaver, Yu, Yan, llach
 
 1.0.6 (2020-08-19)
 ------------------

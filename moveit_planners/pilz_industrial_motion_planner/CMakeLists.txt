@@ -1,11 +1,16 @@
 cmake_minimum_required(VERSION 3.1.3)
 project(pilz_industrial_motion_planner)
 
-## Add support for C++14, supported in ROS Melodic and newer
-add_definitions(-std=c++14)
+## Add support for C++11, supported in ROS Kinetic and newer
+add_definitions(-std=c++11)
+add_definitions(-Wall)
+add_definitions(-Wextra)
+add_definitions(-Wno-unused-parameter)
 
 find_package(catkin REQUIRED COMPONENTS
+  eigen_conversions
   joint_limits_interface
+  kdl_conversions
   moveit_core
   moveit_msgs
   moveit_ros_move_group
@@ -304,8 +309,6 @@ if(CATKIN_ENABLE_TESTING)
     ${catkin_LIBRARIES}
     ${${PROJECT_NAME}_INTEGRATIONTEST_LIBRARIES}
   )
-
-  add_rostest(test/python_move_group_planning.test)
 
   ##################
   ####Unit Tests####

@@ -179,7 +179,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(
         usage="""%(prog)s [options] [<group_name>]""",
-        description="Command Line Interface to MoveIt",
+        description="Command Line Interface to MoveIt!",
     )
     parser.add_argument(
         "-i",

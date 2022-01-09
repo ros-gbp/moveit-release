@@ -34,7 +34,8 @@
 
 /* Author: Ioan Sucan */
 
-#pragma once
+#ifndef MOVEIT_PLANNING_SCENE_MONITOR_PLANNING_SCENE_MONITOR_
+#define MOVEIT_PLANNING_SCENE_MONITOR_PLANNING_SCENE_MONITOR_
 
 #include <ros/ros.h>
 #include <ros/callback_queue.h>
@@ -170,7 +171,7 @@ public:
     return rm_loader_;
   }
 
-  const moveit::core::RobotModelConstPtr& getRobotModel() const
+  const robot_model::RobotModelConstPtr& getRobotModel() const
   {
     return robot_model_;
   }
@@ -437,7 +438,7 @@ protected:
   void attachObjectCallback(const moveit_msgs::AttachedCollisionObjectConstPtr& obj);
 
   /** @brief Callback for a change for an attached object of the current state of the planning scene */
-  void currentStateAttachedBodyUpdateCallback(moveit::core::AttachedBody* attached_body, bool just_attached);
+  void currentStateAttachedBodyUpdateCallback(robot_state::AttachedBody* attached_body, bool just_attached);
 
   /** @brief Callback for a change in the world maintained by the planning scene */
   void currentWorldObjectUpdateCallback(const collision_detection::World::ObjectConstPtr& object,
@@ -453,8 +454,8 @@ protected:
 
   void excludeAttachedBodiesFromOctree();
   void includeAttachedBodiesInOctree();
-  void excludeAttachedBodyFromOctree(const moveit::core::AttachedBody* attached_body);
-  void includeAttachedBodyInOctree(const moveit::core::AttachedBody* attached_body);
+  void excludeAttachedBodyFromOctree(const robot_state::AttachedBody* attached_body);
+  void includeAttachedBodyInOctree(const robot_state::AttachedBody* attached_body);
 
   bool getShapeTransformCache(const std::string& target_frame, const ros::Time& target_time,
                               occupancy_map_monitor::ShapeTransformCache& cache) const;
@@ -516,13 +517,14 @@ protected:
   // include a current state monitor
   CurrentStateMonitorPtr current_state_monitor_;
 
-  typedef std::map<const moveit::core::LinkModel*,
+  typedef std::map<const robot_model::LinkModel*,
                    std::vector<std::pair<occupancy_map_monitor::ShapeHandle, std::size_t> > >
       LinkShapeHandles;
-  using AttachedBodyShapeHandles = std::map<const moveit::core::AttachedBody*,
-                                            std::vector<std::pair<occupancy_map_monitor::ShapeHandle, std::size_t> > >;
-  using CollisionBodyShapeHandles =
-      std::map<std::string, std::vector<std::pair<occupancy_map_monitor::ShapeHandle, const Eigen::Isometry3d*> > >;
+  typedef std::map<const robot_state::AttachedBody*,
+                   std::vector<std::pair<occupancy_map_monitor::ShapeHandle, std::size_t> > >
+      AttachedBodyShapeHandles;
+  typedef std::map<std::string, std::vector<std::pair<occupancy_map_monitor::ShapeHandle, const Eigen::Isometry3d*> > >
+      CollisionBodyShapeHandles;
 
   LinkShapeHandles link_shape_handles_;
   AttachedBodyShapeHandles attached_body_shape_handles_;
@@ -579,7 +581,7 @@ private:
   ros::WallTime last_robot_state_update_wall_time_;
 
   robot_model_loader::RobotModelLoaderPtr rm_loader_;
-  moveit::core::RobotModelConstPtr robot_model_;
+  robot_model::RobotModelConstPtr robot_model_;
 
   collision_detection::CollisionPluginLoader collision_loader_;
 
@@ -595,7 +597,7 @@ private:
  * "operator->" functions.  Therefore you will often see code like this:
  * @code
  *   planning_scene_monitor::LockedPlanningSceneRO ls(planning_scene_monitor);
- *   moveit::core::RobotModelConstPtr model = ls->getRobotModel();
+ *   robot_model::RobotModelConstPtr model = ls->getRobotModel();
  * @endcode
 
  * The function "getRobotModel()" is a member of PlanningScene and not
@@ -647,7 +649,7 @@ protected:
   void initialize(bool read_only)
   {
     if (planning_scene_monitor_)
-      lock_ = std::make_shared<SingleUnlock>(planning_scene_monitor_.get(), read_only);
+      lock_.reset(new SingleUnlock(planning_scene_monitor_.get(), read_only));
   }
 
   MOVEIT_STRUCT_FORWARD(SingleUnlock);
@@ -687,7 +689,7 @@ protected:
  * "operator->" functions.  Therefore you will often see code like this:
  * @code
  *   planning_scene_monitor::LockedPlanningSceneRW ls(planning_scene_monitor);
- *   moveit::core::RobotModelConstPtr model = ls->getRobotModel();
+ *   robot_model::RobotModelConstPtr model = ls->getRobotModel();
  * @endcode
 
  * The function "getRobotModel()" is a member of PlanningScene and not
@@ -719,3 +721,5 @@ public:
   }
 };
 }  // namespace planning_scene_monitor
+
+#endif

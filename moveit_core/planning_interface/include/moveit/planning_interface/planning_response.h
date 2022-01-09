@@ -34,7 +34,8 @@
 
 /* Author: Ioan Sucan */
 
-#pragma once
+#ifndef MOVEIT_PLANNING_INTERFACE_PLANNING_RESPONSE_
+#define MOVEIT_PLANNING_INTERFACE_PLANNING_RESPONSE_
 
 #include <moveit/robot_trajectory/robot_trajectory.h>
 #include <moveit_msgs/MoveItErrorCodes.h>
@@ -67,3 +68,5 @@ struct MotionPlanDetailedResponse
 };
 
 }  // namespace planning_interface
+
+#endif

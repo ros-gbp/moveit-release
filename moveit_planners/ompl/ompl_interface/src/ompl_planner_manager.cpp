@@ -100,18 +100,18 @@ public:
       }
     };
 
-    output_handler_ = std::make_shared<OutputHandler>();
+    output_handler_.reset(new OutputHandler());
     ompl::msg::useOutputHandler(output_handler_.get());
   }
 
-  bool initialize(const moveit::core::RobotModelConstPtr& model, const std::string& ns) override
+  bool initialize(const robot_model::RobotModelConstPtr& model, const std::string& ns) override
   {
     if (!ns.empty())
       nh_ = ros::NodeHandle(ns);
-    ompl_interface_ = std::make_unique<OMPLInterface>(model, nh_);
+    ompl_interface_.reset(new OMPLInterface(model, nh_));
     std::string ompl_ns = ns.empty() ? "ompl" : ns + "/ompl";
-    dynamic_reconfigure_server_ =
-        std::make_unique<dynamic_reconfigure::Server<OMPLDynamicReconfigureConfig>>(ros::NodeHandle(nh_, ompl_ns));
+    dynamic_reconfigure_server_.reset(
+        new dynamic_reconfigure::Server<OMPLDynamicReconfigureConfig>(ros::NodeHandle(nh_, ompl_ns)));
     dynamic_reconfigure_server_->setCallback(
         std::bind(&OMPLPlannerManager::dynamicReconfigureCallback, this, std::placeholders::_1, std::placeholders::_2));
     config_settings_ = ompl_interface_->getPlannerConfigurations();
@@ -179,7 +179,7 @@ private:
     ROS_INFO_STREAM("Displaying states for context " << pc->getName());
     const og::SimpleSetup &ss = pc->getOMPLSimpleSetup();
     ob::ValidStateSamplerPtr vss = ss.getSpaceInformation()->allocValidStateSampler();
-    moveit::core::RobotState robot_state = pc->getPlanningScene()->getCurrentState();
+    robot_state::RobotState robot_state = pc->getPlanningScene()->getCurrentState();
     ob::ScopedState<> rstate1(ss.getStateSpace());
     ob::ScopedState<> rstate2(ss.getStateSpace());
     ros::WallDuration wait(2);
@@ -193,7 +193,7 @@ private:
         pc->getOMPLStateSpace()->copyToRobotState(robot_state, rstate1.get());
         robot_state.getJointStateGroup(pc->getJointModelGroupName())->updateLinkTransforms();
         moveit_msgs::DisplayRobotState state_msg;
-        moveit::core::robotStateToRobotStateMsg(robot_state, state_msg.state);
+        robot_state::robotStateToRobotStateMsg(robot_state, state_msg.state);
         pub_valid_states_.publish(state_msg);
         n = (n + 1) % 2;
         if (n == 0)
@@ -210,7 +210,7 @@ private:
           msg.model_id = pc->getRobotModel()->getName();
           msg.trajectory.resize(1);
           traj.getRobotTrajectoryMsg(msg.trajectory[0]);
-          moveit::core::robotStateToRobotStateMsg(traj.getFirstWayPoint(), msg.trajectory_start);
+          robot_state::robotStateToRobotStateMsg(traj.getFirstWayPoint(), msg.trajectory_start);
           pub_valid_traj_.publish(msg);
         }
         rstate2 = rstate1;
@@ -226,7 +226,7 @@ private:
     {
       ompl::base::PlannerData pd(pc->getOMPLSimpleSetup()->getSpaceInformation());
       pc->getOMPLSimpleSetup()->getPlannerData(pd);
-      moveit::core::RobotState robot_state = planning_scene->getCurrentState();
+      robot_state::RobotState robot_state = planning_scene->getCurrentState();
       visualization_msgs::MarkerArray arr;
       std_msgs::ColorRGBA color;
       color.r = 1.0f;
@@ -261,7 +261,7 @@ private:
   }
   */
 
-  void dynamicReconfigureCallback(OMPLDynamicReconfigureConfig& config, uint32_t /*level*/)
+  void dynamicReconfigureCallback(OMPLDynamicReconfigureConfig& config, uint32_t level)
   {
     if (config.link_for_exploration_tree.empty() && !planner_data_link_name_.empty())
     {
@@ -295,7 +295,7 @@ private:
       pub_valid_states_ = nh_.advertise<moveit_msgs::DisplayRobotState>("ompl_planner_valid_states", 5);
       pub_valid_traj_ = nh_.advertise<moveit_msgs::DisplayTrajectory>("ompl_planner_valid_trajectories", 5);
       display_random_valid_states_ = true;
-      //    pub_valid_states_thread_.reset(new boost::thread(std::bind(&OMPLPlannerManager::displayRandomValidStates,
+      //    pub_valid_states_thread_.reset(new boost::thread(boost::bind(&OMPLPlannerManager::displayRandomValidStates,
       //    this)));
     }
   }

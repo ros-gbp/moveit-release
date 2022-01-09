@@ -34,7 +34,8 @@
 
 /* Author: Sachin Chitta, David Lu!!, Ugo Cupcic */
 
-#pragma once
+#ifndef MOVEIT_ROS_PLANNING_KDL_KINEMATICS_PLUGIN_
+#define MOVEIT_ROS_PLANNING_KDL_KINEMATICS_PLUGIN_
 
 // ROS
 #include <ros/ros.h>
@@ -122,6 +123,23 @@ public:
   const std::vector<std::string>& getLinkNames() const override;
 
 protected:
+  /**
+   * @brief Given a desired pose of the end-effector, search for the joint angles required to reach it.
+   * This particular method is intended for "searching" for a solutions by randomly re-seeding on failure.
+   * @param ik_pose the desired pose of the link
+   * @param ik_seed_state an initial guess solution for the inverse kinematics
+   * @param timeout The amount of time (in seconds) available to the solver
+   * @param solution the solution vector
+   * @param solution_callback A callback to validate an IK solution
+   * @param error_code an error code that encodes the reason for failure or success
+   * @param consistency_limits The returned solutuion will not deviate more than these from the seed
+   * @return True if a valid solution was found, false otherwise
+   */
+  bool searchPositionIK(const geometry_msgs::Pose& ik_pose, const std::vector<double>& ik_seed_state, double timeout,
+                        std::vector<double>& solution, const IKCallbackFn& solution_callback,
+                        moveit_msgs::MoveItErrorCodes& error_code, const std::vector<double>& consistency_limits,
+                        const kinematics::KinematicsQueryOptions& options = kinematics::KinematicsQueryOptions()) const;
+
   typedef Eigen::Matrix<double, 6, 1> Twist;
 
   /// Solve position IK given initial joint values
@@ -161,8 +179,8 @@ private:
   unsigned int dimension_;                        ///< Dimension of the group
   moveit_msgs::KinematicSolverInfo solver_info_;  ///< Stores information for the inverse kinematics solver
 
-  const moveit::core::JointModelGroup* joint_model_group_;
-  moveit::core::RobotStatePtr state_;
+  const robot_model::JointModelGroup* joint_model_group_;
+  robot_state::RobotStatePtr state_;
   KDL::Chain kdl_chain_;
   std::unique_ptr<KDL::ChainFkSolverPos> fk_solver_;
   std::vector<JointMimic> mimic_joints_;
@@ -179,3 +197,5 @@ private:
   double orientation_vs_position_weight_;
 };
 }  // namespace kdl_kinematics_plugin
+
+#endif

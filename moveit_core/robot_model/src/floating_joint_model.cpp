@@ -36,7 +36,6 @@
 /* Author: Ioan Sucan */
 
 #include <moveit/robot_model/floating_joint_model.h>
-#include <geometric_shapes/check_isometry.h>
 #include <boost/math/constants/constants.hpp>
 #include <ros/console.h>
 #include <limits>
@@ -223,9 +222,8 @@ bool FloatingJointModel::enforcePositionBounds(double* values, const Bounds& bou
 
 void FloatingJointModel::computeTransform(const double* joint_values, Eigen::Isometry3d& transf) const
 {
-  transf = Eigen::Isometry3d(
-      Eigen::Translation3d(joint_values[0], joint_values[1], joint_values[2]) *
-      Eigen::Quaterniond(joint_values[6], joint_values[3], joint_values[4], joint_values[5]).normalized());
+  transf = Eigen::Isometry3d(Eigen::Translation3d(joint_values[0], joint_values[1], joint_values[2]) *
+                             Eigen::Quaterniond(joint_values[6], joint_values[3], joint_values[4], joint_values[5]));
 }
 
 void FloatingJointModel::computeVariablePositions(const Eigen::Isometry3d& transf, double* joint_values) const
@@ -233,8 +231,7 @@ void FloatingJointModel::computeVariablePositions(const Eigen::Isometry3d& trans
   joint_values[0] = transf.translation().x();
   joint_values[1] = transf.translation().y();
   joint_values[2] = transf.translation().z();
-  ASSERT_ISOMETRY(transf)  // unsanitized input, could contain non-isometry
-  Eigen::Quaterniond q(transf.linear());
+  Eigen::Quaterniond q(transf.rotation());
   joint_values[3] = q.x();
   joint_values[4] = q.y();
   joint_values[5] = q.z();
@@ -286,27 +283,27 @@ void FloatingJointModel::getVariableRandomPositions(random_numbers::RandomNumber
 }
 
 void FloatingJointModel::getVariableRandomPositionsNearBy(random_numbers::RandomNumberGenerator& rng, double* values,
-                                                          const Bounds& bounds, const double* seed,
+                                                          const Bounds& bounds, const double* near,
                                                           const double distance) const
 {
   if (bounds[0].max_position_ >= std::numeric_limits<double>::infinity() ||
       bounds[0].min_position_ <= -std::numeric_limits<double>::infinity())
     values[0] = 0.0;
   else
-    values[0] = rng.uniformReal(std::max(bounds[0].min_position_, seed[0] - distance),
-                                std::min(bounds[0].max_position_, seed[0] + distance));
+    values[0] = rng.uniformReal(std::max(bounds[0].min_position_, near[0] - distance),
+                                std::min(bounds[0].max_position_, near[0] + distance));
   if (bounds[1].max_position_ >= std::numeric_limits<double>::infinity() ||
       bounds[1].min_position_ <= -std::numeric_limits<double>::infinity())
     values[1] = 0.0;
   else
-    values[1] = rng.uniformReal(std::max(bounds[1].min_position_, seed[1] - distance),
-                                std::min(bounds[1].max_position_, seed[1] + distance));
+    values[1] = rng.uniformReal(std::max(bounds[1].min_position_, near[1] - distance),
+                                std::min(bounds[1].max_position_, near[1] + distance));
   if (bounds[2].max_position_ >= std::numeric_limits<double>::infinity() ||
       bounds[2].min_position_ <= -std::numeric_limits<double>::infinity())
     values[2] = 0.0;
   else
-    values[2] = rng.uniformReal(std::max(bounds[2].min_position_, seed[2] - distance),
-                                std::min(bounds[2].max_position_, seed[2] + distance));
+    values[2] = rng.uniformReal(std::max(bounds[2].min_position_, near[2] - distance),
+                                std::min(bounds[2].max_position_, near[2] + distance));
 
   double da = angular_distance_weight_ * distance;
   if (da >= .25 * boost::math::constants::pi<double>())
@@ -343,10 +340,10 @@ void FloatingJointModel::getVariableRandomPositionsNearBy(random_numbers::Random
       q[3] = cos(angle / 2.0);
     }
     // multiply quaternions: near * q
-    values[3] = seed[6] * q[0] + seed[3] * q[3] + seed[4] * q[2] - seed[5] * q[1];
-    values[4] = seed[6] * q[1] + seed[4] * q[3] + seed[5] * q[0] - seed[3] * q[2];
-    values[5] = seed[6] * q[2] + seed[5] * q[3] + seed[3] * q[1] - seed[4] * q[0];
-    values[6] = seed[6] * q[3] - seed[3] * q[0] - seed[4] * q[1] - seed[5] * q[2];
+    values[3] = near[6] * q[0] + near[3] * q[3] + near[4] * q[2] - near[5] * q[1];
+    values[4] = near[6] * q[1] + near[4] * q[3] + near[5] * q[0] - near[3] * q[2];
+    values[5] = near[6] * q[2] + near[5] * q[3] + near[3] * q[1] - near[4] * q[0];
+    values[6] = near[6] * q[3] - near[3] * q[0] - near[4] * q[1] - near[5] * q[2];
   }
 }
 

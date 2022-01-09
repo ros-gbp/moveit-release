@@ -34,7 +34,8 @@
 
 /* Author: Ioan Sucan */
 
-#pragma once
+#ifndef MOVEIT_TRAJECTORY_PROCESSING_TRAJECTORY_TOOLS_
+#define MOVEIT_TRAJECTORY_PROCESSING_TRAJECTORY_TOOLS_
 
 #include <moveit_msgs/RobotTrajectory.h>
 
@@ -43,3 +44,5 @@ namespace trajectory_processing
 bool isTrajectoryEmpty(const moveit_msgs::RobotTrajectory& trajectory);
 std::size_t trajectoryWaypointCount(const moveit_msgs::RobotTrajectory& trajectory);
 }  // namespace trajectory_processing
+
+#endif

@@ -34,7 +34,8 @@
 
 /* Author: Ioan Sucan, E. Gil Jones */
 
-#pragma once
+#ifndef MOVEIT_COLLISION_DETECTION_COLLISION_MATRIX_
+#define MOVEIT_COLLISION_DETECTION_COLLISION_MATRIX_
 
 #include <moveit/collision_detection/collision_common.h>
 #include <moveit/macros/class_forward.h>
@@ -69,7 +70,7 @@ enum Type
 
 /** \brief Signature of predicate that decides whether a contact is allowed or not (when AllowedCollision::Type is
  * CONDITIONAL) */
-using DecideContactFn = boost::function<bool(collision_detection::Contact&)>;
+typedef boost::function<bool(collision_detection::Contact&)> DecideContactFn;
 
 MOVEIT_CLASS_FORWARD(AllowedCollisionMatrix);  // Defines AllowedCollisionMatrixPtr, ConstPtr, WeakPtr... etc
 
@@ -277,3 +278,5 @@ private:
   std::map<std::string, DecideContactFn> default_allowed_contacts_;
 };
 }  // namespace collision_detection
+
+#endif

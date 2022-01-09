@@ -172,10 +172,10 @@ void DistanceField::getGradientMarkers(double min_distance, double max_distance,
           // double angle = -gradient.angle(unitX);
           // Eigen::AngleAxisd rotation(angle, axis);
 
-          // marker.pose.orientation.x = rotation.linear().x();
-          // marker.pose.orientation.y = rotation.linear().y();
-          // marker.pose.orientation.z = rotation.linear().z();
-          // marker.pose.orientation.w = rotation.linear().w();
+          // marker.pose.orientation.x = rotation.rotation().x();
+          // marker.pose.orientation.y = rotation.rotation().y();
+          // marker.pose.orientation.z = rotation.rotation().z();
+          // marker.pose.orientation.w = rotation.rotation().w();
 
           marker.scale.x = getResolution();
           marker.scale.y = getResolution();
@@ -208,10 +208,8 @@ bool DistanceField::getShapePoints(const shapes::Shape* shape, const Eigen::Isom
   }
   else
   {
-    bodies::Body* body = bodies::createEmptyBodyFromShapeType(shape->type);
-    body->setDimensionsDirty(shape);
-    body->setPoseDirty(pose);
-    body->updateInternalData();
+    bodies::Body* body = bodies::createBodyFromShape(shape);
+    body->setPose(pose);
     findInternalPointsConvex(*body, resolution_, *points);
     delete body;
   }
@@ -294,10 +292,8 @@ void DistanceField::moveShapeInField(const shapes::Shape* shape, const Eigen::Is
     ROS_WARN_NAMED("distance_field", "Move shape not supported for Octree");
     return;
   }
-  bodies::Body* body = bodies::createEmptyBodyFromShapeType(shape->type);
-  body->setDimensionsDirty(shape);
-  body->setPoseDirty(old_pose);
-  body->updateInternalData();
+  bodies::Body* body = bodies::createBodyFromShape(shape);
+  body->setPose(old_pose);
   EigenSTL::vector_Vector3d old_point_vec;
   findInternalPointsConvex(*body, resolution_, old_point_vec);
   body->setPose(new_pose);
@@ -319,10 +315,8 @@ void DistanceField::moveShapeInField(const shapes::Shape* shape, const geometry_
 
 void DistanceField::removeShapeFromField(const shapes::Shape* shape, const Eigen::Isometry3d& pose)
 {
-  bodies::Body* body = bodies::createEmptyBodyFromShapeType(shape->type);
-  body->setDimensionsDirty(shape);
-  body->setPoseDirty(pose);
-  body->updateInternalData();
+  bodies::Body* body = bodies::createBodyFromShape(shape);
+  body->setPose(pose);
   EigenSTL::vector_Vector3d point_vec;
   findInternalPointsConvex(*body, resolution_, point_vec);
   delete body;
@@ -364,7 +358,7 @@ void DistanceField::getPlaneMarkers(PlaneVisualizationType type, double length, 
 
   switch (type)
   {
-    case XY_PLANE:
+    case XYPlane:
       min_z = height;
       max_z = height;
 
@@ -373,7 +367,7 @@ void DistanceField::getPlaneMarkers(PlaneVisualizationType type, double length, 
       min_y = -width / 2.0;
       max_y = width / 2.0;
       break;
-    case XZ_PLANE:
+    case XZPlane:
       min_y = height;
       max_y = height;
 
@@ -382,7 +376,7 @@ void DistanceField::getPlaneMarkers(PlaneVisualizationType type, double length, 
       min_z = -width / 2.0;
       max_z = width / 2.0;
       break;
-    case YZ_PLANE:
+    case YZPlane:
       min_x = height;
       max_x = height;
 

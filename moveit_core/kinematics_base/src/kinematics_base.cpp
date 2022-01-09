@@ -95,9 +95,9 @@ void KinematicsBase::setValues(const std::string& robot_description, const std::
   setValues(robot_description, group_name, base_frame, std::vector<std::string>({ tip_frame }), search_discretization);
 }
 
-bool KinematicsBase::initialize(const std::string& /*robot_description*/, const std::string& /*group_name*/,
-                                const std::string& /*base_frame*/, const std::string& /*tip_frame*/,
-                                double /*search_discretization*/)
+bool KinematicsBase::initialize(const std::string& robot_description, const std::string& group_name,
+                                const std::string& base_frame, const std::string& tip_frame,
+                                double search_discretization)
 {
   return false;  // default implementation returns false
 }
@@ -116,9 +116,9 @@ bool KinematicsBase::initialize(const std::string& robot_description, const std:
   return false;
 }
 
-bool KinematicsBase::initialize(const moveit::core::RobotModel& /*robot_model*/, const std::string& group_name,
-                                const std::string& /*base_frame*/, const std::vector<std::string>& /*tip_frames*/,
-                                double /*search_discretization*/)
+bool KinematicsBase::initialize(const moveit::core::RobotModel& robot_model, const std::string& group_name,
+                                const std::string& base_frame, const std::vector<std::string>& tip_frames,
+                                double search_discretization)
 {
   ROS_WARN_NAMED(LOGNAME,
                  "IK plugin for group '%s' relies on deprecated API. "
@@ -129,9 +129,9 @@ bool KinematicsBase::initialize(const moveit::core::RobotModel& /*robot_model*/,
 
 bool KinematicsBase::setRedundantJoints(const std::vector<unsigned int>& redundant_joint_indices)
 {
-  for (const unsigned int& redundant_joint_index : redundant_joint_indices)
+  for (std::size_t i = 0; i < redundant_joint_indices.size(); ++i)
   {
-    if (redundant_joint_index >= getJointNames().size())
+    if (redundant_joint_indices[i] >= getJointNames().size())
     {
       return false;
     }
@@ -146,9 +146,9 @@ bool KinematicsBase::setRedundantJoints(const std::vector<std::string>& redundan
 {
   const std::vector<std::string>& jnames = getJointNames();
   std::vector<unsigned int> redundant_joint_indices;
-  for (const std::string& redundant_joint_name : redundant_joint_names)
+  for (std::size_t i = 0; i < redundant_joint_names.size(); ++i)
     for (std::size_t j = 0; j < jnames.size(); ++j)
-      if (jnames[j] == redundant_joint_name)
+      if (jnames[j] == redundant_joint_names[i])
       {
         redundant_joint_indices.push_back(j);
         break;

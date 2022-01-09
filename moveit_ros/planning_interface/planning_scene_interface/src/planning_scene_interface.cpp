@@ -83,14 +83,14 @@ public:
       return result;
     if (with_type)
     {
-      for (const moveit_msgs::CollisionObject& collision_object : response.scene.world.collision_objects)
-        if (!collision_object.type.key.empty())
-          result.push_back(collision_object.id);
+      for (std::size_t i = 0; i < response.scene.world.collision_objects.size(); ++i)
+        if (!response.scene.world.collision_objects[i].type.key.empty())
+          result.push_back(response.scene.world.collision_objects[i].id);
     }
     else
     {
-      for (const moveit_msgs::CollisionObject& collision_object : response.scene.world.collision_objects)
-        result.push_back(collision_object.id);
+      for (std::size_t i = 0; i < response.scene.world.collision_objects.size(); ++i)
+        result.push_back(response.scene.world.collision_objects[i].id);
     }
     return result;
   }
@@ -108,33 +108,41 @@ public:
       return result;
     }
 
-    for (const moveit_msgs::CollisionObject& collision_object : response.scene.world.collision_objects)
+    for (std::size_t i = 0; i < response.scene.world.collision_objects.size(); ++i)
     {
-      if (with_type && collision_object.type.key.empty())
+      if (with_type && response.scene.world.collision_objects[i].type.key.empty())
         continue;
-      if (collision_object.mesh_poses.empty() && collision_object.primitive_poses.empty())
+      if (response.scene.world.collision_objects[i].mesh_poses.empty() &&
+          response.scene.world.collision_objects[i].primitive_poses.empty())
         continue;
       bool good = true;
-      for (const geometry_msgs::Pose& mesh_pose : collision_object.mesh_poses)
-        if (!(mesh_pose.position.x >= minx && mesh_pose.position.x <= maxx && mesh_pose.position.y >= miny &&
-              mesh_pose.position.y <= maxy && mesh_pose.position.z >= minz && mesh_pose.position.z <= maxz))
+      for (std::size_t j = 0; j < response.scene.world.collision_objects[i].mesh_poses.size(); ++j)
+        if (!(response.scene.world.collision_objects[i].mesh_poses[j].position.x >= minx &&
+              response.scene.world.collision_objects[i].mesh_poses[j].position.x <= maxx &&
+              response.scene.world.collision_objects[i].mesh_poses[j].position.y >= miny &&
+              response.scene.world.collision_objects[i].mesh_poses[j].position.y <= maxy &&
+              response.scene.world.collision_objects[i].mesh_poses[j].position.z >= minz &&
+              response.scene.world.collision_objects[i].mesh_poses[j].position.z <= maxz))
         {
           good = false;
           break;
         }
-      for (const geometry_msgs::Pose& primitive_pose : collision_object.primitive_poses)
-        if (!(primitive_pose.position.x >= minx && primitive_pose.position.x <= maxx &&
-              primitive_pose.position.y >= miny && primitive_pose.position.y <= maxy &&
-              primitive_pose.position.z >= minz && primitive_pose.position.z <= maxz))
+      for (std::size_t j = 0; j < response.scene.world.collision_objects[i].primitive_poses.size(); ++j)
+        if (!(response.scene.world.collision_objects[i].primitive_poses[j].position.x >= minx &&
+              response.scene.world.collision_objects[i].primitive_poses[j].position.x <= maxx &&
+              response.scene.world.collision_objects[i].primitive_poses[j].position.y >= miny &&
+              response.scene.world.collision_objects[i].primitive_poses[j].position.y <= maxy &&
+              response.scene.world.collision_objects[i].primitive_poses[j].position.z >= minz &&
+              response.scene.world.collision_objects[i].primitive_poses[j].position.z <= maxz))
         {
           good = false;
           break;
         }
       if (good)
       {
-        result.push_back(collision_object.id);
+        result.push_back(response.scene.world.collision_objects[i].id);
         if (with_type)
-          types.push_back(collision_object.type.key);
+          types.push_back(response.scene.world.collision_objects[i].type.key);
       }
     }
     return result;
@@ -152,11 +160,20 @@ public:
       return result;
     }
 
-    for (const moveit_msgs::CollisionObject& collision_object : response.scene.world.collision_objects)
+    for (std::size_t i = 0; i < response.scene.world.collision_objects.size(); ++i)
     {
-      if (std::find(object_ids.begin(), object_ids.end(), collision_object.id) != object_ids.end())
+      if (std::find(object_ids.begin(), object_ids.end(), response.scene.world.collision_objects[i].id) !=
+          object_ids.end())
       {
-        result[collision_object.id] = collision_object.pose;
+        if (response.scene.world.collision_objects[i].mesh_poses.empty() &&
+            response.scene.world.collision_objects[i].primitive_poses.empty())
+          continue;
+        if (!response.scene.world.collision_objects[i].mesh_poses.empty())
+          result[response.scene.world.collision_objects[i].id] =
+              response.scene.world.collision_objects[i].mesh_poses[0];
+        else
+          result[response.scene.world.collision_objects[i].id] =
+              response.scene.world.collision_objects[i].primitive_poses[0];
       }
     }
     return result;
@@ -174,11 +191,12 @@ public:
       return result;
     }
 
-    for (const moveit_msgs::CollisionObject& collision_object : response.scene.world.collision_objects)
+    for (std::size_t i = 0; i < response.scene.world.collision_objects.size(); ++i)
     {
-      if (object_ids.empty() || std::find(object_ids.begin(), object_ids.end(), collision_object.id) != object_ids.end())
+      if (object_ids.empty() || std::find(object_ids.begin(), object_ids.end(),
+                                          response.scene.world.collision_objects[i].id) != object_ids.end())
       {
-        result[collision_object.id] = collision_object;
+        result[response.scene.world.collision_objects[i].id] = response.scene.world.collision_objects[i];
       }
     }
     return result;
@@ -197,13 +215,14 @@ public:
       return result;
     }
 
-    for (const moveit_msgs::AttachedCollisionObject& attached_collision_object :
-         response.scene.robot_state.attached_collision_objects)
+    for (std::size_t i = 0; i < response.scene.robot_state.attached_collision_objects.size(); ++i)
     {
       if (object_ids.empty() ||
-          std::find(object_ids.begin(), object_ids.end(), attached_collision_object.object.id) != object_ids.end())
+          std::find(object_ids.begin(), object_ids.end(),
+                    response.scene.robot_state.attached_collision_objects[i].object.id) != object_ids.end())
       {
-        result[attached_collision_object.object.id] = attached_collision_object;
+        result[response.scene.robot_state.attached_collision_objects[i].object.id] =
+            response.scene.robot_state.attached_collision_objects[i];
       }
     }
     return result;
@@ -245,9 +264,9 @@ public:
   {
     moveit_msgs::PlanningScene planning_scene;
     moveit_msgs::CollisionObject object;
-    for (const std::string& object_id : object_ids)
+    for (std::size_t i = 0; i < object_ids.size(); ++i)
     {
-      object.id = object_id;
+      object.id = object_ids[i];
       object.operation = object.REMOVE;
       planning_scene.world.collision_objects.push_back(object);
     }
@@ -271,7 +290,7 @@ private:
   ros::ServiceClient planning_scene_service_;
   ros::ServiceClient apply_planning_scene_service_;
   ros::Publisher planning_scene_diff_publisher_;
-  moveit::core::RobotModelConstPtr robot_model_;
+  robot_model::RobotModelConstPtr robot_model_;
 };
 
 PlanningSceneInterface::PlanningSceneInterface(const std::string& ns, bool wait)

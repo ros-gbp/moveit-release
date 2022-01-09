@@ -34,7 +34,6 @@
 
 #pragma once
 
-#include <moveit/planning_interface/planning_interface.h>
 #include "pilz_industrial_motion_planner/cartesian_trajectory.h"
 #include "pilz_industrial_motion_planner/cartesian_trajectory_point.h"
 #include "pilz_industrial_motion_planner/trajectory_blend_request.h"
@@ -65,7 +64,6 @@ public:
    * @brief Blend two trajectories using transition window. The trajectories
    * have to be equally and uniformly
    * discretized.
-   * @param planning_scene: The scene planning is occurring in.
    * @param req: following fields need to be filled for a valid request:
    *    - group_name : name of the planning group
    *    - link_name : name of the target link
@@ -93,8 +91,7 @@ public:
    * error_code: information of failed blend
    * @return true if succeed
    */
-  bool blend(const planning_scene::PlanningSceneConstPtr& planning_scene,
-             const pilz_industrial_motion_planner::TrajectoryBlendRequest& req,
+  bool blend(const pilz_industrial_motion_planner::TrajectoryBlendRequest& req,
              pilz_industrial_motion_planner::TrajectoryBlendResponse& res) override;
 
 private:

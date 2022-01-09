@@ -34,7 +34,8 @@
 
 /* Author: Sachin Chitta, Dave Coleman */
 
-#pragma once
+#ifndef MOVEIT_KINEMATICS_BASE_KINEMATICS_BASE_
+#define MOVEIT_KINEMATICS_BASE_KINEMATICS_BASE_
 
 #include <geometry_msgs/Pose.h>
 #include <moveit_msgs/MoveItErrorCodes.h>
@@ -44,15 +45,13 @@
 #include <boost/function.hpp>
 #include <string>
 
-#include <moveit/moveit_kinematics_base_export.h>
-
 namespace moveit
 {
 namespace core
 {
-MOVEIT_CLASS_FORWARD(JointModelGroup);
-MOVEIT_CLASS_FORWARD(RobotState);
-MOVEIT_CLASS_FORWARD(RobotModel);
+MOVEIT_CLASS_FORWARD(JointModelGroup)
+MOVEIT_CLASS_FORWARD(RobotState)
+MOVEIT_CLASS_FORWARD(RobotModel)
 }  // namespace core
 }  // namespace moveit
 
@@ -78,7 +77,7 @@ enum DiscretizationMethod
                            The unused redundant joints will be fixed at their current value. */
 };
 }  // namespace DiscretizationMethods
-using DiscretizationMethod = DiscretizationMethods::DiscretizationMethod;
+typedef DiscretizationMethods::DiscretizationMethod DiscretizationMethod;
 
 /*
  * @enum KinematicErrors
@@ -100,7 +99,7 @@ enum KinematicError
 
 };
 }  // namespace KinematicErrors
-using KinematicError = KinematicErrors::KinematicError;
+typedef KinematicErrors::KinematicError KinematicError;
 
 /**
  * @struct KinematicsQueryOptions
@@ -146,12 +145,13 @@ MOVEIT_CLASS_FORWARD(KinematicsBase);  // Defines KinematicsBasePtr, ConstPtr, W
 class KinematicsBase
 {
 public:
-  static MOVEIT_KINEMATICS_BASE_EXPORT const double DEFAULT_SEARCH_DISCRETIZATION; /* = 0.1 */
-  static MOVEIT_KINEMATICS_BASE_EXPORT const double DEFAULT_TIMEOUT;               /* = 1.0 */
+  static const double DEFAULT_SEARCH_DISCRETIZATION; /* = 0.1 */
+  static const double DEFAULT_TIMEOUT;               /* = 1.0 */
 
   /** @brief Signature for a callback to validate an IK solution. Typically used for collision checking. */
-  using IKCallbackFn =
-      boost::function<void(const geometry_msgs::Pose&, const std::vector<double>&, moveit_msgs::MoveItErrorCodes&)>;
+  typedef boost::function<void(const geometry_msgs::Pose& ik_pose, const std::vector<double>& ik_solution,
+                               moveit_msgs::MoveItErrorCodes& error_code)>
+      IKCallbackFn;
 
   /**
    * @brief Given a desired pose of the end-effector, compute the joint angles to reach it
@@ -300,7 +300,6 @@ public:
                    const kinematics::KinematicsQueryOptions& options = kinematics::KinematicsQueryOptions(),
                    const moveit::core::RobotState* context_state = nullptr) const
   {
-    (void)context_state;
     // For IK solvers that do not support multiple poses, fall back to single pose call
     if (ik_poses.size() == 1)
     {
@@ -532,10 +531,10 @@ public:
   {
     redundant_joint_discretization_.clear();
     redundant_joint_indices_.clear();
-    for (const auto& pair : discretization)
+    for (std::map<int, double>::const_iterator i = discretization.begin(); i != discretization.end(); i++)
     {
-      redundant_joint_discretization_.insert(pair);
-      redundant_joint_indices_.push_back(pair.first);
+      redundant_joint_discretization_.insert(*i);
+      redundant_joint_indices_.push_back(i->first);
     }
   }
 
@@ -664,4 +663,6 @@ protected:
 private:
   std::string removeSlash(const std::string& str) const;
 };
-}  // namespace kinematics
+};  // namespace kinematics
+
+#endif

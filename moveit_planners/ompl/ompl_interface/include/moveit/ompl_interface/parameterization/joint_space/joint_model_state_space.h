@@ -34,7 +34,8 @@
 
 /* Author: Ioan Sucan */
 
-#pragma once
+#ifndef MOVEIT_OMPL_INTERFACE_PARAMETERIZATION_JOINT_SPACE_JOINT_MODEL_STATE_SPACE_
+#define MOVEIT_OMPL_INTERFACE_PARAMETERIZATION_JOINT_SPACE_JOINT_MODEL_STATE_SPACE_
 
 #include <moveit/ompl_interface/parameterization/model_based_state_space.h>
 
@@ -46,10 +47,7 @@ public:
   static const std::string PARAMETERIZATION_TYPE;
 
   JointModelStateSpace(const ModelBasedStateSpaceSpecification& spec);
-
-  const std::string& getParameterizationType() const override
-  {
-    return PARAMETERIZATION_TYPE;
-  }
 };
 }  // namespace ompl_interface
+
+#endif

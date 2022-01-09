@@ -34,7 +34,7 @@
 # ********************************************************************/
 
 #   Author: Ryohei Ueda, Dave Coleman
-#   Desc:   Interface between PS3/XBox controller and MoveIt Motion Planning Rviz Plugin
+#   Desc:   Interface between PS3/XBox controller and MoveIt! Motion Planning Rviz Plugin
 
 from __future__ import print_function
 
@@ -523,15 +523,17 @@ class MoveitJoy:
         planning_groups = {}
         for g in ri.get_group_names():
             self.planning_groups_tips[g] = ri.get_group_joint_tips(g)
-            if len(self.planning_groups_tips[g]) > 0:
-                planning_groups[g] = [
-                    "/rviz/moveit/move_marker/goal_" + l
-                    for l in self.planning_groups_tips[g]
-                ]
+            planning_groups[g] = [
+                "/rviz/moveit/move_marker/goal_" + l
+                for l in self.planning_groups_tips[g]
+            ]
         for name in planning_groups.keys():
-            print(name, planning_groups[name])
+            if len(planning_groups[name]) == 0:
+                del planning_groups[name]
+            else:
+                print(name, planning_groups[name])
         self.planning_groups = planning_groups
-        self.planning_groups_keys = list(
+        self.planning_groups_keys = (
             planning_groups.keys()
         )  # we'd like to store the 'order'
         self.frame_id = ri.get_planning_frame()

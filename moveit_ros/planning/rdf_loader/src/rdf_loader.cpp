@@ -34,7 +34,7 @@
 
 /* Author: Ioan Sucan, Mathias Lüdtke, Dave Coleman */
 
-// MoveIt
+// MoveIt!
 #include <moveit/rdf_loader/rdf_loader.h>
 #include <moveit/profiler/profiler.h>
 
@@ -103,20 +103,21 @@ rdf_loader::RDFLoader::RDFLoader(const std::string& urdf_string, const std::stri
   moveit::tools::Profiler::ScopedStart prof_start;
   moveit::tools::Profiler::ScopedBlock prof_block("RDFLoader(string)");
 
-  auto umodel = std::make_unique<urdf::Model>();
+  urdf::Model* umodel = new urdf::Model();
+  urdf_.reset(umodel);
   if (umodel->initString(urdf_string))
   {
-    auto smodel = std::make_shared<srdf::Model>();
-    if (!smodel->initString(*umodel, srdf_string))
+    srdf_.reset(new srdf::Model());
+    if (!srdf_->initString(*urdf_, srdf_string))
     {
       ROS_ERROR_NAMED("rdf_loader", "Unable to parse SRDF");
+      srdf_.reset();
     }
-    urdf_ = std::move(umodel);
-    srdf_ = std::move(smodel);
   }
   else
   {
     ROS_ERROR_NAMED("rdf_loader", "Unable to parse URDF");
+    urdf_.reset();
   }
 }
 
@@ -162,7 +163,6 @@ bool rdf_loader::RDFLoader::loadFileToString(std::string& buffer, const std::str
 bool rdf_loader::RDFLoader::loadXacroFileToString(std::string& buffer, const std::string& path,
                                                   const std::vector<std::string>& xacro_args)
 {
-  buffer.clear();
   if (path.empty())
   {
     ROS_ERROR_NAMED("rdf_loader", "Path is empty");
@@ -176,8 +176,8 @@ bool rdf_loader::RDFLoader::loadXacroFileToString(std::string& buffer, const std
   }
 
   std::string cmd = "rosrun xacro xacro ";
-  for (const std::string& xacro_arg : xacro_args)
-    cmd += xacro_arg + " ";
+  for (std::vector<std::string>::const_iterator it = xacro_args.begin(); it != xacro_args.end(); ++it)
+    cmd += *it + " ";
   cmd += path;
 
   FILE* pipe = popen(cmd.c_str(), "r");

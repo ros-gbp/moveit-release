@@ -43,7 +43,8 @@
 
 // Author: Blaise Gassend
 
-#pragma once
+#ifndef __ompl_interface_ros__OMPLDYNAMICRECONFIGURECONFIG_H__
+#define __ompl_interface_ros__OMPLDYNAMICRECONFIGURECONFIG_H__
 
 #include <dynamic_reconfigure/config_tools.h>
 #include <moveit/macros/class_forward.h>
@@ -531,3 +532,5 @@ inline const OMPLDynamicReconfigureConfigStatics* OMPLDynamicReconfigureConfig::
   return statics;
 }
 }  // namespace ompl_interface_ros
+
+#endif  // __OMPLDYNAMICRECONFIGURERECONFIGURATOR_H__

@@ -63,7 +63,7 @@ private:
   double previous_measurements_[FILTER_LENGTH];
   double previous_filtered_measurement_;
   // Scale and feedback term are calculated from supplied filter coefficient
-  double scale_term_;
-  double feedback_term_;
+  const double scale_term_;
+  const double feedback_term_;
 };
 }  // namespace moveit_servo

@@ -34,7 +34,8 @@
 
 /** \Author: Benjamin Cohen /bcohen@willowgarage.com, E. Gil Jones **/
 
-#pragma once
+#ifndef _SBPL_BFS_3D_H_
+#define _SBPL_BFS_3D_H_
 
 #include <boost/thread.hpp>
 
@@ -55,7 +56,7 @@ private:
   int* queue;
   int queue_head, queue_tail;
 
-  std::shared_ptr<boost::thread> search_thread_;
+  boost::shared_ptr<boost::thread> search_thread_;
 
   volatile bool running;
 
@@ -76,3 +77,5 @@ public:
   int getDistance(int, int, int);
 };
 }  // namespace sbpl_interface
+
+#endif

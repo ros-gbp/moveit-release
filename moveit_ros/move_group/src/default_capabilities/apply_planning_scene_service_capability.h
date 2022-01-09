@@ -34,7 +34,8 @@
 
 /* Author: Michael 'v4hn' Goerner */
 
-#pragma once
+#ifndef MOVEIT_MOVE_GROUP_APPLY_PLANNING_SCENE_SERVICE_CAPABILITY_
+#define MOVEIT_MOVE_GROUP_APPLY_PLANNING_SCENE_SERVICE_CAPABILITY_
 
 #include <moveit/move_group/move_group_capability.h>
 #include <moveit_msgs/ApplyPlanningScene.h>
@@ -58,3 +59,5 @@ private:
   ros::ServiceServer service_;
 };
 }  // namespace move_group
+
+#endif  // MOVEIT_MOVE_GROUP_APPLY_PLANNING_SCENE_SERVICE_CAPABILITY_

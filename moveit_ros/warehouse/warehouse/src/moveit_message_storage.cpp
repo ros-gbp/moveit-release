@@ -36,6 +36,7 @@
 
 #include <moveit/warehouse/moveit_message_storage.h>
 #include <warehouse_ros/database_loader.h>
+//#include <warehouse_ros_mongo/database_connection.h>
 #include <boost/regex.hpp>
 #include <memory>
 #include <utility>
@@ -51,11 +52,11 @@ void moveit_warehouse::MoveItMessageStorage::filterNames(const std::string& rege
   {
     std::vector<std::string> fnames;
     boost::regex r(regex);
-    for (std::string& name : names)
+    for (std::size_t i = 0; i < names.size(); ++i)
     {
       boost::cmatch match;
-      if (boost::regex_match(name.c_str(), match, r))
-        fnames.push_back(name);
+      if (boost::regex_match(names[i].c_str(), match, r))
+        fnames.push_back(names[i]);
     }
     names.swap(fnames);
   }
@@ -67,7 +68,7 @@ typename warehouse_ros::DatabaseConnection::Ptr moveit_warehouse::loadDatabase()
 {
   if (!DBLOADER)
   {
-    DBLOADER = std::make_unique<warehouse_ros::DatabaseLoader>();
+    DBLOADER.reset(new warehouse_ros::DatabaseLoader());
   }
   return DBLOADER->loadDatabase();
   // return typename warehouse_ros::DatabaseConnection::Ptr(new warehouse_ros_mongo::MongoDatabaseConnection());

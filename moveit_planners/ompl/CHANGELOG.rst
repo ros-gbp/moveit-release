@@ -2,45 +2,24 @@
 Changelog for package moveit_planners_ompl
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1.1.7 (2021-12-31)
-------------------
-* Use termination condition for simplification step (`#2981 <https://github.com/ros-planning/moveit/issues/2981>`_)
-* Switch to ``std::bind`` (`#2967 <https://github.com/ros-planning/moveit/issues/2967>`_)
-* Contributors: Jochen Sprickerhof, Simon Schmeisser
-
-1.1.6 (2021-11-06)
-------------------
-* Use newly introduced cmake macro ``moveit_build_options()`` from ``moveit_core``
-* Fix ConstrainedGoalSampler (`#2811 <https://github.com/ros-planning/moveit/issues/2811>`_): actually call ``sample()`` (`#2872 <https://github.com/ros-planning/moveit/issues/2872>`_)
-* Provide override for missing isValid method (`#2802 <https://github.com/ros-planning/moveit/issues/2802>`_)
-* Add missing dependencies to generated dynamic_reconfigure headers (`#2772 <https://github.com/ros-planning/moveit/issues/2772>`_)
-* clang-tidy: modernize-make-shared, modernize-make-unique (`#2762 <https://github.com/ros-planning/moveit/issues/2762>`_)
-* Contributors: Mathias Lüdtke, Michael Görner, Robert Haschke, pvanlaar, v4hn, werner291
-
-1.1.5 (2021-05-23)
+1.0.9 (2022-01-09)
 ------------------
 
-1.1.4 (2021-05-12)
+1.0.8 (2021-05-23)
 ------------------
 
-1.1.3 (2021-04-29)
+1.0.7 (2020-11-20)
 ------------------
-
-1.1.2 (2021-04-08)
-------------------
-* Fix formatting errors
-* Replaced eigen+kdl conversions with tf2_eigen + tf2_kdl (`#2472 <https://github.com/ros-planning/moveit/issues/2472>`_)
-* Add test to ompl interface for StateValidityChecker (`#2247 <https://github.com/ros-planning/moveit/issues/2247>`_)
-* Add test for PlanningContextManager in ompl interface (`#2248 <https://github.com/ros-planning/moveit/issues/2248>`_)
-* Contributors: Jeroen, Tyler Weaver, petkovich
-
-1.1.1 (2020-10-13)
-------------------
+* [feature] Melodic backports in ompl interface (cleanup) (`#2277 <https://github.com/ros-planning/moveit/issues/2277>`_)
+  * add consistent named logging to ompl interface
+  * add named logging to the ompl planner service script
+  * Remove dead code from ompl interface (related to subspaces and state validity cache)
+  * add some documentation to the ompl interface
+  * fix clang-tidy warnings in ompl interface
+  * fix some spelling errors in the ompl interface
+  * fix melodic specific clang-tidy warnings in ompl interface
 * [maint] Add comment to MOVEIT_CLASS_FORWARD (`#2315 <https://github.com/ros-planning/moveit/issues/2315>`_)
-* Contributors: Felix von Drigalski
-
-1.1.0 (2020-09-04)
-------------------
+* Contributors: Felix von Drigalski, Jeroen
 
 1.0.6 (2020-08-19)
 ------------------
@@ -186,7 +165,7 @@ Changelog for package moveit_planners_ompl
 * renamed newGoal to new_goal for keeping with formatting
 * setting GroupStateValidityCallbackFn member for constraint_sampler member and implementing callbacks for state validity checking
 * added functions to check validit of state, and also to act as callback for constraint sampler
-* Added copy function from MoveIt robot_state joint values to ompl state
+* Added copy function from MoveIt! robot_state joint values to ompl state
 * fix for demo constraints database linking error
 * Namespaced less useful debug output to allow to be easily silenced using ros console
 * Contributors: Dave Coleman, Dave Hershberger, Sachin Chitta, arjungm

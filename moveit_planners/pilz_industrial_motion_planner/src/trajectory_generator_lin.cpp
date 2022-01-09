@@ -39,20 +39,23 @@
 #include <sstream>
 #include <time.h>
 
+#include <eigen_conversions/eigen_kdl.h>
+#include <eigen_conversions/eigen_msg.h>
+
 #include <moveit/robot_state/conversions.h>
 
 #include <kdl/path_line.hpp>
 #include <kdl/trajectory_segment.hpp>
 #include <kdl/utilities/error.h>
 
-#include <tf2_kdl/tf2_kdl.h>
+#include <tf2/convert.h>
 #include <tf2_eigen/tf2_eigen.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 namespace pilz_industrial_motion_planner
 {
 TrajectoryGeneratorLIN::TrajectoryGeneratorLIN(const moveit::core::RobotModelConstPtr& robot_model,
-                                               const LimitsContainer& planner_limits, const std::string& /*group_name*/)
+                                               const LimitsContainer& planner_limits)
   : TrajectoryGenerator::TrajectoryGenerator(robot_model, planner_limits)
 {
   if (!planner_limits_.hasFullCartesianLimits())
@@ -62,8 +65,7 @@ TrajectoryGeneratorLIN::TrajectoryGeneratorLIN(const moveit::core::RobotModelCon
   }
 }
 
-void TrajectoryGeneratorLIN::extractMotionPlanInfo(const planning_scene::PlanningSceneConstPtr& scene,
-                                                   const planning_interface::MotionPlanRequest& req,
+void TrajectoryGeneratorLIN::extractMotionPlanInfo(const planning_interface::MotionPlanRequest& req,
                                                    TrajectoryGenerator::MotionPlanInfo& info) const
 {
   ROS_DEBUG("Extract necessary information from motion plan request.");
@@ -116,7 +118,12 @@ void TrajectoryGeneratorLIN::extractMotionPlanInfo(const planning_scene::Plannin
     {
       frame_id = req.goal_constraints.front().position_constraints.front().header.frame_id;
     }
-    info.goal_pose = getConstraintPose(req.goal_constraints.front());
+    geometry_msgs::Pose goal_pose_msg;
+    goal_pose_msg.position =
+        req.goal_constraints.front().position_constraints.front().constraint_region.primitive_poses.front().position;
+    goal_pose_msg.orientation = req.goal_constraints.front().orientation_constraints.front().orientation;
+    normalizeQuaternion(goal_pose_msg.orientation);
+    tf2::convert<geometry_msgs::Pose, Eigen::Isometry3d>(goal_pose_msg, info.goal_pose);
   }
 
   assert(req.start_state.joint_state.name.size() == req.start_state.joint_state.position.size());
@@ -140,7 +147,7 @@ void TrajectoryGeneratorLIN::extractMotionPlanInfo(const planning_scene::Plannin
 
   // check goal pose ik before Cartesian motion plan starts
   std::map<std::string, double> ik_solution;
-  if (!computePoseIK(scene, info.group_name, info.link_name, info.goal_pose, frame_id, info.start_joint_position,
+  if (!computePoseIK(robot_model_, info.group_name, info.link_name, info.goal_pose, frame_id, info.start_joint_position,
                      ik_solution))
   {
     std::ostringstream os;
@@ -149,8 +156,7 @@ void TrajectoryGeneratorLIN::extractMotionPlanInfo(const planning_scene::Plannin
   }
 }
 
-void TrajectoryGeneratorLIN::plan(const planning_scene::PlanningSceneConstPtr& scene,
-                                  const planning_interface::MotionPlanRequest& req, const MotionPlanInfo& plan_info,
+void TrajectoryGeneratorLIN::plan(const planning_interface::MotionPlanRequest& req, const MotionPlanInfo& plan_info,
                                   const double& sampling_time, trajectory_msgs::JointTrajectory& joint_trajectory)
 {
   // create Cartesian path for lin
@@ -169,9 +175,9 @@ void TrajectoryGeneratorLIN::plan(const planning_scene::PlanningSceneConstPtr& s
   moveit_msgs::MoveItErrorCodes error_code;
   // sample the Cartesian trajectory and compute joint trajectory using inverse
   // kinematics
-  if (!generateJointTrajectory(scene, planner_limits_.getJointLimitContainer(), cart_trajectory, plan_info.group_name,
-                               plan_info.link_name, plan_info.start_joint_position, sampling_time, joint_trajectory,
-                               error_code))
+  if (!generateJointTrajectory(robot_model_, planner_limits_.getJointLimitContainer(), cart_trajectory,
+                               plan_info.group_name, plan_info.link_name, plan_info.start_joint_position, sampling_time,
+                               joint_trajectory, error_code))
   {
     std::ostringstream os;
     os << "Failed to generate valid joint trajectory from the Cartesian path";
@@ -185,8 +191,8 @@ std::unique_ptr<KDL::Path> TrajectoryGeneratorLIN::setPathLIN(const Eigen::Affin
   ROS_DEBUG("Set Cartesian path for LIN command.");
 
   KDL::Frame kdl_start_pose, kdl_goal_pose;
-  tf2::fromMsg(tf2::toMsg(start_pose), kdl_start_pose);
-  tf2::fromMsg(tf2::toMsg(goal_pose), kdl_goal_pose);
+  tf::transformEigenToKDL(start_pose, kdl_start_pose);
+  tf::transformEigenToKDL(goal_pose, kdl_goal_pose);
   double eqradius = planner_limits_.getCartesianLimits().getMaxTranslationalVelocity() /
                     planner_limits_.getCartesianLimits().getMaxRotationalVelocity();
   KDL::RotationalInterpolation* rot_interpo = new KDL::RotationalInterpolation_SingleAxis();

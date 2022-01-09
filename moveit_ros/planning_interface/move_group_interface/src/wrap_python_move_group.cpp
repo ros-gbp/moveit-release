@@ -120,20 +120,28 @@ public:
     return setJointValueTarget(js_msg);
   }
 
+  bool setStateValueTarget(const py_bindings_tools::ByteString& state_str)
+  {
+    moveit_msgs::RobotState msg;
+    py_bindings_tools::deserializeMsg(state_str, msg);
+    robot_state::RobotState state(moveit::planning_interface::MoveGroupInterface::getJointValueTarget());
+    moveit::core::robotStateMsgToRobotState(msg, state);
+    return moveit::planning_interface::MoveGroupInterface::setJointValueTarget(state);
+  }
+
   bp::list getJointValueTargetPythonList()
   {
-    std::vector<double> values;
-    MoveGroupInterface::getJointValueTarget(values);
+    const robot_state::RobotState& values = moveit::planning_interface::MoveGroupInterface::getJointValueTarget();
     bp::list l;
-    for (const double value : values)
-      l.append(value);
+    for (const double *it = values.getVariablePositions(), *end = it + getVariableCount(); it != end; ++it)
+      l.append(*it);
     return l;
   }
 
   py_bindings_tools::ByteString getJointValueTarget()
   {
     moveit_msgs::RobotState msg;
-    const moveit::core::RobotState state = moveit::planning_interface::MoveGroupInterface::getTargetRobotState();
+    const robot_state::RobotState state = moveit::planning_interface::MoveGroupInterface::getJointValueTarget();
     moveit::core::robotStateToRobotStateMsg(state, msg);
     return py_bindings_tools::serializeMsg(msg);
   }
@@ -179,8 +187,8 @@ public:
   {
     const std::map<std::string, std::vector<double>>& rv = getRememberedJointValues();
     bp::dict d;
-    for (const std::pair<const std::string, std::vector<double>>& it : rv)
-      d[it.first] = py_bindings_tools::listFromDouble(it.second);
+    for (std::map<std::string, std::vector<double>>::const_iterator it = rv.begin(); it != rv.end(); ++it)
+      d[it->first] = py_bindings_tools::listFromDouble(it->second);
     return d;
   }
 
@@ -332,10 +340,10 @@ public:
 
   bp::dict getCurrentStateBoundedPython()
   {
-    moveit::core::RobotStatePtr current = getCurrentState();
+    robot_state::RobotStatePtr current = getCurrentState();
     current->enforceBounds();
     moveit_msgs::RobotState rsmv;
-    moveit::core::robotStateToRobotStateMsg(*current, rsmv);
+    robot_state::robotStateToRobotStateMsg(*current, rsmv);
     bp::dict output;
     for (size_t x = 0; x < rsmv.joint_state.name.size(); ++x)
       output[rsmv.joint_state.name[x]] = rsmv.joint_state.position[x];
@@ -417,11 +425,6 @@ public:
     return getPlannerId().c_str();
   }
 
-  const char* getPlanningPipelineIdCStr() const
-  {
-    return getPlanningPipelineId().c_str();
-  }
-
   bp::dict getNamedTargetValuesPython(const std::string& name)
   {
     bp::dict output;
@@ -469,23 +472,14 @@ public:
     return asyncExecute(plan) == moveit::core::MoveItErrorCode::SUCCESS;
   }
 
-  bp::tuple planPython()
+  py_bindings_tools::ByteString getPlanPython()
   {
     MoveGroupInterface::Plan plan;
-    moveit_msgs::MoveItErrorCodes res;
     {
       GILReleaser gr;
-      res = MoveGroupInterface::plan(plan);
+      MoveGroupInterface::plan(plan);
     }
-    return bp::make_tuple(py_bindings_tools::serializeMsg(res), py_bindings_tools::serializeMsg(plan.trajectory_),
-                          plan.planning_time_);
-  }
-
-  py_bindings_tools::ByteString constructMotionPlanRequestPython()
-  {
-    moveit_msgs::MotionPlanRequest request;
-    constructMotionPlanRequest(request);
-    return py_bindings_tools::serializeMsg(request);
+    return py_bindings_tools::serializeMsg(plan.trajectory_);
   }
 
   bp::tuple computeCartesianPathPython(const bp::list& waypoints, double eef_step, double jump_threshold,
@@ -546,19 +540,6 @@ public:
   py_bindings_tools::ByteString getPathConstraintsPython()
   {
     moveit_msgs::Constraints constraints_msg(getPathConstraints());
-    return py_bindings_tools::serializeMsg(constraints_msg);
-  }
-
-  void setTrajectoryConstraintsFromMsg(const py_bindings_tools::ByteString& constraints_str)
-  {
-    moveit_msgs::TrajectoryConstraints constraints_msg;
-    py_bindings_tools::deserializeMsg(constraints_str, constraints_msg);
-    setTrajectoryConstraints(constraints_msg);
-  }
-
-  py_bindings_tools::ByteString getTrajectoryConstraintsPython()
-  {
-    moveit_msgs::TrajectoryConstraints constraints_msg(getTrajectoryConstraints());
     return py_bindings_tools::serializeMsg(constraints_msg);
   }
 
@@ -629,7 +610,7 @@ public:
     if (ref.size() != 3)
       throw std::invalid_argument("reference point needs to have 3 elements, got " + std::to_string(ref.size()));
 
-    moveit::core::RobotState state(getRobotModel());
+    robot_state::RobotState state(getRobotModel());
     state.setToDefaultValues();
     auto group = state.getJointModelGroup(getName());
     state.setJointGroupPositions(group, v);
@@ -722,6 +703,7 @@ static void wrap_move_group_interface()
   bool (MoveGroupInterfaceWrapper::*set_joint_value_target_4)(const std::string&, double) =
       &MoveGroupInterfaceWrapper::setJointValueTarget;
   move_group_interface_class.def("set_joint_value_target", set_joint_value_target_4);
+  move_group_interface_class.def("set_state_value_target", &MoveGroupInterfaceWrapper::setStateValueTarget);
 
   move_group_interface_class.def("set_joint_value_target_from_pose",
                                  &MoveGroupInterfaceWrapper::setJointValueTargetFromPosePython);
@@ -770,12 +752,6 @@ static void wrap_move_group_interface()
   move_group_interface_class.def("set_path_constraints_from_msg", &MoveGroupInterfaceWrapper::setPathConstraintsFromMsg);
   move_group_interface_class.def("get_path_constraints", &MoveGroupInterfaceWrapper::getPathConstraintsPython);
   move_group_interface_class.def("clear_path_constraints", &MoveGroupInterfaceWrapper::clearPathConstraints);
-
-  move_group_interface_class.def("set_trajectory_constraints_from_msg",
-                                 &MoveGroupInterfaceWrapper::setTrajectoryConstraintsFromMsg);
-  move_group_interface_class.def("get_trajectory_constraints",
-                                 &MoveGroupInterfaceWrapper::getTrajectoryConstraintsPython);
-  move_group_interface_class.def("clear_trajectory_constraints", &MoveGroupInterfaceWrapper::clearTrajectoryConstraints);
   move_group_interface_class.def("get_known_constraints", &MoveGroupInterfaceWrapper::getKnownConstraintsList);
   move_group_interface_class.def("set_constraints_database", &MoveGroupInterfaceWrapper::setConstraintsDatabase);
   move_group_interface_class.def("set_workspace", &MoveGroupInterfaceWrapper::setWorkspace);
@@ -787,12 +763,8 @@ static void wrap_move_group_interface()
                                  &MoveGroupInterfaceWrapper::setMaxAccelerationScalingFactor);
   move_group_interface_class.def("set_planner_id", &MoveGroupInterfaceWrapper::setPlannerId);
   move_group_interface_class.def("get_planner_id", &MoveGroupInterfaceWrapper::getPlannerIdCStr);
-  move_group_interface_class.def("set_planning_pipeline_id", &MoveGroupInterfaceWrapper::setPlanningPipelineId);
-  move_group_interface_class.def("get_planning_pipeline_id", &MoveGroupInterfaceWrapper::getPlanningPipelineIdCStr);
   move_group_interface_class.def("set_num_planning_attempts", &MoveGroupInterfaceWrapper::setNumPlanningAttempts);
-  move_group_interface_class.def("plan", &MoveGroupInterfaceWrapper::planPython);
-  move_group_interface_class.def("construct_motion_plan_request",
-                                 &MoveGroupInterfaceWrapper::constructMotionPlanRequestPython);
+  move_group_interface_class.def("compute_plan", &MoveGroupInterfaceWrapper::getPlanPython);
   move_group_interface_class.def("compute_cartesian_path", &MoveGroupInterfaceWrapper::computeCartesianPathPython);
   move_group_interface_class.def("compute_cartesian_path",
                                  &MoveGroupInterfaceWrapper::computeCartesianPathConstrainedPython);

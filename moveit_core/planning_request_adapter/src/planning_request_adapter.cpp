@@ -35,7 +35,7 @@
 /* Author: Ioan Sucan */
 
 #include <moveit/planning_request_adapter/planning_request_adapter.h>
-#include <functional>
+#include <boost/bind.hpp>
 #include <algorithm>
 
 // we could really use some c++11 lambda functions here :)
@@ -63,9 +63,8 @@ bool PlanningRequestAdapter::adaptAndPlan(const planning_interface::PlannerManag
                                           planning_interface::MotionPlanResponse& res,
                                           std::vector<std::size_t>& added_path_index) const
 {
-  return adaptAndPlan(std::bind(&callPlannerInterfaceSolve, planner.get(), std::placeholders::_1, std::placeholders::_2,
-                                std::placeholders::_3),
-                      planning_scene, req, res, added_path_index);
+  return adaptAndPlan(boost::bind(&callPlannerInterfaceSolve, planner.get(), _1, _2, _3), planning_scene, req, res,
+                      added_path_index);
 }
 
 bool PlanningRequestAdapter::adaptAndPlan(const planning_interface::PlannerManagerPtr& planner,
@@ -146,23 +145,21 @@ bool PlanningRequestAdapterChain::adaptAndPlan(const planning_interface::Planner
 
     // if there are adapters, construct a function pointer for each, in order,
     // so that in the end we have a nested sequence of function pointers that call the adapters in the correct order.
-    PlanningRequestAdapter::PlannerFn fn =
-        std::bind(&callAdapter1, adapters_.back().get(), planner, std::placeholders::_1, std::placeholders::_2,
-                  std::placeholders::_3, boost::ref(added_path_index_each.back()));
+    PlanningRequestAdapter::PlannerFn fn = boost::bind(&callAdapter1, adapters_.back().get(), planner, _1, _2, _3,
+                                                       boost::ref(added_path_index_each.back()));
     for (int i = adapters_.size() - 2; i >= 0; --i)
-      fn = std::bind(&callAdapter2, adapters_[i].get(), fn, std::placeholders::_1, std::placeholders::_2,
-                     std::placeholders::_3, boost::ref(added_path_index_each[i]));
+      fn = boost::bind(&callAdapter2, adapters_[i].get(), fn, _1, _2, _3, boost::ref(added_path_index_each[i]));
     bool result = fn(planning_scene, req, res);
     added_path_index.clear();
 
     // merge the index values from each adapter
-    for (std::vector<std::size_t>& added_states_by_each_adapter : added_path_index_each)
-      for (std::size_t& added_index : added_states_by_each_adapter)
+    for (std::size_t i = 0; i < added_path_index_each.size(); ++i)
+      for (std::size_t j = 0; j < added_path_index_each[i].size(); ++j)
       {
-        for (std::size_t& index_in_path : added_path_index)
-          if (added_index <= index_in_path)
-            index_in_path++;
-        added_path_index.push_back(added_index);
+        for (std::size_t k = 0; k < added_path_index.size(); ++k)
+          if (added_path_index_each[i][j] <= added_path_index[k])
+            added_path_index[k]++;
+        added_path_index.push_back(added_path_index_each[i][j]);
       }
     std::sort(added_path_index.begin(), added_path_index.end());
     return result;

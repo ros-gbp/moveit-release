@@ -213,15 +213,15 @@ void DoubleListWidget::setTable(const std::vector<std::string>& items, QTableWid
 
   // Loop through every item
   int row = 0;
-  for (const std::string& item : items)
+  for (std::vector<std::string>::const_iterator data_it = items.begin(); data_it != items.end(); ++data_it)
   {
     // This is a hack to prevent a dummy joint from being added. Not really the best place to place this but
     // here is computationally smart
-    if (item == "ASSUMED_FIXED_ROOT_JOINT")
+    if (*data_it == "ASSUMED_FIXED_ROOT_JOINT")
       continue;
 
     // Create row elements
-    QTableWidgetItem* data_name = new QTableWidgetItem(item.c_str());
+    QTableWidgetItem* data_name = new QTableWidgetItem(data_it->c_str());
     data_name->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
 
     // Add to table
@@ -247,9 +247,9 @@ void DoubleListWidget::selectDataButtonClicked()
   QList<QTableWidgetItem*> selected = data_table_->selectedItems();
 
   // Loop through all selected items
-  for (QTableWidgetItem* item : selected)
+  for (int i = 0; i < selected.size(); i++)
   {
-    std::string name = item->text().toStdString();
+    std::string name = selected[i]->text().toStdString();
     bool already_exists = false;
     int row_to_add = 0;
 
@@ -288,9 +288,9 @@ void DoubleListWidget::deselectDataButtonClicked()
   QList<QTableWidgetItem*> deselected = selected_data_table_->selectedItems();
 
   // loop through deselect list and remove
-  for (QTableWidgetItem* item : deselected)
+  for (int i = 0; i < deselected.size(); i++)
   {
-    selected_data_table_->removeRow(item->row());
+    selected_data_table_->removeRow(deselected[i]->row());
   }
 
   Q_EMIT(selectionUpdated());
@@ -299,7 +299,7 @@ void DoubleListWidget::deselectDataButtonClicked()
 // ******************************************************************************************
 // Highlight links of robot for left list
 // ******************************************************************************************
-void DoubleListWidget::previewSelectedLeft(const QItemSelection& /*selected*/, const QItemSelection& /*deselected*/)
+void DoubleListWidget::previewSelectedLeft(const QItemSelection& selected, const QItemSelection& deselected)
 {
   const QList<QTableWidgetItem*> selected_items = data_table_->selectedItems();
   previewSelected(selected_items);
@@ -308,7 +308,7 @@ void DoubleListWidget::previewSelectedLeft(const QItemSelection& /*selected*/, c
 // ******************************************************************************************
 // Highlight links of robot for right list
 // ******************************************************************************************
-void DoubleListWidget::previewSelectedRight(const QItemSelection& /*selected*/, const QItemSelection& /*deselected*/)
+void DoubleListWidget::previewSelectedRight(const QItemSelection& selected, const QItemSelection& deselected)
 {
   const QList<QTableWidgetItem*> selected_items = selected_data_table_->selectedItems();
   previewSelected(selected_items);
@@ -327,8 +327,8 @@ void DoubleListWidget::previewSelected(const QList<QTableWidgetItem*>& selected)
 
   // Convert QList to std vector
   selected_vector.reserve(selected.size());
-  for (QTableWidgetItem* item : selected)
-    selected_vector.emplace_back(item->text().toStdString());
+  for (int i = 0; i < selected.size(); ++i)
+    selected_vector.emplace_back(selected[i]->text().toStdString());
 
   // Send to shared function
   Q_EMIT(previewSelected(selected_vector));

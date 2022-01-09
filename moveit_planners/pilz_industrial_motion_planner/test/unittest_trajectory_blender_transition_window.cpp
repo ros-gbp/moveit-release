@@ -36,11 +36,13 @@
 
 #include <gtest/gtest.h>
 
+#include <eigen_conversions/eigen_msg.h>
 #include <moveit/kinematic_constraints/utils.h>
 #include <moveit/robot_model/robot_model.h>
 #include <moveit/robot_model_loader/robot_model_loader.h>
 #include <moveit/robot_state/conversions.h>
 #include <moveit_msgs/DisplayTrajectory.h>
+#include <tf2/convert.h>
 #include <tf2_eigen/tf2_eigen.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
@@ -90,7 +92,6 @@ protected:
   // ros stuff
   ros::NodeHandle ph_{ "~" };
   robot_model::RobotModelConstPtr robot_model_{ robot_model_loader::RobotModelLoader(GetParam()).getModel() };
-  planning_scene::PlanningSceneConstPtr planning_scene_{ new planning_scene::PlanningScene(robot_model_) };
 
   std::unique_ptr<TrajectoryGenerator> lin_generator_;
   std::unique_ptr<TrajectoryBlenderTransitionWindow> blender_;
@@ -118,7 +119,7 @@ void TrajectoryBlenderTransitionWindowTest::SetUp()
   ASSERT_TRUE(ph_.getParam(TEST_DATA_FILE_NAME, test_data_file_name_));
 
   // load the test data provider
-  data_loader_ = std::make_unique<XmlTestdataLoader>(test_data_file_name_, robot_model_);
+  data_loader_.reset(new XmlTestdataLoader(test_data_file_name_, robot_model_));
   ASSERT_NE(nullptr, data_loader_) << "Failed to load test data by provider.";
 
   // check robot model
@@ -137,9 +138,9 @@ void TrajectoryBlenderTransitionWindowTest::SetUp()
   planner_limits_.setCartesianLimits(cart_limits);
 
   // initialize trajectory generators and blender
-  lin_generator_ = std::make_unique<TrajectoryGeneratorLIN>(robot_model_, planner_limits_, planning_group_);
+  lin_generator_.reset(new TrajectoryGeneratorLIN(robot_model_, planner_limits_));
   ASSERT_NE(nullptr, lin_generator_) << "failed to create LIN trajectory generator";
-  blender_ = std::make_unique<TrajectoryBlenderTransitionWindow>(planner_limits_);
+  blender_.reset(new TrajectoryBlenderTransitionWindow(planner_limits_));
   ASSERT_NE(nullptr, blender_) << "failed to create trajectory blender";
 }
 
@@ -159,7 +160,7 @@ TrajectoryBlenderTransitionWindowTest::generateLinTrajs(const Sequence& seq, siz
     }
     // generate trajectory
     planning_interface::MotionPlanResponse resp;
-    if (!lin_generator_->generate(planning_scene_, req, resp, sampling_time_))
+    if (!lin_generator_->generate(req, resp, sampling_time_))
     {
       std::runtime_error("Failed to generate trajectory.");
     }
@@ -198,7 +199,7 @@ TEST_P(TrajectoryBlenderTransitionWindowTest, testInvalidGroupName)
   blend_req.second_trajectory = res.at(1).trajectory_;
 
   blend_req.blend_radius = seq.getBlendRadius(0);
-  EXPECT_FALSE(blender_->blend(planning_scene_, blend_req, blend_res));
+  EXPECT_FALSE(blender_->blend(blend_req, blend_res));
 }
 
 /**
@@ -227,7 +228,7 @@ TEST_P(TrajectoryBlenderTransitionWindowTest, testInvalidTargetLink)
   blend_req.second_trajectory = res.at(1).trajectory_;
 
   blend_req.blend_radius = seq.getBlendRadius(0);
-  EXPECT_FALSE(blender_->blend(planning_scene_, blend_req, blend_res));
+  EXPECT_FALSE(blender_->blend(blend_req, blend_res));
 }
 
 /**
@@ -257,7 +258,7 @@ TEST_P(TrajectoryBlenderTransitionWindowTest, testNegativeRadius)
   blend_req.second_trajectory = res.at(1).trajectory_;
 
   blend_req.blend_radius = -0.1;
-  EXPECT_FALSE(blender_->blend(planning_scene_, blend_req, blend_res));
+  EXPECT_FALSE(blender_->blend(blend_req, blend_res));
 }
 
 /**
@@ -286,7 +287,7 @@ TEST_P(TrajectoryBlenderTransitionWindowTest, testZeroRadius)
   blend_req.second_trajectory = res.at(1).trajectory_;
 
   blend_req.blend_radius = 0.;
-  EXPECT_FALSE(blender_->blend(planning_scene_, blend_req, blend_res));
+  EXPECT_FALSE(blender_->blend(blend_req, blend_res));
 }
 
 /**
@@ -321,7 +322,7 @@ TEST_P(TrajectoryBlenderTransitionWindowTest, testDifferentSamplingTimes)
     }
     // generate trajectory
     planning_interface::MotionPlanResponse resp;
-    if (!lin_generator_->generate(planning_scene_, req, resp, sampling_time_))
+    if (!lin_generator_->generate(req, resp, sampling_time_))
     {
       std::runtime_error("Failed to generate trajectory.");
     }
@@ -336,7 +337,7 @@ TEST_P(TrajectoryBlenderTransitionWindowTest, testDifferentSamplingTimes)
   blend_req.first_trajectory = responses[0].trajectory_;
   blend_req.second_trajectory = responses[1].trajectory_;
   blend_req.blend_radius = seq.getBlendRadius(0);
-  EXPECT_FALSE(blender_->blend(planning_scene_, blend_req, blend_res));
+  EXPECT_FALSE(blender_->blend(blend_req, blend_res));
 }
 
 /**
@@ -371,7 +372,7 @@ TEST_P(TrajectoryBlenderTransitionWindowTest, testNonUniformSamplingTime)
   blend_req.first_trajectory = res.at(0).trajectory_;
   blend_req.second_trajectory = res.at(1).trajectory_;
   blend_req.blend_radius = seq.getBlendRadius(0);
-  EXPECT_FALSE(blender_->blend(planning_scene_, blend_req, blend_res));
+  EXPECT_FALSE(blender_->blend(blend_req, blend_res));
 }
 
 /**
@@ -403,7 +404,7 @@ TEST_P(TrajectoryBlenderTransitionWindowTest, testNotIntersectingTrajectories)
   // intersect
   blend_req.second_trajectory = res.at(0).trajectory_;
   blend_req.blend_radius = seq.getBlendRadius(0);
-  EXPECT_FALSE(blender_->blend(planning_scene_, blend_req, blend_res));
+  EXPECT_FALSE(blender_->blend(blend_req, blend_res));
 }
 
 /**
@@ -439,7 +440,7 @@ TEST_P(TrajectoryBlenderTransitionWindowTest, testNonStationaryPoint)
   blend_req.first_trajectory->getLastWayPointPtr()->setVariableVelocity(0, 1.0);
   blend_req.second_trajectory->getFirstWayPointPtr()->setVariableVelocity(0, 1.0);
 
-  EXPECT_FALSE(blender_->blend(planning_scene_, blend_req, blend_res));
+  EXPECT_FALSE(blender_->blend(blend_req, blend_res));
 }
 
 /**
@@ -476,7 +477,7 @@ TEST_P(TrajectoryBlenderTransitionWindowTest, testTraj1InsideBlendRadius)
   blend_req.first_trajectory = res.at(0).trajectory_;
   blend_req.second_trajectory = res.at(1).trajectory_;
 
-  EXPECT_FALSE(blender_->blend(planning_scene_, blend_req, blend_res));
+  EXPECT_FALSE(blender_->blend(blend_req, blend_res));
 }
 
 /**
@@ -508,7 +509,7 @@ TEST_P(TrajectoryBlenderTransitionWindowTest, testTraj2InsideBlendRadius)
   blend_req.first_trajectory = res.at(0).trajectory_;
   blend_req.second_trajectory = res.at(1).trajectory_;
 
-  EXPECT_FALSE(blender_->blend(planning_scene_, blend_req, blend_res));
+  EXPECT_FALSE(blender_->blend(blend_req, blend_res));
 }
 
 /**
@@ -545,7 +546,7 @@ TEST_P(TrajectoryBlenderTransitionWindowTest, testLinLinBlending)
   blend_req.first_trajectory = res.at(0).trajectory_;
   blend_req.second_trajectory = res.at(1).trajectory_;
 
-  EXPECT_TRUE(blender_->blend(planning_scene_, blend_req, blend_res));
+  EXPECT_TRUE(blender_->blend(blend_req, blend_res));
 
   EXPECT_TRUE(testutils::checkBlendResult(blend_req, blend_res, planner_limits_, joint_velocity_tolerance_,
                                           joint_acceleration_tolerance_, cartesian_velocity_tolerance_,
@@ -588,7 +589,7 @@ TEST_P(TrajectoryBlenderTransitionWindowTest, testOverlappingBlendTrajectories)
   blend_req.first_trajectory = res.at(0).trajectory_;
   blend_req.second_trajectory = res.at(1).trajectory_;
   blend_req.blend_radius = seq.getBlendRadius(0);
-  EXPECT_TRUE(blender_->blend(planning_scene_, blend_req, blend_res));
+  EXPECT_TRUE(blender_->blend(blend_req, blend_res));
 
   EXPECT_TRUE(testutils::checkBlendResult(blend_req, blend_res, planner_limits_, joint_velocity_tolerance_,
                                           joint_acceleration_tolerance_, cartesian_velocity_tolerance_,
@@ -648,8 +649,9 @@ TEST_P(TrajectoryBlenderTransitionWindowTest, testNonLinearBlending)
 
       // get pose
       CartesianTrajectoryPoint waypoint;
-      const Eigen::Isometry3d eigen_pose{ lin_traj->getWayPointPtr(i)->getFrameTransform(target_link_) };
-      geometry_msgs::Pose waypoint_pose = tf2::toMsg(eigen_pose);
+      geometry_msgs::Pose waypoint_pose;
+      Eigen::Isometry3d eigen_pose{ lin_traj->getWayPointPtr(i)->getFrameTransform(target_link_) };
+      tf2::convert<Eigen::Isometry3d, geometry_msgs::Pose>(eigen_pose, waypoint_pose);
 
       // add scaled sine function
       waypoint_pose.position.x += sine_scaling_factor * sin(sine_arg);
@@ -683,7 +685,7 @@ TEST_P(TrajectoryBlenderTransitionWindowTest, testNonLinearBlending)
     }
 
     moveit_msgs::MoveItErrorCodes error_code;
-    if (!generateJointTrajectory(planning_scene_, planner_limits_.getJointLimitContainer(), cart_traj, planning_group_,
+    if (!generateJointTrajectory(robot_model_, planner_limits_.getJointLimitContainer(), cart_traj, planning_group_,
                                  target_link_, initial_joint_position, initial_joint_velocity, joint_traj, error_code,
                                  true))
     {
@@ -709,7 +711,7 @@ TEST_P(TrajectoryBlenderTransitionWindowTest, testNonLinearBlending)
   blend_req.first_trajectory = sine_trajs.at(0);
   blend_req.second_trajectory = sine_trajs.at(1);
 
-  EXPECT_TRUE(blender_->blend(planning_scene_, blend_req, blend_res));
+  EXPECT_TRUE(blender_->blend(blend_req, blend_res));
 
   EXPECT_TRUE(testutils::checkBlendResult(blend_req, blend_res, planner_limits_, joint_velocity_tolerance_,
                                           joint_acceleration_tolerance_, cartesian_velocity_tolerance_,

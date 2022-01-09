@@ -34,7 +34,8 @@
 
 /* Author: Ioan Sucan, Robert Haschke */
 
-#pragma once
+#ifndef MOVEIT_MOVE_GROUP_QUERY_PLANNERS_SERVICE_CAPABILITY_
+#define MOVEIT_MOVE_GROUP_QUERY_PLANNERS_SERVICE_CAPABILITY_
 
 #include <moveit/move_group/move_group_capability.h>
 #include <moveit_msgs/QueryPlannerInterfaces.h>
@@ -62,3 +63,5 @@ private:
   ros::ServiceServer set_service_;
 };
 }  // namespace move_group
+
+#endif

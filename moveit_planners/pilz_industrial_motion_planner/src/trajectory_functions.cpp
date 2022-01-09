@@ -36,18 +36,17 @@
 
 #include <moveit/planning_scene/planning_scene.h>
 #include <tf2/LinearMath/Quaternion.h>
+#include <tf2/convert.h>
 #include <tf2_eigen/tf2_eigen.h>
-#include <tf2_kdl/tf2_kdl.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
-bool pilz_industrial_motion_planner::computePoseIK(const planning_scene::PlanningSceneConstPtr& scene,
+bool pilz_industrial_motion_planner::computePoseIK(const moveit::core::RobotModelConstPtr& robot_model,
                                                    const std::string& group_name, const std::string& link_name,
                                                    const Eigen::Isometry3d& pose, const std::string& frame_id,
                                                    const std::map<std::string, double>& seed,
                                                    std::map<std::string, double>& solution, bool check_self_collision,
                                                    const double timeout)
 {
-  const moveit::core::RobotModelConstPtr& robot_model = scene->getRobotModel();
   if (!robot_model->hasJointModelGroup(group_name))
   {
     ROS_ERROR_STREAM("Robot model has no planning group named as " << group_name);
@@ -74,8 +73,8 @@ bool pilz_industrial_motion_planner::computePoseIK(const planning_scene::Plannin
   rstate.setVariablePositions(seed);
 
   moveit::core::GroupStateValidityCallbackFn ik_constraint_function;
-  ik_constraint_function = std::bind(&pilz_industrial_motion_planner::isStateColliding, check_self_collision, scene,
-                                     std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+  ik_constraint_function =
+      boost::bind(&pilz_industrial_motion_planner::isStateColliding, check_self_collision, robot_model, _1, _2, _3);
 
   // call ik
   if (rstate.setFromIK(robot_model->getJointModelGroup(group_name), pose, link_name, timeout, ik_constraint_function))
@@ -94,7 +93,7 @@ bool pilz_industrial_motion_planner::computePoseIK(const planning_scene::Plannin
   }
 }
 
-bool pilz_industrial_motion_planner::computePoseIK(const planning_scene::PlanningSceneConstPtr& scene,
+bool pilz_industrial_motion_planner::computePoseIK(const moveit::core::RobotModelConstPtr& robot_model,
                                                    const std::string& group_name, const std::string& link_name,
                                                    const geometry_msgs::Pose& pose, const std::string& frame_id,
                                                    const std::map<std::string, double>& seed,
@@ -102,8 +101,8 @@ bool pilz_industrial_motion_planner::computePoseIK(const planning_scene::Plannin
                                                    const double timeout)
 {
   Eigen::Isometry3d pose_eigen;
-  tf2::fromMsg(pose, pose_eigen);
-  return computePoseIK(scene, group_name, link_name, pose_eigen, frame_id, seed, solution, check_self_collision,
+  tf2::convert<geometry_msgs::Pose, Eigen::Isometry3d>(pose, pose_eigen);
+  return computePoseIK(robot_model, group_name, link_name, pose_eigen, frame_id, seed, solution, check_self_collision,
                        timeout);
 }
 
@@ -192,7 +191,7 @@ bool pilz_industrial_motion_planner::verifySampleJointLimits(
 }
 
 bool pilz_industrial_motion_planner::generateJointTrajectory(
-    const planning_scene::PlanningSceneConstPtr& scene,
+    const moveit::core::RobotModelConstPtr& robot_model,
     const pilz_industrial_motion_planner::JointLimitsContainer& joint_limits, const KDL::Trajectory& trajectory,
     const std::string& group_name, const std::string& link_name,
     const std::map<std::string, double>& initial_joint_position, const double& sampling_time,
@@ -201,7 +200,6 @@ bool pilz_industrial_motion_planner::generateJointTrajectory(
 {
   ROS_DEBUG("Generate joint trajectory from a Cartesian trajectory.");
 
-  const moveit::core::RobotModelConstPtr& robot_model = scene->getRobotModel();
   ros::Time generation_begin = ros::Time::now();
 
   // generate the time samples
@@ -225,9 +223,9 @@ bool pilz_industrial_motion_planner::generateJointTrajectory(
   for (std::vector<double>::const_iterator time_iter = time_samples.begin(); time_iter != time_samples.end();
        ++time_iter)
   {
-    tf2::fromMsg(tf2::toMsg(trajectory.Pos(*time_iter)), pose_sample);
+    tf::transformKDLToEigen(trajectory.Pos(*time_iter), pose_sample);
 
-    if (!computePoseIK(scene, group_name, link_name, pose_sample, robot_model->getModelFrame(), ik_solution_last,
+    if (!computePoseIK(robot_model, group_name, link_name, pose_sample, robot_model->getModelFrame(), ik_solution_last,
                        ik_solution, check_self_collision))
     {
       ROS_ERROR("Failed to compute inverse kinematics solution for sampled "
@@ -308,7 +306,7 @@ bool pilz_industrial_motion_planner::generateJointTrajectory(
 }
 
 bool pilz_industrial_motion_planner::generateJointTrajectory(
-    const planning_scene::PlanningSceneConstPtr& scene,
+    const moveit::core::RobotModelConstPtr& robot_model,
     const pilz_industrial_motion_planner::JointLimitsContainer& joint_limits,
     const pilz_industrial_motion_planner::CartesianTrajectory& trajectory, const std::string& group_name,
     const std::string& link_name, const std::map<std::string, double>& initial_joint_position,
@@ -317,7 +315,6 @@ bool pilz_industrial_motion_planner::generateJointTrajectory(
 {
   ROS_DEBUG("Generate joint trajectory from a Cartesian trajectory.");
 
-  const moveit::core::RobotModelConstPtr& robot_model = scene->getRobotModel();
   ros::Time generation_begin = ros::Time::now();
 
   std::map<std::string, double> ik_solution_last = initial_joint_position;
@@ -333,7 +330,7 @@ bool pilz_industrial_motion_planner::generateJointTrajectory(
   for (size_t i = 0; i < trajectory.points.size(); ++i)
   {
     // compute inverse kinematics
-    if (!computePoseIK(scene, group_name, link_name, trajectory.points.at(i).pose, robot_model->getModelFrame(),
+    if (!computePoseIK(robot_model, group_name, link_name, trajectory.points.at(i).pose, robot_model->getModelFrame(),
                        ik_solution_last, ik_solution, check_self_collision))
     {
       ROS_ERROR("Failed to compute inverse kinematics solution for sampled "
@@ -559,7 +556,7 @@ bool pilz_industrial_motion_planner::intersectionFound(const Eigen::Vector3d& p_
 }
 
 bool pilz_industrial_motion_planner::isStateColliding(const bool test_for_self_collision,
-                                                      const planning_scene::PlanningSceneConstPtr& scene,
+                                                      const moveit::core::RobotModelConstPtr& robot_model,
                                                       robot_state::RobotState* rstate,
                                                       const robot_state::JointModelGroup* const group,
                                                       const double* const ik_solution)
@@ -573,38 +570,15 @@ bool pilz_industrial_motion_planner::isStateColliding(const bool test_for_self_c
   rstate->update();
   collision_detection::CollisionRequest collision_req;
   collision_req.group_name = group->getName();
-  collision_req.verbose = true;
   collision_detection::CollisionResult collision_res;
-  scene->checkSelfCollision(collision_req, collision_res, *rstate);
+  planning_scene::PlanningScene(robot_model).checkSelfCollision(collision_req, collision_res, *rstate);
+
   return !collision_res.collision;
 }
 
 void normalizeQuaternion(geometry_msgs::Quaternion& quat)
 {
   tf2::Quaternion q;
-  tf2::fromMsg(quat, q);
+  tf2::convert<geometry_msgs::Quaternion, tf2::Quaternion>(quat, q);
   quat = tf2::toMsg(q.normalize());
-}
-
-Eigen::Isometry3d getConstraintPose(const geometry_msgs::Point& position, const geometry_msgs::Quaternion& orientation,
-                                    const geometry_msgs::Vector3& offset)
-{
-  Eigen::Quaterniond quat;
-  tf2::fromMsg(orientation, quat);
-  quat.normalize();
-  Eigen::Vector3d v;
-  tf2::fromMsg(position, v);
-
-  Eigen::Isometry3d pose = Eigen::Translation3d(v) * quat;
-
-  tf2::fromMsg(offset, v);
-  pose.translation() -= quat * v;
-  return pose;
-}
-
-Eigen::Isometry3d getConstraintPose(const moveit_msgs::Constraints& goal)
-{
-  return getConstraintPose(goal.position_constraints.front().constraint_region.primitive_poses.front().position,
-                           goal.orientation_constraints.front().orientation,
-                           goal.position_constraints.front().target_point_offset);
 }

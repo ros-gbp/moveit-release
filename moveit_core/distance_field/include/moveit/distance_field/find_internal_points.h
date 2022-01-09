@@ -34,7 +34,8 @@
 
 /* Author: Acorn Pooley */
 
-#pragma once
+#ifndef MOVEIT_DISTANCE_FIELD__FIND_INTERNAL_POINTS_
+#define MOVEIT_DISTANCE_FIELD__FIND_INTERNAL_POINTS_
 
 #include <eigen_stl_containers/eigen_stl_containers.h>
 #include <geometric_shapes/bodies.h>
@@ -53,3 +54,5 @@ namespace distance_field
  */
 void findInternalPointsConvex(const bodies::Body& body, double resolution, EigenSTL::vector_Vector3d& points);
 }  // namespace distance_field
+
+#endif

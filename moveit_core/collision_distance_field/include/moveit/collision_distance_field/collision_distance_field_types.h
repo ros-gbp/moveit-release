@@ -34,7 +34,8 @@
 
 /* Author: E. Gil Jones */
 
-#pragma once
+#ifndef MOVEIT_COLLISION_DISTANCE_FIELD_COLLISION_DISTANCE_FIELD_TYPES_
+#define MOVEIT_COLLISION_DISTANCE_FIELD_COLLISION_DISTANCE_FIELD_TYPES_
 
 #include <vector>
 #include <string>
@@ -104,12 +105,12 @@ struct GradientInfo
   }
 };
 
-MOVEIT_CLASS_FORWARD(PosedDistanceField);
+MOVEIT_CLASS_FORWARD(PosedDistanceField)
 MOVEIT_CLASS_FORWARD(BodyDecomposition);  // Defines BodyDecompositionPtr, ConstPtr, WeakPtr... etc
-MOVEIT_CLASS_FORWARD(PosedBodySphereDecomposition);
-MOVEIT_CLASS_FORWARD(PosedBodyPointDecomposition);
-MOVEIT_CLASS_FORWARD(PosedBodySphereDecompositionVector);
-MOVEIT_CLASS_FORWARD(PosedBodyPointDecompositionVector);
+MOVEIT_CLASS_FORWARD(PosedBodySphereDecomposition)
+MOVEIT_CLASS_FORWARD(PosedBodyPointDecomposition)
+MOVEIT_CLASS_FORWARD(PosedBodySphereDecompositionVector)
+MOVEIT_CLASS_FORWARD(PosedBodyPointDecompositionVector)
 
 class PosedDistanceField : public distance_field::PropagationDistanceField
 {
@@ -445,9 +446,10 @@ public:
   EigenSTL::vector_Vector3d getCollisionPoints() const
   {
     EigenSTL::vector_Vector3d ret_points;
-    for (const PosedBodyPointDecompositionPtr& decomp : decomp_vector_)
+    for (unsigned int i = 0; i < decomp_vector_.size(); i++)
     {
-      ret_points.insert(ret_points.end(), decomp->getCollisionPoints().begin(), decomp->getCollisionPoints().end());
+      ret_points.insert(ret_points.end(), decomp_vector_[i]->getCollisionPoints().begin(),
+                        decomp_vector_[i]->getCollisionPoints().end());
     }
     return ret_points;
   }
@@ -521,3 +523,5 @@ void getCollisionMarkers(const std::string& frame_id, const std::string& ns, con
                          const std::vector<PosedBodySphereDecompositionVectorPtr>& posed_vector_decompositions,
                          const std::vector<GradientInfo>& gradients, visualization_msgs::MarkerArray& arr);
 }  // namespace collision_detection
+
+#endif

@@ -38,21 +38,23 @@
 #include <cassert>
 #include <sstream>
 
+#include <eigen_conversions/eigen_kdl.h>
+#include <eigen_conversions/eigen_msg.h>
 #include <kdl/rotational_interpolation_sa.hpp>
 #include <kdl/trajectory_segment.hpp>
 #include <kdl/utilities/error.h>
 #include <kdl/utilities/utility.h>
+#include <kdl_conversions/kdl_msg.h>
 #include <moveit/robot_state/conversions.h>
 #include <ros/ros.h>
+#include <tf2/convert.h>
 #include <tf2_eigen/tf2_eigen.h>
-#include <tf2_kdl/tf2_kdl.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 namespace pilz_industrial_motion_planner
 {
 TrajectoryGeneratorCIRC::TrajectoryGeneratorCIRC(const moveit::core::RobotModelConstPtr& robot_model,
-                                                 const LimitsContainer& planner_limits,
-                                                 const std::string& /*group_name*/)
+                                                 const LimitsContainer& planner_limits)
   : TrajectoryGenerator::TrajectoryGenerator(robot_model, planner_limits)
 {
   if (!planner_limits_.hasFullCartesianLimits())
@@ -85,8 +87,7 @@ void TrajectoryGeneratorCIRC::cmdSpecificRequestValidation(const planning_interf
   }
 }
 
-void TrajectoryGeneratorCIRC::extractMotionPlanInfo(const planning_scene::PlanningSceneConstPtr& scene,
-                                                    const planning_interface::MotionPlanRequest& req,
+void TrajectoryGeneratorCIRC::extractMotionPlanInfo(const planning_interface::MotionPlanRequest& req,
                                                     TrajectoryGenerator::MotionPlanInfo& info) const
 {
   ROS_DEBUG("Extract necessary information from motion plan request.");
@@ -142,7 +143,12 @@ void TrajectoryGeneratorCIRC::extractMotionPlanInfo(const planning_scene::Planni
     {
       frame_id = req.goal_constraints.front().position_constraints.front().header.frame_id;
     }
-    info.goal_pose = getConstraintPose(req.goal_constraints.front());
+    geometry_msgs::Pose goal_pose_msg;
+    goal_pose_msg.position =
+        req.goal_constraints.front().position_constraints.front().constraint_region.primitive_poses.front().position;
+    goal_pose_msg.orientation = req.goal_constraints.front().orientation_constraints.front().orientation;
+    normalizeQuaternion(goal_pose_msg.orientation);
+    tf2::convert<geometry_msgs::Pose, Eigen::Isometry3d>(goal_pose_msg, info.goal_pose);
   }
 
   assert(req.start_state.joint_state.name.size() == req.start_state.joint_state.position.size());
@@ -164,7 +170,7 @@ void TrajectoryGeneratorCIRC::extractMotionPlanInfo(const planning_scene::Planni
 
   // check goal pose ik before Cartesian motion plan starts
   std::map<std::string, double> ik_solution;
-  if (!computePoseIK(scene, info.group_name, info.link_name, info.goal_pose, frame_id, info.start_joint_position,
+  if (!computePoseIK(robot_model_, info.group_name, info.link_name, info.goal_pose, frame_id, info.start_joint_position,
                      ik_solution))
   {
     // LCOV_EXCL_START
@@ -174,27 +180,16 @@ void TrajectoryGeneratorCIRC::extractMotionPlanInfo(const planning_scene::Planni
     // LCOV_EXCL_STOP // not able to trigger here since lots of checks before
     // are in place
   }
+
+  Eigen::Vector3d circ_path_point;
+  tf2::convert(req.path_constraints.position_constraints.front().constraint_region.primitive_poses.front().position,
+               circ_path_point);
+
   info.circ_path_point.first = req.path_constraints.name;
-  if (!req.goal_constraints.front().position_constraints.empty())
-  {
-    const moveit_msgs::Constraints& goal = req.goal_constraints.front();
-    info.circ_path_point.second =
-        getConstraintPose(
-            req.path_constraints.position_constraints.front().constraint_region.primitive_poses.front().position,
-            goal.orientation_constraints.front().orientation, goal.position_constraints.front().target_point_offset)
-            .translation();
-  }
-  else
-  {
-    Eigen::Vector3d circ_path_point;
-    tf2::fromMsg(req.path_constraints.position_constraints.front().constraint_region.primitive_poses.front().position,
-                 circ_path_point);
-    info.circ_path_point.second = circ_path_point;
-  }
+  info.circ_path_point.second = circ_path_point;
 }
 
-void TrajectoryGeneratorCIRC::plan(const planning_scene::PlanningSceneConstPtr& scene,
-                                   const planning_interface::MotionPlanRequest& req, const MotionPlanInfo& plan_info,
+void TrajectoryGeneratorCIRC::plan(const planning_interface::MotionPlanRequest& req, const MotionPlanInfo& plan_info,
                                    const double& sampling_time, trajectory_msgs::JointTrajectory& joint_trajectory)
 {
   std::unique_ptr<KDL::Path> cart_path(setPathCIRC(plan_info));
@@ -210,9 +205,9 @@ void TrajectoryGeneratorCIRC::plan(const planning_scene::PlanningSceneConstPtr& 
   moveit_msgs::MoveItErrorCodes error_code;
   // sample the Cartesian trajectory and compute joint trajectory using inverse
   // kinematics
-  if (!generateJointTrajectory(scene, planner_limits_.getJointLimitContainer(), cart_trajectory, plan_info.group_name,
-                               plan_info.link_name, plan_info.start_joint_position, sampling_time, joint_trajectory,
-                               error_code))
+  if (!generateJointTrajectory(robot_model_, planner_limits_.getJointLimitContainer(), cart_trajectory,
+                               plan_info.group_name, plan_info.link_name, plan_info.start_joint_position, sampling_time,
+                               joint_trajectory, error_code))
   {
     throw CircTrajectoryConversionFailure("Failed to generate valid joint trajectory from the Cartesian path",
                                           error_code.val);
@@ -224,11 +219,11 @@ std::unique_ptr<KDL::Path> TrajectoryGeneratorCIRC::setPathCIRC(const MotionPlan
   ROS_DEBUG("Set Cartesian path for CIRC command.");
 
   KDL::Frame start_pose, goal_pose;
-  tf2::fromMsg(tf2::toMsg(info.start_pose), start_pose);
-  tf2::fromMsg(tf2::toMsg(info.goal_pose), goal_pose);
+  tf::transformEigenToKDL(info.start_pose, start_pose);
+  tf::transformEigenToKDL(info.goal_pose, goal_pose);
 
-  const auto& eigen_path_point = info.circ_path_point.second;
-  const KDL::Vector path_point{ eigen_path_point.x(), eigen_path_point.y(), eigen_path_point.z() };
+  KDL::Vector path_point;
+  tf::vectorEigenToKDL(info.circ_path_point.second, path_point);
 
   // pass the ratio of translational by rotational velocity as equivalent radius
   // to get a trajectory with rotational speed, if no (or very little)

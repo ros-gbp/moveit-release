@@ -34,7 +34,8 @@
 
 /* Author: Mrinal Kalakrishnan */
 
-#pragma once
+#ifndef CHOMP_PARAMETERS_H_
+#define CHOMP_PARAMETERS_H_
 
 #include <ros/ros.h>
 
@@ -91,7 +92,7 @@ public:
   double pseudo_inverse_ridge_factor_;  /// set the ridge factor if pseudo inverse is enabled
 
   double joint_update_limit_;   /// set the update limit for the robot joints
-  double min_clearance_;        /// the minimum distance that needs to be maintained to avoid obstacles
+  double min_clearence_;        /// the minimum distance that needs to be maintained to avoid obstacles
   double collision_threshold_;  /// the collision threshold cost that needs to be mainted to avoid collisions
   bool filter_mode_;
   // double random_jump_amount_;
@@ -106,3 +107,5 @@ public:
 };
 
 }  // namespace chomp
+
+#endif /* CHOMP_PARAMETERS_H_ */
