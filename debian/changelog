@@ -1,0 +1,24 @@
+ros-melodic-pilz-industrial-motion-planner (1.0.9-1bionic) bionic; urgency=high
+
+  * Use mailto:moveit-resources@master (#2951 <https://github.com/ros-planning/moveit/issues/2951>)
+    
+      * Simplify launch files to use the test_environment.launch files from mailto:moveit_resources@master
+      * Provide compatibility to the Noetic-style configuration of (multiple) planning pipelines
+        Only a single pipeline can be used at a time, specified via the ~default_planning_pipeline parameter.
+      * Rename launch argument execution_type -> fake_execution_type
+    
+  * Contributors: Michael Görner, Robert Haschke
+
+ -- Alexander Gutenkunst <a.gutenkunst@pilz.de>  Sat, 08 Jan 2022 23:00:00 -0000
+
+ros-melodic-pilz-industrial-motion-planner (1.0.8-1bionic) bionic; urgency=high
+
+  * Fix velocity limit error (#2610 <https://github.com/ros-planning/moveit/issues/2610>)
+  * Add missing dependency on joint_limits_interface (#2487 <https://github.com/ros-planning/moveit/issues/2487>)
+  * Use kinematics solver timeout if not specified otherwise (#2489 <https://github.com/ros-planning/moveit/issues/2489>)
+  * Add pilz_industrial_motion_planner to moveit_planners (#2507 <https://github.com/ros-planning/moveit/issues/2507>)
+  * Contributors: Christian Henkel, Christian Landgraf, Immanuel Martini, Michael Görner, Robert Haschke, Tyler Weaver
+
+ -- Alexander Gutenkunst <a.gutenkunst@pilz.de>  Sat, 22 May 2021 22:00:00 -0000
+
+
