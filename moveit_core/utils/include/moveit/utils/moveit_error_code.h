@@ -1,7 +1,7 @@
 /*********************************************************************
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2012, Willow Garage, Inc.
+ *  Copyright (c) 2021, PickNik Inc.
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -14,7 +14,7 @@
  *     copyright notice, this list of conditions and the following
  *     disclaimer in the documentation and/or other materials provided
  *     with the distribution.
- *   * Neither the name of Willow Garage nor the names of its
+ *   * Neither the name of the copyright holder nor the names of its
  *     contributors may be used to endorse or promote products derived
  *     from this software without specific prior written permission.
  *
@@ -32,54 +32,45 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-/* Author: Dave Coleman */
+#pragma once
 
-#ifndef MOVEIT_ROS_MOVEIT_SETUP_ASSISTANT_WIDGETS_NAVIGATION_WIDGET_
-#define MOVEIT_ROS_MOVEIT_SETUP_ASSISTANT_WIDGETS_NAVIGATION_WIDGET_
+#include <moveit_msgs/MoveItErrorCodes.h>
 
-#include <QListView>
-#include <QStyledItemDelegate>
-class QStandardItemModel;
-
-namespace moveit_setup_assistant
+namespace moveit
+{
+namespace core
 {
 /**
- * Widget for showing a left hand side list of navigation items
- *
- * @param parent
- *
- * @return
+ * @brief a wrapper around moveit_msgs::MoveItErrorCodes to make it easier to return an error code message from a function
  */
-class NavigationWidget : public QListView
+class MoveItErrorCode : public moveit_msgs::MoveItErrorCodes
 {
-  Q_OBJECT
 public:
-  explicit NavigationWidget(QWidget* parent = nullptr);
-
-  void setNavs(const QList<QString>& navs);
-  void setEnabled(const int& index, bool enabled);
-  void setSelected(const int& index);
-
-private:
-  QStandardItemModel* model_;
+  MoveItErrorCode()
+  {
+    val = 0;
+  }
+  MoveItErrorCode(int code)
+  {
+    val = code;
+  }
+  MoveItErrorCode(const moveit_msgs::MoveItErrorCodes& code)
+  {
+    val = code.val;
+  }
+  explicit operator bool() const
+  {
+    return val == moveit_msgs::MoveItErrorCodes::SUCCESS;
+  }
+  bool operator==(const int c) const
+  {
+    return val == c;
+  }
+  bool operator!=(const int c) const
+  {
+    return val != c;
+  }
 };
 
-/**
- * Class for drawing the style of the navigation box
- *
- * @param parent
- *
- * @return
- */
-class NavDelegate : public QStyledItemDelegate
-{
-  Q_OBJECT
-public:
-  explicit NavDelegate(QObject* parnullptrnt = nullptr);
-
-  QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
-  void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
-};
-}  // namespace moveit_setup_assistant
-
-#endif
+}  // namespace core
+}  // namespace moveit
