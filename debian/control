@@ -1,0 +1,12 @@
+Source: ros-noetic-moveit-ros-benchmarks
+Section: misc
+Priority: optional
+Maintainer: Dave Coleman <dave@picknik.ai>
+Build-Depends: debhelper (>= 9.0.0), ros-noetic-catkin, ros-noetic-moveit-ros-planning, ros-noetic-moveit-ros-warehouse, ros-noetic-pluginlib (>= 1.11.2), ros-noetic-roscpp, ros-noetic-tf2-eigen
+Homepage: http://moveit.ros.org
+Standards-Version: 3.9.2
+
+Package: ros-noetic-moveit-ros-benchmarks
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-noetic-moveit-ros-planning, ros-noetic-moveit-ros-warehouse, ros-noetic-pluginlib (>= 1.11.2), ros-noetic-roscpp, ros-noetic-tf2-eigen
+Description: Enhanced tools for benchmarks in MoveIt
