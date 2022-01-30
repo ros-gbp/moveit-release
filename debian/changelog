@@ -1,0 +1,264 @@
+ros-noetic-moveit-plugins (1.1.8-1focal) focal; urgency=high
+
+
+
+ -- Michael Görner <me@v4hn.de>  Sat, 29 Jan 2022 23:00:00 -0000
+
+ros-noetic-moveit-plugins (1.1.7-1focal) focal; urgency=high
+
+
+
+ -- Michael Görner <me@v4hn.de>  Thu, 30 Dec 2021 23:00:00 -0000
+
+ros-noetic-moveit-plugins (1.1.6-1focal) focal; urgency=high
+
+
+
+ -- Michael Görner <me@v4hn.de>  Fri, 05 Nov 2021 23:00:00 -0000
+
+ros-noetic-moveit-plugins (1.1.5-1focal) focal; urgency=high
+
+
+
+ -- Michael Görner <me@v4hn.de>  Sat, 22 May 2021 22:00:00 -0000
+
+ros-noetic-moveit-plugins (1.1.4-1focal) focal; urgency=high
+
+
+
+ -- Michael Görner <me@v4hn.de>  Tue, 11 May 2021 22:00:00 -0000
+
+ros-noetic-moveit-plugins (1.1.3-1focal) focal; urgency=high
+
+
+
+ -- Michael Görner <me@v4hn.de>  Wed, 28 Apr 2021 22:00:00 -0000
+
+ros-noetic-moveit-plugins (1.1.2-1focal) focal; urgency=high
+
+
+
+ -- Michael Görner <me@v4hn.de>  Wed, 07 Apr 2021 22:00:00 -0000
+
+ros-noetic-moveit-plugins (1.1.1-1focal) focal; urgency=high
+
+
+
+ -- Michael Görner <me@v4hn.de>  Mon, 12 Oct 2020 22:00:00 -0000
+
+ros-noetic-moveit-plugins (1.1.0-1focal) focal; urgency=high
+
+  * [feature] Use standard cmake text for metapackages (#1620 <https://github.com/ros-planning/moveit/issues/1620>)
+  * [feature] Use CMAKE_CXX_STANDARD to enforce c++14 for portability (#1607 <https://github.com/ros-planning/moveit/issues/1607>)
+  * [maint] Remove ! from MoveIt name (#1590 <https://github.com/ros-planning/moveit/issues/1590>)
+  * Contributors: Dave Coleman, Jonathan Binney, Robert Haschke, Sean Yen, Tyler Weaver
+
+ -- Michael Görner <me@v4hn.de>  Thu, 03 Sep 2020 22:00:00 -0000
+
+ros-noetic-moveit-plugins (1.0.6-1focal) focal; urgency=high
+
+
+
+ -- Michael Görner <me@v4hn.de>  Tue, 18 Aug 2020 22:00:00 -0000
+
+ros-noetic-moveit-plugins (1.0.5-1focal) focal; urgency=high
+
+
+
+ -- Michael Görner <me@v4hn.de>  Tue, 07 Jul 2020 22:00:00 -0000
+
+ros-noetic-moveit-plugins (1.0.4-1focal) focal; urgency=high
+
+
+
+ -- Michael Görner <me@v4hn.de>  Fri, 29 May 2020 22:00:00 -0000
+
+ros-noetic-moveit-plugins (1.0.3-1focal) focal; urgency=high
+
+
+
+ -- Michael Görner <me@v4hn.de>  Sat, 25 Apr 2020 22:00:00 -0000
+
+ros-noetic-moveit-plugins (1.0.2-1focal) focal; urgency=high
+
+
+
+ -- Michael Görner <me@v4hn.de>  Thu, 27 Jun 2019 22:00:00 -0000
+
+ros-noetic-moveit-plugins (1.0.1-1focal) focal; urgency=high
+
+
+
+ -- Michael Görner <me@v4hn.de>  Thu, 07 Mar 2019 23:00:00 -0000
+
+ros-noetic-moveit-plugins (1.0.0-1focal) focal; urgency=high
+
+  * [fix] catkin_lint issues (#1341 <https://github.com/ros-planning/moveit/issues/1341>)
+  * Contributors: Robert Haschke
+
+ -- Michael Görner <me@v4hn.de>  Sat, 23 Feb 2019 23:00:00 -0000
+
+ros-noetic-moveit-plugins (0.10.8-1focal) focal; urgency=high
+
+
+
+ -- Michael Görner <me@v4hn.de>  Sun, 23 Dec 2018 23:00:00 -0000
+
+ros-noetic-moveit-plugins (0.10.7-1focal) focal; urgency=high
+
+
+
+ -- Michael Görner <me@v4hn.de>  Wed, 12 Dec 2018 23:00:00 -0000
+
+ros-noetic-moveit-plugins (0.10.6-1focal) focal; urgency=high
+
+
+
+ -- Michael Görner <me@v4hn.de>  Sat, 08 Dec 2018 23:00:00 -0000
+
+ros-noetic-moveit-plugins (0.10.5-1focal) focal; urgency=high
+
+
+
+ -- Michael Görner <me@v4hn.de>  Wed, 31 Oct 2018 23:00:00 -0000
+
+ros-noetic-moveit-plugins (0.10.4-1focal) focal; urgency=high
+
+
+
+ -- Michael Görner <me@v4hn.de>  Sun, 28 Oct 2018 23:00:00 -0000
+
+ros-noetic-moveit-plugins (0.10.3-1focal) focal; urgency=high
+
+
+
+ -- Michael Görner <me@v4hn.de>  Sun, 28 Oct 2018 23:00:00 -0000
+
+ros-noetic-moveit-plugins (0.10.2-1focal) focal; urgency=high
+
+
+
+ -- Michael Görner <me@v4hn.de>  Tue, 23 Oct 2018 22:00:00 -0000
+
+ros-noetic-moveit-plugins (0.10.1-1focal) focal; urgency=high
+
+
+
+ -- Michael Görner <me@v4hn.de>  Thu, 24 May 2018 22:00:00 -0000
+
+ros-noetic-moveit-plugins (0.9.11-1focal) focal; urgency=high
+
+
+
+ -- Michael Görner <me@v4hn.de>  Sun, 24 Dec 2017 23:00:00 -0000
+
+ros-noetic-moveit-plugins (0.9.10-1focal) focal; urgency=high
+
+
+
+ -- Michael Görner <me@v4hn.de>  Fri, 08 Dec 2017 23:00:00 -0000
+
+ros-noetic-moveit-plugins (0.9.9-1focal) focal; urgency=high
+
+
+
+ -- Michael Görner <me@v4hn.de>  Sat, 05 Aug 2017 22:00:00 -0000
+
+ros-noetic-moveit-plugins (0.9.8-1focal) focal; urgency=high
+
+
+
+ -- Michael Görner <me@v4hn.de>  Tue, 20 Jun 2017 22:00:00 -0000
+
+ros-noetic-moveit-plugins (0.9.7-1focal) focal; urgency=high
+
+
+
+ -- Michael Görner <me@v4hn.de>  Sun, 04 Jun 2017 22:00:00 -0000
+
+ros-noetic-moveit-plugins (0.9.6-1focal) focal; urgency=high
+
+
+
+ -- Michael Görner <me@v4hn.de>  Tue, 11 Apr 2017 22:00:00 -0000
+
+ros-noetic-moveit-plugins (0.9.5-1focal) focal; urgency=high
+
+
+
+ -- Michael Görner <me@v4hn.de>  Tue, 07 Mar 2017 23:00:00 -0000
+
+ros-noetic-moveit-plugins (0.9.4-1focal) focal; urgency=high
+
+
+
+ -- Michael Görner <me@v4hn.de>  Sun, 05 Feb 2017 23:00:00 -0000
+
+ros-noetic-moveit-plugins (0.9.3-1focal) focal; urgency=high
+
+
+
+ -- Michael Görner <me@v4hn.de>  Tue, 15 Nov 2016 23:00:00 -0000
+
+ros-noetic-moveit-plugins (0.5.7-1focal) focal; urgency=high
+
+  * added moveit_ros_control_interface to meta-package
+  * Contributors: Mathias Lüdtke
+
+ -- Michael Görner <me@v4hn.de>  Fri, 29 Jan 2016 23:00:00 -0000
+
+ros-noetic-moveit-plugins (0.5.6-1focal) focal; urgency=high
+
+
+
+ -- Michael Görner <me@v4hn.de>  Sat, 22 Mar 2014 23:00:00 -0000
+
+ros-noetic-moveit-plugins (0.5.5-1focal) focal; urgency=high
+
+
+
+ -- Michael Görner <me@v4hn.de>  Sun, 29 Sep 2013 22:00:00 -0000
+
+ros-noetic-moveit-plugins (0.5.4-1focal) focal; urgency=high
+
+
+
+ -- Michael Görner <me@v4hn.de>  Mon, 23 Sep 2013 22:00:00 -0000
+
+ros-noetic-moveit-plugins (0.5.3-1focal) focal; urgency=high
+
+  * add fake controller plugin
+
+ -- Michael Görner <me@v4hn.de>  Sun, 22 Sep 2013 22:00:00 -0000
+
+ros-noetic-moveit-plugins (0.5.1-1focal) focal; urgency=high
+
+
+
+ -- Michael Görner <me@v4hn.de>  Mon, 29 Jul 2013 22:00:00 -0000
+
+ros-noetic-moveit-plugins (0.5.0-1focal) focal; urgency=high
+
+
+
+ -- Michael Görner <me@v4hn.de>  Mon, 15 Jul 2013 22:00:00 -0000
+
+ros-noetic-moveit-plugins (0.4.1-1focal) focal; urgency=high
+
+  * minor updates to package.xml
+
+ -- Michael Görner <me@v4hn.de>  Tue, 02 Jul 2013 22:00:00 -0000
+
+ros-noetic-moveit-plugins (0.4.0-1focal) focal; urgency=high
+
+  * debs look good, bump to 0.4.0
+
+ -- Michael Görner <me@v4hn.de>  Wed, 05 Jun 2013 22:00:00 -0000
+
+ros-noetic-moveit-plugins (0.1.0-1focal) focal; urgency=high
+
+  * add metapackage, clean up build in controller manager
+
+ -- Michael Görner <me@v4hn.de>  Tue, 04 Jun 2013 22:00:00 -0000
+
+
