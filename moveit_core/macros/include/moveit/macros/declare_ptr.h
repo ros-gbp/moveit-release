@@ -32,8 +32,7 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-#ifndef MOVEIT_MACROS_DECLARE_PTR_
-#define MOVEIT_MACROS_DECLARE_PTR_
+#pragma once
 
 #include <memory>
 
@@ -58,7 +57,7 @@
   typedef std::weak_ptr<Type> Name##WeakPtr;                                                                           \
   typedef std::weak_ptr<const Type> Name##ConstWeakPtr;                                                                \
   typedef std::unique_ptr<Type> Name##UniquePtr;                                                                       \
-  typedef std::unique_ptr<const Type> Name##ConstUniquePtr;
+  typedef std::unique_ptr<const Type> Name##ConstUniquePtr
 
 /**
  * \def MOVEIT_DELCARE_PTR_MEMBER
@@ -74,6 +73,4 @@
   typedef std::weak_ptr<Type> WeakPtr;                                                                                 \
   typedef std::weak_ptr<const Type> ConstWeakPtr;                                                                      \
   typedef std::unique_ptr<Type> UniquePtr;                                                                             \
-  typedef std::unique_ptr<const Type> ConstUniquePtr;
-
-#endif
+  typedef std::unique_ptr<const Type> ConstUniquePtr

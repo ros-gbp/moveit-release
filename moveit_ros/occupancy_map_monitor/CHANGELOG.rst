@@ -2,19 +2,55 @@
 Changelog for package moveit_ros_occupancy_map_monitor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1.0.9 (2022-01-09)
+1.1.8 (2022-01-30)
 ------------------
 
-1.0.8 (2021-05-23)
+1.1.7 (2021-12-31)
+------------------
+* Switch to ``std::bind`` (`#2967 <https://github.com/ros-planning/moveit/issues/2967>`_)
+* Contributors: Jochen Sprickerhof
+
+1.1.6 (2021-11-06)
+------------------
+* Use newly introduced cmake macro ``moveit_build_options()`` from ``moveit_core``
+* Prefer ``std::make_shared`` over ``new`` operator (`#2756 <https://github.com/ros-planning/moveit/issues/2756>`_)
+* Add missing ``OCTOMAP_INCLUDE_DIRS`` (`#2671 <https://github.com/ros-planning/moveit/issues/2671>`_)
+* Move ``OccMapTree`` to ``moveit_core/collision_detection`` (`#2684 <https://github.com/ros-planning/moveit/issues/2684>`_)
+* Contributors: 0Nel, Michael Görner, Robert Haschke, Simon Schmeisser, Tyler Weaver
+
+1.1.5 (2021-05-23)
+------------------
+* Revert "Lock the octomap/octree while collision checking (`#2683 <https://github.com/ros-planning/moveit/issues/2683>`_)
+* Contributors: Michael Görner
+
+1.1.4 (2021-05-12)
+------------------
+* Lock the octomap/octree while collision checking (`#2596 <https://github.com/ros-planning/moveit/issues/2596>`_)
+* Contributors: Simon Schmeisser
+
+1.1.3 (2021-04-29)
 ------------------
 * Document solution in ROS_ERROR on failed self-filtering (`#2627 <https://github.com/ros-planning/moveit/issues/2627>`_)
+* Contributors: Michael Görner
+
+1.1.2 (2021-04-08)
+------------------
 * It's not an error not to define a plugin (`#2521 <https://github.com/ros-planning/moveit/issues/2521>`_)
 * Contributors: Michael Görner
 
-1.0.7 (2020-11-20)
+1.1.1 (2020-10-13)
 ------------------
+* [fix] clang-tidy issues on Travis (`#2337 <https://github.com/ros-planning/moveit/issues/2337>`_)
+  * Replace typedefs with using declarations
+  * Move default destructor definitions to headers
+  * Silent spurious clang-tidy warning
+  * Move variable definitions to their usage location
+* [maint] Cleanup MSA includes (`#2351 <https://github.com/ros-planning/moveit/issues/2351>`_)
 * [maint] Add comment to MOVEIT_CLASS_FORWARD (`#2315 <https://github.com/ros-planning/moveit/issues/2315>`_)
-* Contributors: Felix von Drigalski
+* Contributors: Felix von Drigalski, Robert Haschke
+
+1.1.0 (2020-09-04)
+------------------
 
 1.0.6 (2020-08-19)
 ------------------

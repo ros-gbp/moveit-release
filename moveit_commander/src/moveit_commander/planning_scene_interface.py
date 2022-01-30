@@ -65,7 +65,6 @@ class PlanningSceneInterface(object):
     """
 
     def __init__(self, ns="", synchronous=False, service_timeout=5.0):
-        """ Create a planning scene interface; it uses both C++ wrapped methods and scene manipulation topics. """
         self._psi = _moveit_planning_scene_interface.PlanningSceneInterface(ns)
 
         self._pub_co = rospy.Publisher(

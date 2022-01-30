@@ -34,8 +34,7 @@
 
 /* Author: Mrinal Kalakrishnan, Acorn Pooley */
 
-#ifndef MOVEIT_DISTANCE_FIELD_VOXEL_GRID_
-#define MOVEIT_DISTANCE_FIELD_VOXEL_GRID_
+#pragma once
 
 #include <algorithm>
 #include <cmath>
@@ -442,7 +441,7 @@ inline double VoxelGrid<T>::getResolution() const
 }
 
 template <typename T>
-inline double VoxelGrid<T>::getResolution(Dimension dim) const
+inline double VoxelGrid<T>::getResolution(Dimension /*dim*/) const
 {
   return resolution_;
 }
@@ -462,12 +461,12 @@ inline int VoxelGrid<T>::getNumCells(Dimension dim) const
 template <typename T>
 inline const T& VoxelGrid<T>::operator()(double x, double y, double z) const
 {
-  int cellX = getCellFromLocation(DIM_X, x);
-  int cellY = getCellFromLocation(DIM_Y, y);
-  int cellZ = getCellFromLocation(DIM_Z, z);
-  if (!isCellValid(cellX, cellY, cellZ))
+  int cell_x = getCellFromLocation(DIM_X, x);
+  int cell_y = getCellFromLocation(DIM_Y, y);
+  int cell_z = getCellFromLocation(DIM_Z, z);
+  if (!isCellValid(cell_x, cell_y, cell_z))
     return default_object_;
-  return getCell(cellX, cellY, cellZ);
+  return getCell(cell_x, cell_y, cell_z);
 }
 
 template <typename T>
@@ -579,4 +578,3 @@ inline bool VoxelGrid<T>::worldToGrid(const Eigen::Vector3d& world, Eigen::Vecto
 }
 
 }  // namespace distance_field
-#endif

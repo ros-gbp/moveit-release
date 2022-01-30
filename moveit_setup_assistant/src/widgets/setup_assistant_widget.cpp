@@ -41,13 +41,11 @@
 
 // Qt
 #include <QApplication>
+#include <QCheckBox>
 #include <QCloseEvent>
 #include <QFont>
 #include <QHBoxLayout>
 #include <QLabel>
-#include <QPushButton>
-#include <QCheckBox>
-#include <QCloseEvent>
 #include <QMessageBox>
 #include <QPushButton>
 #include <QSplitter>
@@ -64,7 +62,7 @@
 namespace moveit_setup_assistant
 {
 // ******************************************************************************************
-// Outer User Interface for MoveIt! Configuration Assistant
+// Outer User Interface for MoveIt Configuration Assistant
 // ******************************************************************************************
 SetupAssistantWidget::SetupAssistantWidget(QWidget* parent, const boost::program_options::variables_map& args)
   : QWidget(parent)
@@ -72,8 +70,8 @@ SetupAssistantWidget::SetupAssistantWidget(QWidget* parent, const boost::program
   rviz_manager_ = nullptr;
   rviz_render_panel_ = nullptr;
 
-  // Create object to hold all MoveIt! configuration data
-  config_data_.reset(new MoveItConfigData());
+  // Create object to hold all MoveIt configuration data
+  config_data_ = std::make_shared<MoveItConfigData>();
 
   // Set debug mode flag if necessary
   if (args.count("debug"))
@@ -125,7 +123,7 @@ SetupAssistantWidget::SetupAssistantWidget(QWidget* parent, const boost::program
   nav_name_list_ << "Robot Poses";
   nav_name_list_ << "End Effectors";
   nav_name_list_ << "Passive Joints";
-  nav_name_list_ << "ROS Control";
+  nav_name_list_ << "Controllers";
   nav_name_list_ << "Simulation";
   nav_name_list_ << "3D Perception";
   nav_name_list_ << "Author Information";
@@ -159,7 +157,7 @@ SetupAssistantWidget::SetupAssistantWidget(QWidget* parent, const boost::program
   this->setLayout(layout);
 
   // Title
-  this->setWindowTitle("MoveIt! Setup Assistant");  // title of window
+  this->setWindowTitle("MoveIt Setup Assistant");  // title of window
 
   // Show screen before message
   QApplication::processEvents();
@@ -298,8 +296,8 @@ void SetupAssistantWidget::progressPastStartScreen()
           SLOT(highlightGroup(const std::string&)));
   connect(passive_joints_widget_, SIGNAL(unhighlightAll()), this, SLOT(unhighlightAll()));
 
-  // ROS Controllers
-  controllers_widget_ = new ROSControllersWidget(this, config_data_);
+  // Controllers
+  controllers_widget_ = new ControllersWidget(this, config_data_);
   main_content_->addWidget(controllers_widget_);
   connect(controllers_widget_, SIGNAL(isModal(bool)), this, SLOT(setModalMode(bool)));
   connect(controllers_widget_, SIGNAL(highlightLink(const std::string&, const QColor&)), this,
@@ -387,7 +385,7 @@ void SetupAssistantWidget::loadRviz()
   // Set the fixed and target frame
   rviz_manager_->setFixedFrame(QString::fromStdString(config_data_->getRobotModel()->getModelFrame()));
 
-  // Create the MoveIt! Rviz Plugin and attach to display
+  // Create the MoveIt Rviz Plugin and attach to display
   robot_state_display_ = new moveit_rviz_plugin::RobotStateDisplay();
   robot_state_display_->setName("Robot State");
 
@@ -432,7 +430,7 @@ void SetupAssistantWidget::loadRviz()
 // ******************************************************************************************
 void SetupAssistantWidget::highlightLink(const std::string& link_name, const QColor& color)
 {
-  const robot_model::LinkModel* lm = config_data_->getRobotModel()->getLinkModel(link_name);
+  const moveit::core::LinkModel* lm = config_data_->getRobotModel()->getLinkModel(link_name);
   if (!lm->getShapes().empty())  // skip links with no geometry
     robot_state_display_->setLinkColor(link_name, color);
 }
@@ -446,14 +444,13 @@ void SetupAssistantWidget::highlightGroup(const std::string& group_name)
   if (!config_data_->getRobotModel()->hasJointModelGroup(group_name))
     return;
 
-  const robot_model::JointModelGroup* joint_model_group = config_data_->getRobotModel()->getJointModelGroup(group_name);
+  const moveit::core::JointModelGroup* joint_model_group =
+      config_data_->getRobotModel()->getJointModelGroup(group_name);
   if (joint_model_group)
   {
-    const std::vector<const robot_model::LinkModel*>& link_models = joint_model_group->getLinkModels();
     // Iterate through the links
-    for (std::vector<const robot_model::LinkModel*>::const_iterator link_it = link_models.begin();
-         link_it < link_models.end(); ++link_it)
-      highlightLink((*link_it)->getName(), QColor(255, 0, 0));
+    for (const moveit::core::LinkModel* lm : joint_model_group->getLinkModels())
+      highlightLink(lm->getName(), QColor(255, 0, 0));
   }
 }
 
@@ -478,12 +475,12 @@ void SetupAssistantWidget::unhighlightAll()
   }
 
   // Iterate through the links
-  for (std::vector<std::string>::const_iterator link_it = links.begin(); link_it < links.end(); ++link_it)
+  for (const std::string& link : links)
   {
-    if ((*link_it).empty())
+    if (link.empty())
       continue;
 
-    robot_state_display_->unsetLinkColor(*link_it);
+    robot_state_display_->unsetLinkColor(link);
   }
 }
 
@@ -496,7 +493,7 @@ void SetupAssistantWidget::closeEvent(QCloseEvent* event)
   if (!config_data_->debug_)
   {
     if (QMessageBox::question(this, "Exit Setup Assistant",
-                              QString("Are you sure you want to exit the MoveIt! Setup Assistant?"),
+                              QString("Are you sure you want to exit the MoveIt Setup Assistant?"),
                               QMessageBox::Ok | QMessageBox::Cancel) == QMessageBox::Cancel)
     {
       event->ignore();
@@ -511,7 +508,7 @@ void SetupAssistantWidget::closeEvent(QCloseEvent* event)
 // ******************************************************************************************
 // Qt Error Handling - TODO
 // ******************************************************************************************
-bool SetupAssistantWidget::notify(QObject* reciever, QEvent* event)
+bool SetupAssistantWidget::notify(QObject* /*receiver*/, QEvent* /*event*/)
 {
   QMessageBox::critical(this, "Error", "An error occurred and was caught by Qt notify event handler.", QMessageBox::Ok);
 

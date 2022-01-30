@@ -47,13 +47,9 @@ static void fit_cubic_spline(const int n, const double dt[], const double x[], d
 static void adjust_two_positions(const int n, const double dt[], double x[], double x1[], double x2[],
                                  const double x2_i, const double x2_f);
 static void init_times(const int n, double dt[], const double x[], const double max_velocity, const double min_velocity);
-static int fit_spline_and_adjust_times(const int n, double dt[], const double x[], double x1[], double x2[],
-                                       const double max_velocity, const double min_velocity,
-                                       const double max_acceleration, const double min_acceleration,
-                                       const double tfactor);
-static double global_adjustment_factor(const int n, double dt[], const double x[], double x1[], double x2[],
-                                       const double max_velocity, const double min_velocity,
-                                       const double max_acceleration, const double min_acceleration);
+static double global_adjustment_factor(const int n, double x1[], double x2[], const double max_velocity,
+                                       const double min_velocity, const double max_acceleration,
+                                       const double min_acceleration);
 
 // The path of a single joint: positions, velocities, and accelerations
 struct SingleJointTrajectory
@@ -83,14 +79,14 @@ bool IterativeSplineParameterization::computeTimeStamps(robot_trajectory::RobotT
   if (trajectory.empty())
     return true;
 
-  const robot_model::JointModelGroup* group = trajectory.getGroup();
+  const moveit::core::JointModelGroup* group = trajectory.getGroup();
   if (!group)
   {
     ROS_ERROR_NAMED("trajectory_processing.iterative_spline_parameterization", "It looks like the planner did not set "
                                                                                "the group the plan was computed for");
     return false;
   }
-  const robot_model::RobotModel& rmodel = group->getParentModel();
+  const moveit::core::RobotModel& rmodel = group->getParentModel();
   const std::vector<int>& idx = group->getVariableIndexList();
   const std::vector<std::string>& vars = group->getVariableNames();
   double velocity_scaling_factor = 1.0;
@@ -130,8 +126,8 @@ bool IterativeSplineParameterization::computeTimeStamps(robot_trajectory::RobotT
     // (required to force acceleration to specified values at endpoints)
     if (trajectory.getWayPointCount() >= 2)
     {
-      robot_state::RobotState point = trajectory.getWayPoint(1);
-      robot_state::RobotStatePtr p0, p1;
+      moveit::core::RobotState point = trajectory.getWayPoint(1);
+      moveit::core::RobotStatePtr p0, p1;
 
       // 2nd point is 90% of p0, and 10% of p1
       p0 = trajectory.getWayPointPtr(0);
@@ -193,7 +189,7 @@ bool IterativeSplineParameterization::computeTimeStamps(robot_trajectory::RobotT
     t2[j].accelerations_[num_points - 1] = t2[j].final_acceleration_;
 
     // Set bounds based on model, or default limits
-    const robot_model::VariableBounds& bounds = rmodel.getVariableBounds(vars[j]);
+    const moveit::core::VariableBounds& bounds = rmodel.getVariableBounds(vars[j]);
     t2[j].max_velocity_ = VLIMIT;
     t2[j].min_velocity_ = -VLIMIT;
     if (bounds.velocity_bounded_)
@@ -475,6 +471,7 @@ static void init_times(const int n, double dt[], const double x[], const double 
   }
 }
 
+#if 0  // unused function
 /*
   Fit a spline, then check each interval to see if bounds are met.
   If all bounds met (no time adjustments made), return 0.
@@ -532,19 +529,18 @@ static int fit_spline_and_adjust_times(const int n, double dt[], const double x[
 
   return ret;
 }
+#endif
 
 // return global expansion multiplicative factor required
 // to force within bounds.
 // Assumes that the spline is already fit
 // (fit_cubic_spline must have been called before this).
-static double global_adjustment_factor(const int n, double dt[], const double x[], double x1[], double x2[],
-                                       const double max_velocity, const double min_velocity,
-                                       const double max_acceleration, const double min_acceleration)
+static double global_adjustment_factor(const int n, double x1[], double x2[], const double max_velocity,
+                                       const double min_velocity, const double max_acceleration,
+                                       const double min_acceleration)
 {
   int i;
   double tfactor2 = 1.00;
-
-  // fit_cubic_spline(n, dt, x, x1, x2);
 
   for (i = 0; i < n; i++)
   {
@@ -581,9 +577,8 @@ void globalAdjustment(std::vector<SingleJointTrajectory>& t2, int num_joints, co
   for (int j = 0; j < num_joints; j++)
   {
     double tfactor;
-    tfactor = global_adjustment_factor(num_points, &time_diff[0], &t2[j].positions_[0], &t2[j].velocities_[0],
-                                       &t2[j].accelerations_[0], t2[j].max_velocity_, t2[j].min_velocity_,
-                                       t2[j].max_acceleration_, t2[j].min_acceleration_);
+    tfactor = global_adjustment_factor(num_points, &t2[j].velocities_[0], &t2[j].accelerations_[0], t2[j].max_velocity_,
+                                       t2[j].min_velocity_, t2[j].max_acceleration_, t2[j].min_acceleration_);
     if (tfactor > gtfactor)
       gtfactor = tfactor;
   }

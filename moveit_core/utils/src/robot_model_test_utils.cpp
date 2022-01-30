@@ -14,7 +14,7 @@
  *     copyright notice, this list of conditions and the following
  *     disclaimer in the documentation and/or other materials provided
  *     with the distribution.
- *   * Neither the name of MoveIt! nor the names of its
+ *   * Neither the name of MoveIt nor the names of its
  *     contributors may be used to endorse or promote products derived
  *     from this software without specific prior written permission.
  *
@@ -385,7 +385,7 @@ moveit::core::RobotModelPtr RobotModelBuilder::build()
     return robot_model;
   }
   srdf_writer_->updateSRDFModel(*urdf_model_);
-  robot_model.reset(new moveit::core::RobotModel(urdf_model_, srdf_writer_->srdf_model_));
+  robot_model = std::make_shared<moveit::core::RobotModel>(urdf_model_, srdf_writer_->srdf_model_);
   return robot_model;
 }
 }  // namespace core

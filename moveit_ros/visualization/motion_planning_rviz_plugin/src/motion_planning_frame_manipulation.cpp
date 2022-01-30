@@ -55,15 +55,14 @@ void MotionPlanningFrame::detectObjectsButtonClicked()
     const planning_scene_monitor::LockedPlanningSceneRO& ps = planning_display_->getPlanningSceneRO();
     if (ps)
     {
-      semantic_world_.reset(new moveit::semantic_world::SemanticWorld(ps));
+      semantic_world_ = std::make_shared<moveit::semantic_world::SemanticWorld>(ps);
     }
     if (semantic_world_)
     {
-      semantic_world_->addTableCallback(boost::bind(&MotionPlanningFrame::updateTables, this));
+      semantic_world_->addTableCallback(std::bind(&MotionPlanningFrame::updateTables, this));
     }
   }
-  planning_display_->addBackgroundJob(boost::bind(&MotionPlanningFrame::triggerObjectDetection, this),
-                                      "detect objects");
+  planning_display_->addBackgroundJob(std::bind(&MotionPlanningFrame::triggerObjectDetection, this), "detect objects");
 }
 
 void MotionPlanningFrame::processDetectedObjects()
@@ -89,14 +88,11 @@ void MotionPlanningFrame::processDetectedObjects()
       object_ids.clear();
       for (const auto& object : *world)
       {
-        if (!object.second->shape_poses_.empty())
+        const auto& position = object.second->pose_.translation();
+        if (position.x() >= min_x && position.x() <= max_x && position.y() >= min_y && position.y() <= max_y &&
+            position.z() >= min_z && position.z() <= max_z)
         {
-          const auto& position = object.second->shape_poses_[0].translation();
-          if (position.x() >= min_x && position.x() <= max_x && position.y() >= min_y && position.y() <= max_y &&
-              position.z() >= min_z && position.z() <= max_z)
-          {
-            object_ids.push_back(object.first);
-          }
+          object_ids.push_back(object.first);
         }
       }
       if (!object_ids.empty())
@@ -133,7 +129,7 @@ void MotionPlanningFrame::selectedDetectedObjectChanged()
   }
 }
 
-void MotionPlanningFrame::detectedObjectChanged(QListWidgetItem* item)
+void MotionPlanningFrame::detectedObjectChanged(QListWidgetItem* /*item*/)
 {
 }
 
@@ -141,12 +137,12 @@ void MotionPlanningFrame::triggerObjectDetection()
 {
   if (!object_recognition_client_)
   {
-    object_recognition_client_.reset(
-        new actionlib::SimpleActionClient<object_recognition_msgs::ObjectRecognitionAction>(OBJECT_RECOGNITION_ACTION,
-                                                                                            false));
+    object_recognition_client_ =
+        std::make_unique<actionlib::SimpleActionClient<object_recognition_msgs::ObjectRecognitionAction>>(
+            OBJECT_RECOGNITION_ACTION, false);
     try
     {
-      waitForAction(object_recognition_client_, nh_, ros::Duration(3.0), OBJECT_RECOGNITION_ACTION);
+      waitForAction(object_recognition_client_, ros::Duration(3.0), OBJECT_RECOGNITION_ACTION);
     }
     catch (std::exception& ex)
     {
@@ -167,10 +163,10 @@ void MotionPlanningFrame::triggerObjectDetection()
   }
 }
 
-void MotionPlanningFrame::listenDetectedObjects(const object_recognition_msgs::RecognizedObjectArrayPtr& msg)
+void MotionPlanningFrame::listenDetectedObjects(const object_recognition_msgs::RecognizedObjectArrayPtr& /*msg*/)
 {
   ros::Duration(1.0).sleep();
-  planning_display_->addMainLoopJob(boost::bind(&MotionPlanningFrame::processDetectedObjects, this));
+  planning_display_->addMainLoopJob(std::bind(&MotionPlanningFrame::processDetectedObjects, this));
 }
 
 void MotionPlanningFrame::updateDetectedObjectsList(const std::vector<std::string>& object_ids)
@@ -200,13 +196,13 @@ void MotionPlanningFrame::updateDetectedObjectsList(const std::vector<std::strin
 void MotionPlanningFrame::updateTables()
 {
   ROS_DEBUG("Update table callback");
-  planning_display_->addBackgroundJob(boost::bind(&MotionPlanningFrame::publishTables, this), "publish tables");
+  planning_display_->addBackgroundJob(std::bind(&MotionPlanningFrame::publishTables, this), "publish tables");
 }
 
 void MotionPlanningFrame::publishTables()
 {
   semantic_world_->addTablesToCollisionWorld();
-  planning_display_->addMainLoopJob(boost::bind(&MotionPlanningFrame::updateSupportSurfacesList, this));
+  planning_display_->addMainLoopJob(std::bind(&MotionPlanningFrame::updateSupportSurfacesList, this));
 }
 
 void MotionPlanningFrame::selectedSupportSurfaceChanged()
@@ -287,8 +283,7 @@ void MotionPlanningFrame::pickObjectButtonClicked()
       const planning_scene_monitor::LockedPlanningSceneRO& ps = planning_display_->getPlanningSceneRO();
       if (ps->getWorld()->hasObject(pick_object_name_[group_name]))
       {
-        geometry_msgs::Pose object_pose(
-            tf2::toMsg(ps->getWorld()->find(pick_object_name_[group_name])->second->shape_poses_[0]));
+        geometry_msgs::Pose object_pose(tf2::toMsg(ps->getWorld()->getTransform(pick_object_name_[group_name])));
         ROS_DEBUG_STREAM("Finding current table for object: " << pick_object_name_[group_name]);
         support_surface_name_ = semantic_world_->findObjectTable(object_pose);
       }
@@ -300,7 +295,7 @@ void MotionPlanningFrame::pickObjectButtonClicked()
   }
   ROS_INFO("Trying to pick up object %s from support surface %s", pick_object_name_[group_name].c_str(),
            support_surface_name_.c_str());
-  planning_display_->addBackgroundJob(boost::bind(&MotionPlanningFrame::pickObject, this), "pick");
+  planning_display_->addBackgroundJob(std::bind(&MotionPlanningFrame::pickObject, this), "pick");
 }
 
 void MotionPlanningFrame::placeObjectButtonClicked()
@@ -320,14 +315,14 @@ void MotionPlanningFrame::placeObjectButtonClicked()
   ui_->pick_button->setEnabled(false);
   ui_->place_button->setEnabled(false);
 
-  std::vector<const robot_state::AttachedBody*> attached_bodies;
+  std::vector<const moveit::core::AttachedBody*> attached_bodies;
   const planning_scene_monitor::LockedPlanningSceneRO& ps = planning_display_->getPlanningSceneRO();
   if (!ps)
   {
     ROS_ERROR("No planning scene");
     return;
   }
-  const robot_model::JointModelGroup* jmg = ps->getCurrentState().getJointModelGroup(group_name);
+  const moveit::core::JointModelGroup* jmg = ps->getCurrentState().getJointModelGroup(group_name);
   if (jmg)
     ps->getCurrentState().getAttachedBodies(attached_bodies, jmg);
 
@@ -346,7 +341,7 @@ void MotionPlanningFrame::placeObjectButtonClicked()
                                                      upright_orientation, 0.1);
   planning_display_->visualizePlaceLocations(place_poses_);
   place_object_name_ = attached_bodies[0]->getName();
-  planning_display_->addBackgroundJob(boost::bind(&MotionPlanningFrame::placeObject, this), "place");
+  planning_display_->addBackgroundJob(std::bind(&MotionPlanningFrame::placeObject, this), "place");
 }
 
 void MotionPlanningFrame::pickObject()

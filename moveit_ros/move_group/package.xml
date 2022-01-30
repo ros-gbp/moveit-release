@@ -1,13 +1,13 @@
 <package format="2">
   <name>moveit_ros_move_group</name>
-  <version>1.0.9</version>
+  <version>1.1.8</version>
   <description>The move_group node for MoveIt</description>
   <author email="isucan@google.com">Ioan Sucan</author>
   <author email="robot.moveit@gmail.com">Sachin Chitta</author>
 
   <maintainer email="mferguson@fetchrobotics.com">Michael Ferguson</maintainer>
   <maintainer email="me@v4hn.de">Michael Görner</maintainer>
-  <maintainer email="moveit_releasers@googlegroups.com">MoveIt! Release Team</maintainer>
+  <maintainer email="moveit_releasers@googlegroups.com">MoveIt Release Team</maintainer>
 
   <license>BSD</license>
 

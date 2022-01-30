@@ -35,8 +35,7 @@
 
 /* Author: Michael Ferguson, Ioan Sucan, E. Gil Jones */
 
-#ifndef MOVEIT_PLUGINS_GRIPPER_CONTROLLER_HANDLE
-#define MOVEIT_PLUGINS_GRIPPER_CONTROLLER_HANDLE
+#pragma once
 
 #include <moveit_simple_controller_manager/action_based_controller_handle.h>
 #include <control_msgs/GripperCommandAction.h>
@@ -52,10 +51,11 @@ class GripperControllerHandle : public ActionBasedControllerHandle<control_msgs:
 {
 public:
   /* Topics will map to name/ns/goal, name/ns/result, etc */
-  GripperControllerHandle(const std::string& name, const std::string& ns)
+  GripperControllerHandle(const std::string& name, const std::string& ns, const double max_effort = 0.0)
     : ActionBasedControllerHandle<control_msgs::GripperCommandAction>(name, ns)
     , allow_failure_(false)
     , parallel_jaw_gripper_(false)
+    , max_effort_(max_effort)
   {
   }
 
@@ -102,7 +102,7 @@ public:
 
     if (gripper_joint_indexes.empty())
     {
-      ROS_WARN_NAMED("GripperController", "No command_joint was specified for the MoveIt! controller gripper handle. \
+      ROS_WARN_NAMED("GripperController", "No command_joint was specified for the MoveIt controller gripper handle. \
                       Please see GripperControllerHandle::addCommandJoint() and \
                       GripperControllerHandle::setCommandJoint(). Assuming index 0.");
       gripper_joint_indexes.push_back(0);
@@ -111,17 +111,14 @@ public:
     // goal to be sent
     control_msgs::GripperCommandGoal goal;
     goal.command.position = 0.0;
-    goal.command.max_effort = 0.0;
 
     // send last point
     int tpoint = trajectory.joint_trajectory.points.size() - 1;
     ROS_DEBUG_NAMED("GripperController", "Sending command from trajectory point %d", tpoint);
 
     // fill in goal from last point
-    for (std::size_t i = 0; i < gripper_joint_indexes.size(); ++i)
+    for (std::size_t idx : gripper_joint_indexes)
     {
-      std::size_t idx = gripper_joint_indexes[i];
-
       if (trajectory.joint_trajectory.points[tpoint].positions.size() <= idx)
       {
         ROS_ERROR_NAMED("GripperController", "GripperController expects a joint trajectory with one \
@@ -133,13 +130,20 @@ public:
       goal.command.position += trajectory.joint_trajectory.points[tpoint].positions[idx];
 
       if (trajectory.joint_trajectory.points[tpoint].effort.size() > idx)
+      {
         goal.command.max_effort = trajectory.joint_trajectory.points[tpoint].effort[idx];
+      }
+      else
+      {
+        goal.command.max_effort = max_effort_;
+      }
     }
 
-    controller_action_client_->sendGoal(goal,
-                                        boost::bind(&GripperControllerHandle::controllerDoneCallback, this, _1, _2),
-                                        boost::bind(&GripperControllerHandle::controllerActiveCallback, this),
-                                        boost::bind(&GripperControllerHandle::controllerFeedbackCallback, this, _1));
+    controller_action_client_->sendGoal(
+        goal,
+        std::bind(&GripperControllerHandle::controllerDoneCallback, this, std::placeholders::_1, std::placeholders::_2),
+        std::bind(&GripperControllerHandle::controllerActiveCallback, this),
+        std::bind(&GripperControllerHandle::controllerFeedbackCallback, this, std::placeholders::_1));
 
     done_ = false;
     last_exec_ = moveit_controller_manager::ExecutionStatus::RUNNING;
@@ -171,7 +175,7 @@ public:
 
 private:
   void controllerDoneCallback(const actionlib::SimpleClientGoalState& state,
-                              const control_msgs::GripperCommandResultConstPtr& result)
+                              const control_msgs::GripperCommandResultConstPtr& /* result */)
   {
     if (state == actionlib::SimpleClientGoalState::ABORTED && allow_failure_)
       finishControllerExecution(actionlib::SimpleClientGoalState::SUCCEEDED);
@@ -184,7 +188,7 @@ private:
     ROS_DEBUG_STREAM_NAMED("GripperController", name_ << " started execution");
   }
 
-  void controllerFeedbackCallback(const control_msgs::GripperCommandFeedbackConstPtr& feedback)
+  void controllerFeedbackCallback(const control_msgs::GripperCommandFeedbackConstPtr& /* feedback */)
   {
   }
 
@@ -205,6 +209,12 @@ private:
   bool parallel_jaw_gripper_;
 
   /*
+   * The ``max_effort`` used in the GripperCommand message when no ``max_effort`` was
+   * specified in the requested trajectory. Defaults to ``0.0``.
+   */
+  double max_effort_;
+
+  /*
    * A GripperCommand message has only a single float64 for the
    * "command", thus only a single joint angle can be sent -- however,
    * due to the complexity of making grippers look correct in a URDF,
@@ -218,5 +228,3 @@ private:
 };
 
 }  // end namespace moveit_simple_controller_manager
-
-#endif  // MOVEIT_PLUGINS_GRIPPER_CONTROLLER_HANDLE

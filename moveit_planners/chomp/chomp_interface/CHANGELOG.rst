@@ -2,27 +2,65 @@
 Changelog for package chomp_interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1.0.9 (2022-01-09)
+1.1.8 (2022-01-30)
 ------------------
-* Use moveit-resources@master (`#2951 <https://github.com/ros-planning/moveit/issues/2951>`_)
+* MSA: Add STOMP + OMPL-CHOMP configs (`#2955 <https://github.com/ros-planning/moveit/issues/2955>`_)
 
-  - Simplify launch files to use the test_environment.launch files from moveit_resources@master
-  - Provide compatibility to the Noetic-style configuration of (multiple) planning pipelines
-    Only a single pipeline can be used at a time, specified via the ~default_planning_pipeline parameter.
+  - Add stomp planner to MSA
+  - Add OMPL-CHOMP planner to MSA
+  - Remove obsolete CHOMP parameters
+  - Update CHOMP config parameters to match code defaults
+  - Create CHOMP config via template (instead of code)
+* Contributors: Rick Staa
+
+1.1.7 (2021-12-31)
+------------------
 * Move ``MoveItErrorCode`` class to ``moveit_core`` (`#3009 <https://github.com/ros-planning/moveit/issues/3009>`_)
-* Contributors: Robert Haschke
+* Contributors: Jafar Abdi
 
-1.0.8 (2021-05-23)
+1.1.6 (2021-11-06)
 ------------------
+* Use test_environment.launch in unittests (`#2949 <https://github.com/ros-planning/moveit/issues/2949>`_)
+* Use newly introduced cmake macro ``moveit_build_options()`` from ``moveit_core``
+* clang-tidy: modernize-make-shared, modernize-make-unique (`#2762 <https://github.com/ros-planning/moveit/issues/2762>`_)
+* CHOMP: Rename param 'clearence' to 'clearance' (`#2702 <https://github.com/ros-planning/moveit/issues/2702>`_, `#2707 <https://github.com/ros-planning/moveit/issues/2707>`_)
+* Contributors: Martin Günther, Michael Görner, Robert Haschke, pvanlaar
+
+1.1.5 (2021-05-23)
+------------------
+
+1.1.4 (2021-05-12)
+------------------
+
+1.1.3 (2021-04-29)
+------------------
+
+1.1.2 (2021-04-08)
+------------------
+* Fix formatting errors
 * Sanitize CHOMP initialization method parameter (`#2540 <https://github.com/ros-planning/moveit/issues/2540>`_)
-* Contributors: Cong Liu
+* Contributors: Cong Liu, Tyler Weaver
 
-1.0.7 (2020-11-20)
+1.1.1 (2020-10-13)
 ------------------
-* [feature] Start new joint_state_publisher_gui on param use_gui (`#2257 <https://github.com/ros-planning/moveit/issues/2257>`_)
 * [maint] Add comment to MOVEIT_CLASS_FORWARD (`#2315 <https://github.com/ros-planning/moveit/issues/2315>`_)
-* [maint] Replace $(find xacro)/xacro -> xacro (`#2282 <https://github.com/ros-planning/moveit/issues/2282>`_)
-* Contributors: Felix von Drigalski, Robert Haschke, Yoan Mollard
+* Contributors: Felix von Drigalski
+
+1.1.0 (2020-09-04)
+------------------
+* [feature] Replace $(find xacro)/xacro -> xacro (`#2282 <https://github.com/ros-planning/moveit/issues/2282>`_)
+* [feature] Start new joint_state_publisher_gui on param use_gui (`#2257 <https://github.com/ros-planning/moveit/issues/2257>`_)
+* [feature] Optional cpp version setting (`#2166 <https://github.com/ros-planning/moveit/issues/2166>`_)
+* [feature] Change API of ChompPlanner::solve() to not use message
+* [fix] Various fixes for upcoming Noetic release (`#2180 <https://github.com/ros-planning/moveit/issues/2180>`_)
+* [fix] clang-tidy fixes (`#2050 <https://github.com/ros-planning/moveit/issues/2050>`_)
+* [fix] Fix compiler warnings (`#1773 <https://github.com/ros-planning/moveit/issues/1773>`_)
+* [fix] Small fixes to chomp planner (`#1407 <https://github.com/ros-planning/moveit/issues/1407>`_)
+* [maint] Replace namespaces robot_state and robot_model with moveit::core (`#1924 <https://github.com/ros-planning/moveit/issues/1924>`_)
+* [maint] Add Missing License (`#1779 <https://github.com/ros-planning/moveit/issues/1779>`_)
+* [maint] Switch from include guards to pragma once (`#1615 <https://github.com/ros-planning/moveit/issues/1615>`_)
+* [maint] Remove ! from MoveIt name (`#1590 <https://github.com/ros-planning/moveit/issues/1590>`_)
+* Contributors: Ayush Garg, Chittaranjan Srinivas Swaminathan, Dave Coleman, Jonathan Binney, Markus Vieth, Robert Haschke, Sean Yen, Tyler Weaver, Yoan Mollard
 
 1.0.6 (2020-08-19)
 ------------------
@@ -95,7 +133,7 @@ Changelog for package chomp_interface
 0.10.1 (2018-05-25)
 -------------------
 * [fix] dependencies for chomp interface test (`#778 <https://github.com/ros-planning/moveit/issues/778>`_)
-* [maintenance] MoveIt! tf2 migration (`#830 <https://github.com/ros-planning/moveit/issues/830>`_)
+* [maintenance] MoveIt tf2 migration (`#830 <https://github.com/ros-planning/moveit/issues/830>`_)
 * Contributors: Bence Magyar, Dave Coleman, Ian McMahon, Mikael Arguedas, Robert Haschke, Stephan, Will Baker
 
 0.9.11 (2017-12-25)

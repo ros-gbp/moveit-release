@@ -84,7 +84,7 @@ struct ThreadComputation
 };
 
 // LinkGraph defines a Link's model and a set of unique links it connects
-typedef std::map<const robot_model::LinkModel*, std::set<const robot_model::LinkModel*> > LinkGraph;
+typedef std::map<const moveit::core::LinkModel*, std::set<const moveit::core::LinkModel*> > LinkGraph;
 
 // ******************************************************************************************
 // Static Prototypes
@@ -106,14 +106,14 @@ static bool setLinkPair(const std::string& linkA, const std::string& linkB, cons
  * \param link The root link to begin a breadth first search on
  * \param link_graph A representation of all bi-direcitonal joint connections between links in robot_description
  */
-static void computeConnectionGraph(const robot_model::LinkModel* link, LinkGraph& link_graph);
+static void computeConnectionGraph(const moveit::core::LinkModel* link, LinkGraph& link_graph);
 
 /**
  * \brief Recursively build the adj list of link connections
  * \param link The root link to begin a breadth first search on
  * \param link_graph A representation of all bi-direcitonal joint connections between links in robot_description
  */
-static void computeConnectionGraphRec(const robot_model::LinkModel* link, LinkGraph& link_graph);
+static void computeConnectionGraphRec(const moveit::core::LinkModel* link, LinkGraph& link_graph);
 
 /**
  * \brief Disable collision checking for adjacent links, or adjacent with no geometry links between them
@@ -339,7 +339,7 @@ void computeLinkPairs(const planning_scene::PlanningScene& scene, LinkPairMap& l
 // ******************************************************************************************
 // Build the robot links connection graph and then check for links with no geomotry
 // ******************************************************************************************
-void computeConnectionGraph(const robot_model::LinkModel* start_link, LinkGraph& link_graph)
+void computeConnectionGraph(const moveit::core::LinkModel* start_link, LinkGraph& link_graph)
 {
   link_graph.clear();  // make sure the edges structure is clear
 
@@ -358,13 +358,12 @@ void computeConnectionGraph(const robot_model::LinkModel* start_link, LinkGraph&
       if (edge_it->first->getShapes().empty())  // link in adjList "link_graph" does not have shape, remove!
       {
         // Temporary list for connected links
-        std::vector<const robot_model::LinkModel*> temp_list;
+        std::vector<const moveit::core::LinkModel*> temp_list;
 
         // Copy link's parent and child links to temp_list
-        for (std::set<const robot_model::LinkModel*>::const_iterator adj_it = edge_it->second.begin();
-             adj_it != edge_it->second.end(); ++adj_it)
+        for (const moveit::core::LinkModel* adj_it : edge_it->second)
         {
-          temp_list.push_back(*adj_it);
+          temp_list.push_back(adj_it);
         }
 
         // Make all preceeding and succeeding links to the no-shape link fully connected
@@ -391,14 +390,14 @@ void computeConnectionGraph(const robot_model::LinkModel* start_link, LinkGraph&
 // ******************************************************************************************
 // Recursively build the adj list of link connections
 // ******************************************************************************************
-void computeConnectionGraphRec(const robot_model::LinkModel* start_link, LinkGraph& link_graph)
+void computeConnectionGraphRec(const moveit::core::LinkModel* start_link, LinkGraph& link_graph)
 {
   if (start_link)  // check that the link is a valid pointer
   {
     // Loop through every link attached to start_link
     for (std::size_t i = 0; i < start_link->getChildJointModels().size(); ++i)
     {
-      const robot_model::LinkModel* next = start_link->getChildJointModels()[i]->getChildLinkModel();
+      const moveit::core::LinkModel* next = start_link->getChildJointModels()[i]->getChildLinkModel();
 
       // Bi-directional connection
       link_graph[next].insert(start_link);
@@ -423,7 +422,7 @@ unsigned int disableAdjacentLinks(planning_scene::PlanningScene& scene, LinkGrap
   for (LinkGraph::const_iterator link_graph_it = link_graph.begin(); link_graph_it != link_graph.end(); ++link_graph_it)
   {
     // disable all connected links to current link by looping through them
-    for (std::set<const robot_model::LinkModel*>::const_iterator adj_it = link_graph_it->second.begin();
+    for (std::set<const moveit::core::LinkModel*>::const_iterator adj_it = link_graph_it->second.begin();
          adj_it != link_graph_it->second.end(); ++adj_it)
     {
       // ROS_INFO("Disabled %s to %s", link_graph_it->first->getName().c_str(), (*adj_it)->getName().c_str() );
@@ -565,7 +564,7 @@ unsigned int disableNeverInCollision(const unsigned int num_trials, planning_sce
   for (int i = 0; i < num_threads; ++i)
   {
     ThreadComputation tc(scene, req, i, num_trials / num_threads, &links_seen_colliding, &lock, progress);
-    bgroup.create_thread(boost::bind(&disableNeverInCollisionThread, tc));
+    bgroup.create_thread(std::bind(&disableNeverInCollisionThread, tc));
   }
 
   try
@@ -581,17 +580,17 @@ unsigned int disableNeverInCollision(const unsigned int num_trials, planning_sce
   }
 
   // Loop through every possible link pair and check if it has ever been seen in collision
-  for (LinkPairMap::iterator pair_it = link_pairs.begin(); pair_it != link_pairs.end(); ++pair_it)
+  for (std::pair<const std::pair<std::string, std::string>, LinkPairData>& link_pair : link_pairs)
   {
-    if (!pair_it->second.disable_check)  // is not disabled yet
+    if (!link_pair.second.disable_check)  // is not disabled yet
     {
       // Check if current pair has been seen colliding ever. If it has never been seen colliding, add it to disabled
       // list
-      if (links_seen_colliding.find(pair_it->first) == links_seen_colliding.end())
+      if (links_seen_colliding.find(link_pair.first) == links_seen_colliding.end())
       {
         // Add to disabled list using pair ordering
-        pair_it->second.reason = NEVER;
-        pair_it->second.disable_check = true;
+        link_pair.second.reason = NEVER;
+        link_pair.second.disable_check = true;
 
         // Count it
         ++num_disabled;
@@ -614,7 +613,7 @@ void disableNeverInCollisionThread(ThreadComputation tc)
   const unsigned int progress_interval = tc.num_trials_ / 20;  // show progress update every 5%
 
   // Create a new kinematic state for this thread to work on
-  robot_state::RobotState robot_state(tc.scene_.getRobotModel());
+  moveit::core::RobotState robot_state(tc.scene_.getRobotModel());
 
   // Do a large number of tests
   for (unsigned int i = 0; i < tc.num_trials_; ++i)

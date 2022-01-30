@@ -34,8 +34,7 @@
 
 /* Author: Dave Coleman */
 
-#ifndef MOVEIT_MOVEIT_SETUP_ASSISTANT_WIDGETS_START_SCREEN_WIDGET_
-#define MOVEIT_MOVEIT_SETUP_ASSISTANT_WIDGETS_START_SCREEN_WIDGET_
+#pragma once
 
 class QLabel;
 class QProgressBar;
@@ -56,7 +55,7 @@ class SelectModeWidget;
 class LoadPathArgsWidget;
 
 /**
- * \brief Start screen user interface for MoveIt! Configuration Assistant
+ * \brief Start screen user interface for MoveIt Configuration Assistant
  */
 class StartScreenWidget : public SetupScreenWidget
 {
@@ -68,7 +67,7 @@ public:
   // ******************************************************************************************
 
   /**
-   * \brief Start screen user interface for MoveIt! Configuration Assistant
+   * \brief Start screen user interface for MoveIt Configuration Assistant
    */
   StartScreenWidget(QWidget* parent, const MoveItConfigDataPtr& config_data);
 
@@ -147,7 +146,7 @@ private:
   bool loadURDFFile(const std::string& urdf_file_path, const std::string& xacro_args);
 
   /// Load SRDF File
-  bool loadSRDFFile(const std::string& srdf_file_path);
+  bool loadSRDFFile(const std::string& srdf_file_path, const std::string& xacro_args);
 
   /// Put SRDF File on Parameter Server
   bool setSRDFFile(const std::string& srdf_string);
@@ -187,5 +186,3 @@ public:
   QLabel* widget_instructions_;
 };
 }  // namespace moveit_setup_assistant
-
-#endif

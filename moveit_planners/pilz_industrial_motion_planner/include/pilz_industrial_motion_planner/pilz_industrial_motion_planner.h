@@ -116,7 +116,7 @@ public:
 
 private:
   /// Plugin loader
-  boost::scoped_ptr<pluginlib::ClassLoader<PlanningContextLoader>> planner_context_loader;
+  std::unique_ptr<pluginlib::ClassLoader<PlanningContextLoader>> planner_context_loader;
 
   /// Mapping from command to loader
   std::map<std::string, pilz_industrial_motion_planner::PlanningContextLoaderPtr> context_loader_map_;
@@ -134,6 +134,6 @@ private:
   pilz_industrial_motion_planner::CartesianLimit cartesian_limit_;
 };
 
-MOVEIT_CLASS_FORWARD(CommandPlanner)
+MOVEIT_CLASS_FORWARD(CommandPlanner);
 
 }  // namespace pilz_industrial_motion_planner

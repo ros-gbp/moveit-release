@@ -34,8 +34,7 @@
 
 /* Author: Dave Coleman */
 
-#ifndef MOVEIT_ROS_MOVEIT_SETUP_ASSISTANT_WIDGETS_SETUP_SCREEN_WIDGET_
-#define MOVEIT_ROS_MOVEIT_SETUP_ASSISTANT_WIDGETS_SETUP_SCREEN_WIDGET_
+#pragma once
 
 #include <QWidget>
 
@@ -67,7 +66,7 @@ Q_SIGNALS:
   void isModal(bool isModal);
 
   /// Event for telling rviz to highlight a link of the robot
-  void highlightLink(const std::string& name, const QColor&);
+  void highlightLink(const std::string& name, const QColor& /*_t2*/);
 
   /// Event for telling rviz to highlight a group of the robot
   void highlightGroup(const std::string& name);
@@ -75,5 +74,3 @@ Q_SIGNALS:
   /// Event for telling rviz to unhighlight all links of the robot
   void unhighlightAll();
 };
-
-#endif

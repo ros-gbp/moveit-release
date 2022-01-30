@@ -44,6 +44,7 @@ from moveit_msgs.msg import (
     MoveItErrorCodes,
     TrajectoryConstraints,
     PlannerInterfaceDescription,
+    MotionPlanRequest,
 )
 from sensor_msgs.msg import JointState
 import rospy
@@ -496,14 +497,14 @@ class MoveGroupCommander(object):
         self._g.clear_path_constraints()
 
     def get_trajectory_constraints(self):
-        """ Get the actual trajectory constraints in form of a moveit_msgs.msgs.Constraints """
-        c = Constraints()
+        """ Get the actual trajectory constraints in form of a moveit_msgs.msgs.TrajectoryConstraints """
+        c = TrajectoryConstraints()
         c_str = self._g.get_trajectory_constraints()
         conversions.msg_from_string(c, c_str)
         return c
 
     def set_trajectory_constraints(self, value):
-        """ Specify the trajectory constraints to be used """
+        """ Specify the trajectory constraints to be used (setting from database is not implemented yet)"""
         if value is None:
             self.clear_trajectory_constraints()
         else:
@@ -511,7 +512,7 @@ class MoveGroupCommander(object):
                 self._g.set_trajectory_constraints_from_msg(
                     conversions.msg_to_string(value)
                 )
-            elif not self._g.set_trajectory_constraints(value):
+            else:
                 raise MoveItCommanderException(
                     "Unable to set trajectory constraints " + value
                 )
@@ -532,12 +533,20 @@ class MoveGroupCommander(object):
         """ Specify the amount of time to be used for motion planning. """
         return self._g.get_planning_time()
 
+    def set_planning_pipeline_id(self, planning_pipeline):
+        """ Specify which planning pipeline to use when motion planning (e.g. ompl, pilz_industrial_motion_planner) """
+        self._g.set_planning_pipeline_id(planning_pipeline)
+
+    def get_planning_pipeline_id(self):
+        """ Get the current planning_pipeline_id (e.g. ompl, pilz_industrial_motion_planner) """
+        return self._g.get_planning_pipeline_id()
+
     def set_planner_id(self, planner_id):
-        """ Specify which planner to use when motion planning """
+        """ Specify which planner of the currently selected pipeline to use when motion planning (e.g. RRTConnect, LIN) """
         self._g.set_planner_id(planner_id)
 
     def get_planner_id(self):
-        """ Get the current planner_id """
+        """ Get the current planner_id (e.g. RRTConnect, LIN) of the currently selected pipeline """
         return self._g.get_planner_id()
 
     def set_num_planning_attempts(self, num_planning_attempts):
@@ -560,7 +569,8 @@ class MoveGroupCommander(object):
                     )
 
     def set_max_velocity_scaling_factor(self, value):
-        """ Set a scaling factor for optionally reducing the maximum joint velocity. Allowed values are in (0,1]. """
+        """Set a scaling factor to reduce the maximum joint velocities. Allowed values are in (0,1].
+        The default value is set in the joint_limits.yaml of the moveit_config package."""
         if value > 0 and value <= 1:
             self._g.set_max_velocity_scaling_factor(value)
         else:
@@ -569,7 +579,8 @@ class MoveGroupCommander(object):
             )
 
     def set_max_acceleration_scaling_factor(self, value):
-        """ Set a scaling factor for optionally reducing the maximum joint acceleration. Allowed values are in (0,1]. """
+        """Set a scaling factor to reduce the maximum joint accelerations. Allowed values are in (0,1].
+        The default value is set in the joint_limits.yaml of the moveit_config package."""
         if value > 0 and value <= 1:
             self._g.set_max_acceleration_scaling_factor(value)
         else:
@@ -589,10 +600,10 @@ class MoveGroupCommander(object):
         elif type(joints) is Pose:
             self.set_pose_target(joints)
 
-        elif not joints is None:
+        elif joints is not None:
             try:
                 self.set_joint_value_target(self.get_remembered_joint_values()[joints])
-            except:
+            except TypeError:
                 self.set_joint_value_target(joints)
         if wait:
             return self._g.move()
@@ -600,21 +611,37 @@ class MoveGroupCommander(object):
             return self._g.async_move()
 
     def plan(self, joints=None):
-        """ Return a motion plan (a RobotTrajectory) to the set goal state (or specified by the joints argument) """
+        """Return a tuple of the motion planning results such as
+        (success flag : boolean, trajectory message : RobotTrajectory,
+         planning time : float, error code : MoveitErrorCodes)"""
         if type(joints) is JointState:
             self.set_joint_value_target(joints)
 
         elif type(joints) is Pose:
             self.set_pose_target(joints)
 
-        elif not joints is None:
+        elif joints is not None:
             try:
                 self.set_joint_value_target(self.get_remembered_joint_values()[joints])
-            except:
+            except MoveItCommanderException:
                 self.set_joint_value_target(joints)
+
+        (error_code_msg, trajectory_msg, planning_time) = self._g.plan()
+
+        error_code = MoveItErrorCodes()
+        error_code.deserialize(error_code_msg)
         plan = RobotTrajectory()
-        plan.deserialize(self._g.compute_plan())
-        return plan
+        return (
+            error_code.val == MoveItErrorCodes.SUCCESS,
+            plan.deserialize(trajectory_msg),
+            planning_time,
+            error_code,
+        )
+
+    def construct_motion_plan_request(self):
+        """ Returns a MotionPlanRequest filled with the current goals of the move_group_interface"""
+        mpr = MotionPlanRequest()
+        return mpr.deserialize(self._g.construct_motion_plan_request())
 
     def compute_cartesian_path(
         self,

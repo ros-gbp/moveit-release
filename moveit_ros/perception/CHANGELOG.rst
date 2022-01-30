@@ -2,20 +2,67 @@
 Changelog for package moveit_ros_perception
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1.0.9 (2022-01-09)
+1.1.8 (2022-01-30)
 ------------------
 
-1.0.8 (2021-05-23)
+1.1.7 (2021-12-31)
+------------------
+* Switch to ``std::bind`` (`#2967 <https://github.com/ros-planning/moveit/issues/2967>`_)
+* Add ns for depth image & pointcloud octomap updaters (`#2916 <https://github.com/ros-planning/moveit/issues/2916>`_)
+* Contributors: Jochen Sprickerhof, Tim Redick
+
+1.1.6 (2021-11-06)
+------------------
+* Use newly introduced cmake macro ``moveit_build_options()`` from ``moveit_core``
+* Fix clipping of points: only considered points up to ``max_range`` (`#2848 <https://github.com/ros-planning/moveit/issues/2848>`_)
+* clang-tidy: modernize-make-shared, modernize-make-unique (`#2762 <https://github.com/ros-planning/moveit/issues/2762>`_)
+* Move ``OccMapTree`` to ``moveit_core/collision_detection`` (`#2684 <https://github.com/ros-planning/moveit/issues/2684>`_)
+* Contributors: Michael Görner, Robert Haschke, Simon Schmeisser, Tyler Weaver, pvanlaar
+
+1.1.5 (2021-05-23)
+------------------
+* Revert "Lock the octomap/octree while collision checking (`#2683 <https://github.com/ros-planning/moveit/issues/2683>`_)
+* Contributors: Michael Görner
+
+1.1.4 (2021-05-12)
+------------------
+* Lock the octomap/octree while collision checking (`#2596 <https://github.com/ros-planning/moveit/issues/2596>`_)
+* Contributors: Simon Schmeisser
+
+1.1.3 (2021-04-29)
 ------------------
 * Document solution in ROS_ERROR on failed self-filtering (`#2627 <https://github.com/ros-planning/moveit/issues/2627>`_)
+* Contributors: Michael Görner
+
+1.1.2 (2021-04-08)
+------------------
 * Fixed flood of errors on startup for `mesh_filter` (`#2550 <https://github.com/ros-planning/moveit/issues/2550>`_)
 * Enable mesh filter (`#2448 <https://github.com/ros-planning/moveit/issues/2448>`_)
-* Contributors: Jafar Abdi, John Stechschulte, Michael Görner
+* Contributors: Jafar Abdi, John Stechschulte
 
-1.0.7 (2020-11-20)
+1.1.1 (2020-10-13)
 ------------------
+* [fix] various issues with Noetic build (`#2327 <https://github.com/ros-planning/moveit/issues/2327>`_)
+* [maint] Cleanup MSA includes (`#2351 <https://github.com/ros-planning/moveit/issues/2351>`_)
 * [maint] Add comment to MOVEIT_CLASS_FORWARD (`#2315 <https://github.com/ros-planning/moveit/issues/2315>`_)
-* Contributors: Felix von Drigalski, Robert Haschke
+* Contributors: Felix von Drigalski, G.A. vd. Hoorn, Robert Haschke
+
+1.1.0 (2020-09-04)
+------------------
+* [feature] Utilize new geometric_shapes functions to improve performance (`#2038 <https://github.com/ros-planning/moveit/issues/2038>`_)
+* [fix] Various fixes for upcoming Noetic release (`#2180 <https://github.com/ros-planning/moveit/issues/2180>`_)
+* [fix] Fix getTransform() (`#2113 <https://github.com/ros-planning/moveit/issues/2113>`_)
+* [fix] depth_image_octomap_updater: correctly set properties of debug images (`#1653 <https://github.com/ros-planning/moveit/issues/1653>`_)
+* [maint] Optional cpp version setting (`#2166 <https://github.com/ros-planning/moveit/issues/2166>`_)
+* [maint] clang-tidy fixes (`#2050 <https://github.com/ros-planning/moveit/issues/2050>`_, `#2004 <https://github.com/ros-planning/moveit/issues/2004>`_, `#1419 <https://github.com/ros-planning/moveit/issues/1419>`_)
+* [maint] Fix errors: catkin_lint 1.6.7 (`#1987 <https://github.com/ros-planning/moveit/issues/1987>`_)
+* [maint] Replace namespaces robot_state and robot_model with moveit::core (`#1924 <https://github.com/ros-planning/moveit/issues/1924>`_)
+* [maint] NAMED logging for moveit_ros_perception (`#1897 <https://github.com/ros-planning/moveit/issues/1897>`_)
+* [maint] Fix various build issues on Windows (`#1880 <https://github.com/ros-planning/moveit/issues/1880>`_)
+* [maint] Fix compiler warnings (`#1773 <https://github.com/ros-planning/moveit/issues/1773>`_)
+* [maint] Switch from include guards to pragma once (`#1615 <https://github.com/ros-planning/moveit/issues/1615>`_)
+* [maint] Remove ! from MoveIt name (`#1590 <https://github.com/ros-planning/moveit/issues/1590>`_)
+* Contributors: Ayush Garg, Bjar Ne, Dale Koenig, Dave Coleman, Henning Kayser, Jonathan Binney, Mahmoud Ahmed Selim, Markus Vieth, Martin Pecka, Matthias Nieuwenhuisen, Michael Görner, Robert Haschke, Sean Yen, Tyler Weaver, Yu, Yan, jschleicher
 
 1.0.6 (2020-08-19)
 ------------------

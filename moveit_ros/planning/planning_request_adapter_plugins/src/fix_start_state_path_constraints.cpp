@@ -50,6 +50,10 @@ public:
   {
   }
 
+  void initialize(const ros::NodeHandle& /*nh*/) override
+  {
+  }
+
   std::string getDescription() const override
   {
     return "Fix Start State Path Constraints";
@@ -62,8 +66,8 @@ public:
     ROS_DEBUG("Running '%s'", getDescription().c_str());
 
     // get the specified start state
-    robot_state::RobotState start_state = planning_scene->getCurrentState();
-    robot_state::robotStateMsgToRobotState(planning_scene->getTransforms(), req.start_state, start_state);
+    moveit::core::RobotState start_state = planning_scene->getCurrentState();
+    moveit::core::robotStateMsgToRobotState(planning_scene->getTransforms(), req.start_state, start_state);
 
     // if the start state is otherwise valid but does not meet path constraints
     if (planning_scene->isStateValid(start_state, req.group_name) &&
@@ -91,15 +95,15 @@ public:
         ROS_INFO("Planned to path constraints. Resuming original planning request.");
 
         // extract the last state of the computed motion plan and set it as the new start state
-        robot_state::robotStateToRobotStateMsg(res2.trajectory_->getLastWayPoint(), req3.start_state);
+        moveit::core::robotStateToRobotStateMsg(res2.trajectory_->getLastWayPoint(), req3.start_state);
         bool solved2 = planner(planning_scene, req3, res);
         res.planning_time_ += res2.planning_time_;
 
         if (solved2)
         {
           // since we add a prefix, we need to correct any existing index positions
-          for (std::size_t i = 0; i < added_path_index.size(); ++i)
-            added_path_index[i] += res2.trajectory_->getWayPointCount();
+          for (std::size_t& added_index : added_path_index)
+            added_index += res2.trajectory_->getWayPointCount();
 
           // we mark the fact we insert a prefix path (we specify the index position we just added)
           for (std::size_t i = 0; i < res2.trajectory_->getWayPointCount(); ++i)

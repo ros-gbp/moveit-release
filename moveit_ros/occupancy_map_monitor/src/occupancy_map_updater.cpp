@@ -39,6 +39,8 @@
 
 namespace occupancy_map_monitor
 {
+static const std::string LOGNAME = "occupancy_map_monitor";
+
 OccupancyMapUpdater::OccupancyMapUpdater(const std::string& type) : type_(type)
 {
 }
@@ -75,14 +77,15 @@ bool OccupancyMapUpdater::updateTransformCache(const std::string& target_frame, 
   {
     bool success = transform_provider_callback_(target_frame, target_time, transform_cache_);
     if (!success)
-      ROS_ERROR_THROTTLE(
-          1, "Transform cache was not updated. Self-filtering may fail. If transforms were not available yet, consider "
-             "setting robot_description_planning/shape_transform_cache_lookup_wait_time to wait longer for transforms");
+      ROS_ERROR_THROTTLE_NAMED(
+          1, LOGNAME,
+          "Transform cache was not updated. Self-filtering may fail. If transforms were not available yet, consider "
+          "setting robot_description_planning/shape_transform_cache_lookup_wait_time to wait longer for transforms");
     return success;
   }
   else
   {
-    ROS_WARN_THROTTLE(1, "No callback provided for updating the transform cache for octomap updaters");
+    ROS_WARN_THROTTLE_NAMED(1, LOGNAME, "No callback provided for updating the transform cache for octomap updaters");
     return false;
   }
 }

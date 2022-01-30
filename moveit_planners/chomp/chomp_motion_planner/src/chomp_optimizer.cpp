@@ -71,28 +71,21 @@ ChompOptimizer::ChompOptimizer(ChompTrajectory* trajectory, const planning_scene
   planning_scene->getCollisionDetectorNames(cd_names);
 
   ROS_INFO_STREAM("The following collision detectors are available in the planning scene.");
-  for (std::size_t i = 0; i < cd_names.size(); i++)
+  for (const std::string& cd_name : cd_names)
   {
-    ROS_INFO_STREAM(cd_names[i]);
+    ROS_INFO_STREAM(cd_name);
   }
 
   ROS_INFO_STREAM("Active collision detector is: " + planning_scene->getActiveCollisionDetectorName());
 
-  hy_world_ = dynamic_cast<const collision_detection::CollisionWorldHybrid*>(
-      planning_scene->getCollisionWorld(planning_scene->getActiveCollisionDetectorName()).get());
-  if (!hy_world_)
+  hy_env_ = dynamic_cast<const collision_detection::CollisionEnvHybrid*>(
+      planning_scene->getCollisionEnv(planning_scene->getActiveCollisionDetectorName()).get());
+  if (!hy_env_)
   {
     ROS_WARN_STREAM("Could not initialize hybrid collision world from planning scene");
     return;
   }
 
-  hy_robot_ = dynamic_cast<const collision_detection::CollisionRobotHybrid*>(
-      planning_scene->getCollisionRobot(planning_scene->getActiveCollisionDetectorName()).get());
-  if (!hy_robot_)
-  {
-    ROS_WARN_STREAM("Could not initialize hybrid collision robot from planning scene");
-    return;
-  }
   initialize();
 }
 
@@ -110,13 +103,12 @@ void ChompOptimizer::initialize()
   collision_detection::CollisionResult res;
   req.group_name = planning_group_;
   ros::WallTime wt = ros::WallTime::now();
-  hy_world_->getCollisionGradients(req, res, *hy_robot_->getCollisionRobotDistanceField().get(), state_,
-                                   &planning_scene_->getAllowedCollisionMatrix(), gsr_);
+  hy_env_->getCollisionGradients(req, res, state_, &planning_scene_->getAllowedCollisionMatrix(), gsr_);
   ROS_INFO_STREAM("First coll check took " << (ros::WallTime::now() - wt));
   num_collision_points_ = 0;
-  for (size_t i = 0; i < gsr_->gradients_.size(); i++)
+  for (const collision_detection::GradientInfo& gradient : gsr_->gradients_)
   {
-    num_collision_points_ += gsr_->gradients_[i].gradients.size();
+    num_collision_points_ += gradient.gradients.size();
   }
 
   // set up the joint costs:
@@ -212,11 +204,9 @@ void ChompOptimizer::initialize()
   }
 
   // TODO - is this just the joint_roots_?
-  for (size_t i = 0; i < joint_model_group_->getUpdatedLinkModels().size(); i++)
+  for (const moveit::core::LinkModel* link : joint_model_group_->getUpdatedLinkModels())
   {
-    if (fixed_link_resolution_map.find(
-            joint_model_group_->getUpdatedLinkModels()[i]->getParentJointModel()->getName()) ==
-        fixed_link_resolution_map.end())
+    if (fixed_link_resolution_map.find(link->getParentJointModel()->getName()) == fixed_link_resolution_map.end())
     {
       const moveit::core::JointModel* parent_model = nullptr;
       bool found_root = false;
@@ -225,22 +215,21 @@ void ChompOptimizer::initialize()
       {
         if (parent_model == nullptr)
         {
-          parent_model = joint_model_group_->getUpdatedLinkModels()[i]->getParentJointModel();
+          parent_model = link->getParentJointModel();
         }
         else
         {
           parent_model = parent_model->getParentLinkModel()->getParentJointModel();
-          for (size_t j = 0; j < joint_names_.size(); j++)
+          for (const std::string& joint_name : joint_names_)
           {
-            if (parent_model->getName() == joint_names_[j])
+            if (parent_model->getName() == joint_name)
             {
               found_root = true;
             }
           }
         }
       }
-      fixed_link_resolution_map[joint_model_group_->getUpdatedLinkModels()[i]->getParentJointModel()->getName()] =
-          parent_model->getName();
+      fixed_link_resolution_map[link->getParentJointModel()->getName()] = parent_model->getName();
     }
   }
 
@@ -249,10 +238,8 @@ void ChompOptimizer::initialize()
   for (int i = start; i <= end; ++i)
   {
     size_t j = 0;
-    for (size_t g = 0; g < gsr_->gradients_.size(); g++)
+    for (const collision_detection::GradientInfo& info : gsr_->gradients_)
     {
-      collision_detection::GradientInfo& info = gsr_->gradients_[g];
-
       for (size_t k = 0; k < info.sphere_locations.size(); k++)
       {
         if (fixed_link_resolution_map.find(info.joint_name) != fixed_link_resolution_map.end())
@@ -546,10 +533,10 @@ bool ChompOptimizer::isCurrentTrajectoryMeshToMeshCollisionFree() const
   moveit_msgs::RobotTrajectory traj;
   traj.joint_trajectory.joint_names = joint_names_;
 
-  for (int i = 0; i < group_trajectory_.getNumPoints(); i++)
+  for (size_t i = 0; i < group_trajectory_.getNumPoints(); i++)
   {
     trajectory_msgs::JointTrajectoryPoint point;
-    for (int j = 0; j < group_trajectory_.getNumJoints(); j++)
+    for (size_t j = 0; j < group_trajectory_.getNumJoints(); j++)
     {
       point.positions.push_back(best_group_trajectory_(i, j));
     }
@@ -623,7 +610,7 @@ void ChompOptimizer::calculateCollisionIncrements()
   // This is faster and guaranteed to converge, but it may take more iterations in the worst case.
   if (parameters_->use_stochastic_descent_)
   {
-    start_point = (int)(((double)random() / (double)RAND_MAX) * (free_vars_end_ - free_vars_start_) + free_vars_start_);
+    start_point = (int)(getRandomDouble() * (free_vars_end_ - free_vars_start_) + free_vars_start_);
     if (start_point < free_vars_start_)
       start_point = free_vars_start_;
     if (start_point > free_vars_end_)
@@ -858,16 +845,16 @@ void ChompOptimizer::handleJointLimits()
     double joint_max = -DBL_MAX;
     double joint_min = DBL_MAX;
 
-    for (moveit::core::JointModel::Bounds::const_iterator it = bounds.begin(); it != bounds.end(); it++)
+    for (const moveit::core::VariableBounds& bound : bounds)
     {
-      if (it->min_position_ < joint_min)
+      if (bound.min_position_ < joint_min)
       {
-        joint_min = it->min_position_;
+        joint_min = bound.min_position_;
       }
 
-      if (it->max_position_ > joint_max)
+      if (bound.max_position_ > joint_max)
       {
-        joint_max = it->max_position_;
+        joint_max = bound.max_position_;
       }
     }
 
@@ -945,8 +932,7 @@ void ChompOptimizer::performForwardKinematics()
     setRobotStateFromPoint(group_trajectory_, i);
     ros::WallTime grad = ros::WallTime::now();
 
-    hy_world_->getCollisionGradients(req, res, *hy_robot_->getCollisionRobotDistanceField().get(), state_, nullptr,
-                                     gsr_);
+    hy_env_->getCollisionGradients(req, res, state_, nullptr, gsr_);
     total_dur += (ros::WallTime::now() - grad);
     computeJointProperties(i);
     state_is_in_collision_[i] = false;
@@ -954,10 +940,8 @@ void ChompOptimizer::performForwardKinematics()
     // Keep vars in scope
     {
       size_t j = 0;
-      for (size_t g = 0; g < gsr_->gradients_.size(); g++)
+      for (const collision_detection::GradientInfo& info : gsr_->gradients_)
       {
-        collision_detection::GradientInfo& info = gsr_->gradients_[g];
-
         for (size_t k = 0; k < info.sphere_locations.size(); k++)
         {
           collision_point_pos_eigen_[i][j][0] = info.sphere_locations[k].x();
@@ -965,7 +949,7 @@ void ChompOptimizer::performForwardKinematics()
           collision_point_pos_eigen_[i][j][2] = info.sphere_locations[k].z();
 
           collision_point_potential_[i][j] =
-              getPotential(info.distances[k], info.sphere_radii[k], parameters_->min_clearence_);
+              getPotential(info.distances[k], info.sphere_radii[k], parameters_->min_clearance_);
           collision_point_potential_gradient_[i][j][0] = info.gradients[k].x();
           collision_point_potential_gradient_[i][j][1] = info.gradients[k].y();
           collision_point_potential_gradient_[i][j][2] = info.gradients[k].z();
@@ -1022,7 +1006,7 @@ void ChompOptimizer::setRobotStateFromPoint(ChompTrajectory& group_trajectory, i
 
   std::vector<double> joint_states;
   joint_states.reserve(group_trajectory.getNumJoints());
-  for (int j = 0; j < group_trajectory.getNumJoints(); j++)
+  for (size_t j = 0; j < group_trajectory.getNumJoints(); j++)
     joint_states.emplace_back(point(0, j));
 
   state_.setJointGroupPositions(planning_group_, joint_states);

@@ -34,8 +34,7 @@
 
 /* Author: Ioan Sucan */
 
-#ifndef MOVEIT_CONSTRAINT_SAMPLERS_DEFAULT_UNION_CONSTRAINT_SAMPLER_
-#define MOVEIT_CONSTRAINT_SAMPLERS_DEFAULT_UNION_CONSTRAINT_SAMPLER_
+#pragma once
 
 #include <moveit/constraint_samplers/constraint_sampler.h>
 
@@ -117,7 +116,7 @@ public:
    *
    * @return Always true
    */
-  bool configure(const moveit_msgs::Constraints& constr) override
+  bool configure(const moveit_msgs::Constraints& /*constr*/) override
   {
     return true;
   }
@@ -129,7 +128,7 @@ public:
    *
    * @return Always true
    */
-  virtual bool canService(const moveit_msgs::Constraints& constr) const
+  virtual bool canService(const moveit_msgs::Constraints& /*constr*/) const
   {
     return true;
   }
@@ -149,10 +148,10 @@ public:
    *
    * @return True if all invidual samplers return true
    */
-  bool sample(robot_state::RobotState& state, const robot_state::RobotState& reference_state,
+  bool sample(moveit::core::RobotState& state, const moveit::core::RobotState& reference_state,
               unsigned int max_attempts) override;
 
-  bool project(robot_state::RobotState& state, unsigned int max_attempts) override;
+  bool project(moveit::core::RobotState& state, unsigned int max_attempts) override;
 
   /**
    * \brief Get the name of the constraint sampler, for debugging purposes
@@ -169,5 +168,3 @@ protected:
   std::vector<ConstraintSamplerPtr> samplers_; /**< \brief Holder for sorted internal list of samplers*/
 };
 }  // namespace constraint_samplers
-
-#endif

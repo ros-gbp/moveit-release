@@ -46,8 +46,8 @@ int main(int argc, char** argv)
   std::unique_ptr<pluginlib::ClassLoader<planning_request_adapter::PlanningRequestAdapter>> loader;
   try
   {
-    loader.reset(new pluginlib::ClassLoader<planning_request_adapter::PlanningRequestAdapter>(
-        "moveit_core", "planning_request_adapter::PlanningRequestAdapter"));
+    loader = std::make_unique<pluginlib::ClassLoader<planning_request_adapter::PlanningRequestAdapter>>(
+        "moveit_core", "planning_request_adapter::PlanningRequestAdapter");
   }
   catch (pluginlib::PluginlibException& ex)
   {
@@ -56,17 +56,18 @@ int main(int argc, char** argv)
 
   const std::vector<std::string>& classes = loader->getDeclaredClasses();
   std::cout << "Available planning request adapter plugins:" << std::endl;
-  for (std::size_t i = 0; i < classes.size(); ++i)
+  for (const std::string& adapter_plugin_name : classes)
   {
-    std::cout << " \t " << classes[i] << std::endl;
+    std::cout << " \t " << adapter_plugin_name << std::endl;
     planning_request_adapter::PlanningRequestAdapterConstPtr ad;
     try
     {
-      ad = loader->createUniqueInstance(classes[i]);
+      ad = loader->createUniqueInstance(adapter_plugin_name);
     }
     catch (pluginlib::PluginlibException& ex)
     {
-      std::cout << " \t\t  Exception while planning adapter plugin '" << classes[i] << "': " << ex.what() << std::endl;
+      std::cout << " \t\t  Exception while planning adapter plugin '" << adapter_plugin_name << "': " << ex.what()
+                << std::endl;
     }
     if (ad)
       std::cout << " \t\t  " << ad->getDescription() << std::endl;

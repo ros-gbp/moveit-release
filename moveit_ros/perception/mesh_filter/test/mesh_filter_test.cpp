@@ -118,7 +118,8 @@ MeshFilterTest<Type>::MeshFilterTest(unsigned width, unsigned height, double nea
   , shadow_(shadow)
   , epsilon_(epsilon)
   , sensor_parameters_(width, height, near_, far_, width >> 1, height >> 1, width >> 1, height >> 1, 0.1, 0.1)
-  , filter_(std::bind(&MeshFilterTest<Type>::transformCallback, this, _1, _2), sensor_parameters_)
+  , filter_(std::bind(&MeshFilterTest<Type>::transformCallback, this, std::placeholders::_1, std::placeholders::_2),
+            sensor_parameters_)
   , sensor_data_(width_ * height_)
   , distance_(0.0)
 {
@@ -251,11 +252,11 @@ void MeshFilterTest<Type>::getGroundTruth(unsigned int* labels, float* depth) co
       {
         depth[idx] = double(sensor_data_[idx]) * scale;
         if (depth[idx] < near_)
-          labels[idx] = MeshFilterBase::NearClip;
+          labels[idx] = MeshFilterBase::NEAR_CLIP;
         else if (depth[idx] >= far_)
-          labels[idx] = MeshFilterBase::FarClip;
+          labels[idx] = MeshFilterBase::FAR_CLIP;
         else
-          labels[idx] = MeshFilterBase::Background;
+          labels[idx] = MeshFilterBase::BACKGROUND;
 
         if (depth[idx] <= near_ || depth[idx] >= far_)
           depth[idx] = 0;
@@ -272,21 +273,21 @@ void MeshFilterTest<Type>::getGroundTruth(unsigned int* labels, float* depth) co
 
         if (depth[idx] < near_)
         {
-          labels[idx] = MeshFilterBase::NearClip;
+          labels[idx] = MeshFilterBase::NEAR_CLIP;
           depth[idx] = 0;
         }
         else
         {
           double diff = depth[idx] - distance_;
           if (diff < 0 && depth[idx] < far_)
-            labels[idx] = MeshFilterBase::Background;
+            labels[idx] = MeshFilterBase::BACKGROUND;
           else if (diff > shadow_)
-            labels[idx] = MeshFilterBase::Shadow;
+            labels[idx] = MeshFilterBase::SHADOW;
           else if (depth[idx] >= far_)
-            labels[idx] = MeshFilterBase::FarClip;
+            labels[idx] = MeshFilterBase::FAR_CLIP;
           else
           {
-            labels[idx] = MeshFilterBase::FirstLabel;
+            labels[idx] = MeshFilterBase::FIRST_LABEL;
             depth[idx] = 0;
           }
 

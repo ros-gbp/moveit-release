@@ -49,8 +49,8 @@ class DynamicReconfigureImpl
 public:
   DynamicReconfigureImpl() : dynamic_reconfigure_server_(ros::NodeHandle("~/pick_place"))
   {
-    dynamic_reconfigure_server_.setCallback(
-        boost::bind(&DynamicReconfigureImpl::dynamicReconfigureCallback, this, _1, _2));
+    dynamic_reconfigure_server_.setCallback(std::bind(&DynamicReconfigureImpl::dynamicReconfigureCallback, this,
+                                                      std::placeholders::_1, std::placeholders::_2));
   }
 
   const PickPlaceParams& getParams() const
@@ -61,7 +61,7 @@ public:
 private:
   PickPlaceParams params_;
 
-  void dynamicReconfigureCallback(PickPlaceDynamicReconfigureConfig& config, uint32_t level)
+  void dynamicReconfigureCallback(PickPlaceDynamicReconfigureConfig& config, uint32_t /*level*/)
   {
     params_.max_goal_count_ = config.max_attempted_states_per_pose;
     params_.max_fail_ = config.max_consecutive_fail_attempts;

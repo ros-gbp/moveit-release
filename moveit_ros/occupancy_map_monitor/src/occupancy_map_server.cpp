@@ -40,6 +40,8 @@
 #include <moveit/occupancy_map_monitor/occupancy_map_monitor.h>
 #include <octomap_msgs/conversions.h>
 
+static const std::string LOGNAME = "occupancy_map_server";
+
 static void publishOctomap(ros::Publisher* octree_binary_pub, occupancy_map_monitor::OccupancyMapMonitor* server)
 {
   octomap_msgs::Octomap map;
@@ -51,11 +53,11 @@ static void publishOctomap(ros::Publisher* octree_binary_pub, occupancy_map_moni
   try
   {
     if (!octomap_msgs::binaryMapToMsgData(*server->getOcTreePtr(), map.data))
-      ROS_ERROR_THROTTLE(1, "Could not generate OctoMap message");
+      ROS_ERROR_THROTTLE_NAMED(1, LOGNAME, "Could not generate OctoMap message");
   }
   catch (...)
   {
-    ROS_ERROR_THROTTLE(1, "Exception thrown while generating OctoMap message");
+    ROS_ERROR_THROTTLE_NAMED(1, LOGNAME, "Exception thrown while generating OctoMap message");
   }
   server->getOcTreePtr()->unlockRead();
 
@@ -70,7 +72,7 @@ int main(int argc, char** argv)
   std::shared_ptr<tf2_ros::Buffer> buffer = std::make_shared<tf2_ros::Buffer>(ros::Duration(5.0));
   std::shared_ptr<tf2_ros::TransformListener> listener = std::make_shared<tf2_ros::TransformListener>(*buffer, nh);
   occupancy_map_monitor::OccupancyMapMonitor server(buffer);
-  server.setUpdateCallback(boost::bind(&publishOctomap, &octree_binary_pub, &server));
+  server.setUpdateCallback(std::bind(&publishOctomap, &octree_binary_pub, &server));
   server.startMonitor();
 
   ros::spin();
