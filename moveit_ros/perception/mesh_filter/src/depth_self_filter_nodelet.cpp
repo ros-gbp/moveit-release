@@ -54,11 +54,11 @@ void mesh_filter::DepthSelfFiltering::onInit()
 {
   ros::NodeHandle& nh = getNodeHandle();
   ros::NodeHandle& private_nh = getPrivateNodeHandle();
-  input_depth_transport_ = std::make_shared<image_transport::ImageTransport>(nh);
-  filtered_depth_transport_ = std::make_shared<image_transport::ImageTransport>(nh);
-  filtered_label_transport_ = std::make_shared<image_transport::ImageTransport>(nh);
-  model_depth_transport_ = std::make_shared<image_transport::ImageTransport>(nh);
-  model_label_transport_ = std::make_shared<image_transport::ImageTransport>(nh);
+  input_depth_transport_.reset(new image_transport::ImageTransport(nh));
+  filtered_depth_transport_.reset(new image_transport::ImageTransport(nh));
+  filtered_label_transport_.reset(new image_transport::ImageTransport(nh));
+  model_depth_transport_.reset(new image_transport::ImageTransport(nh));
+  model_label_transport_.reset(new image_transport::ImageTransport(nh));
 
   // Read parameters
   private_nh.param("queue_size", queue_size_, 1);
@@ -85,14 +85,14 @@ void mesh_filter::DepthSelfFiltering::onInit()
   pub_model_label_image_ =
       model_depth_transport_->advertiseCamera("/model/label", queue_size_, itssc, itssc, rssc, rssc);
 
-  filtered_depth_ptr_ = std::make_shared<cv_bridge::CvImage>();
-  filtered_label_ptr_ = std::make_shared<cv_bridge::CvImage>();
-  model_depth_ptr_ = std::make_shared<cv_bridge::CvImage>();
-  model_label_ptr_ = std::make_shared<cv_bridge::CvImage>();
+  filtered_depth_ptr_.reset(new cv_bridge::CvImage);
+  filtered_label_ptr_.reset(new cv_bridge::CvImage);
+  model_depth_ptr_.reset(new cv_bridge::CvImage);
+  model_label_ptr_.reset(new cv_bridge::CvImage);
 
-  mesh_filter_ = std::make_shared<MeshFilter<StereoCameraModel>>(
-      std::bind(&TransformProvider::getTransform, &transform_provider_, std::placeholders::_1, std::placeholders::_2),
-      mesh_filter::StereoCameraModel::REGISTERED_PSDK_PARAMS);
+  mesh_filter_.reset(
+      new MeshFilter<StereoCameraModel>(bind(&TransformProvider::getTransform, &transform_provider_, _1, _2),
+                                        mesh_filter::StereoCameraModel::REGISTERED_PSDK_PARAMS));
   mesh_filter_->parameters().setDepthRange(near_clipping_plane_distance_, far_clipping_plane_distance_);
   mesh_filter_->setShadowThreshold(shadow_threshold_);
   mesh_filter_->setPaddingOffset(padding_offset_);
@@ -177,7 +177,7 @@ void mesh_filter::DepthSelfFiltering::filter(const sensor_msgs::ImageConstPtr& d
 void mesh_filter::DepthSelfFiltering::addMeshes(MeshFilter<StereoCameraModel>& mesh_filter)
 {
   robot_model_loader::RobotModelLoader robot_model_loader("robot_description");
-  moveit::core::RobotModelConstPtr robot_model = robot_model_loader.getModel();
+  robot_model::RobotModelConstPtr robot_model = robot_model_loader.getModel();
   const auto& links = robot_model->getLinkModelsWithCollisionGeometry();
   for (auto link : links)
   {

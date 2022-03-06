@@ -34,7 +34,8 @@
 
 /* Author: Ioan Sucan */
 
-#pragma once
+#ifndef MOVEIT_MOVEIT_WAREHOUSE_PLANNING_SCENE_STORAGE_
+#define MOVEIT_MOVEIT_WAREHOUSE_PLANNING_SCENE_STORAGE_
 
 #include "moveit/warehouse/moveit_message_storage.h"
 #include <moveit/macros/class_forward.h>
@@ -119,3 +120,5 @@ private:
   RobotTrajectoryCollection robot_trajectory_collection_;
 };
 }  // namespace moveit_warehouse
+
+#endif

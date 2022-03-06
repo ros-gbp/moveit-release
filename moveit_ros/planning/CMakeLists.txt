@@ -1,6 +1,16 @@
 cmake_minimum_required(VERSION 3.1.3)
 project(moveit_ros_planning)
 
+if(NOT "${CMAKE_CXX_STANDARD}")
+  set(CMAKE_CXX_STANDARD 14)
+endif()
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release)
+endif()
+
 find_package(Boost REQUIRED system filesystem date_time program_options thread chrono)
 find_package(catkin REQUIRED COMPONENTS
   moveit_core
@@ -20,7 +30,6 @@ find_package(catkin REQUIRED COMPONENTS
   tf2_msgs
   tf2_ros
 )
-moveit_build_options()
 
 find_package(Eigen3 REQUIRED)
 
@@ -40,7 +49,6 @@ set(THIS_PACKAGE_INCLUDE_DIRS
     trajectory_execution_manager/include
     plan_execution/include
     collision_plugin_loader/include
-    moveit_cpp/include
 )
 
 catkin_package(
@@ -54,7 +62,6 @@ catkin_package(
     moveit_plan_execution
     moveit_planning_scene_monitor
     moveit_collision_plugin_loader
-    moveit_cpp
   INCLUDE_DIRS
     ${THIS_PACKAGE_INCLUDE_DIRS}
   CATKIN_DEPENDS
@@ -71,11 +78,13 @@ catkin_package(
     EIGEN3
 )
 
-include_directories(${THIS_PACKAGE_INCLUDE_DIRS})
-include_directories(SYSTEM
+include_directories(${THIS_PACKAGE_INCLUDE_DIRS}
                     ${catkin_INCLUDE_DIRS}
                     ${Boost_INCLUDE_DIRS}
-                    ${EIGEN3_INCLUDE_DIRS})
+)
+include_directories(SYSTEM
+                    ${EIGEN3_INCLUDE_DIRS}
+)
 
 add_subdirectory(rdf_loader)
 add_subdirectory(collision_plugin_loader)
@@ -88,7 +97,6 @@ add_subdirectory(planning_scene_monitor)
 add_subdirectory(planning_components_tools)
 add_subdirectory(trajectory_execution_manager)
 add_subdirectory(plan_execution)
-add_subdirectory(moveit_cpp)
 
 install(
   FILES

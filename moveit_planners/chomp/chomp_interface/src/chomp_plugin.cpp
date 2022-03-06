@@ -32,8 +32,6 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-#include <memory>
-
 #include <moveit/planning_interface/planning_interface.h>
 #include <moveit/planning_scene/planning_scene.h>
 #include <moveit/robot_model/robot_model.h>
@@ -51,15 +49,12 @@ public:
   {
   }
 
-  bool initialize(const moveit::core::RobotModelConstPtr& model, const std::string& ns) override
+  bool initialize(const robot_model::RobotModelConstPtr& model, const std::string& ns) override
   {
-    ros::NodeHandle nh("~");
-    if (!ns.empty())
-      nh = ros::NodeHandle(ns);
-
     for (const std::string& group : model->getJointModelGroupNames())
     {
-      planning_contexts_[group] = std::make_shared<CHOMPPlanningContext>("chomp_planning_context", group, model, nh);
+      planning_contexts_[group] =
+          CHOMPPlanningContextPtr(new CHOMPPlanningContext("chomp_planning_context", group, model));
     }
     return true;
   }
@@ -96,7 +91,7 @@ public:
     return context;
   }
 
-  bool canServiceRequest(const planning_interface::MotionPlanRequest& /*req*/) const override
+  bool canServiceRequest(const planning_interface::MotionPlanRequest& req) const override
   {
     // TODO: this is a dummy implementation
     //      capabilities.dummy = false;

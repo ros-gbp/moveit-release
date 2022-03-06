@@ -34,7 +34,8 @@
 
 /* Author: Ioan Sucan, Sachin Chitta */
 
-#pragma once
+#ifndef MOVEIT_PICK_PLACE_APPROACH_AND_TRANSLATE_STAGE_
+#define MOVEIT_PICK_PLACE_APPROACH_AND_TRANSLATE_STAGE_
 
 #include <moveit/pick_place/manipulation_stage.h>
 #include <moveit/planning_pipeline/planning_pipeline.h>
@@ -61,3 +62,5 @@ private:
   double jump_factor_;
 };
 }  // namespace pick_place
+
+#endif

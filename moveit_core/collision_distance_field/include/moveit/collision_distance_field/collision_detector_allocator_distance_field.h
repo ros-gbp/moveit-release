@@ -34,18 +34,23 @@
 
 /* Author: Acorn Pooley, Ioan Sucan */
 
-#pragma once
+#ifndef MOVEIT_COLLISION_DETECTION_COLLISION_DETECTOR_DISTANCE_FIELD_H_
+#define MOVEIT_COLLISION_DETECTION_COLLISION_DETECTOR_DISTANCE_FIELD_H_
 
 #include <moveit/collision_detection/collision_detector_allocator.h>
-#include <moveit/collision_distance_field/collision_env_distance_field.h>
+#include <moveit/collision_distance_field/collision_robot_distance_field.h>
+#include <moveit/collision_distance_field/collision_world_distance_field.h>
 
 namespace collision_detection
 {
 /** \brief An allocator for Distance Field collision detectors */
 class CollisionDetectorAllocatorDistanceField
-  : public CollisionDetectorAllocatorTemplate<CollisionEnvDistanceField, CollisionDetectorAllocatorDistanceField>
+  : public CollisionDetectorAllocatorTemplate<CollisionWorldDistanceField, CollisionRobotDistanceField,
+                                              CollisionDetectorAllocatorDistanceField>
 {
 public:
-  const std::string& getName() const override;
+  static const std::string NAME;  // defined in collision_world_distance_field.cpp
 };
 }  // namespace collision_detection
+
+#endif

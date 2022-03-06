@@ -36,7 +36,8 @@
 
 // This file is a slightly modified version of <ompl/datastructures/NearestNeighbors.h>
 
-#pragma once
+#ifndef MOVEIT_ROS_PLANNING_CACHED_IK_KINEMATICS_NEAREST_NEIGHBORS_
+#define MOVEIT_ROS_PLANNING_CACHED_IK_KINEMATICS_NEAREST_NEIGHBORS_
 
 #include <vector>
 #include <functional>
@@ -115,3 +116,5 @@ protected:
   DistanceFunction distFun_;
 };
 }  // namespace cached_ik_kinematics_plugin
+
+#endif

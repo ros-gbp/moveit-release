@@ -34,7 +34,8 @@
 
 /* Author: Ioan Sucan, Sachin Chitta */
 
-#pragma once
+#ifndef MOVEIT_PICK_PLACE_PLAN_STAGE_
+#define MOVEIT_PICK_PLACE_PLAN_STAGE_
 
 #include <moveit/pick_place/manipulation_stage.h>
 #include <moveit/planning_pipeline/planning_pipeline.h>
@@ -57,3 +58,5 @@ private:
   planning_pipeline::PlanningPipelinePtr planning_pipeline_;
 };
 }  // namespace pick_place
+
+#endif

@@ -34,7 +34,8 @@
 
 /* Author: Ioan Sucan */
 
-#pragma once
+#ifndef MOVEIT_PLANNING_MODELS_LOADER_ROBOT_MODEL_LOADER_
+#define MOVEIT_PLANNING_MODELS_LOADER_ROBOT_MODEL_LOADER_
 
 #include <moveit/macros/class_forward.h>
 #include <moveit/robot_model/robot_model.h>
@@ -84,7 +85,7 @@ public:
   ~RobotModelLoader();
 
   /** @brief Get the constructed planning_models::RobotModel */
-  const moveit::core::RobotModelPtr& getModel() const
+  const robot_model::RobotModelPtr& getModel() const
   {
     return model_;
   }
@@ -128,8 +129,9 @@ public:
 private:
   void configure(const Options& opt);
 
-  moveit::core::RobotModelPtr model_;
+  robot_model::RobotModelPtr model_;
   rdf_loader::RDFLoaderPtr rdf_loader_;
   kinematics_plugin_loader::KinematicsPluginLoaderPtr kinematics_loader_;
 };
 }  // namespace robot_model_loader
+#endif

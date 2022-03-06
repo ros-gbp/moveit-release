@@ -2,54 +2,19 @@
 Changelog for package moveit_ros_warehouse
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1.1.9 (2022-03-06)
+1.0.10 (2022-03-06)
+-------------------
+
+1.0.9 (2022-01-09)
 ------------------
 
-1.1.8 (2022-01-30)
+1.0.8 (2021-05-23)
 ------------------
 
-1.1.7 (2021-12-31)
+1.0.7 (2020-11-20)
 ------------------
-* Switch to ``std::bind`` (`#2967 <https://github.com/ros-planning/moveit/issues/2967>`_)
-* Contributors: Jochen Sprickerhof
-
-1.1.6 (2021-11-06)
-------------------
-* Use newly introduced cmake macro ``moveit_build_options()`` from ``moveit_core``
-* clang-tidy: modernize-make-shared, modernize-make-unique (`#2762 <https://github.com/ros-planning/moveit/issues/2762>`_)
-* Contributors: Robert Haschke, pvanlaar
-
-1.1.5 (2021-05-23)
-------------------
-
-1.1.4 (2021-05-12)
-------------------
-
-1.1.3 (2021-04-29)
-------------------
-
-1.1.2 (2021-04-08)
-------------------
-* Fix formatting errors
-* Contributors: Tyler Weaver
-
-1.1.1 (2020-10-13)
-------------------
-* [maint] Cleanup MSA includes (`#2351 <https://github.com/ros-planning/moveit/issues/2351>`_)
 * [maint] Add comment to MOVEIT_CLASS_FORWARD (`#2315 <https://github.com/ros-planning/moveit/issues/2315>`_)
-* Contributors: Felix von Drigalski, Robert Haschke
-
-1.1.0 (2020-09-04)
-------------------
-* [feature] Optional cpp version setting (`#2166 <https://github.com/ros-planning/moveit/issues/2166>`_)
-* [fix] Various fixes for upcoming Noetic release (`#2180 <https://github.com/ros-planning/moveit/issues/2180>`_)
-* [fix] Fix errors: catkin_lint 1.6.7 (`#1987 <https://github.com/ros-planning/moveit/issues/1987>`_)
-* [fix] Fix compiler warnings (`#1773 <https://github.com/ros-planning/moveit/issues/1773>`_)
-* [maint] clang-tidy fixes (`#2050 <https://github.com/ros-planning/moveit/issues/2050>`_, `#1419 <https://github.com/ros-planning/moveit/issues/1419>`_)
-* [maint] Replace namespaces robot_state and robot_model with moveit::core (`#1924 <https://github.com/ros-planning/moveit/issues/1924>`_)
-* [maint] Switch from include guards to pragma once (`#1615 <https://github.com/ros-planning/moveit/issues/1615>`_)
-* [maint] Remove ! from MoveIt name (`#1590 <https://github.com/ros-planning/moveit/issues/1590>`_)
-* Contributors: Ayush Garg, Dave Coleman, Henning Kayser, Jonathan Binney, Max Krichenbauer, Robert Haschke, Sean Yen, Tyler Weaver, Yu, Yan
+* Contributors: Felix von Drigalski
 
 1.0.6 (2020-08-19)
 ------------------
@@ -104,7 +69,7 @@ Changelog for package moveit_ros_warehouse
 
 0.10.2 (2018-10-24)
 -------------------
-* [fix] Text refrences to MoveIt (`#1020 <https://github.com/ros-planning/moveit/issues/1020>`_)
+* [fix] Text refrences to MoveIt! (`#1020 <https://github.com/ros-planning/moveit/issues/1020>`_)
 * [enhancement] warehouse: added params for timeout + #retries (`#1008 <https://github.com/ros-planning/moveit/issues/1008>`_)
 * [maintenance] various compiler warnings (`#1038 <https://github.com/ros-planning/moveit/issues/1038>`_)
 * Contributors: Mohmmad Ayman, Robert Haschke, dg-shadow, mike lautman

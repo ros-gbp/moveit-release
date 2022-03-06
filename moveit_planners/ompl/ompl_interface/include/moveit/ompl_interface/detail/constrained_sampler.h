@@ -34,7 +34,8 @@
 
 /* Author: Ioan Sucan */
 
-#pragma once
+#ifndef MOVEIT_OMPL_INTERFACE_DETAIL_CONSTRAINED_SAMPLER_
+#define MOVEIT_OMPL_INTERFACE_DETAIL_CONSTRAINED_SAMPLER_
 
 #include <ompl/base/StateSampler.h>
 #include <moveit/constraint_samplers/constraint_sampler.h>
@@ -71,9 +72,11 @@ private:
   const ModelBasedPlanningContext* planning_context_;
   ompl::base::StateSamplerPtr default_;
   constraint_samplers::ConstraintSamplerPtr constraint_sampler_;
-  moveit::core::RobotState work_state_;
+  robot_state::RobotState work_state_;
   unsigned int constrained_success_;
   unsigned int constrained_failure_;
   double inv_dim_;
 };
 }  // namespace ompl_interface
+
+#endif

@@ -35,7 +35,8 @@
 
 /* Author: Ken Anderson */
 
-#pragma once
+#ifndef MOVEIT_TRAJECTORY_PROCESSING_ITERATIVE_SPLINE_PARAMETERIZATION__
+#define MOVEIT_TRAJECTORY_PROCESSING_ITERATIVE_SPLINE_PARAMETERIZATION__
 
 #include <moveit/robot_trajectory/robot_trajectory.h>
 #include <moveit/trajectory_processing/time_parameterization.h>
@@ -81,3 +82,5 @@ private:
                      /// If false, move the 2nd and 2nd-last points.
 };
 }  // namespace trajectory_processing
+
+#endif

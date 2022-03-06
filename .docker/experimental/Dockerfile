@@ -1,7 +1,7 @@
-# moveit/moveit:master-experimental
+# moveit/moveit:melodic-experimental
 # Based on a moveit source install, adds the mongo driver and the warehouse packages
 
-FROM moveit/moveit:master-source
+FROM moveit/moveit:melodic-source
 
 # installing mongocxx driver for the warehouse
 RUN git clone -b 26compat https://github.com/mongodb/mongo-cxx-driver.git && \

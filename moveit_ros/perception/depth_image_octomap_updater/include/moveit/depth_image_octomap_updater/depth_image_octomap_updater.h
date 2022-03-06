@@ -34,7 +34,8 @@
 
 /* Author: Ioan Sucan */
 
-#pragma once
+#ifndef MOVEIT_OCCUPANCY_MAP_DEPTH_IMAGE_OCCUPANCY_MAP_UPDATER_
+#define MOVEIT_OCCUPANCY_MAP_DEPTH_IMAGE_OCCUPANCY_MAP_UPDATER_
 
 #include <ros/ros.h>
 #include <tf2_ros/buffer.h>
@@ -80,7 +81,6 @@ private:
   ros::Time last_update_time_;
 
   std::string filtered_cloud_topic_;
-  std::string ns_;
   std::string sensor_type_;
   std::string image_topic_;
   std::size_t queue_size_;
@@ -107,3 +107,5 @@ private:
   ros::WallTime last_depth_callback_start_;
 };
 }  // namespace occupancy_map_monitor
+
+#endif

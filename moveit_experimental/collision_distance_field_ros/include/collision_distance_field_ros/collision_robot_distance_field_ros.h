@@ -34,7 +34,8 @@
 
 /** \author E. Gil Jones */
 
-#pragma once
+#ifndef _COLLISION_ROBOT_DISTANCE_FIELD_ROS_H_
+#define _COLLISION_ROBOT_DISTANCE_FIELD_ROS_H_
 
 #include <ros/ros.h>
 #include <collision_distance_field_ros/collision_distance_field_ros_helpers.h>
@@ -62,3 +63,5 @@ public:
   }
 };
 }  // namespace collision_detection
+
+#endif

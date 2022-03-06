@@ -2,47 +2,26 @@
 Changelog for package moveit_chomp_optimizer_adapter
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1.1.9 (2022-03-06)
-------------------
+1.0.10 (2022-03-06)
+-------------------
 
-1.1.8 (2022-01-30)
+1.0.9 (2022-01-09)
 ------------------
+* Use moveit-resources@master (`#2951 <https://github.com/ros-planning/moveit/issues/2951>`_)
 
-1.1.7 (2021-12-31)
-------------------
+  - Simplify launch files to use the test_environment.launch files from moveit_resources@master
+  - Provide compatibility to the Noetic-style configuration of (multiple) planning pipelines
+    Only a single pipeline can be used at a time, specified via the ~default_planning_pipeline parameter.
+* Contributors: Robert Haschke
 
-1.1.6 (2021-11-06)
+1.0.8 (2021-05-23)
 ------------------
-* Use newly introduced cmake macro ``moveit_build_options()`` from ``moveit_core``
-* CHOMP: Rename param 'clearence' to 'clearance' (`#2702 <https://github.com/ros-planning/moveit/issues/2702>`_, `#2707 <https://github.com/ros-planning/moveit/issues/2707>`_)
-* Contributors: Martin Günther, Michael Görner, Robert Haschke
-
-1.1.5 (2021-05-23)
-------------------
-
-1.1.4 (2021-05-12)
-------------------
-
-1.1.3 (2021-04-29)
-------------------
-
-1.1.2 (2021-04-08)
-------------------
+* Enable mesh filter (`#2448 <https://github.com/ros-planning/moveit/issues/2448>`_)
 * Sanitize CHOMP initialization method parameter (`#2540 <https://github.com/ros-planning/moveit/issues/2540>`_)
-* Contributors: Cong Liu
+* Contributors: Cong Liu, Jafar Abdi
 
-1.1.1 (2020-10-13)
+1.0.7 (2020-11-20)
 ------------------
-
-1.1.0 (2020-09-04)
-------------------
-* [feature] Optional cpp version setting (`#2166 <https://github.com/ros-planning/moveit/issues/2166>`_)
-* [feature] Allow ROS namespaces for planning request adapters (`#1530 <https://github.com/ros-planning/moveit/issues/1530>`_)
-* [fix] Various fixes for upcoming Noetic release (`#2180 <https://github.com/ros-planning/moveit/issues/2180>`_)
-* [fix] Fix compiler warnings (`#1773 <https://github.com/ros-planning/moveit/issues/1773>`_)
-* [fix] Fix Chomp planning adapter (`#1525 <https://github.com/ros-planning/moveit/issues/1525>`_)
-* [maint] Remove ! from MoveIt name (`#1590 <https://github.com/ros-planning/moveit/issues/1590>`_)
-* Contributors: Dave Coleman, Henning Kayser, Robert Haschke, Sean Yen, Tyler Weaver, Yu, Yan
 
 1.0.6 (2020-08-19)
 ------------------

@@ -36,10 +36,12 @@
 
 #include <gtest/gtest.h>
 
+#include <eigen_conversions/eigen_msg.h>
 #include <moveit/kinematic_constraints/utils.h>
 #include <moveit/robot_model/robot_model.h>
 #include <moveit/robot_model_loader/robot_model_loader.h>
 #include <moveit/robot_state/conversions.h>
+#include <tf2/convert.h>
 #include <tf2_eigen/tf2_eigen.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
@@ -91,7 +93,6 @@ protected:
   // ros stuff
   ros::NodeHandle ph_{ "~" };
   robot_model::RobotModelConstPtr robot_model_{ robot_model_loader::RobotModelLoader(GetParam()).getModel() };
-  planning_scene::PlanningSceneConstPtr planning_scene_{ new planning_scene::PlanningScene(robot_model_) };
   std::unique_ptr<TrajectoryGeneratorCIRC> circ_;
   // test data provider
   std::unique_ptr<pilz_industrial_motion_planner_testutils::TestdataLoader> tdp_;
@@ -120,7 +121,7 @@ void TrajectoryGeneratorCIRCTest::SetUp()
   testutils::checkRobotModel(robot_model_, planning_group_, target_link_);
 
   // load the test data provider
-  tdp_ = std::make_unique<pilz_industrial_motion_planner_testutils::XmlTestdataLoader>(test_data_file_name_);
+  tdp_.reset(new pilz_industrial_motion_planner_testutils::XmlTestdataLoader{ test_data_file_name_ });
   ASSERT_NE(nullptr, tdp_) << "Failed to load test data by provider.";
 
   tdp_->setRobotModel(robot_model_);
@@ -141,7 +142,7 @@ void TrajectoryGeneratorCIRCTest::SetUp()
   planner_limits_.setCartesianLimits(cart_limits);
 
   // initialize the LIN trajectory generator
-  circ_ = std::make_unique<TrajectoryGeneratorCIRC>(robot_model_, planner_limits_, planning_group_);
+  circ_.reset(new TrajectoryGeneratorCIRC(robot_model_, planner_limits_));
   ASSERT_NE(nullptr, circ_) << "failed to create CIRC trajectory generator";
 }
 
@@ -189,14 +190,14 @@ void TrajectoryGeneratorCIRCTest::getCircCenter(const planning_interface::Motion
 {
   if (req.path_constraints.name == "center")
   {
-    tf2::fromMsg(req.path_constraints.position_constraints.at(0).constraint_region.primitive_poses.at(0).position,
-                 circ_center);
+    tf2::convert<geometry_msgs::Point, Eigen::Vector3d>(
+        req.path_constraints.position_constraints.at(0).constraint_region.primitive_poses.at(0).position, circ_center);
   }
   else if (req.path_constraints.name == "interim")
   {
     Eigen::Vector3d interim;
-    tf2::fromMsg(req.path_constraints.position_constraints.at(0).constraint_region.primitive_poses.at(0).position,
-                 interim);
+    tf2::convert<geometry_msgs::Point, Eigen::Vector3d>(
+        req.path_constraints.position_constraints.at(0).constraint_region.primitive_poses.at(0).position, interim);
     Eigen::Vector3d start = res.trajectory_->getFirstWayPointPtr()->getFrameTransform(target_link_).translation();
     Eigen::Vector3d goal = res.trajectory_->getLastWayPointPtr()->getFrameTransform(target_link_).translation();
 
@@ -284,8 +285,7 @@ INSTANTIATE_TEST_SUITE_P(InstantiationName, TrajectoryGeneratorCIRCTest,
 TEST_P(TrajectoryGeneratorCIRCTest, noLimits)
 {
   LimitsContainer planner_limits;
-  EXPECT_THROW(TrajectoryGeneratorCIRC(this->robot_model_, planner_limits, planning_group_),
-               TrajectoryGeneratorInvalidLimitsException);
+  EXPECT_THROW(TrajectoryGeneratorCIRC(this->robot_model_, planner_limits), TrajectoryGeneratorInvalidLimitsException);
 }
 
 /**
@@ -302,7 +302,7 @@ TEST_P(TrajectoryGeneratorCIRCTest, incompleteStartState)
   req.start_state.joint_state.position.resize(1);  // prevent failing check for equal sizes
 
   planning_interface::MotionPlanResponse res;
-  EXPECT_FALSE(circ_->generate(planning_scene_, req, res));
+  EXPECT_FALSE(circ_->generate(req, res));
   EXPECT_EQ(res.error_code_.val, moveit_msgs::MoveItErrorCodes::INVALID_ROBOT_STATE);
 }
 
@@ -316,7 +316,7 @@ TEST_P(TrajectoryGeneratorCIRCTest, nonZeroStartVelocity)
   // start state has non-zero velocity
   req.start_state.joint_state.velocity.push_back(1.0);
   planning_interface::MotionPlanResponse res;
-  EXPECT_FALSE(circ_->generate(planning_scene_, req, res));
+  EXPECT_FALSE(circ_->generate(req, res));
   EXPECT_EQ(res.error_code_.val, moveit_msgs::MoveItErrorCodes::INVALID_ROBOT_STATE);
   req.start_state.joint_state.velocity.clear();
 }
@@ -326,7 +326,7 @@ TEST_P(TrajectoryGeneratorCIRCTest, ValidCommand)
   auto circ{ tdp_->getCircCartCenterCart("circ1_center_2") };
 
   planning_interface::MotionPlanResponse res;
-  EXPECT_TRUE(circ_->generate(planning_scene_, circ.toRequest(), res));
+  EXPECT_TRUE(circ_->generate(circ.toRequest(), res));
   EXPECT_EQ(res.error_code_.val, moveit_msgs::MoveItErrorCodes::SUCCESS);
 }
 
@@ -339,7 +339,7 @@ TEST_P(TrajectoryGeneratorCIRCTest, velScaleToHigh)
 
   circ.setVelocityScale(1.0);
   planning_interface::MotionPlanResponse res;
-  EXPECT_FALSE(circ_->generate(planning_scene_, circ.toRequest(), res));
+  EXPECT_FALSE(circ_->generate(circ.toRequest(), res));
   EXPECT_EQ(res.error_code_.val, moveit_msgs::MoveItErrorCodes::PLANNING_FAILED);
 }
 
@@ -352,7 +352,7 @@ TEST_P(TrajectoryGeneratorCIRCTest, accScaleToHigh)
 
   circ.setAccelerationScale(1.0);
   planning_interface::MotionPlanResponse res;
-  EXPECT_FALSE(circ_->generate(planning_scene_, circ.toRequest(), res));
+  EXPECT_FALSE(circ_->generate(circ.toRequest(), res));
   EXPECT_EQ(res.error_code_.val, moveit_msgs::MoveItErrorCodes::PLANNING_FAILED);
 }
 
@@ -374,7 +374,7 @@ TEST_P(TrajectoryGeneratorCIRCTest, samePointsWithCenter)
   circ.getGoalConfiguration().getPose().position.z -= 1e-8;
 
   planning_interface::MotionPlanResponse res;
-  EXPECT_FALSE(circ_->generate(planning_scene_, circ.toRequest(), res));
+  EXPECT_FALSE(circ_->generate(circ.toRequest(), res));
   EXPECT_EQ(res.error_code_.val, moveit_msgs::MoveItErrorCodes::INVALID_MOTION_PLAN);
 }
 
@@ -397,7 +397,7 @@ TEST_P(TrajectoryGeneratorCIRCTest, samePointsWithInterim)
   circ.getGoalConfiguration().getPose().position.z -= 1e-8;
 
   planning_interface::MotionPlanResponse res;
-  EXPECT_FALSE(circ_->generate(planning_scene_, circ.toRequest(), res));
+  EXPECT_FALSE(circ_->generate(circ.toRequest(), res));
   EXPECT_EQ(res.error_code_.val, moveit_msgs::MoveItErrorCodes::INVALID_MOTION_PLAN);
 }
 
@@ -413,7 +413,7 @@ TEST_P(TrajectoryGeneratorCIRCTest, emptyAux)
   req.path_constraints.position_constraints.clear();
 
   planning_interface::MotionPlanResponse res;
-  EXPECT_FALSE(circ_->generate(planning_scene_, req, res));
+  EXPECT_FALSE(circ_->generate(req, res));
   EXPECT_EQ(res.error_code_.val, moveit_msgs::MoveItErrorCodes::INVALID_MOTION_PLAN);
 }
 
@@ -429,7 +429,7 @@ TEST_P(TrajectoryGeneratorCIRCTest, invalidAuxName)
   req.path_constraints.name = "";
 
   planning_interface::MotionPlanResponse res;
-  EXPECT_FALSE(circ_->generate(planning_scene_, req, res));
+  EXPECT_FALSE(circ_->generate(req, res));
   EXPECT_EQ(res.error_code_.val, moveit_msgs::MoveItErrorCodes::INVALID_MOTION_PLAN);
 }
 
@@ -446,7 +446,7 @@ TEST_P(TrajectoryGeneratorCIRCTest, invalidAuxLinkName)
   req.path_constraints.position_constraints.front().link_name = "INVALID";
 
   planning_interface::MotionPlanResponse res;
-  EXPECT_FALSE(circ_->generate(planning_scene_, req, res));
+  EXPECT_FALSE(circ_->generate(req, res));
   EXPECT_EQ(res.error_code_.val, moveit_msgs::MoveItErrorCodes::INVALID_LINK_NAME);
 }
 
@@ -460,7 +460,7 @@ TEST_P(TrajectoryGeneratorCIRCTest, invalidCenter)
   circ.getAuxiliaryConfiguration().getConfiguration().getPose().position.y += 1;
 
   planning_interface::MotionPlanResponse res;
-  EXPECT_FALSE(circ_->generate(planning_scene_, circ.toRequest(), res));
+  EXPECT_FALSE(circ_->generate(circ.toRequest(), res));
   EXPECT_EQ(res.error_code_.val, moveit_msgs::MoveItErrorCodes::INVALID_MOTION_PLAN);
 }
 
@@ -480,7 +480,7 @@ TEST_P(TrajectoryGeneratorCIRCTest, colinearCenter)
   circ.getGoalConfiguration().getPose().position.x += 0.1;
 
   planning_interface::MotionPlanResponse res;
-  EXPECT_FALSE(circ_->generate(planning_scene_, circ.toRequest(), res));
+  EXPECT_FALSE(circ_->generate(circ.toRequest(), res));
   EXPECT_EQ(res.error_code_.val, moveit_msgs::MoveItErrorCodes::INVALID_MOTION_PLAN);
 }
 
@@ -501,7 +501,7 @@ TEST_P(TrajectoryGeneratorCIRCTest, colinearInterim)
   circ.getGoalConfiguration().getPose().position.x += 0.1;
 
   planning_interface::MotionPlanResponse res;
-  EXPECT_FALSE(circ_->generate(planning_scene_, circ.toRequest(), res));
+  EXPECT_FALSE(circ_->generate(circ.toRequest(), res));
   EXPECT_EQ(res.error_code_.val, moveit_msgs::MoveItErrorCodes::INVALID_MOTION_PLAN);
 }
 
@@ -519,7 +519,7 @@ TEST_P(TrajectoryGeneratorCIRCTest, colinearCenterDueToInterim)
   auto circ{ tdp_->getCircCartInterimCart("circ3_interim") };
 
   planning_interface::MotionPlanResponse res;
-  ASSERT_TRUE(circ_->generate(planning_scene_, circ.toRequest(), res));
+  ASSERT_TRUE(circ_->generate(circ.toRequest(), res));
   EXPECT_EQ(res.error_code_.val, moveit_msgs::MoveItErrorCodes::SUCCESS);
 }
 
@@ -552,7 +552,7 @@ TEST_P(TrajectoryGeneratorCIRCTest, colinearCenterAndInterim)
   moveit_msgs::MotionPlanRequest req = circ.toRequest();
 
   planning_interface::MotionPlanResponse res;
-  EXPECT_TRUE(circ_->generate(planning_scene_, req, res));
+  EXPECT_TRUE(circ_->generate(req, res));
   EXPECT_EQ(res.error_code_.val, moveit_msgs::MoveItErrorCodes::SUCCESS);
   checkCircResult(req, res);
 }
@@ -586,7 +586,7 @@ TEST_P(TrajectoryGeneratorCIRCTest, interimLarger180Degree)
   moveit_msgs::MotionPlanRequest req = circ.toRequest();
 
   planning_interface::MotionPlanResponse res;
-  EXPECT_TRUE(circ_->generate(planning_scene_, req, res));
+  EXPECT_TRUE(circ_->generate(req, res));
   EXPECT_EQ(res.error_code_.val, moveit_msgs::MoveItErrorCodes::SUCCESS);
   checkCircResult(req, res);
 }
@@ -602,7 +602,7 @@ TEST_P(TrajectoryGeneratorCIRCTest, centerPointJointGoal)
   moveit_msgs::MotionPlanRequest req = circ.toRequest();
 
   planning_interface::MotionPlanResponse res;
-  ASSERT_TRUE(circ_->generate(planning_scene_, req, res));
+  ASSERT_TRUE(circ_->generate(req, res));
   EXPECT_EQ(res.error_code_.val, moveit_msgs::MoveItErrorCodes::SUCCESS);
   checkCircResult(req, res);
 }
@@ -629,7 +629,7 @@ TEST_P(TrajectoryGeneratorCIRCTest, InvalidAdditionalPrimitivePose)
   req.path_constraints.position_constraints.back().constraint_region.primitive_poses.push_back(center_position);
 
   planning_interface::MotionPlanResponse res;
-  ASSERT_FALSE(circ_->generate(planning_scene_, req, res));
+  ASSERT_FALSE(circ_->generate(req, res));
   EXPECT_EQ(res.error_code_.val, moveit_msgs::MoveItErrorCodes::INVALID_MOTION_PLAN);
 }
 
@@ -651,7 +651,7 @@ TEST_P(TrajectoryGeneratorCIRCTest, InvalidExtraJointConstraint)
   req.goal_constraints.front().joint_constraints.push_back(joint_constraint);  //<-- Additional constraint
 
   planning_interface::MotionPlanResponse res;
-  EXPECT_FALSE(circ_->generate(planning_scene_, req, res));
+  EXPECT_FALSE(circ_->generate(req, res));
   EXPECT_EQ(res.error_code_.val, moveit_msgs::MoveItErrorCodes::INVALID_GOAL_CONSTRAINTS);
 }
 
@@ -665,7 +665,7 @@ TEST_P(TrajectoryGeneratorCIRCTest, CenterPointPoseGoal)
   moveit_msgs::MotionPlanRequest req = circ.toRequest();
 
   planning_interface::MotionPlanResponse res;
-  ASSERT_TRUE(circ_->generate(planning_scene_, req, res));
+  ASSERT_TRUE(circ_->generate(req, res));
   EXPECT_EQ(res.error_code_.val, moveit_msgs::MoveItErrorCodes::SUCCESS);
   checkCircResult(req, res);
 }
@@ -682,7 +682,7 @@ TEST_P(TrajectoryGeneratorCIRCTest, CenterPointPoseGoalFrameIdPositionConstraint
   req.goal_constraints.front().position_constraints.front().header.frame_id = robot_model_->getModelFrame();
 
   planning_interface::MotionPlanResponse res;
-  ASSERT_TRUE(circ_->generate(planning_scene_, req, res));
+  ASSERT_TRUE(circ_->generate(req, res));
   EXPECT_EQ(res.error_code_.val, moveit_msgs::MoveItErrorCodes::SUCCESS);
   checkCircResult(req, res);
 }
@@ -698,7 +698,7 @@ TEST_P(TrajectoryGeneratorCIRCTest, CenterPointPoseGoalFrameIdOrientationConstra
   req.goal_constraints.front().orientation_constraints.front().header.frame_id = robot_model_->getModelFrame();
 
   planning_interface::MotionPlanResponse res;
-  ASSERT_TRUE(circ_->generate(planning_scene_, req, res));
+  ASSERT_TRUE(circ_->generate(req, res));
   EXPECT_EQ(res.error_code_.val, moveit_msgs::MoveItErrorCodes::SUCCESS);
   checkCircResult(req, res);
 }
@@ -717,7 +717,7 @@ TEST_P(TrajectoryGeneratorCIRCTest, CenterPointPoseGoalFrameIdBothConstraints)
   req.goal_constraints.front().orientation_constraints.front().header.frame_id = robot_model_->getModelFrame();
 
   planning_interface::MotionPlanResponse res;
-  ASSERT_TRUE(circ_->generate(planning_scene_, req, res));
+  ASSERT_TRUE(circ_->generate(req, res));
   EXPECT_EQ(res.error_code_.val, moveit_msgs::MoveItErrorCodes::SUCCESS);
   checkCircResult(req, res);
 }
@@ -734,7 +734,7 @@ TEST_P(TrajectoryGeneratorCIRCTest, InterimPointJointGoal)
   moveit_msgs::MotionPlanRequest req = circ.toRequest();
 
   planning_interface::MotionPlanResponse res;
-  ASSERT_TRUE(circ_->generate(planning_scene_, req, res));
+  ASSERT_TRUE(circ_->generate(req, res));
   EXPECT_EQ(res.error_code_.val, moveit_msgs::MoveItErrorCodes::SUCCESS);
   checkCircResult(req, res);
 }
@@ -757,7 +757,7 @@ TEST_P(TrajectoryGeneratorCIRCTest, InterimPointJointGoalStartVelNearZero)
   req.start_state.joint_state.velocity = std::vector<double>(req.start_state.joint_state.position.size(), 1e-16);
 
   planning_interface::MotionPlanResponse res;
-  ASSERT_TRUE(circ_->generate(planning_scene_, req, res));
+  ASSERT_TRUE(circ_->generate(req, res));
   EXPECT_EQ(res.error_code_.val, moveit_msgs::MoveItErrorCodes::SUCCESS);
   checkCircResult(req, res);
 }
@@ -771,7 +771,7 @@ TEST_P(TrajectoryGeneratorCIRCTest, InterimPointPoseGoal)
   moveit_msgs::MotionPlanRequest req = circ.toRequest();
 
   planning_interface::MotionPlanResponse res;
-  ASSERT_TRUE(circ_->generate(planning_scene_, req, res));
+  ASSERT_TRUE(circ_->generate(req, res));
   EXPECT_EQ(res.error_code_.val, moveit_msgs::MoveItErrorCodes::SUCCESS);
   checkCircResult(req, res);
 }

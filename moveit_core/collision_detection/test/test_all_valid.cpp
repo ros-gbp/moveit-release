@@ -36,20 +36,22 @@
 
 #include <gtest/gtest.h>
 #include <moveit/collision_detection/allvalid/collision_detector_allocator_allvalid.h>
-#include <moveit/collision_detection/allvalid/collision_env_allvalid.h>
+#include <moveit/collision_detection/allvalid/collision_robot_allvalid.h>
+#include <moveit/collision_detection/allvalid/collision_world_allvalid.h>
 
 TEST(AllValid, Instantiate)
 {
   using namespace collision_detection;
   CollisionDetectorAllocatorAllValid allocator;
+  CollisionWorldAllValid world;
 
   urdf::ModelInterfaceSharedPtr urdf_model;
-  urdf_model = std::make_shared<urdf::ModelInterface>();
+  urdf_model.reset(new urdf::ModelInterface());
   srdf::ModelConstSharedPtr srdf_model;
-  srdf_model = std::make_shared<srdf::Model>();
-  moveit::core::RobotModelConstPtr robot_model;
-  robot_model = std::make_shared<moveit::core::RobotModel>(urdf_model, srdf_model);
-  CollisionEnvAllValid env(robot_model);
+  srdf_model.reset(new srdf::Model());
+  robot_model::RobotModelConstPtr robot_model;
+  robot_model.reset(new robot_model::RobotModel(urdf_model, srdf_model));
+  CollisionRobotAllValid robot(robot_model);
 }
 
 int main(int argc, char** argv)

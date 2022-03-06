@@ -34,7 +34,8 @@
 
 /* Author: Sachin Chitta */
 
-#pragma once
+#ifndef MOVEIT_SEMANTIC_WORLD_
+#define MOVEIT_SEMANTIC_WORLD_
 
 #include <ros/ros.h>
 #include <moveit/macros/class_forward.h>
@@ -163,3 +164,5 @@ private:
 };
 }  // namespace semantic_world
 }  // namespace moveit
+
+#endif

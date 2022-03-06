@@ -34,7 +34,8 @@
 
 /* Author: E. Gil Jones */
 
-#pragma once
+#ifndef MOVEIT_MOVEIT_WAREHOUSE_WAREHOUSE_CONNECTOR_
+#define MOVEIT_MOVEIT_WAREHOUSE_WAREHOUSE_CONNECTOR_
 
 #include <string>
 
@@ -54,3 +55,5 @@ private:
   int child_pid_;
 };
 }  // namespace moveit_warehouse
+
+#endif

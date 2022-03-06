@@ -38,14 +38,14 @@
 
 #include <moveit/robot_interaction/locked_robot_state.h>
 
-robot_interaction::LockedRobotState::LockedRobotState(const moveit::core::RobotState& state)
-  : state_(new moveit::core::RobotState(state))
+robot_interaction::LockedRobotState::LockedRobotState(const robot_state::RobotState& state)
+  : state_(new robot_state::RobotState(state))
 {
   state_->update();
 }
 
-robot_interaction::LockedRobotState::LockedRobotState(const moveit::core::RobotModelPtr& model)
-  : state_(new moveit::core::RobotState(model))
+robot_interaction::LockedRobotState::LockedRobotState(const robot_model::RobotModelPtr& model)
+  : state_(new robot_state::RobotState(model))
 {
   state_->setToDefaultValues();
   state_->update();
@@ -53,13 +53,13 @@ robot_interaction::LockedRobotState::LockedRobotState(const moveit::core::RobotM
 
 robot_interaction::LockedRobotState::~LockedRobotState() = default;
 
-moveit::core::RobotStateConstPtr robot_interaction::LockedRobotState::getState() const
+robot_state::RobotStateConstPtr robot_interaction::LockedRobotState::getState() const
 {
   boost::mutex::scoped_lock lock(state_lock_);
   return state_;
 }
 
-void robot_interaction::LockedRobotState::setState(const moveit::core::RobotState& state)
+void robot_interaction::LockedRobotState::setState(const robot_state::RobotState& state)
 {
   {
     boost::mutex::scoped_lock lock(state_lock_);
@@ -69,7 +69,7 @@ void robot_interaction::LockedRobotState::setState(const moveit::core::RobotStat
     if (state_.unique())
       *state_ = state;
     else
-      state_ = std::make_shared<moveit::core::RobotState>(state);
+      state_.reset(new robot_state::RobotState(state));
 
     state_->update();
   }
@@ -84,7 +84,7 @@ void robot_interaction::LockedRobotState::modifyState(const ModifyStateFunction&
     // If someone else has a reference to the state, then make a copy.
     // The old state is orphaned (does not change, but is now out of date).
     if (!state_.unique())
-      state_ = std::make_shared<moveit::core::RobotState>(*state_);
+      state_.reset(new robot_state::RobotState(*state_));
 
     modify(state_.get());
     state_->update();

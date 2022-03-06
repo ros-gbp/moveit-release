@@ -45,13 +45,10 @@ class FixWorkspaceBounds : public planning_request_adapter::PlanningRequestAdapt
 public:
   static const std::string WBOUNDS_PARAM_NAME;
 
-  FixWorkspaceBounds() : planning_request_adapter::PlanningRequestAdapter()
+  FixWorkspaceBounds()
+    : planning_request_adapter::PlanningRequestAdapter(), nh_(planning_interface::getConfigNodeHandle())
   {
-  }
-
-  void initialize(const ros::NodeHandle& nh) override
-  {
-    if (!nh.getParam(WBOUNDS_PARAM_NAME, workspace_extent_))
+    if (!nh_.getParam(WBOUNDS_PARAM_NAME, workspace_extent_))
     {
       workspace_extent_ = 10.0;
       ROS_INFO_STREAM("Param '" << WBOUNDS_PARAM_NAME << "' was not set. Using default value: " << workspace_extent_);
@@ -68,7 +65,7 @@ public:
 
   bool adaptAndPlan(const PlannerFn& planner, const planning_scene::PlanningSceneConstPtr& planning_scene,
                     const planning_interface::MotionPlanRequest& req, planning_interface::MotionPlanResponse& res,
-                    std::vector<std::size_t>& /*added_path_index*/) const override
+                    std::vector<std::size_t>& added_path_index) const override
   {
     ROS_DEBUG("Running '%s'", getDescription().c_str());
     const moveit_msgs::WorkspaceParameters& wparams = req.workspace_parameters;
@@ -88,6 +85,7 @@ public:
   }
 
 private:
+  ros::NodeHandle nh_;
   double workspace_extent_;
 };
 

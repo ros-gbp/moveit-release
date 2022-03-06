@@ -34,7 +34,8 @@
 
 /* Author: Ioan Sucan */
 
-#pragma once
+#ifndef MOVEIT_PICK_PLACE_PICK_PLACE_
+#define MOVEIT_PICK_PLACE_PICK_PLACE_
 
 #include <moveit/macros/class_forward.h>
 #include <moveit/pick_place/manipulation_pipeline.h>
@@ -131,7 +132,7 @@ public:
     return planning_pipeline_;
   }
 
-  const moveit::core::RobotModelConstPtr& getRobotModel() const
+  const robot_model::RobotModelConstPtr& getRobotModel() const
   {
     return planning_pipeline_->getRobotModel();
   }
@@ -164,3 +165,5 @@ private:
   constraint_sampler_manager_loader::ConstraintSamplerManagerLoaderPtr constraint_sampler_manager_loader_;
 };
 }  // namespace pick_place
+
+#endif

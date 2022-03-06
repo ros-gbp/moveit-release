@@ -32,7 +32,8 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-#pragma once
+#ifndef MOVEIT_SBPL_INTERFACE_H_
+#define MOVEIT_SBPL_INTERFACE_H_
 
 #include <sbpl/headers.h>
 #include <planning_scene/planning_scene.h>
@@ -67,3 +68,5 @@ protected:
   // SBPLPlanner *planner_;
 };
 }  // namespace sbpl_interface
+
+#endif

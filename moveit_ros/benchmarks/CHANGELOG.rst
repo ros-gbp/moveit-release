@@ -2,61 +2,19 @@
 Changelog for package moveit_ros_benchmarks
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1.1.9 (2022-03-06)
-------------------
+1.0.10 (2022-03-06)
+-------------------
 
-1.1.8 (2022-01-30)
-------------------
-
-1.1.7 (2021-12-31)
+1.0.9 (2022-01-09)
 ------------------
 * Provide ``MOVEIT_VERSION_CHECK`` macro (`#2997 <https://github.com/ros-planning/moveit/issues/2997>`_)
-* Switch to ``std::bind`` (`#2967 <https://github.com/ros-planning/moveit/issues/2967>`_)
-* Contributors: Jochen Sprickerhof, Robert Haschke
+* Contributors: Robert Haschke
 
-1.1.6 (2021-11-06)
-------------------
-* Use newly introduced cmake macro ``moveit_build_options()`` from ``moveit_core``
-* clang-tidy: modernize-make-shared, modernize-make-unique (`#2762 <https://github.com/ros-planning/moveit/issues/2762>`_)
-* Fix predefined poses benchmark example (`#2718 <https://github.com/ros-planning/moveit/issues/2718>`_)
-* Contributors: Captain Yoshi, Robert Haschke
-
-1.1.5 (2021-05-23)
+1.0.8 (2021-05-23)
 ------------------
 
-1.1.4 (2021-05-12)
+1.0.7 (2020-11-20)
 ------------------
-
-1.1.3 (2021-04-29)
-------------------
-
-1.1.2 (2021-04-08)
-------------------
-* Fix formatting errors
-* Contributors: Tyler Weaver
-
-1.1.1 (2020-10-13)
-------------------
-* [fix] python3 issues (`#2323 <https://github.com/ros-planning/moveit/issues/2323>`_)
-* [maint] Cleanup MSA includes (`#2351 <https://github.com/ros-planning/moveit/issues/2351>`_)
-* Contributors: Michael Görner, Robert Haschke
-
-1.1.0 (2020-09-04)
-------------------
-* [feature] Benchmark combinations of predefined poses (`#1548 <https://github.com/ros-planning/moveit/issues/1548>`_)
-* [feature] Support benchmarking of full planning pipelines (`#1531 <https://github.com/ros-planning/moveit/issues/1531>`_)
-* [fix] Various fixes for upcoming Noetic release (`#2180 <https://github.com/ros-planning/moveit/issues/2180>`_)
-* [fix] Fix plot details, correcting xlabels positions and cleaning the graph (`#1658 <https://github.com/ros-planning/moveit/issues/1658>`_) (`#1668 <https://github.com/ros-planning/moveit/issues/1668>`_)
-* [maint] Optional cpp version setting (`#2166 <https://github.com/ros-planning/moveit/issues/2166>`_)
-* [maint] clang-tidy fixes (`#2050 <https://github.com/ros-planning/moveit/issues/2050>`_, `#2004 <https://github.com/ros-planning/moveit/issues/2004>`_, `#1419 <https://github.com/ros-planning/moveit/issues/1419>`_)
-* [maint] Fix usage of panda_moveit_config (`#1904 <https://github.com/ros-planning/moveit/issues/1904>`_)
-* [maint] Replace namespaces robot_state and robot_model with moveit::core (`#1924 <https://github.com/ros-planning/moveit/issues/1924>`_)
-* [maint] Fix compiler warnings (`#1773 <https://github.com/ros-planning/moveit/issues/1773>`_)
-* [maint] Do not install helper scripts in global bin destination (`#1704 <https://github.com/ros-planning/moveit/issues/1704>`_)
-* [maint] Cleanup launch + config files (`#1631 <https://github.com/ros-planning/moveit/issues/1631>`_)
-* [maint] Switch from include guards to pragma once (`#1615 <https://github.com/ros-planning/moveit/issues/1615>`_)
-* [maint] Remove ! from MoveIt name (`#1590 <https://github.com/ros-planning/moveit/issues/1590>`_)
-* Contributors: Ayush Garg, Dave Coleman, Henning Kayser, Jonathan Binney, Mahmoud Ahmed Selim, Markus Vieth, Michael Görner, Robert Haschke, Sean Yen, Tyler Weaver, Yu, Yan
 
 1.0.6 (2020-08-19)
 ------------------
@@ -247,13 +205,13 @@ Changelog for package moveit_ros_benchmarks
   as a symlink pointing to the versioned file.
   Because this sets each library's SONAME to the *full version*, this enforces
   that *every* binary links with the versioned library file from now on and
-  has to be relinked with *each* new release of MoveIt.
+  has to be relinked with *each* new release of MoveIt!.
   The alternative would be to set the SONAME to `$MAJOR.$MINOR` and ignore the patch version,
   but because we currently stay with one `$MAJOR.$MINOR` number within each ROS distribution,
   we had (and likely will have) ABI changes in the `$PATCH` version releases too.
   The reason for this commit is that it is practically impossible to maintain full ABI compatibility
   within each ROS distribution and still add the the features/patches the community asks for.
-  This has resulted in more than one ABI-incompatible MoveIt release in the recent past
+  This has resulted in more than one ABI-incompatible MoveIt! release in the recent past
   within a ROS distribution. Because the libraries have not been versioned up to now,
   there was no way to indicate the incompatible changes and users who did not rebuild
   their whole workspace with the new release encountered weird and hard-to-track segfaults

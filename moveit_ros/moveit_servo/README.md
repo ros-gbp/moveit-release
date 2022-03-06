@@ -1,4 +1,4 @@
-## MoveIt Servo
+## Moveit Servo
 
 #### Quick Start Guide for UR5 example
 

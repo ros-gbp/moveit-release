@@ -34,7 +34,8 @@
 
 /* Author: Ioan Sucan */
 
-#pragma once
+#ifndef MOVEIT_MOVE_GROUP_CAPABILITY_
+#define MOVEIT_MOVE_GROUP_CAPABILITY_
 
 #include <moveit/macros/class_forward.h>
 #include <moveit/planning_scene_monitor/planning_scene_monitor.h>
@@ -92,11 +93,11 @@ protected:
   moveit_msgs::PlanningScene clearSceneRobotState(const moveit_msgs::PlanningScene& scene) const;
   bool performTransform(geometry_msgs::PoseStamped& pose_msg, const std::string& target_frame) const;
 
-  planning_pipeline::PlanningPipelinePtr resolvePlanningPipeline(const std::string& pipeline_id) const;
-
   ros::NodeHandle root_node_handle_;
   ros::NodeHandle node_handle_;
   std::string capability_name_;
   MoveGroupContextPtr context_;
 };
 }  // namespace move_group
+
+#endif

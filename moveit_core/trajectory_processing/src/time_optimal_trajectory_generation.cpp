@@ -106,10 +106,8 @@ public:
 
     const Eigen::VectorXd start_direction = (intersection - start).normalized();
     const Eigen::VectorXd end_direction = (end - intersection).normalized();
-    const double start_dot_end = start_direction.dot(end_direction);
 
-    // catch division by 0 in computations below
-    if (start_dot_end > 0.999999 || start_dot_end < -0.999999)
+    if ((start_direction - end_direction).norm() < 0.000001)
     {
       length_ = 0.0;
       radius = 1.0;
@@ -119,7 +117,8 @@ public:
       return;
     }
 
-    const double angle = acos(start_dot_end);
+    // directions must be different at this point so angle is always non-zero
+    const double angle = acos(std::max(-1.0, start_direction.dot(end_direction)));
     const double start_distance = (start - intersection).norm();
     const double end_distance = (end - intersection).norm();
 
@@ -224,16 +223,17 @@ Path::Path(const std::list<Eigen::VectorXd>& path, double max_deviation) : lengt
 
   // Create list of switching point candidates, calculate total path length and
   // absolute positions of path segments
-  for (std::unique_ptr<PathSegment>& path_segment : path_segments_)
+  for (std::list<std::unique_ptr<PathSegment>>::iterator segment = path_segments_.begin();
+       segment != path_segments_.end(); ++segment)
   {
-    path_segment->position_ = length_;
-    std::list<double> local_switching_points = path_segment->getSwitchingPoints();
+    (*segment)->position_ = length_;
+    std::list<double> local_switching_points = (*segment)->getSwitchingPoints();
     for (std::list<double>::const_iterator point = local_switching_points.begin();
          point != local_switching_points.end(); ++point)
     {
       switching_points_.push_back(std::make_pair(length_ + *point, false));
     }
-    length_ += path_segment->getLength();
+    length_ += (*segment)->getLength();
     while (!switching_points_.empty() && switching_points_.back().first >= length_)
       switching_points_.pop_back();
     switching_points_.push_back(std::make_pair(length_, true));
@@ -243,9 +243,10 @@ Path::Path(const std::list<Eigen::VectorXd>& path, double max_deviation) : lengt
 
 Path::Path(const Path& path) : length_(path.length_), switching_points_(path.switching_points_)
 {
-  for (const std::unique_ptr<PathSegment>& path_segment : path.path_segments_)
+  for (std::list<std::unique_ptr<PathSegment>>::const_iterator it = path.path_segments_.begin();
+       it != path.path_segments_.end(); ++it)
   {
-    path_segments_.emplace_back(path_segment->clone());
+    path_segments_.emplace_back((*it)->clone());
   }
 }
 
@@ -305,6 +306,11 @@ double Path::getNextSwitchingPoint(double s, bool& discontinuity) const
 std::list<std::pair<double, bool>> Path::getSwitchingPoints() const
 {
   return switching_points_;
+}
+
+static double squared(double d)
+{
+  return d * d;
 }
 
 Trajectory::Trajectory(const Path& path, const Eigen::VectorXd& max_velocity, const Eigen::VectorXd& max_acceleration,
@@ -868,7 +874,7 @@ bool TimeOptimalTrajectoryGeneration::computeTimeStamps(robot_trajectory::RobotT
   if (trajectory.empty())
     return true;
 
-  const moveit::core::JointModelGroup* group = trajectory.getGroup();
+  const robot_model::JointModelGroup* group = trajectory.getGroup();
   if (!group)
   {
     ROS_ERROR_NAMED(LOGNAME, "It looks like the planner did not set the group the plan was computed for");
@@ -914,7 +920,7 @@ bool TimeOptimalTrajectoryGeneration::computeTimeStamps(robot_trajectory::RobotT
   // This is pretty much copied from IterativeParabolicTimeParameterization::applyVelocityConstraints
   const std::vector<std::string>& vars = group->getVariableNames();
   const std::vector<int>& idx = group->getVariableIndexList();
-  const moveit::core::RobotModel& rmodel = group->getParentModel();
+  const robot_model::RobotModel& rmodel = group->getParentModel();
   const unsigned num_joints = group->getVariableCount();
   const unsigned num_points = trajectory.getWayPointCount();
 
@@ -923,33 +929,22 @@ bool TimeOptimalTrajectoryGeneration::computeTimeStamps(robot_trajectory::RobotT
   Eigen::VectorXd max_acceleration(num_joints);
   for (size_t j = 0; j < num_joints; ++j)
   {
-    const moveit::core::VariableBounds& bounds = rmodel.getVariableBounds(vars[j]);
+    const robot_model::VariableBounds& bounds = rmodel.getVariableBounds(vars[j]);
 
     // Limits need to be non-zero, otherwise we never exit
     max_velocity[j] = 1.0;
     if (bounds.velocity_bounded_)
     {
-      if (bounds.max_velocity_ < std::numeric_limits<double>::epsilon())
-      {
-        ROS_ERROR_NAMED(LOGNAME, "Invalid max_velocity %f specified for '%s', must be greater than 0.0",
-                        bounds.max_velocity_, vars[j].c_str());
-        return false;
-      }
-      max_velocity[j] =
-          std::min(std::fabs(bounds.max_velocity_), std::fabs(bounds.min_velocity_)) * velocity_scaling_factor;
+      max_velocity[j] = std::min(fabs(bounds.max_velocity_), fabs(bounds.min_velocity_)) * velocity_scaling_factor;
+      max_velocity[j] = std::max(0.01, max_velocity[j]);
     }
 
     max_acceleration[j] = 1.0;
     if (bounds.acceleration_bounded_)
     {
-      if (bounds.max_acceleration_ < std::numeric_limits<double>::epsilon())
-      {
-        ROS_ERROR_NAMED(LOGNAME, "Invalid max_acceleration %f specified for '%s', must be greater than 0.0",
-                        bounds.max_acceleration_, vars[j].c_str());
-        return false;
-      }
-      max_acceleration[j] = std::min(std::fabs(bounds.max_acceleration_), std::fabs(bounds.min_acceleration_)) *
-                            acceleration_scaling_factor;
+      max_acceleration[j] =
+          std::min(fabs(bounds.max_acceleration_), fabs(bounds.min_acceleration_)) * acceleration_scaling_factor;
+      max_acceleration[j] = std::max(0.01, max_acceleration[j]);
     }
   }
 
@@ -958,19 +953,15 @@ bool TimeOptimalTrajectoryGeneration::computeTimeStamps(robot_trajectory::RobotT
   std::list<Eigen::VectorXd> points;
   for (size_t p = 0; p < num_points; ++p)
   {
-    moveit::core::RobotStatePtr waypoint = trajectory.getWayPointPtr(p);
+    robot_state::RobotStatePtr waypoint = trajectory.getWayPointPtr(p);
     Eigen::VectorXd new_point(num_joints);
-    // The first point should always be kept
     bool diverse_point = (p == 0);
 
-    for (size_t j = 0; j < num_joints; ++j)
+    for (size_t j = 0; j < num_joints; j++)
     {
       new_point[j] = waypoint->getVariablePosition(idx[j]);
-      // If any joint angle is different, it's a unique waypoint
-      if (p > 0 && std::fabs(new_point[j] - points.back()[j]) > min_angle_change_)
-      {
+      if (p > 0 && std::abs(new_point[j] - points.back()[j]) > min_angle_change_)
         diverse_point = true;
-      }
     }
 
     if (diverse_point)
@@ -1002,7 +993,7 @@ bool TimeOptimalTrajectoryGeneration::computeTimeStamps(robot_trajectory::RobotT
   size_t sample_count = std::ceil(parameterized.getDuration() / resample_dt_);
 
   // Resample and fill in trajectory
-  moveit::core::RobotState waypoint = moveit::core::RobotState(trajectory.getWayPoint(0));
+  robot_state::RobotState waypoint = robot_state::RobotState(trajectory.getWayPoint(0));
   trajectory.clear();
   double last_t = 0;
   for (size_t sample = 0; sample <= sample_count; ++sample)

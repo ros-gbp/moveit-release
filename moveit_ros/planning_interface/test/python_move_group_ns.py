@@ -46,7 +46,6 @@ import os
 from moveit_ros_planning_interface._moveit_move_group_interface import (
     MoveGroupInterface,
 )
-from moveit_msgs.msg import MoveItErrorCodes
 
 
 class PythonMoveGroupNsTest(unittest.TestCase):
@@ -87,21 +86,13 @@ class PythonMoveGroupNsTest(unittest.TestCase):
 
     def plan(self, target):
         self.group.set_joint_value_target(target)
-        return self.group.plan()
+        return self.group.compute_plan()
 
     def test_validation(self):
         current = np.asarray(self.group.get_current_joint_values())
 
-        error_code1, plan1, time = self.plan(current + 0.2)
-        error_code2, plan2, time = self.plan(current + 0.2)
-
-        # both plans should have succeeded:
-        error_code = MoveItErrorCodes()
-        error_code.deserialize(error_code1)
-        self.assertEqual(error_code.val, MoveItErrorCodes.SUCCESS)
-        error_code = MoveItErrorCodes()
-        error_code.deserialize(error_code2)
-        self.assertEqual(error_code.val, MoveItErrorCodes.SUCCESS)
+        plan1 = self.plan(current + 0.2)
+        plan2 = self.plan(current + 0.2)
 
         # first plan should execute
         self.assertTrue(self.group.execute(plan1))
@@ -110,11 +101,8 @@ class PythonMoveGroupNsTest(unittest.TestCase):
         self.assertFalse(self.group.execute(plan2))
 
         # newly planned trajectory should execute again
-        error_code3, plan3, time = self.plan(current)
+        plan3 = self.plan(current)
         self.assertTrue(self.group.execute(plan3))
-        error_code = MoveItErrorCodes()
-        error_code.deserialize(error_code3)
-        self.assertEqual(error_code.val, MoveItErrorCodes.SUCCESS)
 
 
 if __name__ == "__main__":

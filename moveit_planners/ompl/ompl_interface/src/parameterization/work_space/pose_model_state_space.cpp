@@ -56,13 +56,12 @@ ompl_interface::PoseModelStateSpace::PoseModelStateSpace(const ModelBasedStateSp
     poses_.emplace_back(spec.joint_model_group_, spec.joint_model_group_->getGroupKinematics().first);
   else if (!spec.joint_model_group_->getGroupKinematics().second.empty())
   {
-    const moveit::core::JointModelGroup::KinematicsSolverMap& m = spec.joint_model_group_->getGroupKinematics().second;
+    const robot_model::JointModelGroup::KinematicsSolverMap& m = spec.joint_model_group_->getGroupKinematics().second;
     for (const auto& it : m)
       poses_.emplace_back(it.first, it.second);
   }
   if (poses_.empty())
-    ROS_ERROR_NAMED(LOGNAME, "No kinematics solvers specified. Unable to construct a "
-                             "PoseModelStateSpace");
+    ROS_ERROR_NAMED(LOGNAME, "No kinematics solvers specified. Unable to construct a PoseModelStateSpace");
   else
     std::sort(poses_.begin(), poses_.end());
   setName(getName() + "_" + PARAMETERIZATION_TYPE);
@@ -182,10 +181,10 @@ void ompl_interface::PoseModelStateSpace::setPlanningVolume(double minX, double 
 }
 
 ompl_interface::PoseModelStateSpace::PoseComponent::PoseComponent(
-    const moveit::core::JointModelGroup* subgroup, const moveit::core::JointModelGroup::KinematicsSolver& k)
+    const robot_model::JointModelGroup* subgroup, const robot_model::JointModelGroup::KinematicsSolver& k)
   : subgroup_(subgroup), kinematics_solver_(k.allocator_(subgroup)), bijection_(k.bijection_)
 {
-  state_space_ = std::make_shared<ompl::base::SE3StateSpace>();
+  state_space_.reset(new ompl::base::SE3StateSpace());
   state_space_->setName(subgroup_->getName() + "_Workspace");
   fk_link_.resize(1, kinematics_solver_->getTipFrame());
   if (!fk_link_[0].empty() && fk_link_[0][0] == '/')
@@ -343,7 +342,7 @@ ompl::base::StateSamplerPtr ompl_interface::PoseModelStateSpace::allocDefaultSta
 }
 
 void ompl_interface::PoseModelStateSpace::copyToOMPLState(ompl::base::State* state,
-                                                          const moveit::core::RobotState& rstate) const
+                                                          const robot_state::RobotState& rstate) const
 {
   ModelBasedStateSpace::copyToOMPLState(state, rstate);
   state->as<StateType>()->setJointsComputed(true);

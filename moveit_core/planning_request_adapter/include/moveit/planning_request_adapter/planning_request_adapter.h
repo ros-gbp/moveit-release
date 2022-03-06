@@ -34,7 +34,8 @@
 
 /* Author: Ioan Sucan */
 
-#pragma once
+#ifndef MOVEIT_PLANNING_REQUEST_ADAPTER_PLANNING_REQUEST_ADAPTER_
+#define MOVEIT_PLANNING_REQUEST_ADAPTER_PLANNING_REQUEST_ADAPTER_
 
 #include <moveit/macros/class_forward.h>
 #include <moveit/planning_interface/planning_interface.h>
@@ -49,9 +50,10 @@ MOVEIT_CLASS_FORWARD(PlanningRequestAdapter);  // Defines PlanningRequestAdapter
 class PlanningRequestAdapter
 {
 public:
-  using PlannerFn =
-      boost::function<bool(const planning_scene::PlanningSceneConstPtr&, const planning_interface::MotionPlanRequest&,
-                           planning_interface::MotionPlanResponse&)>;
+  typedef boost::function<bool(const planning_scene::PlanningSceneConstPtr& planning_scene,
+                               const planning_interface::MotionPlanRequest& req,
+                               planning_interface::MotionPlanResponse& res)>
+      PlannerFn;
 
   PlanningRequestAdapter()
   {
@@ -60,10 +62,6 @@ public:
   virtual ~PlanningRequestAdapter()
   {
   }
-
-  /** \brief Initialize parameters using the passed NodeHandle
-      if no initialization is needed, simply implement as empty */
-  virtual void initialize(const ros::NodeHandle& node_handle) = 0;
 
   /// Get a short string that identifies the planning request adapter
   virtual std::string getDescription() const
@@ -119,3 +117,5 @@ private:
   std::vector<PlanningRequestAdapterConstPtr> adapters_;
 };
 }  // namespace planning_request_adapter
+
+#endif

@@ -1,6 +1,16 @@
 cmake_minimum_required(VERSION 3.1.3)
 project(moveit_ros_move_group)
 
+if(NOT "${CMAKE_CXX_STANDARD}")
+  set(CMAKE_CXX_STANDARD 14)
+endif()
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release)
+endif()
+
 find_package(Boost REQUIRED system filesystem date_time program_options thread)
 find_package(catkin REQUIRED COMPONENTS
   moveit_core
@@ -13,7 +23,6 @@ find_package(catkin REQUIRED COMPONENTS
   tf2_geometry_msgs
   tf2_ros
 )
-moveit_build_options()
 
 catkin_package(
   LIBRARIES
@@ -30,8 +39,7 @@ catkin_package(
 )
 
 include_directories(include)
-include_directories(SYSTEM
-                    ${catkin_INCLUDE_DIRS}
+include_directories(${catkin_INCLUDE_DIRS}
                     ${Boost_INCLUDE_DIRS})
 
 add_library(moveit_move_group_capabilities_base
@@ -56,7 +64,6 @@ add_library(moveit_move_group_default_capabilities
   src/default_capabilities/get_planning_scene_service_capability.cpp
   src/default_capabilities/apply_planning_scene_service_capability.cpp
   src/default_capabilities/clear_octomap_service_capability.cpp
-  src/default_capabilities/tf_publisher_capability.cpp
   )
 set_target_properties(moveit_move_group_default_capabilities PROPERTIES VERSION "${${PROJECT_NAME}_VERSION}")
 add_dependencies(moveit_move_group_default_capabilities ${catkin_EXPORTED_TARGETS})

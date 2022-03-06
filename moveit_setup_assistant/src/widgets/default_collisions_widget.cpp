@@ -197,12 +197,12 @@ DefaultCollisionsWidget::DefaultCollisionsWidget(QWidget* parent, const MoveItCo
   QRadioButton* radio_btn;
   radio_btn = new QRadioButton("linear view");
   bottom_layout->addWidget(radio_btn);
-  view_mode_buttons_->addButton(radio_btn, LINEAR_MODE);
+  view_mode_buttons_->addButton(radio_btn, LinearMode);
   radio_btn->setChecked(true);
 
   radio_btn = new QRadioButton("matrix view");
   bottom_layout->addWidget(radio_btn);
-  view_mode_buttons_->addButton(radio_btn, MATRIX_MODE);
+  view_mode_buttons_->addButton(radio_btn, MatrixMode);
   connect(view_mode_buttons_, SIGNAL(buttonClicked(int)), this, SLOT(loadCollisionTable()));
 
   // Revert Button
@@ -235,8 +235,7 @@ void DefaultCollisionsWidget::startGeneratingCollisionTable()
   btn_revert_->setEnabled(true);  // allow to interrupt and revert
 
   // create a MonitorThread running generateCollisionTable() in a worker thread and monitoring the progress
-  worker_ = new MonitorThread(std::bind(&DefaultCollisionsWidget::generateCollisionTable, this, std::placeholders::_1),
-                              progress_bar_);
+  worker_ = new MonitorThread(boost::bind(&DefaultCollisionsWidget::generateCollisionTable, this, _1), progress_bar_);
   connect(worker_, SIGNAL(finished()), this, SLOT(finishGeneratingCollisionTable()));
   worker_->start();  // start after having finished() signal connected
 }
@@ -293,7 +292,7 @@ void DefaultCollisionsWidget::loadCollisionTable()
       link_pairs_, config_data_->getPlanningScene()->getRobotModel()->getLinkModelNamesWithCollisionGeometry());
   QAbstractItemModel* model;
 
-  if (view_mode_buttons_->checkedId() == MATRIX_MODE)
+  if (view_mode_buttons_->checkedId() == MatrixMode)
   {
     model = matrix_model;
   }
@@ -322,7 +321,7 @@ void DefaultCollisionsWidget::loadCollisionTable()
   QHeaderView *horizontal_header, *vertical_header;
 
   // activate some model-specific settings
-  if (view_mode_buttons_->checkedId() == MATRIX_MODE)
+  if (view_mode_buttons_->checkedId() == MatrixMode)
   {
     connect(selection_model_, SIGNAL(currentChanged(QModelIndex, QModelIndex)), this,
             SLOT(previewSelectedMatrix(QModelIndex)));
@@ -388,7 +387,7 @@ void DefaultCollisionsWidget::collisionsChanged(const QModelIndex& index)
   if (!index.isValid())
     return;
   // Hm. For some reason, QTableView doesn't change selection if we click a checkbox
-  bool linear_mode = (view_mode_buttons_->checkedId() == LINEAR_MODE);
+  bool linear_mode = (view_mode_buttons_->checkedId() == LinearMode);
   const QItemSelection& selection = selection_model_->selection();
   if ((linear_mode && !selection.contains(index)) ||   // in linear mode: index not in selection
       (!linear_mode && !(selection.contains(index) ||  // in matrix mode: index or symmetric index not in selection
@@ -602,7 +601,7 @@ void DefaultCollisionsWidget::toggleSelection(QItemSelection selection)
 
   // set all selected items to inverse value of current item
   const QModelIndex& cur_idx = selection_model_->currentIndex();
-  if (view_mode_buttons_->checkedId() == MATRIX_MODE)
+  if (view_mode_buttons_->checkedId() == MatrixMode)
   {
     QModelIndex input_index;
     if (cur_idx.flags() & Qt::ItemIsUserCheckable)
@@ -677,12 +676,12 @@ void DefaultCollisionsWidget::checkedFilterChanged()
 void DefaultCollisionsWidget::linkPairsToSRDF()
 {
   // reset the data in the SRDF Writer class
-  config_data_->srdf_->disabled_collision_pairs_.clear();
+  config_data_->srdf_->disabled_collisions_.clear();
 
   // Create temp disabled collision
-  srdf::Model::CollisionPair dc;
+  srdf::Model::DisabledCollision dc;
 
-  // copy the data in this class's LinkPairMap datastructure to srdf::Model::CollisionPair format
+  // copy the data in this class's LinkPairMap datastructure to srdf::Model::DisabledCollision format
   for (moveit_setup_assistant::LinkPairMap::const_iterator pair_it = link_pairs_.begin(); pair_it != link_pairs_.end();
        ++pair_it)
   {
@@ -692,7 +691,7 @@ void DefaultCollisionsWidget::linkPairsToSRDF()
       dc.link1_ = pair_it->first.first;
       dc.link2_ = pair_it->first.second;
       dc.reason_ = moveit_setup_assistant::disabledReasonToString(pair_it->second.reason);
-      config_data_->srdf_->disabled_collision_pairs_.push_back(dc);
+      config_data_->srdf_->disabled_collisions_.push_back(dc);
     }
   }
 
@@ -719,16 +718,18 @@ void DefaultCollisionsWidget::linkPairsFromSRDF()
   std::pair<std::string, std::string> link_pair;
 
   // Loop through all disabled collisions in SRDF and update the comprehensive list that has already been created
-  for (const auto& disabled_collision : config_data_->srdf_->disabled_collision_pairs_)
+  for (std::vector<srdf::Model::DisabledCollision>::const_iterator collision_it =
+           config_data_->srdf_->disabled_collisions_.begin();
+       collision_it != config_data_->srdf_->disabled_collisions_.end(); ++collision_it)
   {
     // Set the link names
-    link_pair.first = disabled_collision.link1_;
-    link_pair.second = disabled_collision.link2_;
+    link_pair.first = collision_it->link1_;
+    link_pair.second = collision_it->link2_;
     if (link_pair.first >= link_pair.second)
       std::swap(link_pair.first, link_pair.second);
 
     // Set the link meta data
-    link_pair_data.reason = moveit_setup_assistant::disabledReasonFromString(disabled_collision.reason_);
+    link_pair_data.reason = moveit_setup_assistant::disabledReasonFromString(collision_it->reason_);
     link_pair_data.disable_check = true;  // disable checking the collision btw the 2 links
 
     // Insert into map
@@ -821,7 +822,7 @@ moveit_setup_assistant::MonitorThread::MonitorThread(const boost::function<void(
   : progress_(0), canceled_(false)
 {
   // start worker thread
-  worker_ = boost::thread(std::bind(f, &progress_));
+  worker_ = boost::thread(boost::bind(f, &progress_));
   // connect progress bar for updates
   if (progress_bar)
     connect(this, SIGNAL(progress(int)), progress_bar, SLOT(setValue(int)));

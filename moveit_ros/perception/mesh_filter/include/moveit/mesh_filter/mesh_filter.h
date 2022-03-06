@@ -34,7 +34,8 @@
 
 /* Author: Suat Gedikli */
 
-#pragma once
+#ifndef MOVEIT_MESH_FILTER_MESHFILTER_
+#define MOVEIT_MESH_FILTER_MESHFILTER_
 
 #include <map>
 #include <moveit/macros/declare_ptr.h>
@@ -109,3 +110,4 @@ const typename SensorType::Parameters& MeshFilter<SensorType>::parameters() cons
 }
 
 }  // namespace mesh_filter
+#endif

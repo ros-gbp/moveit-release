@@ -2,48 +2,40 @@
 Changelog for package moveit
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1.1.9 (2022-03-06)
+1.0.10 (2022-03-06)
+-------------------
+
+1.0.9 (2022-01-09)
 ------------------
 
-1.1.8 (2022-01-30)
+1.0.8 (2021-05-23)
 ------------------
 
-1.1.7 (2021-12-31)
+1.0.7 (2020-11-20)
 ------------------
-
-1.1.6 (2021-11-06)
-------------------
-
-1.1.5 (2021-05-23)
-------------------
-
-1.1.4 (2021-05-12)
-------------------
-
-1.1.3 (2021-04-29)
-------------------
-
-1.1.2 (2021-04-08)
-------------------
-* Fix formatting errors
-* Contributors: Tyler Weaver
-
-1.1.1 (2020-10-13)
-------------------
-* [feature][visualization] Clean up Rviz Motion Planning plugin, add tooltips (`#2310 <https://github.com/ros-planning/moveit/issues/2310>`_)
-* [feature][moveit_servo] A library for servoing toward a moving pose (`#2203 <https://github.com/ros-planning/moveit/issues/2203>`_)
+* [feature][moveit_setup_assistant] Fix group editing (`#2350 <https://github.com/ros-planning/moveit/issues/2350>`_)
 * [feature][moveit_setup_assistant] Allow showing both, visual and collision geometry (`#2352 <https://github.com/ros-planning/moveit/issues/2352>`_)
-* [fix][moveit_setup_assistant] layout (`#2349 <https://github.com/ros-planning/moveit/issues/2349>`_)
-* [fix][moveit_setup_assistant] group editing (`#2350 <https://github.com/ros-planning/moveit/issues/2350>`_)
-* [fix][moveit_setup_assistant] disappearing robot on change of reference frame (`#2335 <https://github.com/ros-planning/moveit/issues/2335>`_)
-* Contributors: Felix von Drigalski, Michael Görner, Robert Haschke, Tyler Weaver, Yoan Mollard
+* [feature][moveit_setup_assistant] Start new joint_state_publisher_gui on param use_gui (`#2257 <https://github.com/ros-planning/moveit/issues/2257>`_)
+* [feature][moveit_servo] A library for servoing toward a moving pose (`#2203 <https://github.com/ros-planning/moveit/issues/2203>`_)
+* [fix][moveit_setup_assistant] Segfault when editing pose in moveit_setup_assistant (`#2340 <https://github.com/ros-planning/moveit/issues/2340>`_)
+* [fix][moveit_setup_assistant] only write default_planner_config field if any is selected (`#2293 <https://github.com/ros-planning/moveit/issues/2293>`_)
+* [fix][moveit_setup_assistant] Fix disappearing robot on change of reference frame (`#2335 <https://github.com/ros-planning/moveit/issues/2335>`_)
+* Contributors: AdamPettinger, AndyZe, Jere Liukkonen, David V. Lu!!, Felix von Drigalski, Michael Görner, Robert Haschke, Tyler Weaver, Yoan Mollard
 
-1.1.0 (2020-09-04)
+1.0.6 (2020-08-19)
 ------------------
-* [maint] Use standard cmake text for metapackages (`#1620 <https://github.com/ros-planning/moveit/issues/1620>`_)
-* [maint] Use CMAKE_CXX_STANDARD to enforce c++14 for portability (`#1607 <https://github.com/ros-planning/moveit/issues/1607>`_)
-* [maint] Remove ! from MoveIt name (`#1590 <https://github.com/ros-planning/moveit/issues/1590>`_)
-* Contributors: Dave Coleman, Jonathan Binney, Robert Haschke, Sean Yen
+
+1.0.5 (2020-07-08)
+------------------
+
+1.0.4 (2020-05-30)
+------------------
+
+1.0.3 (2020-04-26)
+------------------
+
+1.0.2 (2019-06-28)
+------------------
 
 1.0.1 (2019-03-08)
 ------------------
@@ -107,7 +99,7 @@ Changelog for package moveit
 
 0.10.2 (2018-10-24)
 -------------------
-* [fix] Text refrences to MoveIt (`#1020 <https://github.com/ros-planning/moveit/issues/1020>`_)
+* [fix] Text refrences to MoveIt! (`#1020 <https://github.com/ros-planning/moveit/issues/1020>`_)
 * [fix] Eigen alignment issuses due to missing aligned allocation (`#1039 <https://github.com/ros-planning/moveit/issues/1039>`_)
 * [fix][chomp] changelogs: migration from tf -> tf2 only accidentally became part of 0.9.12's changelog
 * [fix] Chomp package handling issue `#1086 <https://github.com/ros-planning/moveit/issues/1086>`_ that was introduced in `ubi-agni/hotfix-#1012 <https://github.com/ubi-agni/hotfix-/issues/1012>`_
@@ -125,7 +117,7 @@ Changelog for package moveit
 * [capability][chomp] Failure recovery options for CHOMP by tweaking parameters (`#987 <https://github.com/ros-planning/moveit/issues/987>`_)
 * [capability] New screen for automatically generating interfaces to low level controllers(`#951 <https://github.com/ros-planning/moveit/issues/951>`_, `#994 <https://github.com/ros-planning/moveit/issues/994>`_, `#908 <https://github.com/ros-planning/moveit/issues/908>`_)
 * [capability][moveit_setup_assistant] Perception screen for using laser scanner point clouds. (`#969 <https://github.com/ros-planning/moveit/issues/969>`_)
-* [enhancement][GUI][moveit_setup_assistant] Logo for MoveIt 2.0, cleanup appearance (`#1059 <https://github.com/ros-planning/moveit/issues/1059>`_)
+* [enhancement][GUI][moveit_setup_assistant] Logo for MoveIt! 2.0, cleanup appearance (`#1059 <https://github.com/ros-planning/moveit/issues/1059>`_)
 * [enhancement][GUI][moveit_setup_assistant] added a setup assistant window icon (`#1028 <https://github.com/ros-planning/moveit/issues/1028>`_)
 * [capability][chomp] Addition of CHOMP planning adapter for optimizing result of other planners (`#1012 <https://github.com/ros-planning/moveit/issues/1012>`_)
 * [capability][chomp] Failure recovery options for CHOMP by tweaking parameters (`#987 <https://github.com/ros-planning/moveit/issues/987>`_)

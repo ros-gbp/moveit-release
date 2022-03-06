@@ -32,10 +32,12 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-#pragma once
+#ifndef MOVEIT_COLLISION_DETECTION_COLLISION_PLUGIN_H
+#define MOVEIT_COLLISION_DETECTION_COLLISION_PLUGIN_H
 
 #include <moveit/macros/class_forward.h>
-#include <moveit/collision_detection/collision_env.h>
+#include <moveit/collision_detection/collision_robot.h>
+#include <moveit/collision_detection/collision_world.h>
 #include <moveit/planning_scene/planning_scene.h>
 
 namespace collision_detection
@@ -51,16 +53,14 @@ MOVEIT_CLASS_FORWARD(CollisionPlugin);  // Defines CollisionPluginPtr, ConstPtr,
  *   {
  *
  *   class MyCollisionDetectorAllocator :
- *     public collision_detection::CollisionDetectorAllocatorTemplate<MyCollisionEnv, MyCollisionDetectorAllocator>
+ *     public collision_detection::CollisionDetectorAllocatorTemplate<MyCollisionWorld, MyCollisionRobot,
+ MyCollisionDetectorAllocator>
  *   {
  *     public:
- *       const std::string& getName() const override {
- *         static const std::string NAME = "my_checker";
- *         return NAME;
- *       }
  *       static const std::string NAME_;
  *   };
  *
+ *   const std::string MyCollisionDetectorAllocator::NAME_("my_checker");
  *   }
  *
  *   namespace collision_detection
@@ -94,3 +94,5 @@ public:
 };
 
 }  // namespace collision_detection
+
+#endif  // MOVEIT_COLLISION_DETECTION_COLLISION_PLUGIN_H

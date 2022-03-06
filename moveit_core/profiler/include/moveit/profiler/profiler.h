@@ -34,7 +34,8 @@
 
 /* Author: Ioan Sucan */
 
-#pragma once
+#ifndef MOVEIT_PROFILER_
+#define MOVEIT_PROFILER_
 
 #define MOVEIT_ENABLE_PROFILING 1
 
@@ -445,5 +446,7 @@ public:
 };
 }  // namespace tools
 }  // namespace moveit
+
+#endif
 
 #endif

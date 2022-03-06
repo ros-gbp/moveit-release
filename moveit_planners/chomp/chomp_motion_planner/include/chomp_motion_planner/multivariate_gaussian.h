@@ -34,7 +34,8 @@
 
 /* Author: Mrinal Kalakrishnan */
 
-#pragma once
+#ifndef MULTIVARIATE_GAUSSIAN_H_
+#define MULTIVARIATE_GAUSSIAN_H_
 
 #include <eigen3/Eigen/Core>
 #include <eigen3/Eigen/Cholesky>
@@ -92,3 +93,5 @@ void MultivariateGaussian::sample(Eigen::MatrixBase<Derived>& output)
   output = mean_ + covariance_cholesky_ * output;
 }
 }  // namespace chomp
+
+#endif /* MULTIVARIATE_GAUSSIAN_H_ */

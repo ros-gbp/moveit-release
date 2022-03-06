@@ -34,7 +34,8 @@
 
 /* Author: Dave Coleman */
 
-#pragma once
+#ifndef MOVEIT_MOVEIT_SETUP_ASSISTANT_TOOLS_MOVEIT_CONFIG_DATA_
+#define MOVEIT_MOVEIT_SETUP_ASSISTANT_TOOLS_MOVEIT_CONFIG_DATA_
 
 #include <moveit/macros/class_forward.h>
 #include <moveit/planning_scene/planning_scene.h>                     // for getting kinematic model
@@ -56,8 +57,8 @@ static const std::string ROBOT_DESCRIPTION = "robot_description";
 static const std::string MOVEIT_ROBOT_STATE = "moveit_robot_state";
 
 // Default kin solver values
-static const double DEFAULT_KIN_SOLVER_SEARCH_RESOLUTION = 0.005;
-static const double DEFAULT_KIN_SOLVER_TIMEOUT = 0.005;
+static const double DEFAULT_KIN_SOLVER_SEARCH_RESOLUTION_ = 0.005;  // NOLINT(readability-identifier-naming)
+static const double DEFAULT_KIN_SOLVER_TIMEOUT_ = 0.005;            // NOLINT(readability-identifier-naming)
 
 // ******************************************************************************************
 // Structs
@@ -76,9 +77,9 @@ struct GroupMetaData
 };
 
 /**
- * Controllers settings which may be set in the config files
+ * ROS Controllers settings which may be set in the config files
  */
-struct ControllerConfig
+struct ROSControlConfig
 {
   std::string name_;                 // controller name
   std::string type_;                 // controller type
@@ -283,7 +284,7 @@ public:
   void setRobotModel(const moveit::core::RobotModelPtr& robot_model);
 
   /// Provide a shared kinematic model loader
-  moveit::core::RobotModelConstPtr getRobotModel();
+  robot_model::RobotModelConstPtr getRobotModel();
 
   /// Update the Kinematic Model with latest SRDF modifications
   void updateRobotModel();
@@ -306,14 +307,21 @@ public:
   // Public Functions for outputting configuration and setting files
   // ******************************************************************************************
   std::vector<OMPLPlannerDescription> getOMPLPlanners() const;
-  std::map<std::string, double> getInitialJoints() const;
   bool outputSetupAssistantFile(const std::string& file_path);
   bool outputOMPLPlanningYAML(const std::string& file_path);
-  bool outputSTOMPPlanningYAML(const std::string& file_path);
+  bool outputCHOMPPlanningYAML(const std::string& file_path);
   bool outputKinematicsYAML(const std::string& file_path);
   bool outputJointLimitsYAML(const std::string& file_path);
   bool outputFakeControllersYAML(const std::string& file_path);
-  bool outputSimpleControllersYAML(const std::string& file_path);
+
+  /**
+   * Helper function for writing follow joint trajectory ROS controllers to ros_controllers.yaml
+   * @param YAML Emitter - yaml emitter used to write the config to the ROS controllers yaml file
+   * @param vector<ROSControlConfig> - a copy of ROS controllers config which will be modified in the function
+   */
+  void outputFollowJointTrajectoryYAML(YAML::Emitter& emitter,
+                                       std::vector<ROSControlConfig>& ros_controllers_config_output);
+
   bool outputROSControllersYAML(const std::string& file_path);
   bool output3DSensorPluginYAML(const std::string& file_path);
 
@@ -329,6 +337,13 @@ public:
    * \return gazebo compatible urdf or empty if error encountered
    */
   std::string getGazeboCompatibleURDF();
+
+  /**
+   * \brief Set list of collision link pairs in SRDF; sorted; with optional filter
+   * \param link_pairs list of collision link pairs
+   * \param skip_mask mask of shifted moveit_setup_assistant::DisabledReason values that will be skipped
+   */
+  void setCollisionLinkPairs(const moveit_setup_assistant::LinkPairMap& link_pairs, size_t skip_mask = 0);
 
   /**
    * \brief Decide the best two joints to be used for the projection evaluator
@@ -381,9 +396,9 @@ public:
 
   /**
    * \brief Add a Follow Joint Trajectory action Controller for each Planning Group
-   * \return true if controllers were added to the controller_configs_ data structure
+   * \return true if controllers were added to the ros_controllers_config_ data structure
    */
-  bool addDefaultControllers(const std::string& controller_type = "effort_controllers/JointTrajectoryController");
+  bool addDefaultControllers();
 
   /**
    * Set package path; try to resolve path from package name if directory does not exist
@@ -416,17 +431,21 @@ public:
   bool createFullSRDFPath(const std::string& package_path);
 
   /**
-   * Input .setup_assistant file - contains data used for the MoveIt Setup Assistant
+   * Input .setup_assistant file - contains data used for the MoveIt! Setup Assistant
    *
    * @param file_path path to .setup_assistant file
    * @return true if the file was read correctly
    */
   bool inputSetupAssistantYAML(const std::string& file_path);
 
-  /// Load perception sensor config (sensors_3d.yaml) into internal data structure
-  void input3DSensorsYAML(const std::string& file_path);
-  /// Load perception sensor config
-  static std::vector<std::map<std::string, GenericParameter>> load3DSensorsYAML(const std::string& file_path);
+  /**
+   * Input sensors_3d file - contains 3d sensors config data
+   *
+   * @param default_file_path path to sensors_3d yaml file which contains default parameter values
+   * @param file_path path to sensors_3d yaml file in the config package
+   * @return true if the file was read correctly
+   */
+  bool input3DSensorsYAML(const std::string& default_file_path, const std::string& file_path = "");
 
   /**
    * Helper Function for joining a file path and a file name, or two file paths, etc,
@@ -439,36 +458,33 @@ public:
   std::string appendPaths(const std::string& path1, const std::string& path2);
 
   /**
-   * \brief Adds a controller to controller_configs_ vector
-   * \param new_controller a new Controller to add
+   * \brief Adds a ROS controller to ros_controllers_config_ vector
+   * \param new_controller a new ROS Controller to add
    * \return true if inserted correctly
    */
-  bool addController(const ControllerConfig& new_controller);
+  bool addROSController(const ROSControlConfig& new_controller);
 
   /**
-   * \brief Gets controller_configs_ vector
-   * \return pointer to controller_configs_
+   * \brief Gets ros_controllers_config_ vector
+   * \return pointer to ros_controllers_config_
    */
-  std::vector<ControllerConfig>& getControllers()
-  {
-    return controller_configs_;
-  }
+  std::vector<ROSControlConfig>& getROSControllers();
 
   /**
-   * Find the associated controller by name
+   * Find the associated ROS controller by name
    *
-   * @param controller_name - name of controller to find in datastructure
+   * @param controller_name - name of ROS controller to find in datastructure
    * @return pointer to data in datastructure
    */
-  ControllerConfig* findControllerByName(const std::string& controller_name);
+  ROSControlConfig* findROSControllerByName(const std::string& controller_name);
 
   /**
-   * Delete controller by name
+   * Delete ROS controller by name
    *
-   * @param controller_name - name of controller to delete
+   * @param controller_name - name of ROS controller to delete
    * @return true if deleted, false if not found
    */
-  bool deleteController(const std::string& controller_name);
+  bool deleteROSController(const std::string& controller_name);
 
   /**
    * \brief Used for adding a sensor plugin configuation prameter to the sensor plugin configuration parameter list
@@ -484,10 +500,7 @@ public:
   /**
    * \brief Used for adding a sensor plugin configuation parameter to the sensor plugin configuration parameter list
    */
-  const std::vector<std::map<std::string, GenericParameter>>& getSensorPluginConfig() const
-  {
-    return sensors_plugin_config_parameter_list_;
-  }
+  std::vector<std::map<std::string, GenericParameter> > getSensorPluginConfig();
 
   /**
    * \brief Helper function to get the default start pose for moveit_sim_hw_interface
@@ -500,9 +513,9 @@ public:
    * \param jm2 - a pointer to the second joint model to compare
    * \return bool of alphabetical sorting comparison
    */
-  struct JointModelCompare
+  struct joint_model_compare  // NOLINT(readability-identifier-naming)
   {
-    bool operator()(const moveit::core::JointModel* jm1, const moveit::core::JointModel* jm2) const
+    bool operator()(const robot_model::JointModel* jm1, const robot_model::JointModel* jm2) const
     {
       return jm1->getName() < jm2->getName();
     }
@@ -514,16 +527,18 @@ private:
   // ******************************************************************************************
 
   /// Sensor plugin configuration parameter list, each sensor plugin type is a map
-  std::vector<std::map<std::string, GenericParameter>> sensors_plugin_config_parameter_list_;
+  std::vector<std::map<std::string, GenericParameter> > sensors_plugin_config_parameter_list_;
 
   /// Shared kinematic model
-  moveit::core::RobotModelPtr robot_model_;
+  robot_model::RobotModelPtr robot_model_;
 
-  /// Controllers config data
-  std::vector<ControllerConfig> controller_configs_;
+  /// ROS Controllers config data
+  std::vector<ROSControlConfig> ros_controllers_config_;
 
   /// Shared planning scene
   planning_scene::PlanningScenePtr planning_scene_;
 };
 
 }  // namespace moveit_setup_assistant
+
+#endif

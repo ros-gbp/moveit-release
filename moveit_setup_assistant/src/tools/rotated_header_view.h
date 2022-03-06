@@ -34,7 +34,8 @@
 
 /* Author: Robert Haschke */
 
-#pragma once
+#ifndef MOVEIT_ROS_MOVEIT_SETUP_ASSISTANT_WIDGETS_ROTATED_HEADERVIEW_H
+#define MOVEIT_ROS_MOVEIT_SETUP_ASSISTANT_WIDGETS_ROTATED_HEADERVIEW_H
 
 #include <QHeaderView>
 
@@ -49,3 +50,5 @@ public:
   int sectionSizeHint(int logicalIndex) const;
 };
 }  // namespace moveit_setup_assistant
+
+#endif  // MOVEIT_ROS_MOVEIT_SETUP_ASSISTANT_WIDGETS_ROTATED_HEADERVIEW_H

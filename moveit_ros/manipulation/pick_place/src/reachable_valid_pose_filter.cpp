@@ -37,7 +37,7 @@
 #include <moveit/pick_place/reachable_valid_pose_filter.h>
 #include <moveit/kinematic_constraints/utils.h>
 #include <tf2_eigen/tf2_eigen.h>
-#include <functional>
+#include <boost/bind.hpp>
 #include <ros/console.h>
 
 pick_place::ReachableAndValidPoseFilter::ReachableAndValidPoseFilter(
@@ -55,8 +55,8 @@ namespace
 {
 bool isStateCollisionFree(const planning_scene::PlanningScene* planning_scene,
                           const collision_detection::AllowedCollisionMatrix* collision_matrix, bool verbose,
-                          const pick_place::ManipulationPlan* manipulation_plan, moveit::core::RobotState* state,
-                          const moveit::core::JointModelGroup* group, const double* joint_group_variable_values)
+                          const pick_place::ManipulationPlan* manipulation_plan, robot_state::RobotState* state,
+                          const robot_model::JointModelGroup* group, const double* joint_group_variable_values)
 {
   collision_detection::CollisionRequest req;
   req.verbose = verbose;
@@ -90,7 +90,7 @@ bool isStateCollisionFree(const planning_scene::PlanningScene* planning_scene,
 }  // namespace
 
 bool pick_place::ReachableAndValidPoseFilter::isEndEffectorFree(const ManipulationPlanPtr& plan,
-                                                                moveit::core::RobotState& token_state) const
+                                                                robot_state::RobotState& token_state) const
 {
   tf2::fromMsg(plan->goal_pose_.pose, plan->transformed_goal_pose_);
   plan->transformed_goal_pose_ =
@@ -107,14 +107,14 @@ bool pick_place::ReachableAndValidPoseFilter::isEndEffectorFree(const Manipulati
 bool pick_place::ReachableAndValidPoseFilter::evaluate(const ManipulationPlanPtr& plan) const
 {
   // initialize with scene state
-  moveit::core::RobotStatePtr token_state(new moveit::core::RobotState(planning_scene_->getCurrentState()));
+  robot_state::RobotStatePtr token_state(new robot_state::RobotState(planning_scene_->getCurrentState()));
   if (isEndEffectorFree(plan, *token_state))
   {
     // update the goal pose message if anything has changed; this is because the name of the frame in the input goal
     // pose
     // can be that of objects in the collision world but most components are unaware of those transforms,
     // so we convert to a frame that is certainly known
-    if (!moveit::core::Transforms::sameFrame(planning_scene_->getPlanningFrame(), plan->goal_pose_.header.frame_id))
+    if (!robot_state::Transforms::sameFrame(planning_scene_->getPlanningFrame(), plan->goal_pose_.header.frame_id))
     {
       plan->goal_pose_.pose = tf2::toMsg(plan->transformed_goal_pose_);
       plan->goal_pose_.header.frame_id = planning_scene_->getPlanningFrame();
@@ -132,9 +132,8 @@ bool pick_place::ReachableAndValidPoseFilter::evaluate(const ManipulationPlanPtr
         constraints_sampler_manager_->selectSampler(planning_scene_, planning_group, plan->goal_constraints_);
     if (plan->goal_sampler_)
     {
-      plan->goal_sampler_->setGroupStateValidityCallback(
-          std::bind(&isStateCollisionFree, planning_scene_.get(), collision_matrix_.get(), verbose_, plan.get(),
-                    std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+      plan->goal_sampler_->setGroupStateValidityCallback(boost::bind(
+          &isStateCollisionFree, planning_scene_.get(), collision_matrix_.get(), verbose_, plan.get(), _1, _2, _3));
       plan->goal_sampler_->setVerbose(verbose_);
       if (plan->goal_sampler_->sample(*token_state, plan->shared_data_->max_goal_sampling_attempts_))
       {

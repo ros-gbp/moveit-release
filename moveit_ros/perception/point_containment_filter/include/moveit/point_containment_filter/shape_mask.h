@@ -34,7 +34,8 @@
 
 /* Author: Ioan Sucan */
 
-#pragma once
+#ifndef MOVEIT_POINT_CONTAINMENT_FILTER_SELF_MASK_
+#define MOVEIT_POINT_CONTAINMENT_FILTER_SELF_MASK_
 
 #include <sensor_msgs/PointCloud2.h>
 #include <geometric_shapes/bodies.h>
@@ -130,3 +131,5 @@ private:
   std::map<ShapeHandle, std::set<SeeShape, SortBodies>::iterator> used_handles_;
 };
 }  // namespace point_containment_filter
+
+#endif

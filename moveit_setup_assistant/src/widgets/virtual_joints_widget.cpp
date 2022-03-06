@@ -65,11 +65,10 @@ VirtualJointsWidget::VirtualJointsWidget(QWidget* parent, const MoveItConfigData
 
   // Top Header Area ------------------------------------------------
 
-  HeaderWidget* header =
-      new HeaderWidget("Define Virtual Joints",
-                       "Create a virtual joint between the base robot link and an external frame of reference. "
-                       "This allows to place the robot in the world or on a mobile platform.",
-                       this);
+  HeaderWidget* header = new HeaderWidget("Define Virtual Joints",
+                                          "Create a virtual joint between a robot link and an external frame of "
+                                          "reference (considered fixed with respect to the robot).",
+                                          this);
   layout->addWidget(header);
 
   // Create contents screens ---------------------------------------
@@ -248,7 +247,7 @@ void VirtualJointsWidget::showNewScreen()
 // ******************************************************************************************
 // Edit whatever element is selected
 // ******************************************************************************************
-void VirtualJointsWidget::editDoubleClicked(int /*row*/, int /*column*/)
+void VirtualJointsWidget::editDoubleClicked(int row, int column)
 {
   editSelected();
 }
@@ -256,7 +255,7 @@ void VirtualJointsWidget::editDoubleClicked(int /*row*/, int /*column*/)
 // ******************************************************************************************
 // Preview whatever element is selected
 // ******************************************************************************************
-void VirtualJointsWidget::previewClicked(int /*row*/, int /*column*/)
+void VirtualJointsWidget::previewClicked(int row, int column)
 {
 }
 
@@ -339,10 +338,10 @@ void VirtualJointsWidget::loadChildLinksComboBox()
   child_link_field_->clear();
 
   // Get all links in robot model
-  std::vector<const moveit::core::LinkModel*> link_models = config_data_->getRobotModel()->getLinkModels();
+  std::vector<const robot_model::LinkModel*> link_models = config_data_->getRobotModel()->getLinkModels();
 
   // Add all links to combo box
-  for (std::vector<const moveit::core::LinkModel*>::const_iterator link_it = link_models.begin();
+  for (std::vector<const robot_model::LinkModel*>::const_iterator link_it = link_models.begin();
        link_it < link_models.end(); ++link_it)
   {
     child_link_field_->addItem((*link_it)->getName().c_str());
@@ -357,12 +356,13 @@ srdf::Model::VirtualJoint* VirtualJointsWidget::findVJointByName(const std::stri
   // Find the group state we are editing based on the vjoint name
   srdf::Model::VirtualJoint* searched_group = nullptr;  // used for holding our search results
 
-  for (srdf::Model::VirtualJoint& virtual_joint : config_data_->srdf_->virtual_joints_)
+  for (std::vector<srdf::Model::VirtualJoint>::iterator vjoint_it = config_data_->srdf_->virtual_joints_.begin();
+       vjoint_it != config_data_->srdf_->virtual_joints_.end(); ++vjoint_it)
   {
-    if (virtual_joint.name_ == name)  // string match
+    if (vjoint_it->name_ == name)  // string match
     {
-      searched_group = &virtual_joint;  // convert to pointer from iterator
-      break;                            // we are done searching
+      searched_group = &(*vjoint_it);  // convert to pointer from iterator
+      break;                           // we are done searching
     }
   }
 
@@ -453,12 +453,13 @@ void VirtualJointsWidget::doneEditing()
   }
 
   // Check that the vjoint name is unique
-  for (const auto& virtual_joint : config_data_->srdf_->virtual_joints_)
+  for (std::vector<srdf::Model::VirtualJoint>::const_iterator data_it = config_data_->srdf_->virtual_joints_.begin();
+       data_it != config_data_->srdf_->virtual_joints_.end(); ++data_it)
   {
-    if (virtual_joint.name_.compare(vjoint_name) == 0)  // the names are the same
+    if (data_it->name_.compare(vjoint_name) == 0)  // the names are the same
     {
       // is this our existing vjoint? check if vjoint pointers are same
-      if (&virtual_joint != searched_data)
+      if (&(*data_it) != searched_data)
       {
         QMessageBox::warning(this, "Error Saving", "A virtual joint already exists with that name!");
         return;
@@ -554,16 +555,17 @@ void VirtualJointsWidget::loadDataTable()
 
   // Loop through every virtual joint
   int row = 0;
-  for (const auto& virtual_joint : config_data_->srdf_->virtual_joints_)
+  for (std::vector<srdf::Model::VirtualJoint>::const_iterator data_it = config_data_->srdf_->virtual_joints_.begin();
+       data_it != config_data_->srdf_->virtual_joints_.end(); ++data_it)
   {
     // Create row elements
-    QTableWidgetItem* data_name = new QTableWidgetItem(virtual_joint.name_.c_str());
+    QTableWidgetItem* data_name = new QTableWidgetItem(data_it->name_.c_str());
     data_name->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
-    QTableWidgetItem* child_link_name = new QTableWidgetItem(virtual_joint.child_link_.c_str());
+    QTableWidgetItem* child_link_name = new QTableWidgetItem(data_it->child_link_.c_str());
     child_link_name->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
-    QTableWidgetItem* parent_frame_name = new QTableWidgetItem(virtual_joint.parent_frame_.c_str());
+    QTableWidgetItem* parent_frame_name = new QTableWidgetItem(data_it->parent_frame_.c_str());
     parent_frame_name->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
-    QTableWidgetItem* type_name = new QTableWidgetItem(virtual_joint.type_.c_str());
+    QTableWidgetItem* type_name = new QTableWidgetItem(data_it->type_.c_str());
     type_name->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
 
     // Add to table

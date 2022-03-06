@@ -35,7 +35,8 @@
  * Author: Sachin Chitta
  *********************************************************************/
 
-#pragma once
+#ifndef KINEMATICS_CACHE_H_
+#define KINEMATICS_CACHE_H_
 
 #include <moveit/kinematics_base/kinematics_base.h>
 #include <moveit/robot_model/robot_model.h>
@@ -102,7 +103,7 @@ public:
    *  @param opt Parameters needed for defining the cache workspace
    *  @return False if any error occured during initialization
    */
-  bool initialize(kinematics::KinematicsBaseConstPtr& solver, const moveit::core::RobotModelConstPtr& kinematic_model,
+  bool initialize(kinematics::KinematicsBaseConstPtr& solver, const robot_model::RobotModelConstPtr& kinematic_model,
                   const KinematicsCache::Options& opt);
 
   /** @brief Return the instance of the kinematics solver */
@@ -112,7 +113,7 @@ public:
   }
 
   /** @brief Return the instance of the kinematics model */
-  const moveit::core::RobotModelConstPtr& getModelInstance() const
+  const robot_model::RobotModelConstPtr& getModelInstance() const
   {
     return kinematic_model_;
   }
@@ -168,11 +169,11 @@ private:
 
   kinematics::KinematicsBaseConstPtr kinematics_solver_; /** An instance of the kinematics solver */
 
-  moveit::core::RobotModelConstPtr kinematic_model_; /** An instance of the kinematic model */
-  moveit::core::RobotStatePtr kinematic_state_;      /** An instance of the kinematic state */
+  robot_model::RobotModelConstPtr kinematic_model_; /** An instance of the kinematic model */
+  robot_state::RobotStatePtr kinematic_state_;      /** An instance of the kinematic state */
 
-  const moveit::core::JointModelGroup* joint_model_group_;           /** Joint model group associated with this cache */
-  std::shared_ptr<moveit::core::JointStateGroup> joint_state_group_; /** Joint state corresponding to cache */
+  const robot_model::JointModelGroup* joint_model_group_;           /** Joint model group associated with this cache */
+  std::shared_ptr<robot_state::JointStateGroup> joint_state_group_; /** Joint state corresponding to cache */
 
   //    mutable std::vector<double> solution_local_; /** Local pre-allocated storage */
 
@@ -181,3 +182,5 @@ private:
 
 typedef std::shared_ptr<KinematicsCache> KinematicsCachePtr;
 }  // namespace kinematics_cache
+
+#endif

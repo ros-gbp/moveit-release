@@ -33,7 +33,8 @@
 
 /* Author: Mohamad Ayman */
 
-#pragma once
+#ifndef MOVEIT_MOVEIT_SETUP_ASSISTANT_WIDGETS_PERCEPTION_WIDGET_
+#define MOVEIT_MOVEIT_SETUP_ASSISTANT_WIDGETS_PERCEPTION_WIDGET_
 
 // Qt
 class QComboBox;
@@ -71,7 +72,6 @@ public:
 
   /// Populate the combo dropdown box with sensor plugins
   void loadSensorPluginsComboBox();
-  uint loadConfigIntoWidgets(std::map<std::string, GenericParameter> sensor_plugin_config);
 
   // ******************************************************************************************
   // Qt Components
@@ -122,3 +122,5 @@ private:
 };
 
 }  // namespace moveit_setup_assistant
+
+#endif

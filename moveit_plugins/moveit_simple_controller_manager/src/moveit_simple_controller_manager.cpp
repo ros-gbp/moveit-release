@@ -70,7 +70,7 @@ public:
     }
 
     /* actually create each controller */
-    for (int i = 0; i < controller_list.size(); ++i)  // NOLINT(modernize-loop-convert)
+    for (int i = 0; i < controller_list.size(); ++i)
     {
       if (!isStruct(controller_list[i], { "name", "joints", "action_ns", "type" }))
       {
@@ -94,10 +94,7 @@ public:
         ActionBasedControllerHandleBasePtr new_handle;
         if (type == "GripperCommand")
         {
-          const double max_effort =
-              controller_list[i].hasMember("max_effort") ? double(controller_list[i]["max_effort"]) : 0.0;
-
-          new_handle = std::make_shared<GripperControllerHandle>(name, action_ns, max_effort);
+          new_handle.reset(new GripperControllerHandle(name, action_ns));
           if (static_cast<GripperControllerHandle*>(new_handle.get())->isConnected())
           {
             if (controller_list[i].hasMember("parallel"))
@@ -236,8 +233,7 @@ public:
   }
 
   /* Cannot switch our controllers */
-  bool switchControllers(const std::vector<std::string>& /* activate */,
-                         const std::vector<std::string>& /* deactivate */) override
+  bool switchControllers(const std::vector<std::string>& activate, const std::vector<std::string>& deactivate) override
   {
     return false;
   }

@@ -34,7 +34,8 @@
 
 /* Author: Ioan Sucan */
 
-#pragma once
+#ifndef MOVEIT_OMPL_INTERFACE_PARAMETERIZATION_JOINT_SPACE_JOINT_MODEL_STATE_SPACE_FACTORY_
+#define MOVEIT_OMPL_INTERFACE_PARAMETERIZATION_JOINT_SPACE_JOINT_MODEL_STATE_SPACE_FACTORY_
 
 #include <moveit/ompl_interface/parameterization/model_based_state_space_factory.h>
 
@@ -46,9 +47,11 @@ public:
   JointModelStateSpaceFactory();
 
   int canRepresentProblem(const std::string& group, const moveit_msgs::MotionPlanRequest& req,
-                          const moveit::core::RobotModelConstPtr& robot_model) const override;
+                          const robot_model::RobotModelConstPtr& robot_model) const override;
 
 protected:
   ModelBasedStateSpacePtr allocStateSpace(const ModelBasedStateSpaceSpecification& space_spec) const override;
 };
 }  // namespace ompl_interface
+
+#endif

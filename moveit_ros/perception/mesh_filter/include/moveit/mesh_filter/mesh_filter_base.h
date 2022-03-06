@@ -34,7 +34,8 @@
 
 /* Author: Suat Gedikli */
 
-#pragma once
+#ifndef MOVEIT_MESH_FILTER_MESH_FILTER_BASE_
+#define MOVEIT_MESH_FILTER_MESH_FILTER_BASE_
 
 #include <map>
 #include <moveit/macros/class_forward.h>
@@ -70,11 +71,11 @@ public:
   // this would allow me to do a single comparison instead of 3, in the code i write
   enum
   {
-    BACKGROUND = 0,
-    SHADOW = 1,
-    NEAR_CLIP = 2,
-    FAR_CLIP = 3,
-    FIRST_LABEL = 16
+    Background = 0,
+    Shadow = 1,
+    NearClip = 2,
+    FarClip = 3,
+    FirstLabel = 16
   };
 
 public:
@@ -294,3 +295,5 @@ protected:
   float shadow_threshold_;
 };
 }  // namespace mesh_filter
+
+#endif /* __MESH_FILTER_MESH_FILTER_BASE_H__ */

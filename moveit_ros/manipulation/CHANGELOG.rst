@@ -2,46 +2,19 @@
 Changelog for package moveit_ros_manipulation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1.1.9 (2022-03-06)
+1.0.10 (2022-03-06)
+-------------------
+
+1.0.9 (2022-01-09)
 ------------------
 
-1.1.8 (2022-01-30)
+1.0.8 (2021-05-23)
 ------------------
 
-1.1.7 (2021-12-31)
-------------------
-* Switch to ``std::bind`` (`#2967 <https://github.com/ros-planning/moveit/issues/2967>`_)
-* Contributors: Jochen Sprickerhof
-
-1.1.6 (2021-11-06)
-------------------
-* Use newly introduced cmake macro ``moveit_build_options()`` from ``moveit_core``
-* Introduce a reference frame for collision objects (`#2037 <https://github.com/ros-planning/moveit/issues/2037>`_)
-* Add missing dependencies to generated dynamic_reconfigure headers (`#2772 <https://github.com/ros-planning/moveit/issues/2772>`_)
-* clang-tidy: modernize-make-shared, modernize-make-unique (`#2762 <https://github.com/ros-planning/moveit/issues/2762>`_)
-* Contributors: Felix von Drigalski, Mathias Lüdtke, Robert Haschke, pvanlaar
-
-1.1.5 (2021-05-23)
-------------------
-
-1.1.4 (2021-05-12)
-------------------
-
-1.1.3 (2021-04-29)
-------------------
-
-1.1.2 (2021-04-08)
-------------------
-* Order PlaceLocations by quality during planning (`#2378 <https://github.com/ros-planning/moveit/issues/2378>`_)
-* Contributors: Markus Vieth
-
-1.1.1 (2020-10-13)
+1.0.7 (2020-11-20)
 ------------------
 * [maint] Add comment to MOVEIT_CLASS_FORWARD (`#2315 <https://github.com/ros-planning/moveit/issues/2315>`_)
 * Contributors: Felix von Drigalski
-
-1.1.0 (2020-09-04)
-------------------
 
 1.0.6 (2020-08-19)
 ------------------

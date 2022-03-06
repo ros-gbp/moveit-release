@@ -34,7 +34,8 @@
 
 /* Author: Ioan Sucan */
 
-#pragma once
+#ifndef MOVEIT_MOVE_GROUP_PLAN_SERVICE_CAPABILITY_
+#define MOVEIT_MOVE_GROUP_PLAN_SERVICE_CAPABILITY_
 
 #include <moveit/move_group/move_group_capability.h>
 #include <moveit_msgs/GetMotionPlan.h>
@@ -54,3 +55,5 @@ private:
   ros::ServiceServer plan_service_;
 };
 }  // namespace move_group
+
+#endif
