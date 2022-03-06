@@ -1,0 +1,12 @@
+Source: ros-noetic-moveit-ros-occupancy-map-monitor
+Section: misc
+Priority: optional
+Maintainer: Michael Ferguson <mferguson@fetchrobotics.com>
+Build-Depends: debhelper (>= 9.0.0), libeigen3-dev, ros-noetic-catkin, ros-noetic-geometric-shapes, ros-noetic-moveit-core, ros-noetic-moveit-msgs, ros-noetic-octomap, ros-noetic-pluginlib (>= 1.11.2), ros-noetic-rosunit, ros-noetic-tf2-ros
+Homepage: http://moveit.ros.org
+Standards-Version: 3.9.2
+
+Package: ros-noetic-moveit-ros-occupancy-map-monitor
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-noetic-geometric-shapes, ros-noetic-moveit-core, ros-noetic-moveit-msgs, ros-noetic-octomap, ros-noetic-pluginlib (>= 1.11.2), ros-noetic-tf2-ros
+Description: Components of MoveIt connecting to occupancy map
