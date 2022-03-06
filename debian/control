@@ -1,0 +1,12 @@
+Source: ros-melodic-moveit-servo
+Section: misc
+Priority: optional
+Maintainer: Blake Anderson <blakeanderson@utexas.edu>
+Build-Depends: debhelper (>= 9.0.0), ros-melodic-catkin, ros-melodic-control-msgs, ros-melodic-control-toolbox, ros-melodic-geometry-msgs, ros-melodic-moveit-msgs, ros-melodic-moveit-resources-panda-moveit-config, ros-melodic-moveit-ros-planning-interface, ros-melodic-rosparam-shortcuts, ros-melodic-rostest, ros-melodic-sensor-msgs, ros-melodic-std-msgs, ros-melodic-std-srvs, ros-melodic-tf2-eigen, ros-melodic-trajectory-msgs
+Homepage: https://ros-planning.github.io/moveit_tutorials
+Standards-Version: 3.9.2
+
+Package: ros-melodic-moveit-servo
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-melodic-control-msgs, ros-melodic-control-toolbox, ros-melodic-geometry-msgs, ros-melodic-joy-teleop, ros-melodic-moveit-msgs, ros-melodic-moveit-ros-planning-interface, ros-melodic-rosparam-shortcuts, ros-melodic-sensor-msgs, ros-melodic-spacenav-node, ros-melodic-std-msgs, ros-melodic-std-srvs, ros-melodic-tf2-eigen, ros-melodic-trajectory-msgs
+Description: Provides real-time manipulator Cartesian and joint servoing.
