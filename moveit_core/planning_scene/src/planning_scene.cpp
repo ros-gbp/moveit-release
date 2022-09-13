@@ -650,10 +650,8 @@ void PlanningScene::getPlanningSceneDiffMsg(moveit_msgs::PlanningScene& scene_ms
   if (robot_state_)
     moveit::core::robotStateToRobotStateMsg(*robot_state_, scene_msg.robot_state);
   else
-  {
     scene_msg.robot_state = moveit_msgs::RobotState();
-    scene_msg.robot_state.is_diff = true;
-  }
+  scene_msg.robot_state.is_diff = true;
 
   if (acm_)
     acm_->getMessage(scene_msg.allowed_collision_matrix);
@@ -711,6 +709,20 @@ void PlanningScene::getPlanningSceneDiffMsg(moveit_msgs::PlanningScene& scene_ms
     if (do_omap)
       getOctomapMsg(scene_msg.world.octomap);
   }
+
+  // Ensure all detached collision objects actually get removed when applying the diff
+  // Because RobotState doesn't handle diffs (yet), we explicitly declare attached objects
+  // as removed, if they show up as "normal" collision objects but were attached in parent
+  for (const auto& collision_object : scene_msg.world.collision_objects)
+  {
+    if (parent_ && parent_->getCurrentState().hasAttachedBody(collision_object.id))
+    {
+      moveit_msgs::AttachedCollisionObject aco;
+      aco.object.id = collision_object.id;
+      aco.object.operation = moveit_msgs::CollisionObject::REMOVE;
+      scene_msg.robot_state.attached_collision_objects.push_back(aco);
+    }
+  }
 }
 
 namespace
@@ -754,12 +766,12 @@ private:
 bool PlanningScene::getCollisionObjectMsg(moveit_msgs::CollisionObject& collision_obj, const std::string& ns) const
 {
   collision_detection::CollisionEnv::ObjectConstPtr obj = world_->getObject(ns);
+  if (!obj)
+    return false;
   collision_obj.header.frame_id = getPlanningFrame();
   collision_obj.pose = tf2::toMsg(obj->pose_);
   collision_obj.id = ns;
   collision_obj.operation = moveit_msgs::CollisionObject::ADD;
-  if (!obj)
-    return false;
   ShapeVisitorAddToCollisionObject sv(&collision_obj);
   for (std::size_t j = 0; j < obj->shapes_.size(); ++j)
   {
