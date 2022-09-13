@@ -34,8 +34,7 @@
 
 /* Author: Dave Coleman */
 
-#ifndef MOVEIT_ROS_MOVEIT_SETUP_ASSISTANT_WIDGETS_NAVIGATION_WIDGET_
-#define MOVEIT_ROS_MOVEIT_SETUP_ASSISTANT_WIDGETS_NAVIGATION_WIDGET_
+#pragma once
 
 #include <QListView>
 #include <QStyledItemDelegate>
@@ -75,11 +74,9 @@ class NavDelegate : public QStyledItemDelegate
 {
   Q_OBJECT
 public:
-  explicit NavDelegate(QObject* parnullptrnt = nullptr);
+  explicit NavDelegate(QObject* parent = nullptr);
 
   QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
   void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 };
 }  // namespace moveit_setup_assistant
-
-#endif

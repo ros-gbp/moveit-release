@@ -90,6 +90,7 @@ float mesh_filter::SensorModel::Parameters::getFarClippingPlaneDistance() const
 
 namespace
 {
+#if HAVE_SSE_EXTENSIONS
 inline unsigned alignment16(const void* pointer)
 {
   return ((uintptr_t)pointer & 15);
@@ -98,6 +99,7 @@ inline bool isAligned16(const void* pointer)
 {
   return (((uintptr_t)pointer & 15) == 0);
 }
+#endif
 }  // namespace
 
 void mesh_filter::SensorModel::Parameters::transformModelDepthToMetricDepth(float* depth) const

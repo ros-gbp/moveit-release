@@ -34,8 +34,7 @@
 
 /* Author: Sachin Chitta */
 
-#ifndef PR2_ARM_IK_NODE_H
-#define PR2_ARM_IK_NODE_H
+#pragma once
 
 #include <kdl/config.h>
 #include <kdl/frames.hpp>
@@ -259,5 +258,3 @@ protected:
                              moveit_msgs::MoveItErrorCodes& error_code) const;
 };
 }  // namespace pr2_arm_kinematics
-
-#endif

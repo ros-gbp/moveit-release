@@ -34,16 +34,11 @@
 
 /* Author: Robert Haschke */
 
-#ifndef MOVEIT_ROS_MOVEIT_SETUP_ASSISTANT_WIDGETS_COLLISION_LINEAR_MODEL_H
-#define MOVEIT_ROS_MOVEIT_SETUP_ASSISTANT_WIDGETS_COLLISION_LINEAR_MODEL_H
+#pragma once
 
 #include <QAbstractProxyModel>
 #include <QSortFilterProxyModel>
 #include <QVector>
-
-#ifndef Q_MOC_RUN
-#include <moveit/setup_assistant/tools/compute_default_collisions.h>
-#endif
 
 #include "collision_matrix_model.h"
 
@@ -67,7 +62,6 @@ public:
   QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
   QModelIndex parent(const QModelIndex& child) const override;
   QVariant data(const QModelIndex& index, int role) const override;
-  moveit_setup_assistant::DisabledReason reason(int row) const;
 
   bool setData(const QModelIndex& index, const QVariant& value, int role) override;
   void setEnabled(const QItemSelection& selection, bool value);
@@ -100,5 +94,3 @@ private:
   QVector<int> sort_columns_;  // sorting history
   QVector<int> sort_orders_;   // corresponding sort orders
 };
-
-#endif  // MOVEIT_ROS_MOVEIT_SETUP_ASSISTANT_WIDGETS_COLLISION_LINEAR_MODEL_H

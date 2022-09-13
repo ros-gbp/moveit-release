@@ -49,10 +49,13 @@ public:
   static const std::string JIGGLE_PARAM_NAME;
   static const std::string ATTEMPTS_PARAM_NAME;
 
-  FixStartStateCollision()
-    : planning_request_adapter::PlanningRequestAdapter(), nh_(planning_interface::getConfigNodeHandle())
+  FixStartStateCollision() : planning_request_adapter::PlanningRequestAdapter()
   {
-    if (!nh_.getParam(DT_PARAM_NAME, max_dt_offset_))
+  }
+
+  void initialize(const ros::NodeHandle& nh) override
+  {
+    if (!nh.getParam(DT_PARAM_NAME, max_dt_offset_))
     {
       max_dt_offset_ = 0.5;
       ROS_INFO_STREAM("Param '" << DT_PARAM_NAME << "' was not set. Using default value: " << max_dt_offset_);
@@ -60,7 +63,7 @@ public:
     else
       ROS_INFO_STREAM("Param '" << DT_PARAM_NAME << "' was set to " << max_dt_offset_);
 
-    if (!nh_.getParam(JIGGLE_PARAM_NAME, jiggle_fraction_))
+    if (!nh.getParam(JIGGLE_PARAM_NAME, jiggle_fraction_))
     {
       jiggle_fraction_ = 0.02;
       ROS_INFO_STREAM("Param '" << JIGGLE_PARAM_NAME << "' was not set. Using default value: " << jiggle_fraction_);
@@ -68,7 +71,7 @@ public:
     else
       ROS_INFO_STREAM("Param '" << JIGGLE_PARAM_NAME << "' was set to " << jiggle_fraction_);
 
-    if (!nh_.getParam(ATTEMPTS_PARAM_NAME, sampling_attempts_))
+    if (!nh.getParam(ATTEMPTS_PARAM_NAME, sampling_attempts_))
     {
       sampling_attempts_ = 100;
       ROS_INFO_STREAM("Param '" << ATTEMPTS_PARAM_NAME << "' was not set. Using default value: " << sampling_attempts_);
@@ -96,8 +99,8 @@ public:
     ROS_DEBUG("Running '%s'", getDescription().c_str());
 
     // get the specified start state
-    robot_state::RobotState start_state = planning_scene->getCurrentState();
-    robot_state::robotStateMsgToRobotState(planning_scene->getTransforms(), req.start_state, start_state);
+    moveit::core::RobotState start_state = planning_scene->getCurrentState();
+    moveit::core::robotStateMsgToRobotState(planning_scene->getTransforms(), req.start_state, start_state);
 
     collision_detection::CollisionRequest creq;
     creq.group_name = req.group_name;
@@ -116,10 +119,10 @@ public:
       else
         ROS_INFO_STREAM("Start state appears to be in collision with respect to group " << creq.group_name);
 
-      robot_state::RobotStatePtr prefix_state(new robot_state::RobotState(start_state));
+      moveit::core::RobotStatePtr prefix_state(new moveit::core::RobotState(start_state));
       random_numbers::RandomNumberGenerator& rng = prefix_state->getRandomNumberGenerator();
 
-      const std::vector<const robot_model::JointModel*>& jmodels =
+      const std::vector<const moveit::core::JointModel*>& jmodels =
           planning_scene->getRobotModel()->hasJointModelGroup(req.group_name) ?
               planning_scene->getRobotModel()->getJointModelGroup(req.group_name)->getJointModels() :
               planning_scene->getRobotModel()->getJointModels();
@@ -148,7 +151,7 @@ public:
       if (found)
       {
         planning_interface::MotionPlanRequest req2 = req;
-        robot_state::robotStateToRobotStateMsg(start_state, req2.start_state);
+        moveit::core::robotStateToRobotStateMsg(start_state, req2.start_state);
         bool solved = planner(planning_scene, req2, res);
         if (solved && !res.trajectory_->empty())
         {
@@ -158,8 +161,8 @@ public:
                                                                        res.trajectory_->getAverageSegmentDuration()));
           res.trajectory_->addPrefixWayPoint(prefix_state, 0.0);
           // we add a prefix point, so we need to bump any previously added index positions
-          for (std::size_t i = 0; i < added_path_index.size(); ++i)
-            added_path_index[i]++;
+          for (std::size_t& added_index : added_path_index)
+            added_index++;
           added_path_index.push_back(0);
         }
         return solved;
@@ -183,7 +186,6 @@ public:
   }
 
 private:
-  ros::NodeHandle nh_;
   double max_dt_offset_;
   double jiggle_fraction_;
   int sampling_attempts_;

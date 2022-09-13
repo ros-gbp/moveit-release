@@ -34,8 +34,7 @@
 
 /* Author: Suat Gedikli */
 
-#ifndef MOVEIT_MESH_FILTER_FILTER_JOB_
-#define MOVEIT_MESH_FILTER_FILTER_JOB_
+#pragma once
 
 #include <moveit/macros/class_forward.h>
 
@@ -139,4 +138,3 @@ private:
   std::function<void()> exec_;
 };
 }  // namespace mesh_filter
-#endif

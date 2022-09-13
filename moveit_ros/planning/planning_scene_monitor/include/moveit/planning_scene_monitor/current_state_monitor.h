@@ -34,8 +34,7 @@
 
 /* Author: Ioan Sucan */
 
-#ifndef MOVEIT_PLANNING_SCENE_MONITOR_CURRENT_STATE_MONITOR_
-#define MOVEIT_PLANNING_SCENE_MONITOR_CURRENT_STATE_MONITOR_
+#pragma once
 
 #include <ros/ros.h>
 #include <tf2_ros/buffer.h>
@@ -47,13 +46,13 @@
 
 namespace planning_scene_monitor
 {
-typedef boost::function<void(const sensor_msgs::JointStateConstPtr& joint_state)> JointStateUpdateCallback;
+using JointStateUpdateCallback = boost::function<void(const sensor_msgs::JointStateConstPtr&)>;
 
 /** @class CurrentStateMonitor
     @brief Monitors the joint_states topic and tf to maintain the current state of the robot. */
 class CurrentStateMonitor
 {
-  typedef boost::signals2::connection TFConnection;
+  using TFConnection = boost::signals2::connection;
 
 public:
   /**
@@ -61,7 +60,7 @@ public:
    * @param robot_model The current kinematic model to build on
    * @param tf_buffer A pointer to the tf2_ros Buffer to use
    */
-  CurrentStateMonitor(const robot_model::RobotModelConstPtr& robot_model,
+  CurrentStateMonitor(const moveit::core::RobotModelConstPtr& robot_model,
                       const std::shared_ptr<tf2_ros::Buffer>& tf_buffer);
 
   /** @brief Constructor.
@@ -69,7 +68,7 @@ public:
    *  @param tf_buffer A pointer to the tf2_ros Buffer to use
    *  @param nh A ros::NodeHandle to pass node specific options
    */
-  CurrentStateMonitor(const robot_model::RobotModelConstPtr& robot_model,
+  CurrentStateMonitor(const moveit::core::RobotModelConstPtr& robot_model,
                       const std::shared_ptr<tf2_ros::Buffer>& tf_buffer, const ros::NodeHandle& nh);
 
   ~CurrentStateMonitor();
@@ -87,7 +86,7 @@ public:
   bool isActive() const;
 
   /** @brief Get the RobotModel for which we are monitoring state */
-  const robot_model::RobotModelConstPtr& getRobotModel() const
+  const moveit::core::RobotModelConstPtr& getRobotModel() const
   {
     return robot_model_;
   }
@@ -153,17 +152,17 @@ public:
 
   /** @brief Get the current state
    *  @return Returns the current state */
-  robot_state::RobotStatePtr getCurrentState() const;
+  moveit::core::RobotStatePtr getCurrentState() const;
 
   /** @brief Set the state \e upd to the current state maintained by this class. */
-  void setToCurrentState(robot_state::RobotState& upd) const;
+  void setToCurrentState(moveit::core::RobotState& upd) const;
 
   /** @brief Get the time stamp for the current state */
   ros::Time getCurrentStateTime() const;
 
   /** @brief Get the current state and its time stamp
    *  @return Returns a pair of the current state and its time stamp */
-  std::pair<robot_state::RobotStatePtr, ros::Time> getCurrentStateAndTime() const;
+  std::pair<moveit::core::RobotStatePtr, ros::Time> getCurrentStateAndTime() const;
 
   /** @brief Get the current state values as a map from joint names to joint state values
    *  @return Returns the map from joint names to joint state values*/
@@ -229,8 +228,8 @@ private:
 
   ros::NodeHandle nh_;
   std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
-  robot_model::RobotModelConstPtr robot_model_;
-  robot_state::RobotState robot_state_;
+  moveit::core::RobotModelConstPtr robot_model_;
+  moveit::core::RobotState robot_state_;
   std::map<const moveit::core::JointModel*, ros::Time> joint_time_;
   bool state_monitor_started_;
   bool copy_dynamics_;  // Copy velocity and effort from joint_state
@@ -248,5 +247,3 @@ private:
 
 MOVEIT_CLASS_FORWARD(CurrentStateMonitor);  // Defines CurrentStateMonitorPtr, ConstPtr, WeakPtr... etc
 }  // namespace planning_scene_monitor
-
-#endif

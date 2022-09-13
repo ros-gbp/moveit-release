@@ -34,8 +34,7 @@
 
 /* Author: Dave Coleman */
 
-#ifndef MOVEIT_MOVEIT_SETUP_ASSISTANT_WIDGETS_ROBOT_POSES_WIDGET_
-#define MOVEIT_MOVEIT_SETUP_ASSISTANT_WIDGETS_ROBOT_POSES_WIDGET_
+#pragma once
 
 // Qt
 class QComboBox;
@@ -148,12 +147,6 @@ private:
   /// Pointer to currently edited group state
   srdf::Model::GroupState* current_edit_pose_;
 
-  /// All the joint slider values that have thus far been seen. May contain more than just the current joints' values
-  std::map<std::string, double> joint_state_map_;
-
-  /// The joints currently in the selected planning group
-  std::vector<const robot_model::JointModel*> joint_models_;
-
   /// Remember the publisher for quick publishing later
   ros::Publisher pub_robot_state_;
 
@@ -233,7 +226,7 @@ public:
    * @param parent - parent QWidget
    * @param joint_model_ - a ptr reference to the joint this widget represents
    */
-  SliderWidget(QWidget* parent, const robot_model::JointModel* joint_model, double init_value);
+  SliderWidget(QWidget* parent, const moveit::core::JointModel* joint_model, double init_value);
 
   /**
    * Deconstructor
@@ -275,7 +268,7 @@ private:
   // ******************************************************************************************
 
   // Ptr to the joint's data
-  const robot_model::JointModel* joint_model_;
+  const moveit::core::JointModel* joint_model_;
 
   // Max & min position
   double max_position_;
@@ -290,5 +283,3 @@ private:
 
 // Declare std::string as metatype so we can use it in a signal
 Q_DECLARE_METATYPE(std::string)
-
-#endif

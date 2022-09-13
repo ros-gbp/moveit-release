@@ -1,8 +1,9 @@
-# moveit/moveit:melodic-ci
+# moveit/moveit:noetic-ci
 # Sets up a base image to use for running Continuous Integration on Travis
 
-FROM ros:melodic-ros-base
-MAINTAINER Robert Haschke rhaschke@techfak.uni-bielefeld.de
+ARG ROS_DISTRO=noetic
+FROM ros:${ROS_DISTRO}-ros-base
+MAINTAINER Dave Coleman dave@picknik.ai
 
 ENV TERM xterm
 
@@ -30,7 +31,7 @@ RUN \
     #
     # Download MoveIt sources, so that we can fetch all necessary dependencies
     wstool init --shallow src src/moveit/.github/workflows/upstream.rosinstall && \
-    git clone --depth 1 --branch ${ROS_DISTRO}-devel https://github.com/ros-planning/moveit_resources src/moveit_resources && \
+    git clone --depth 1 --branch master https://github.com/ros-planning/moveit_resources src/moveit_resources && \
     #
     # Download all dependencies of MoveIt
     rosdep update && \

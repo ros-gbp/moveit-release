@@ -35,6 +35,7 @@
 /* Author: Ioan Sucan */
 
 #include <moveit/transforms/transforms.h>
+#include <geometric_shapes/check_isometry.h>
 #include <tf2_eigen/tf2_eigen.h>
 #include <boost/algorithm/string/trim.hpp>
 #include <ros/console.h>
@@ -47,7 +48,7 @@ Transforms::Transforms(const std::string& target_frame) : target_frame_(target_f
 {
   boost::trim(target_frame_);
   if (target_frame_.empty())
-    ROS_ERROR_NAMED("transforms", "The target frame for MoveIt! Transforms cannot be empty.");
+    ROS_ERROR_NAMED("transforms", "The target frame for MoveIt Transforms cannot be empty.");
   else
   {
     transforms_map_[target_frame_] = Eigen::Isometry3d::Identity();
@@ -75,6 +76,10 @@ const FixedTransformsMap& Transforms::getAllTransforms() const
 
 void Transforms::setAllTransforms(const FixedTransformsMap& transforms)
 {
+  for (const auto& t : transforms)
+  {
+    ASSERT_ISOMETRY(t.second)  // unsanitized input, could contain a non-isometry
+  }
   transforms_map_ = transforms;
 }
 
@@ -114,6 +119,7 @@ bool Transforms::canTransform(const std::string& from_frame) const
 
 void Transforms::setTransform(const Eigen::Isometry3d& t, const std::string& from_frame)
 {
+  ASSERT_ISOMETRY(t)  // unsanitized input, could contain a non-isometry
   if (from_frame.empty())
     ROS_ERROR_NAMED("transforms", "Cannot record transform with empty name");
   else
@@ -124,8 +130,15 @@ void Transforms::setTransform(const geometry_msgs::TransformStamped& transform)
 {
   if (sameFrame(transform.child_frame_id, target_frame_))
   {
-    Eigen::Isometry3d t = tf2::transformToEigen(transform.transform);
-    setTransform(t, transform.header.frame_id);
+    // convert message manually to ensure correct normalization for double (error < 1e-12)
+    // tf2 only enforces float normalization (error < 1e-5)
+    const auto& trans = transform.transform.translation;
+    const auto& rot = transform.transform.rotation;
+    Eigen::Translation3d translation(trans.x, trans.y, trans.z);
+    Eigen::Quaterniond rotation(rot.w, rot.x, rot.y, rot.z);
+    rotation.normalize();
+
+    setTransform(translation * rotation, transform.header.frame_id);
   }
   else
   {
@@ -136,8 +149,8 @@ void Transforms::setTransform(const geometry_msgs::TransformStamped& transform)
 
 void Transforms::setTransforms(const std::vector<geometry_msgs::TransformStamped>& transforms)
 {
-  for (std::size_t i = 0; i < transforms.size(); ++i)
-    setTransform(transforms[i]);
+  for (const geometry_msgs::TransformStamped& transform : transforms)
+    setTransform(transform);
 }
 
 void Transforms::copyTransforms(std::vector<geometry_msgs::TransformStamped>& transforms) const

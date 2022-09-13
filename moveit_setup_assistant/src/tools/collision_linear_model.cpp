@@ -41,8 +41,6 @@
 #include <QPainter>
 #include <cmath>
 
-using namespace moveit_setup_assistant;
-
 CollisionLinearModel::CollisionLinearModel(CollisionMatrixModel* src, QObject* parent) : QAbstractProxyModel(parent)
 {
   setSourceModel(src);
@@ -78,23 +76,23 @@ QModelIndex CollisionLinearModel::mapToSource(const QModelIndex& proxyIndex) con
   return sourceModel()->index(r, c);
 }
 
-int CollisionLinearModel::rowCount(const QModelIndex& parent) const
+int CollisionLinearModel::rowCount(const QModelIndex& /*parent*/) const
 {
   int n = this->sourceModel()->rowCount();
   return (n * (n - 1) / 2);
 }
 
-int CollisionLinearModel::columnCount(const QModelIndex& parent) const
+int CollisionLinearModel::columnCount(const QModelIndex& /*parent*/) const
 {
   return 4;
 }
 
-QModelIndex CollisionLinearModel::index(int row, int column, const QModelIndex& parent) const
+QModelIndex CollisionLinearModel::index(int row, int column, const QModelIndex& /*parent*/) const
 {
   return createIndex(row, column);
 }
 
-QModelIndex CollisionLinearModel::parent(const QModelIndex& child) const
+QModelIndex CollisionLinearModel::parent(const QModelIndex& /*child*/) const
 {
   return QModelIndex();
 }
@@ -127,22 +125,17 @@ QVariant CollisionLinearModel::data(const QModelIndex& index, int role) const
   return QVariant();
 }
 
-DisabledReason CollisionLinearModel::reason(int row) const
-{
-  QModelIndex src_index = this->mapToSource(index(row, 0));
-  return qobject_cast<CollisionMatrixModel*>(sourceModel())->reason(src_index);
-}
-
 bool CollisionLinearModel::setData(const QModelIndex& index, const QVariant& value, int role)
 {
-  QModelIndex src_index = this->mapToSource(index);
-
   if (role == Qt::CheckStateRole)
   {
-    sourceModel()->setData(src_index, value, role);
-    int r = index.row();
-    Q_EMIT dataChanged(this->index(r, 2), this->index(r, 3));  // reason changed too
-    return true;
+    QModelIndex src_index = this->mapToSource(index);
+    if (sourceModel()->setData(src_index, value, role))
+    {
+      int r = index.row();
+      Q_EMIT dataChanged(this->index(r, 2), this->index(r, 3));  // reason changed too
+      return true;
+    }
   }
   return false;  // reject all other changes
 }
@@ -239,8 +232,7 @@ void SortFilterProxyModel::setShowAll(bool show_all)
 bool SortFilterProxyModel::filterAcceptsRow(int source_row, const QModelIndex& source_parent) const
 {
   CollisionLinearModel* m = qobject_cast<CollisionLinearModel*>(sourceModel());
-  if (!(show_all_ || m->reason(source_row) <= moveit_setup_assistant::ALWAYS ||
-        m->data(m->index(source_row, 2), Qt::CheckStateRole) == Qt::Checked))
+  if (!(show_all_ || m->data(m->index(source_row, 2), Qt::CheckStateRole) == Qt::Checked))
     return false;  // not accepted due to check state
 
   const QRegExp regexp = this->filterRegExp();

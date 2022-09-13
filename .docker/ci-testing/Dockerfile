@@ -1,7 +1,8 @@
-# moveit/moveit:melodic-ci-testing
+# moveit/moveit:noetic-ci-testing
 # Sets up a base image to use for running Continuous Integration on Travis
 
-FROM moveit/moveit:melodic-ci
+ARG IMAGE=noetic
+FROM moveit/moveit:${IMAGE}-ci
 MAINTAINER Robert Haschke rhaschke@techfak.uni-bielefeld.de
 
 # Switch to ros-testing

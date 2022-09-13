@@ -34,11 +34,9 @@
 
 /* Author: Ioan Sucan */
 
-#ifndef MOVEIT_OMPL_INTERFACE_OMPL_INTERFACE_
-#define MOVEIT_OMPL_INTERFACE_OMPL_INTERFACE_
+#pragma once
 
 #include <moveit/ompl_interface/planning_context_manager.h>
-#include <moveit/ompl_interface/constraints_library.h>
 #include <moveit/constraint_samplers/constraint_sampler_manager.h>
 #include <moveit/constraint_sampler_manager_loader/constraint_sampler_manager_loader.h>
 #include <moveit/planning_interface/planning_interface.h>
@@ -48,7 +46,7 @@
 #include <map>
 #include <ros/ros.h>
 
-/** \brief The MoveIt! interface to OMPL */
+/** \brief The MoveIt interface to OMPL */
 namespace ompl_interface
 {
 /** @class OMPLInterface
@@ -58,13 +56,13 @@ class OMPLInterface
 public:
   /** \brief Initialize OMPL-based planning for a particular robot model. ROS configuration is read from the specified
    * NodeHandle */
-  OMPLInterface(const robot_model::RobotModelConstPtr& robot_model, const ros::NodeHandle& nh = ros::NodeHandle("~"));
+  OMPLInterface(const moveit::core::RobotModelConstPtr& robot_model, const ros::NodeHandle& nh = ros::NodeHandle("~"));
 
   /** \brief Initialize OMPL-based planning for a particular robot model. ROS configuration is read from the specified
      NodeHandle. However,
       planner configurations are used as specified in \e pconfig instead of reading them from the ROS parameter server
      */
-  OMPLInterface(const robot_model::RobotModelConstPtr& robot_model,
+  OMPLInterface(const moveit::core::RobotModelConstPtr& robot_model,
                 const planning_interface::PlannerConfigurationMap& pconfig,
                 const ros::NodeHandle& nh = ros::NodeHandle("~"));
 
@@ -87,8 +85,6 @@ public:
                                                   const planning_interface::MotionPlanRequest& req,
                                                   moveit_msgs::MoveItErrorCodes& error_code) const;
 
-  ModelBasedPlanningContextPtr getPlanningContext(const std::string& config, const std::string& factory_type = "") const;
-
   const PlanningContextManager& getPlanningContextManager() const
   {
     return context_manager_;
@@ -97,16 +93,6 @@ public:
   PlanningContextManager& getPlanningContextManager()
   {
     return context_manager_;
-  }
-
-  ConstraintsLibrary& getConstraintsLibrary()
-  {
-    return *constraints_library_;
-  }
-
-  const ConstraintsLibrary& getConstraintsLibrary() const
-  {
-    return *constraints_library_;
   }
 
   constraint_samplers::ConstraintSamplerManager& getConstraintSamplerManager()
@@ -128,11 +114,6 @@ public:
   {
     return use_constraints_approximations_;
   }
-
-  void loadConstraintApproximations(const std::string& path);
-
-  void saveConstraintApproximations(const std::string& path);
-
   bool simplifySolutions() const
   {
     return simplify_solutions_;
@@ -142,14 +123,6 @@ public:
   {
     simplify_solutions_ = flag;
   }
-
-  /** @brief Look up param server 'constraint_approximations' and use its value as the path to save constraint
-   * approximations to */
-  bool saveConstraintApproximations();
-
-  /** @brief Look up param server 'constraint_approximations' and use its value as the path to load constraint
-   * approximations to */
-  bool loadConstraintApproximations();
 
   /** @brief Print the status of this node*/
   void printStatus();
@@ -177,13 +150,12 @@ protected:
   ros::NodeHandle nh_;  /// The ROS node handle
 
   /** \brief The kinematic model for which motion plans are computed */
-  robot_model::RobotModelConstPtr robot_model_;
+  moveit::core::RobotModelConstPtr robot_model_;
 
   constraint_samplers::ConstraintSamplerManagerPtr constraint_sampler_manager_;
 
   PlanningContextManager context_manager_;
 
-  ConstraintsLibraryPtr constraints_library_;
   bool use_constraints_approximations_;
 
   bool simplify_solutions_;
@@ -192,5 +164,3 @@ private:
   constraint_sampler_manager_loader::ConstraintSamplerManagerLoaderPtr constraint_sampler_manager_loader_;
 };
 }  // namespace ompl_interface
-
-#endif

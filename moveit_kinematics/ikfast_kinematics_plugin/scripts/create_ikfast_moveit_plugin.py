@@ -2,7 +2,7 @@
 from __future__ import print_function
 
 """
-IKFast Plugin Generator for MoveIt!
+IKFast Plugin Generator for MoveIt
 
 Creates a kinematics plugin using the output of IKFast from OpenRAVE.
 This plugin and the move_group node can be used as a general
@@ -74,7 +74,7 @@ search_modes = ["OPTIMIZE_MAX_JOINT", "OPTIMIZE_FREE_JOINT"]
 
 def create_parser():
     parser = argparse.ArgumentParser(
-        description="Generate an IKFast MoveIt! kinematic plugin"
+        description="Generate an IKFast MoveIt kinematic plugin"
     )
     parser.add_argument("robot_name", help="The name of your robot")
     parser.add_argument(
@@ -83,7 +83,7 @@ def create_parser():
     )
     parser.add_argument(
         "ikfast_plugin_pkg",
-        help="The name of the MoveIt! IKFast Kinematics Plugin to be created/updated",
+        help="The name of the MoveIt IKFast Kinematics Plugin to be created/updated",
     )
     parser.add_argument(
         "base_link_name",
@@ -339,15 +339,8 @@ def update_ikfast_package(args):
         "roscpp",
         "tf2_kdl",
         "tf2_eigen",
-        "eigen_conversions",
     ]
-    run_deps = [
-        "liblapack-dev",
-        "moveit_core",
-        "pluginlib",
-        "roscpp",
-        "eigen_conversions",
-    ]
+    run_deps = ["liblapack-dev", "moveit_core", "pluginlib", "roscpp"]
 
     update_deps(build_deps, "build_depend", package_xml)
     update_deps(run_deps, "exec_depend", package_xml)

@@ -76,9 +76,9 @@ void robot_interaction::KinematicOptionsMap::setOptions(const std::string& key, 
     }
 
     defaults_.setOptions(options_delta, fields);
-    for (M_options::iterator it = options_.begin(); it != options_.end(); ++it)
+    for (std::pair<const std::string, KinematicOptions>& option : options_)
     {
-      it->second.setOptions(options_delta, fields);
+      option.second.setOptions(options_delta, fields);
     }
     return;
   }
@@ -121,15 +121,15 @@ void robot_interaction::KinematicOptionsMap::merge(const KinematicOptionsMap& ot
   boost::mutex::scoped_lock lock2(*m2);
 
   defaults_ = other.defaults_;
-  for (M_options::const_iterator it = other.options_.begin(); it != other.options_.end(); ++it)
+  for (const std::pair<const std::string, KinematicOptions>& option : other.options_)
   {
-    options_[it->first] = it->second;
+    options_[option.first] = option.second;
   }
 }
 
 // This is intended to be called as a ModifyStateFunction to modify the state
 // maintained by a LockedRobotState in place.
-bool robot_interaction::KinematicOptionsMap::setStateFromIK(robot_state::RobotState& state, const std::string& key,
+bool robot_interaction::KinematicOptionsMap::setStateFromIK(moveit::core::RobotState& state, const std::string& key,
                                                             const std::string& group, const std::string& tip,
                                                             const geometry_msgs::Pose& pose) const
 {

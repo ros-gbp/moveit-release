@@ -34,8 +34,7 @@
 
 /* Author: Dave Coleman */
 
-#ifndef MOVEIT_ROS_MOVEIT_SETUP_ASSISTANT_WIDGETS_CONFIGURATION_FILES_WIDGET_
-#define MOVEIT_ROS_MOVEIT_SETUP_ASSISTANT_WIDGETS_CONFIGURATION_FILES_WIDGET_
+#pragma once
 
 #include <QList>
 class QLabel;
@@ -66,7 +65,7 @@ struct GenerateFile
   unsigned long write_on_changes;  // bitfield indicating required rewrite
   bool generate_;                  // "generate" checkbox ticked?
   bool modified_;                  // file externally modified?
-  boost::function<bool(std::string)> gen_func_;
+  std::function<bool(std::string)> gen_func_;
 };
 
 // Typedef for storing template string replacement pairs
@@ -119,6 +118,9 @@ private Q_SLOTS:
   /// Disable or enable item in gen_files_ array
   void changeCheckedState(QListWidgetItem* item);
 
+  /// Set checked state of all selected items
+  void setCheckSelected(bool checked);
+
 private:
   // ******************************************************************************************
   // Variables
@@ -135,9 +137,6 @@ private:
 
   /// Has the package been generated yet this program execution? Used for popping up exit warning
   bool has_generated_pkg_;
-
-  /// Populate the 'Files to be Generated' list just once
-  bool first_focusGiven_;
 
   /// Vector of all files to be generated
   std::vector<GenerateFile> gen_files_;
@@ -205,5 +204,3 @@ private:
 };
 
 }  // namespace moveit_setup_assistant
-
-#endif

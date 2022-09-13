@@ -36,8 +36,7 @@
  *   POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MOVEIT_TRAJECTORY_PROCESSING_TIME_OPTIMAL_TRAJECTORY_GENERATION_H
-#define MOVEIT_TRAJECTORY_PROCESSING_TIME_OPTIMAL_TRAJECTORY_GENERATION_H
+#pragma once
 
 #include <Eigen/Core>
 #include <list>
@@ -177,5 +176,3 @@ private:
   const double min_angle_change_;
 };
 }  // namespace trajectory_processing
-
-#endif  // MOVEIT_TRAJECTORY_PROCESSING_TIME_OPTIMAL_TRAJECTORY_GENERATION_H

@@ -88,8 +88,10 @@ class PythonMoveitCommanderNsTest(unittest.TestCase):
     def test_validation(self):
         current = np.asarray(self.group.get_current_joint_values())
 
-        plan1 = self.plan(current + 0.2)
-        plan2 = self.plan(current + 0.2)
+        success1, plan1, time1, err1 = self.plan(current + 0.2)
+        success2, plan2, time2, err2 = self.plan(current + 0.2)
+        self.assertTrue(success1)
+        self.assertTrue(success2)
 
         # first plan should execute
         self.assertTrue(self.group.execute(plan1))
@@ -98,7 +100,8 @@ class PythonMoveitCommanderNsTest(unittest.TestCase):
         self.assertFalse(self.group.execute(plan2))
 
         # newly planned trajectory should execute again
-        plan3 = self.plan(current)
+        success3, plan3, time3, err3 = self.plan(current)
+        self.assertTrue(success3)
         self.assertTrue(self.group.execute(plan3))
 
 

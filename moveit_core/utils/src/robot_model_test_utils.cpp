@@ -14,7 +14,7 @@
  *     copyright notice, this list of conditions and the following
  *     disclaimer in the documentation and/or other materials provided
  *     with the distribution.
- *   * Neither the name of MoveIt! nor the names of its
+ *   * Neither the name of MoveIt nor the names of its
  *     contributors may be used to endorse or promote products derived
  *     from this software without specific prior written permission.
  *
@@ -41,6 +41,7 @@
 
 #include <urdf_parser/urdf_parser.h>
 #include <moveit/utils/robot_model_test_utils.h>
+#include <pluginlib/class_loader.hpp>
 #include <ros/package.h>
 
 namespace moveit
@@ -94,6 +95,32 @@ srdf::ModelSharedPtr loadSRDFModel(const std::string& robot_name)
   }
   srdf_model->initFile(*urdf_model, srdf_path);
   return srdf_model;
+}
+
+void loadIKPluginForGroup(JointModelGroup* jmg, const std::string& base_link, const std::string& tip_link,
+                          std::string plugin, double timeout)
+{
+  using LoaderType = pluginlib::ClassLoader<kinematics::KinematicsBase>;
+  static std::weak_ptr<LoaderType> cached_loader;
+  std::shared_ptr<LoaderType> loader = cached_loader.lock();
+  if (!loader)
+  {
+    loader = std::make_shared<LoaderType>("moveit_core", "kinematics::KinematicsBase");
+    cached_loader = loader;
+  }
+
+  // translate short to long names
+  if (plugin == "KDL")
+    plugin = "kdl_kinematics_plugin/KDLKinematicsPlugin";
+
+  jmg->setSolverAllocators(
+      [=](const JointModelGroup* jmg) -> kinematics::KinematicsBasePtr {
+        kinematics::KinematicsBasePtr result = loader->createUniqueInstance(plugin);
+        result->initialize(jmg->getParentModel(), jmg->getName(), base_link, { tip_link }, 0.0);
+        result->setDefaultTimeout(timeout);
+        return result;
+      },
+      SolverAllocatorMapFn());
 }
 
 RobotModelBuilder::RobotModelBuilder(const std::string& name, const std::string& base_link_name)
@@ -385,7 +412,7 @@ moveit::core::RobotModelPtr RobotModelBuilder::build()
     return robot_model;
   }
   srdf_writer_->updateSRDFModel(*urdf_model_);
-  robot_model.reset(new moveit::core::RobotModel(urdf_model_, srdf_writer_->srdf_model_));
+  robot_model = std::make_shared<moveit::core::RobotModel>(urdf_model_, srdf_writer_->srdf_model_);
   return robot_model;
 }
 }  // namespace core

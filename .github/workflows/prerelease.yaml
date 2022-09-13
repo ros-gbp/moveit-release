@@ -5,13 +5,12 @@ name: pre-release
 
 on:
   workflow_dispatch:
-  push:
 
 jobs:
   default:
     strategy:
       matrix:
-        distro: [melodic]
+        distro: [noetic]
 
     env:
       # https://github.com/ros-industrial/industrial_ci/issues/666

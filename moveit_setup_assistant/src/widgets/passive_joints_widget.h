@@ -34,8 +34,7 @@
 
 /* Author: Dave Coleman */
 
-#ifndef MOVEIT_MOVEIT_SETUP_ASSISTANT_WIDGETS_PASSIVE_JOINTS_WIDGET_
-#define MOVEIT_MOVEIT_SETUP_ASSISTANT_WIDGETS_PASSIVE_JOINTS_WIDGET_
+#pragma once
 
 // SA
 #ifndef Q_MOC_RUN
@@ -75,7 +74,7 @@ private Q_SLOTS:
   void selectionUpdated();
 
   /// Called from Double List widget to highlight joints
-  void previewSelectedJoints(std::vector<std::string> joints);
+  void previewSelectedJoints(const std::vector<std::string>& joints);
 
 private:
   // ******************************************************************************************
@@ -90,5 +89,3 @@ private:
 };
 
 }  // namespace moveit_setup_assistant
-
-#endif

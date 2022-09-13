@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+# Usage: python moveit/moveit/scripts/create_readme_table.py > /tmp/table.md
+# First update supported_distro_ubuntu_dict below!
 
 from __future__ import print_function
 import os
@@ -11,8 +13,8 @@ from catkin_pkg.packages import find_packages
 
 def create_header(ros_ubuntu_dict):
     ros_distros = sorted(ros_ubuntu_dict.keys())
-    section_header = "## ROS Buildfarm\n"
-    header = "MoveIt! Package"
+    section_header = "### ROS Buildfarm\n"
+    header = "MoveIt Package"
     header_lines = "-" * len(header)
     for ros in ros_distros:
         source = " ".join([ros.capitalize(), "Source"])
@@ -46,12 +48,13 @@ def create_line(package, ros_ubuntu_dict):
             U=ubuntu[0].upper(),
             ubuntu=ubuntu.lower(),
             package=package,
-            base_url="http://build.ros.org",
+            base_url="https://build.ros.org",
         )
         for target in ["src", "bin"]:
             define_urls(target, params)
             response = requests.get(params["url"]).status_code
-            if response < 400:  # success
+            # we want to show a particular OS's badges to indicate they are not released / working yet
+            if response < 400 or ubuntu == "focal":  # success
                 line += " | [![Build Status]({base_url}/buildStatus/icon?job={job})]({url})".format(
                     **params
                 )
@@ -66,16 +69,15 @@ def create_line(package, ros_ubuntu_dict):
 
 def create_moveit_buildfarm_table():
     """
-    Creates MoveIt! buildfarm badge table
+    Creates MoveIt buildfarm badge table
     """
     # Update the following dictionary with the appropriate ROS-Ubuntu
     # combinations for supported distribitions. For instance, in Noetic,
     # remove {"indigo":"trusty"} and add {"noetic":"fbuntu"} with "fbuntu"
     # being whatever the 20.04 distro is named
     supported_distro_ubuntu_dict = {
-        "indigo": "trusty",
-        "kinetic": "xenial",
         "melodic": "bionic",
+        "noetic": "focal",
     }
 
     all_packages = sorted(

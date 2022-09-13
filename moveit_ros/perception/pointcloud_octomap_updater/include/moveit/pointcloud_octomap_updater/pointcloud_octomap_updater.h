@@ -34,8 +34,7 @@
 
 /* Author: Jon Binney, Ioan Sucan */
 
-#ifndef MOVEIT_PERCEPTION_POINTCLOUD_OCTOMAP_UPDATER_
-#define MOVEIT_PERCEPTION_POINTCLOUD_OCTOMAP_UPDATER_
+#pragma once
 
 #include <ros/ros.h>
 #include <tf2_ros/transform_listener.h>
@@ -88,6 +87,7 @@ private:
   unsigned int point_subsample_;
   double max_update_rate_;
   std::string filtered_cloud_topic_;
+  std::string ns_;
   ros::Publisher filtered_cloud_publisher_;
 
   message_filters::Subscriber<sensor_msgs::PointCloud2>* point_cloud_subscriber_;
@@ -101,5 +101,3 @@ private:
   std::vector<int> mask_;
 };
 }  // namespace occupancy_map_monitor
-
-#endif

@@ -41,8 +41,15 @@
 #include <gtest/gtest.h>
 #include <sstream>
 #include <algorithm>
+#include <limits>
 #include <ctype.h>
 
+namespace
+{
+constexpr double EPSILON{ 1.e-9 };
+}
+
+#if 0  // unused function
 static bool sameStringIgnoringWS(const std::string& s1, const std::string& s2)
 {
   unsigned int i1 = 0;
@@ -67,6 +74,8 @@ static bool sameStringIgnoringWS(const std::string& s1, const std::string& s2)
   }
   return i1 == s1.size() && i2 == s2.size();
 }
+#endif
+
 static void expect_near(const Eigen::MatrixXd& x, const Eigen::MatrixXd& y,
                         double eps = std::numeric_limits<double>::epsilon())
 {
@@ -161,10 +170,8 @@ TEST(LoadingAndFK, SimpleRobot)
 
   state.setVariableAcceleration("base_joint/x", 0.0);
 
-  // making sure that values get copied
-  moveit::core::RobotState* new_state = new moveit::core::RobotState(state);
+  const auto new_state = std::make_unique<moveit::core::RobotState>(state);  // making sure that values get copied
   EXPECT_NEAR_TRACED(state.getGlobalLinkTransform("base_link").translation(), Eigen::Vector3d(10, 8, 0));
-  delete new_state;
 
   std::vector<double> jv(state.getVariableCount(), 0.0);
   jv[state.getRobotModel()->getVariableIndex("base_joint/x")] = 5.0;
@@ -355,9 +362,9 @@ protected:
         "</robot>";
 
     urdf::ModelInterfaceSharedPtr urdf_model = urdf::parseURDF(MODEL2);
-    srdf::ModelSharedPtr srdf_model(new srdf::Model());
+    srdf::ModelSharedPtr srdf_model = std::make_shared<srdf::Model>();
     srdf_model->initString(*urdf_model, SMODEL2);
-    robot_model_.reset(new moveit::core::RobotModel(urdf_model, srdf_model));
+    robot_model_ = std::make_shared<moveit::core::RobotModel>(urdf_model, srdf_model);
   }
 
   void TearDown() override
@@ -450,28 +457,28 @@ TEST_F(OneRobot, FK)
   state.setVariablePositions(joint_values);
 
   EXPECT_NEAR_TRACED(state.getGlobalLinkTransform("base_link").translation(), Eigen::Vector3d(1, 1, 0));
-  EXPECT_NEAR(0.0, Eigen::Quaterniond(state.getGlobalLinkTransform("base_link").rotation()).x(), 1e-5);
-  EXPECT_NEAR(0.0, Eigen::Quaterniond(state.getGlobalLinkTransform("base_link").rotation()).y(), 1e-5);
-  EXPECT_NEAR(0.247404, Eigen::Quaterniond(state.getGlobalLinkTransform("base_link").rotation()).z(), 1e-5);
-  EXPECT_NEAR(0.968912, Eigen::Quaterniond(state.getGlobalLinkTransform("base_link").rotation()).w(), 1e-5);
+  EXPECT_NEAR(0.0, Eigen::Quaterniond(state.getGlobalLinkTransform("base_link").linear()).x(), 1e-5);
+  EXPECT_NEAR(0.0, Eigen::Quaterniond(state.getGlobalLinkTransform("base_link").linear()).y(), 1e-5);
+  EXPECT_NEAR(0.247404, Eigen::Quaterniond(state.getGlobalLinkTransform("base_link").linear()).z(), 1e-5);
+  EXPECT_NEAR(0.968912, Eigen::Quaterniond(state.getGlobalLinkTransform("base_link").linear()).w(), 1e-5);
 
   EXPECT_NEAR_TRACED(state.getGlobalLinkTransform("link_a").translation(), Eigen::Vector3d(1, 1, 0));
-  EXPECT_NEAR(0.0, Eigen::Quaterniond(state.getGlobalLinkTransform("link_a").rotation()).x(), 1e-5);
-  EXPECT_NEAR(0.0, Eigen::Quaterniond(state.getGlobalLinkTransform("link_a").rotation()).y(), 1e-5);
-  EXPECT_NEAR(0.0, Eigen::Quaterniond(state.getGlobalLinkTransform("link_a").rotation()).z(), 1e-5);
-  EXPECT_NEAR(1.0, Eigen::Quaterniond(state.getGlobalLinkTransform("link_a").rotation()).w(), 1e-5);
+  EXPECT_NEAR(0.0, Eigen::Quaterniond(state.getGlobalLinkTransform("link_a").linear()).x(), 1e-5);
+  EXPECT_NEAR(0.0, Eigen::Quaterniond(state.getGlobalLinkTransform("link_a").linear()).y(), 1e-5);
+  EXPECT_NEAR(0.0, Eigen::Quaterniond(state.getGlobalLinkTransform("link_a").linear()).z(), 1e-5);
+  EXPECT_NEAR(1.0, Eigen::Quaterniond(state.getGlobalLinkTransform("link_a").linear()).w(), 1e-5);
 
   EXPECT_NEAR_TRACED(state.getGlobalLinkTransform("link_b").translation(), Eigen::Vector3d(1, 1.5, 0));
-  EXPECT_NEAR(0.0, Eigen::Quaterniond(state.getGlobalLinkTransform("link_b").rotation()).x(), 1e-5);
-  EXPECT_NEAR(-0.2084598, Eigen::Quaterniond(state.getGlobalLinkTransform("link_b").rotation()).y(), 1e-5);
-  EXPECT_NEAR(0.0, Eigen::Quaterniond(state.getGlobalLinkTransform("link_b").rotation()).z(), 1e-5);
-  EXPECT_NEAR(0.97803091, Eigen::Quaterniond(state.getGlobalLinkTransform("link_b").rotation()).w(), 1e-5);
+  EXPECT_NEAR(0.0, Eigen::Quaterniond(state.getGlobalLinkTransform("link_b").linear()).x(), 1e-5);
+  EXPECT_NEAR(-0.2084598, Eigen::Quaterniond(state.getGlobalLinkTransform("link_b").linear()).y(), 1e-5);
+  EXPECT_NEAR(0.0, Eigen::Quaterniond(state.getGlobalLinkTransform("link_b").linear()).z(), 1e-5);
+  EXPECT_NEAR(0.97803091, Eigen::Quaterniond(state.getGlobalLinkTransform("link_b").linear()).w(), 1e-5);
 
   EXPECT_NEAR_TRACED(state.getGlobalLinkTransform("link_c").translation(), Eigen::Vector3d(1.08, 1.4, 0));
-  EXPECT_NEAR(0.0, Eigen::Quaterniond(state.getGlobalLinkTransform("link_c").rotation()).x(), 1e-5);
-  EXPECT_NEAR(0.0, Eigen::Quaterniond(state.getGlobalLinkTransform("link_c").rotation()).y(), 1e-5);
-  EXPECT_NEAR(0.0, Eigen::Quaterniond(state.getGlobalLinkTransform("link_c").rotation()).z(), 1e-5);
-  EXPECT_NEAR(1.0, Eigen::Quaterniond(state.getGlobalLinkTransform("link_c").rotation()).w(), 1e-5);
+  EXPECT_NEAR(0.0, Eigen::Quaterniond(state.getGlobalLinkTransform("link_c").linear()).x(), 1e-5);
+  EXPECT_NEAR(0.0, Eigen::Quaterniond(state.getGlobalLinkTransform("link_c").linear()).y(), 1e-5);
+  EXPECT_NEAR(0.0, Eigen::Quaterniond(state.getGlobalLinkTransform("link_c").linear()).z(), 1e-5);
+  EXPECT_NEAR(1.0, Eigen::Quaterniond(state.getGlobalLinkTransform("link_c").linear()).w(), 1e-5);
 
   EXPECT_TRUE(state.satisfiesBounds());
 
@@ -532,151 +539,10 @@ TEST_F(OneRobot, FK)
   EXPECT_NEAR_TRACED(state.getGlobalLinkTransform("link_e").translation(), Eigen::Vector3d(2.8, 0.6, 0));
 }
 
-std::size_t generateTestTraj(std::vector<std::shared_ptr<robot_state::RobotState>>& traj,
-                             const moveit::core::RobotModelConstPtr& robot_model,
-                             const robot_model::JointModelGroup* joint_model_group)
-{
-  traj.clear();
-
-  std::shared_ptr<robot_state::RobotState> robot_state(new robot_state::RobotState(robot_model));
-  robot_state->setToDefaultValues();
-  double ja, jc;
-
-  // 3 waypoints with default joints
-  for (std::size_t traj_ix = 0; traj_ix < 3; ++traj_ix)
-  {
-    // robot_state.reset(new robot_state::RobotState(*robot_state));
-    traj.push_back(robot_state::RobotStatePtr(new robot_state::RobotState(*robot_state)));
-  }
-
-  ja = robot_state->getVariablePosition("joint_a");
-  jc = robot_state->getVariablePosition("joint_c");
-
-  // 4th waypoint with a small jump of 0.01 in revolute joint and prismatic joint. This should not be considered a jump
-  ja = ja - 0.01;
-  robot_state->setVariablePosition("joint_a", ja);
-  jc = jc - 0.01;
-  robot_state->setVariablePosition("joint_c", jc);
-  traj.push_back(robot_state::RobotStatePtr(new robot_state::RobotState(*robot_state)));
-
-  // 5th waypoint with a large jump of 1.01 in first revolute joint
-  ja = ja + 1.01;
-  robot_state->setVariablePosition("joint_a", ja);
-  traj.push_back(robot_state::RobotStatePtr(new robot_state::RobotState(*robot_state)));
-
-  // 6th waypoint with a large jump of 1.01 in first prismatic joint
-  jc = jc + 1.01;
-  robot_state->setVariablePosition("joint_c", jc);
-  traj.push_back(robot_state::RobotStatePtr(new robot_state::RobotState(*robot_state)));
-
-  // 7th waypoint with no jump
-  traj.push_back(robot_state::RobotStatePtr(new robot_state::RobotState(*robot_state)));
-
-  return traj.size();
-}
-
-TEST_F(OneRobot, testGenerateTrajectory)
-{
-  const robot_model::JointModelGroup* joint_model_group = robot_model_->getJointModelGroup("base_from_base_to_e");
-  ASSERT_TRUE(joint_model_group);
-  std::vector<std::shared_ptr<robot_state::RobotState>> traj;
-
-  // The full trajectory should be of length 7
-  const std::size_t expected_full_traj_len = 7;
-
-  // Generate a test trajectory
-  std::size_t full_traj_len = generateTestTraj(traj, robot_model_, joint_model_group);
-
-  // Test the generateTestTraj still generates a trajectory of length 7
-  EXPECT_EQ(full_traj_len, expected_full_traj_len);  // full traj should be 7 waypoints long
-}
-
-TEST_F(OneRobot, testAbsoluteJointSpaceJump)
-{
-  const robot_model::JointModelGroup* joint_model_group = robot_model_->getJointModelGroup("base_from_base_to_e");
-  ASSERT_TRUE(joint_model_group);
-  std::vector<std::shared_ptr<robot_state::RobotState>> traj;
-
-  // A revolute joint jumps 1.01 at the 5th waypoint and a prismatic joint jumps 1.01 at the 6th waypoint
-  const std::size_t expected_revolute_jump_traj_len = 4;
-  const std::size_t expected_prismatic_jump_traj_len = 5;
-
-  // Pre-compute expected results for tests
-  std::size_t full_traj_len = generateTestTraj(traj, robot_model_, joint_model_group);
-  const double expected_revolute_jump_fraction = (double)expected_revolute_jump_traj_len / (double)full_traj_len;
-  const double expected_prismatic_jump_fraction = (double)expected_prismatic_jump_traj_len / (double)full_traj_len;
-
-  // Container for results
-  double fraction;
-
-  // Direct call of absolute version
-  fraction = robot_state::RobotState::testAbsoluteJointSpaceJump(joint_model_group, traj, 1.0, 1.0);
-  EXPECT_EQ(expected_revolute_jump_traj_len, traj.size());  // traj should be cut
-  EXPECT_NEAR(expected_revolute_jump_fraction, fraction, 0.01);
-
-  // Indirect call using testJointSpaceJumps
-  generateTestTraj(traj, robot_model_, joint_model_group);
-  fraction = robot_state::RobotState::testJointSpaceJump(joint_model_group, traj, robot_state::JumpThreshold(1.0, 1.0));
-  EXPECT_EQ(expected_revolute_jump_traj_len, traj.size());  // traj should be cut before the revolute jump
-  EXPECT_NEAR(expected_revolute_jump_fraction, fraction, 0.01);
-
-  // Test revolute joints
-  generateTestTraj(traj, robot_model_, joint_model_group);
-  fraction = robot_state::RobotState::testJointSpaceJump(joint_model_group, traj, robot_state::JumpThreshold(1.0, 0.0));
-  EXPECT_EQ(expected_revolute_jump_traj_len, traj.size());  // traj should be cut before the revolute jump
-  EXPECT_NEAR(expected_revolute_jump_fraction, fraction, 0.01);
-
-  // Test prismatic joints
-  generateTestTraj(traj, robot_model_, joint_model_group);
-  fraction = robot_state::RobotState::testJointSpaceJump(joint_model_group, traj, robot_state::JumpThreshold(0.0, 1.0));
-  EXPECT_EQ(expected_prismatic_jump_traj_len, traj.size());  // traj should be cut before the prismatic jump
-  EXPECT_NEAR(expected_prismatic_jump_fraction, fraction, 0.01);
-
-  // Ignore all absolute jumps
-  generateTestTraj(traj, robot_model_, joint_model_group);
-  fraction = robot_state::RobotState::testJointSpaceJump(joint_model_group, traj, robot_state::JumpThreshold(0.0, 0.0));
-  EXPECT_EQ(full_traj_len, traj.size());  // traj should not be cut
-  EXPECT_NEAR(1.0, fraction, 0.01);
-}
-
-TEST_F(OneRobot, testRelativeJointSpaceJump)
-{
-  const robot_model::JointModelGroup* joint_model_group = robot_model_->getJointModelGroup("base_from_base_to_e");
-  ASSERT_TRUE(joint_model_group);
-  std::vector<std::shared_ptr<robot_state::RobotState>> traj;
-
-  // The first large jump of 1.01 occurs at the 5th waypoint so the test should trim the trajectory to length 4
-  const std::size_t expected_relative_jump_traj_len = 4;
-
-  // Pre-compute expected results for tests
-  std::size_t full_traj_len = generateTestTraj(traj, robot_model_, joint_model_group);
-  const double expected_relative_jump_fraction = (double)expected_relative_jump_traj_len / (double)full_traj_len;
-
-  // Container for results
-  double fraction;
-
-  // Direct call of relative version: 1.01 > 2.97 * (0.01 * 2 + 1.01 * 2)/6.
-  fraction = robot_state::RobotState::testRelativeJointSpaceJump(joint_model_group, traj, 2.97);
-  EXPECT_EQ(expected_relative_jump_traj_len, traj.size());  // traj should be cut before the first jump of 1.01
-  EXPECT_NEAR(expected_relative_jump_fraction, fraction, 0.01);
-
-  // Indirect call of relative version using testJointSpaceJumps
-  generateTestTraj(traj, robot_model_, joint_model_group);
-  fraction = robot_state::RobotState::testJointSpaceJump(joint_model_group, traj, robot_state::JumpThreshold(2.97));
-  EXPECT_EQ(expected_relative_jump_traj_len, traj.size());  // traj should be cut before the first jump of 1.01
-  EXPECT_NEAR(expected_relative_jump_fraction, fraction, 0.01);
-
-  // Trajectory should not be cut: 1.01 < 2.98 * (0.01 * 2 + 1.01 * 2)/6.
-  generateTestTraj(traj, robot_model_, joint_model_group);
-  fraction = robot_state::RobotState::testJointSpaceJump(joint_model_group, traj, robot_state::JumpThreshold(2.98));
-  EXPECT_EQ(full_traj_len, traj.size());  // traj should not be cut
-  EXPECT_NEAR(1.0, fraction, 0.01);
-}
-
 TEST_F(OneRobot, testPrintCurrentPositionWithJointLimits)
 {
   moveit::core::RobotState state(robot_model_);
-  const robot_model::JointModelGroup* joint_model_group = robot_model_->getJointModelGroup("base_from_base_to_e");
+  const moveit::core::JointModelGroup* joint_model_group = robot_model_->getJointModelGroup("base_from_base_to_e");
   ASSERT_TRUE(joint_model_group);
 
   state.setToDefaultValues();
@@ -699,6 +565,146 @@ TEST_F(OneRobot, testPrintCurrentPositionWithJointLimits)
   single_joint[0] = 0.19;
   state.setJointPositions("joint_f", single_joint);
   state.printStatePositionsWithJointLimits(joint_model_group);
+}
+
+TEST_F(OneRobot, testInterpolation)
+{
+  moveit::core::RobotState state_a(robot_model_);
+
+  // Interpolate with itself
+  state_a.setToDefaultValues();
+  moveit::core::RobotState state_b(state_a);
+  moveit::core::RobotState interpolated_state(state_a);
+  for (size_t i = 0; i <= 10; ++i)
+  {
+    state_a.interpolate(state_b, static_cast<double>(i) / 10., interpolated_state,
+                        robot_model_->getJointModelGroup("base_from_base_to_e"));
+    EXPECT_NEAR(state_a.distance(state_b), 0, EPSILON)
+        << "Interpolation between identical states yielded a different state.";
+
+    for (const auto& link_name : robot_model_->getLinkModelNames())
+    {
+      EXPECT_FALSE(interpolated_state.getCollisionBodyTransform(link_name, 0).matrix().hasNaN())
+          << "Interpolation between identical states yielded NaN value.";
+    }
+  }
+
+  // Some simple interpolation
+  std::map<std::string, double> joint_values;
+  joint_values["base_joint/x"] = 1.0;
+  joint_values["base_joint/y"] = 1.0;
+  state_a.setVariablePositions(joint_values);
+  joint_values["base_joint/x"] = 0.0;
+  joint_values["base_joint/y"] = 2.0;
+  state_b.setVariablePositions(joint_values);
+  EXPECT_NEAR(3 * std::sqrt(2), state_a.distance(state_b), EPSILON) << "Simple interpolation of base_joint failed.";
+
+  state_a.interpolate(state_b, 0.5, interpolated_state, robot_model_->getJointModelGroup("base_from_base_to_e"));
+  EXPECT_NEAR(0., state_a.distance(interpolated_state) - state_b.distance(interpolated_state), EPSILON)
+      << "Simple interpolation of base_joint failed.";
+  EXPECT_NEAR(0.5, interpolated_state.getVariablePosition("base_joint/x"), EPSILON)
+      << "Simple interpolation of base_joint failed.";
+  EXPECT_NEAR(1.5, interpolated_state.getVariablePosition("base_joint/y"), EPSILON)
+      << "Simple interpolation of base_joint failed.";
+  state_a.interpolate(state_b, 0.1, interpolated_state, robot_model_->getJointModelGroup("base_from_base_to_e"));
+  EXPECT_NEAR(0.9, interpolated_state.getVariablePosition("base_joint/x"), EPSILON)
+      << "Simple interpolation of base_joint failed.";
+  EXPECT_NEAR(1.1, interpolated_state.getVariablePosition("base_joint/y"), EPSILON)
+      << "Simple interpolation of base_joint failed.";
+
+  // Interpolate all the joints
+  joint_values["base_joint/x"] = 0.0;
+  joint_values["base_joint/y"] = 20.0;
+  joint_values["base_joint/theta"] = 3 * M_PI / 4;
+  joint_values["joint_a"] = -4 * M_PI / 5;
+  joint_values["joint_c"] = 0.0;
+  joint_values["joint_f"] = 1.0;
+  state_a.setVariablePositions(joint_values);
+
+  joint_values["base_joint/x"] = 10.0;
+  joint_values["base_joint/y"] = 0.0;
+  joint_values["base_joint/theta"] = -3 * M_PI / 4;
+  joint_values["joint_a"] = 4 * M_PI / 5;
+  joint_values["joint_c"] = 0.07;
+  joint_values["joint_f"] = 0.0;
+  state_b.setVariablePositions(joint_values);
+
+  for (size_t i = 0; i <= 5; ++i)
+  {
+    double t = static_cast<double>(i) / 5.;
+    state_a.interpolate(state_b, t, interpolated_state, robot_model_->getJointModelGroup("base_from_base_to_e"));
+    EXPECT_NEAR(10.0 * t, interpolated_state.getVariablePosition("base_joint/x"), EPSILON)
+        << "Base joint interpolation failed.";
+    EXPECT_NEAR(20.0 * (1 - t), interpolated_state.getVariablePosition("base_joint/y"), EPSILON)
+        << "Base joint interpolation failed.";
+    if (t < 0.5)
+    {
+      EXPECT_NEAR(3 * M_PI / 4 + (M_PI / 2) * t, interpolated_state.getVariablePosition("base_joint/theta"), EPSILON)
+          << "Base joint theta interpolation failed.";
+      EXPECT_NEAR(-4 * M_PI / 5 - (2 * M_PI / 5) * t, interpolated_state.getVariablePosition("joint_a"), EPSILON)
+          << "Continuous joint interpolation failed.";
+    }
+    else
+    {
+      EXPECT_NEAR(-3 * M_PI / 4 - (M_PI / 2) * (1 - t), interpolated_state.getVariablePosition("base_joint/theta"),
+                  EPSILON)
+          << "Base joint theta interpolation failed.";
+      EXPECT_NEAR(4 * M_PI / 5 + (2 * M_PI / 5) * (1 - t), interpolated_state.getVariablePosition("joint_a"), EPSILON)
+          << "Continuous joint interpolation failed.";
+    }
+    EXPECT_NEAR(0.07 * t, interpolated_state.getVariablePosition("joint_c"), EPSILON)
+        << "Interpolation of joint_c failed.";
+    EXPECT_NEAR(1 - t, interpolated_state.getVariablePosition("joint_f"), EPSILON)
+        << "Interpolation of joint_f failed.";
+    EXPECT_NEAR(1.5 * (1 - t) + 0.1, interpolated_state.getVariablePosition("mim_f"), EPSILON)
+        << "Interpolation of mimic joint mim_f failed.";
+  }
+
+  bool nan_exception = false;
+  try
+  {
+    const double infty = std::numeric_limits<double>::infinity();
+    state_a.interpolate(state_b, infty, interpolated_state, robot_model_->getJointModelGroup("base_from_base_to_e"));
+  }
+  catch (std::exception& e)
+  {
+    std::cout << "Caught expected exception: " << e.what() << std::endl;
+    nan_exception = true;
+  }
+  EXPECT_TRUE(nan_exception) << "NaN interpolation parameter did not create expected exception.";
+}
+
+TEST_F(OneRobot, rigidlyConnectedParent)
+{
+  // link_e is its own rigidly-connected parent
+  const moveit::core::LinkModel* link_e{ robot_model_->getLinkModel("link_e") };
+  EXPECT_EQ(robot_model_->getRigidlyConnectedParentLinkModel(link_e), link_e);
+
+  // link_b is rigidly connected to its parent link_a
+  const moveit::core::LinkModel* link_a{ robot_model_->getLinkModel("link_a") };
+  const moveit::core::LinkModel* link_b{ robot_model_->getLinkModel("link_b") };
+  EXPECT_EQ(robot_model_->getRigidlyConnectedParentLinkModel(link_b), link_a);
+
+  moveit::core::RobotState state(robot_model_);
+
+  EXPECT_EQ(state.getRigidlyConnectedParentLinkModel("link_b"), link_a);
+
+  // attach "object" with "subframe" to link_b
+  state.attachBody(std::make_unique<moveit::core::AttachedBody>(
+      link_b, "object", Eigen::Isometry3d::Identity(), std::vector<shapes::ShapeConstPtr>{},
+      EigenSTL::vector_Isometry3d{}, std::set<std::string>{}, trajectory_msgs::JointTrajectory{},
+      moveit::core::FixedTransformsMap{ { "subframe", Eigen::Isometry3d::Identity() } }));
+
+  // RobotState's version should resolve these too
+  EXPECT_EQ(link_a, state.getRigidlyConnectedParentLinkModel("object"));
+  EXPECT_EQ(link_a, state.getRigidlyConnectedParentLinkModel("object/subframe"));
+
+  // test failure cases
+  EXPECT_EQ(nullptr, state.getRigidlyConnectedParentLinkModel("no_object"));
+  EXPECT_EQ(nullptr, state.getRigidlyConnectedParentLinkModel("object/no_subframe"));
+  EXPECT_EQ(nullptr, state.getRigidlyConnectedParentLinkModel(""));
+  EXPECT_EQ(nullptr, state.getRigidlyConnectedParentLinkModel("object/"));
+  EXPECT_EQ(nullptr, state.getRigidlyConnectedParentLinkModel("/"));
 }
 
 int main(int argc, char** argv)

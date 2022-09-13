@@ -23,8 +23,7 @@
 // linear relationship to that of another joint.
 // Copyright  (C)  2013  Sachin Chitta, Willow Garage
 
-#ifndef KDL_CHAIN_IKSOLVERVEL_PINV_Mimic_HPP
-#define KDL_CHAIN_IKSOLVERVEL_PINV_Mimic_HPP
+#pragma once
 
 #include <kdl/config.h>
 #include <kdl/chainiksolver.hpp>
@@ -117,4 +116,3 @@ private:
   Jacobian jac_reduced_;  // reduced Jacobian with contributions of mimic joints mapped onto active DoFs
 };
 }  // namespace KDL
-#endif

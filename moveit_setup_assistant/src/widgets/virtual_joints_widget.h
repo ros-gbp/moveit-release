@@ -34,8 +34,7 @@
 
 /* Author: Dave Coleman */
 
-#ifndef MOVEIT_MOVEIT_SETUP_ASSISTANT_WIDGETS_VIRTUAL_JOINTS_WIDGET_
-#define MOVEIT_MOVEIT_SETUP_ASSISTANT_WIDGETS_VIRTUAL_JOINTS_WIDGET_
+#pragma once
 
 // Qt
 class QLabel;
@@ -184,5 +183,3 @@ private:
 };
 
 }  // namespace moveit_setup_assistant
-
-#endif

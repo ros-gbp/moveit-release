@@ -236,7 +236,7 @@ void GroupEditWidget::setSelected(const std::string& group_name)
   if (*resolution == 0)
   {
     // Set default value
-    *resolution = DEFAULT_KIN_SOLVER_SEARCH_RESOLUTION_;
+    *resolution = DEFAULT_KIN_SOLVER_SEARCH_RESOLUTION;
   }
   kinematics_resolution_field_->setText(QString::number(*resolution));
 
@@ -245,7 +245,7 @@ void GroupEditWidget::setSelected(const std::string& group_name)
   if (*timeout == 0)
   {
     // Set default value
-    *timeout = DEFAULT_KIN_SOLVER_TIMEOUT_;
+    *timeout = DEFAULT_KIN_SOLVER_TIMEOUT;
   }
   kinematics_timeout_field_->setText(QString::number(*timeout));
 

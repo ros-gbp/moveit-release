@@ -14,7 +14,7 @@
  *     copyright notice, this list of conditions and the following
  *     disclaimer in the documentation and/or other materials provided
  *     with the distribution.
- *   * Neither the name of MoveIt! nor the names of its
+ *   * Neither the name of MoveIt nor the names of its
  *     contributors may be used to endorse or promote products derived
  *     from this software without specific prior written permission.
  *
@@ -35,8 +35,7 @@
 /* Author: Bryce Willey */
 /** \brief convenience functions and classes used for making simple robot models for testing. */
 
-#ifndef MOVEIT_CORE_UTILS_TEST_
-#define MOVEIT_CORE_UTILS_TEST_
+#pragma once
 
 #include <srdfdom/srdf_writer.h>
 #include <urdf/model.h>
@@ -70,6 +69,16 @@ urdf::ModelInterfaceSharedPtr loadModelInterface(const std::string& robot_name);
  * \returns an SRDF Model constructed from robot_name's URDF and SRDF.
  */
 srdf::ModelSharedPtr loadSRDFModel(const std::string& robot_name);
+
+/** \brief Load an IK solver plugin for the given joint model group
+ * \param[in] jmg joint model group to load the plugin for
+ * \param[in] base_link base link of chain
+ * \param[in] tip_link tip link of chain
+ * \param[in] plugin name of the plugin ("KDL", or full name)
+ * \param[in] timeout default solver timeout
+ */
+void loadIKPluginForGroup(JointModelGroup* jmg, const std::string& base_link, const std::string& tip_link,
+                          std::string plugin = "KDL", double timeout = 0.1);
 
 /** \brief Easily build different robot models for testing.
  *  Essentially a programmer-friendly light wrapper around URDF and SRDF.
@@ -196,5 +205,3 @@ private:
 };
 }  // namespace core
 }  // namespace moveit
-
-#endif

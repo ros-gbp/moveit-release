@@ -48,33 +48,37 @@ const std::string planning_pipeline::PlanningPipeline::DISPLAY_PATH_TOPIC = "dis
 const std::string planning_pipeline::PlanningPipeline::MOTION_PLAN_REQUEST_TOPIC = "motion_plan_request";
 const std::string planning_pipeline::PlanningPipeline::MOTION_CONTACTS_TOPIC = "display_contacts";
 
-planning_pipeline::PlanningPipeline::PlanningPipeline(const robot_model::RobotModelConstPtr& model,
-                                                      const ros::NodeHandle& nh,
+planning_pipeline::PlanningPipeline::PlanningPipeline(const moveit::core::RobotModelConstPtr& model,
+                                                      const ros::NodeHandle& pipeline_nh,
                                                       const std::string& planner_plugin_param_name,
                                                       const std::string& adapter_plugins_param_name)
-  : nh_(nh), robot_model_(model)
+  : pipeline_nh_(pipeline_nh), private_nh_("~"), robot_model_(model)
 {
   std::string planner;
-  ros::NodeHandle cnh = planning_interface::getConfigNodeHandle(nh);
-  if (cnh.getParam(planner_plugin_param_name, planner))
+  if (pipeline_nh_.getParam(planner_plugin_param_name, planner))
     planner_plugin_name_ = planner;
 
   std::string adapters;
-  if (cnh.getParam(adapter_plugins_param_name, adapters))
+  if (pipeline_nh_.getParam(adapter_plugins_param_name, adapters))
   {
     boost::char_separator<char> sep(" ");
-    boost::tokenizer<boost::char_separator<char> > tok(adapters, sep);
-    for (boost::tokenizer<boost::char_separator<char> >::iterator beg = tok.begin(); beg != tok.end(); ++beg)
+    boost::tokenizer<boost::char_separator<char>> tok(adapters, sep);
+    for (boost::tokenizer<boost::char_separator<char>>::iterator beg = tok.begin(); beg != tok.end(); ++beg)
       adapter_plugin_names_.push_back(*beg);
   }
 
   configure();
 }
 
-planning_pipeline::PlanningPipeline::PlanningPipeline(const robot_model::RobotModelConstPtr& model,
-                                                      const ros::NodeHandle& nh, const std::string& planner_plugin_name,
+planning_pipeline::PlanningPipeline::PlanningPipeline(const moveit::core::RobotModelConstPtr& model,
+                                                      const ros::NodeHandle& pipeline_nh,
+                                                      const std::string& planner_plugin_name,
                                                       const std::vector<std::string>& adapter_plugin_names)
-  : nh_(nh), planner_plugin_name_(planner_plugin_name), adapter_plugin_names_(adapter_plugin_names), robot_model_(model)
+  : pipeline_nh_(pipeline_nh)
+  , private_nh_("~")
+  , planner_plugin_name_(planner_plugin_name)
+  , adapter_plugin_names_(adapter_plugin_names)
+  , robot_model_(model)
 {
   configure();
 }
@@ -88,8 +92,8 @@ void planning_pipeline::PlanningPipeline::configure()
   // load the planning plugin
   try
   {
-    planner_plugin_loader_.reset(new pluginlib::ClassLoader<planning_interface::PlannerManager>(
-        "moveit_core", "planning_interface::PlannerManager"));
+    planner_plugin_loader_ = std::make_unique<pluginlib::ClassLoader<planning_interface::PlannerManager>>(
+        "moveit_core", "planning_interface::PlannerManager");
   }
   catch (pluginlib::PluginlibException& ex)
   {
@@ -115,7 +119,7 @@ void planning_pipeline::PlanningPipeline::configure()
   try
   {
     planner_instance_ = planner_plugin_loader_->createUniqueInstance(planner_plugin_name_);
-    if (!planner_instance_->initialize(robot_model_, planning_interface::getConfigNodeHandle(nh_).getNamespace()))
+    if (!planner_instance_->initialize(robot_model_, pipeline_nh_.getNamespace()))
       throw std::runtime_error("Unable to initialize planning plugin");
     ROS_INFO_STREAM("Using planning interface '" << planner_instance_->getDescription() << "'");
   }
@@ -132,8 +136,9 @@ void planning_pipeline::PlanningPipeline::configure()
     std::vector<planning_request_adapter::PlanningRequestAdapterConstPtr> ads;
     try
     {
-      adapter_plugin_loader_.reset(new pluginlib::ClassLoader<planning_request_adapter::PlanningRequestAdapter>(
-          "moveit_core", "planning_request_adapter::PlanningRequestAdapter"));
+      adapter_plugin_loader_ =
+          std::make_unique<pluginlib::ClassLoader<planning_request_adapter::PlanningRequestAdapter>>(
+              "moveit_core", "planning_request_adapter::PlanningRequestAdapter");
     }
     catch (pluginlib::PluginlibException& ex)
     {
@@ -141,28 +146,31 @@ void planning_pipeline::PlanningPipeline::configure()
     }
 
     if (adapter_plugin_loader_)
-      for (std::size_t i = 0; i < adapter_plugin_names_.size(); ++i)
+      for (const std::string& adapter_plugin_name : adapter_plugin_names_)
       {
-        planning_request_adapter::PlanningRequestAdapterConstPtr ad;
+        planning_request_adapter::PlanningRequestAdapterPtr ad;
         try
         {
-          ad = adapter_plugin_loader_->createUniqueInstance(adapter_plugin_names_[i]);
+          ad = adapter_plugin_loader_->createUniqueInstance(adapter_plugin_name);
         }
         catch (pluginlib::PluginlibException& ex)
         {
-          ROS_ERROR_STREAM("Exception while loading planning adapter plugin '" << adapter_plugin_names_[i]
+          ROS_ERROR_STREAM("Exception while loading planning adapter plugin '" << adapter_plugin_name
                                                                                << "': " << ex.what());
         }
         if (ad)
-          ads.push_back(ad);
+        {
+          ad->initialize(pipeline_nh_);
+          ads.push_back(std::move(ad));
+        }
       }
     if (!ads.empty())
     {
-      adapter_chain_.reset(new planning_request_adapter::PlanningRequestAdapterChain());
-      for (std::size_t i = 0; i < ads.size(); ++i)
+      adapter_chain_ = std::make_unique<planning_request_adapter::PlanningRequestAdapterChain>();
+      for (planning_request_adapter::PlanningRequestAdapterConstPtr& ad : ads)
       {
-        ROS_INFO_STREAM("Using planning request adapter '" << ads[i]->getDescription() << "'");
-        adapter_chain_->addAdapter(ads[i]);
+        ROS_INFO_STREAM("Using planning request adapter '" << ad->getDescription() << "'");
+        adapter_chain_->addAdapter(ad);
       }
     }
   }
@@ -175,7 +183,7 @@ void planning_pipeline::PlanningPipeline::displayComputedMotionPlans(bool flag)
   if (display_computed_motion_plans_ && !flag)
     display_path_publisher_.shutdown();
   else if (!display_computed_motion_plans_ && flag)
-    display_path_publisher_ = nh_.advertise<moveit_msgs::DisplayTrajectory>(DISPLAY_PATH_TOPIC, 10, true);
+    display_path_publisher_ = private_nh_.advertise<moveit_msgs::DisplayTrajectory>(DISPLAY_PATH_TOPIC, 10, true);
   display_computed_motion_plans_ = flag;
 }
 
@@ -184,7 +192,8 @@ void planning_pipeline::PlanningPipeline::publishReceivedRequests(bool flag)
   if (publish_received_requests_ && !flag)
     received_request_publisher_.shutdown();
   else if (!publish_received_requests_ && flag)
-    received_request_publisher_ = nh_.advertise<moveit_msgs::MotionPlanRequest>(MOTION_PLAN_REQUEST_TOPIC, 10, true);
+    received_request_publisher_ =
+        private_nh_.advertise<moveit_msgs::MotionPlanRequest>(MOTION_PLAN_REQUEST_TOPIC, 10, true);
   publish_received_requests_ = flag;
 }
 
@@ -193,7 +202,7 @@ void planning_pipeline::PlanningPipeline::checkSolutionPaths(bool flag)
   if (check_solution_paths_ && !flag)
     contacts_publisher_.shutdown();
   else if (!check_solution_paths_ && flag)
-    contacts_publisher_ = nh_.advertise<visualization_msgs::MarkerArray>(MOTION_CONTACTS_TOPIC, 100, true);
+    contacts_publisher_ = private_nh_.advertise<visualization_msgs::MarkerArray>(MOTION_CONTACTS_TOPIC, 100, true);
   check_solution_paths_ = flag;
 }
 
@@ -230,8 +239,8 @@ bool planning_pipeline::PlanningPipeline::generatePlan(const planning_scene::Pla
       if (!adapter_added_state_index.empty())
       {
         std::stringstream ss;
-        for (std::size_t i = 0; i < adapter_added_state_index.size(); ++i)
-          ss << adapter_added_state_index[i] << " ";
+        for (std::size_t added_index : adapter_added_state_index)
+          ss << added_index << " ";
         ROS_INFO("Planning adapters have added states at index positions: [ %s]", ss.str().c_str());
       }
     }
@@ -255,6 +264,11 @@ bool planning_pipeline::PlanningPipeline::generatePlan(const planning_scene::Pla
     ROS_DEBUG_STREAM("Motion planner reported a solution path with " << state_count << " states");
     if (check_solution_paths_)
     {
+      visualization_msgs::MarkerArray arr;
+      visualization_msgs::Marker m;
+      m.action = visualization_msgs::Marker::DELETEALL;
+      arr.markers.push_back(m);
+
       std::vector<std::size_t> index;
       if (!planning_scene->isPathValid(*res.trajectory_, req.path_constraints, req.group_name, false, &index))
       {
@@ -264,8 +278,8 @@ bool planning_pipeline::PlanningPipeline::generatePlan(const planning_scene::Pla
         for (std::size_t i = 0; i < index.size() && !problem; ++i)
         {
           bool found = false;
-          for (std::size_t j = 0; j < adapter_added_state_index.size(); ++j)
-            if (index[i] == adapter_added_state_index[j])
+          for (std::size_t added_index : adapter_added_state_index)
+            if (index[i] == added_index)
             {
               found = true;
               break;
@@ -284,19 +298,18 @@ bool planning_pipeline::PlanningPipeline::generatePlan(const planning_scene::Pla
 
             // display error messages
             std::stringstream ss;
-            for (std::size_t i = 0; i < index.size(); ++i)
-              ss << index[i] << " ";
+            for (std::size_t it : index)
+              ss << it << " ";
             ROS_ERROR_STREAM("Computed path is not valid. Invalid states at index locations: [ "
                              << ss.str() << "] out of " << state_count
                              << ". Explanations follow in command line. Contacts are published on "
-                             << nh_.resolveName(MOTION_CONTACTS_TOPIC));
+                             << private_nh_.resolveName(MOTION_CONTACTS_TOPIC));
 
             // call validity checks in verbose mode for the problematic states
-            visualization_msgs::MarkerArray arr;
-            for (std::size_t i = 0; i < index.size(); ++i)
+            for (std::size_t it : index)
             {
               // check validity with verbose on
-              const robot_state::RobotState& robot_state = res.trajectory_->getWayPoint(index[i]);
+              const moveit::core::RobotState& robot_state = res.trajectory_->getWayPoint(it);
               planning_scene->isStateValid(robot_state, req.path_constraints, req.group_name, true);
 
               // compute the contacts if any
@@ -316,8 +329,6 @@ bool planning_pipeline::PlanningPipeline::generatePlan(const planning_scene::Pla
               }
             }
             ROS_ERROR_STREAM("Completed listing of explanations for invalid states.");
-            if (!arr.markers.empty())
-              contacts_publisher_.publish(arr);
           }
         }
         else
@@ -326,6 +337,7 @@ bool planning_pipeline::PlanningPipeline::generatePlan(const planning_scene::Pla
       }
       else
         ROS_DEBUG("Planned path was found to be valid when rechecked");
+      contacts_publisher_.publish(arr);
     }
   }
 
@@ -336,7 +348,7 @@ bool planning_pipeline::PlanningPipeline::generatePlan(const planning_scene::Pla
     disp.model_id = robot_model_->getName();
     disp.trajectory.resize(1);
     res.trajectory_->getRobotTrajectoryMsg(disp.trajectory[0]);
-    robot_state::robotStateToRobotStateMsg(res.trajectory_->getFirstWayPoint(), disp.trajectory_start);
+    moveit::core::robotStateToRobotStateMsg(res.trajectory_->getFirstWayPoint(), disp.trajectory_start);
     display_path_publisher_.publish(disp);
   }
 
@@ -347,7 +359,7 @@ bool planning_pipeline::PlanningPipeline::generatePlan(const planning_scene::Pla
     bool stacked_constraints = false;
     if (req.path_constraints.position_constraints.size() > 1 || req.path_constraints.orientation_constraints.size() > 1)
       stacked_constraints = true;
-    for (auto constraint : req.goal_constraints)
+    for (const auto& constraint : req.goal_constraints)
     {
       if (constraint.position_constraints.size() > 1 || constraint.orientation_constraints.size() > 1)
         stacked_constraints = true;

@@ -53,7 +53,7 @@ int initRepeatedPointTrajectory(robot_trajectory::RobotTrajectory& trajectory)
   const int num = 3;
   unsigned i;
 
-  const robot_model::JointModelGroup* group = trajectory.getGroup();
+  const moveit::core::JointModelGroup* group = trajectory.getGroup();
   if (!group)
   {
     ROS_ERROR_NAMED("trajectory_processing", "Need to set the group");
@@ -74,16 +74,13 @@ int initRepeatedPointTrajectory(robot_trajectory::RobotTrajectory& trajectory)
 }
 
 // Initialize one-joint, straight-line trajectory
-// Can specify init/final velocity/acceleration,
-// but not all time parameterization methods may accept it.
-int initStraightTrajectory(robot_trajectory::RobotTrajectory& trajectory, double vel_i = 0.0, double vel_f = 0.0,
-                           double acc_i = 0.0, double acc_f = 0.0)
+int initStraightTrajectory(robot_trajectory::RobotTrajectory& trajectory)
 {
   const int num = 10;
   const double max = 2.0;
   unsigned i;
 
-  const robot_model::JointModelGroup* group = trajectory.getGroup();
+  const moveit::core::JointModelGroup* group = trajectory.getGroup();
   if (!group)
   {
     ROS_ERROR_NAMED("trajectory_processing", "Need to set the group");
@@ -109,7 +106,7 @@ int initStraightTrajectory(robot_trajectory::RobotTrajectory& trajectory, double
 
 void printTrajectory(robot_trajectory::RobotTrajectory& trajectory)
 {
-  const robot_model::JointModelGroup* group = trajectory.getGroup();
+  const moveit::core::JointModelGroup* group = trajectory.getGroup();
   const std::vector<int>& idx = group->getVariableIndexList();
   unsigned int count = trajectory.getWayPointCount();
 
@@ -118,13 +115,13 @@ void printTrajectory(robot_trajectory::RobotTrajectory& trajectory)
   std::cout << "  Trajectory Points" << std::endl;
   for (unsigned i = 0; i < count; i++)
   {
-    robot_state::RobotStatePtr point = trajectory.getWayPointPtr(i);
+    moveit::core::RobotStatePtr point = trajectory.getWayPointPtr(i);
     printf("  waypoint %2d time %6.2f pos %6.2f vel %6.2f acc %6.2f ", i, trajectory.getWayPointDurationFromStart(i),
            point->getVariablePosition(idx[0]), point->getVariableVelocity(idx[0]),
            point->getVariableAcceleration(idx[0]));
     if (i > 0)
     {
-      robot_state::RobotStatePtr prev = trajectory.getWayPointPtr(i - 1);
+      moveit::core::RobotStatePtr prev = trajectory.getWayPointPtr(i - 1);
       printf("jrk %6.2f",
              (point->getVariableAcceleration(idx[0]) - prev->getVariableAcceleration(idx[0])) /
                  (trajectory.getWayPointDurationFromStart(i) - trajectory.getWayPointDurationFromStart(i - 1)));

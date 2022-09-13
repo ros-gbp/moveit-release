@@ -5,6 +5,7 @@ add_library(${MOVEIT_LIB_NAME}
   src/iterative_spline_parameterization.cpp
   src/trajectory_tools.cpp
   src/time_optimal_trajectory_generation.cpp
+  src/limit_cartesian_speed.cpp
 )
 set_target_properties(${MOVEIT_LIB_NAME} PROPERTIES VERSION "${${PROJECT_NAME}_VERSION}")
 
@@ -22,5 +23,7 @@ if(CATKIN_ENABLE_TESTING)
   catkin_add_gtest(test_time_parameterization test/test_time_parameterization.cpp)
   target_link_libraries(test_time_parameterization moveit_test_utils ${catkin_LIBRARIES} ${urdfdom_LIBRARIES} ${urdfdom_headers_LIBRARIES} ${MOVEIT_LIB_NAME})
   catkin_add_gtest(test_time_optimal_trajectory_generation test/test_time_optimal_trajectory_generation.cpp)
-  target_link_libraries(test_time_optimal_trajectory_generation ${catkin_LIBRARIES} ${console_bridge_LIBRARIES} ${MOVEIT_LIB_NAME})
+  target_link_libraries(test_time_optimal_trajectory_generation moveit_test_utils ${catkin_LIBRARIES} ${console_bridge_LIBRARIES} ${MOVEIT_LIB_NAME})
+  catkin_add_gtest(test_limit_cartesian_speed test/test_limit_cartesian_speed.cpp)
+  target_link_libraries(test_limit_cartesian_speed moveit_test_utils ${catkin_LIBRARIES} ${urdfdom_LIBRARIES} ${urdfdom_headers_LIBRARIES} ${MOVEIT_LIB_NAME})
 endif()

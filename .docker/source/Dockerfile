@@ -1,9 +1,10 @@
 # syntax = docker/dockerfile:1.3
 
-# moveit/moveit:melodic-source
+# moveit/moveit:noetic-source
 # Downloads the moveit source code and install remaining debian dependencies
 
-FROM moveit/moveit:melodic-ci-testing
+ARG IMAGE=noetic
+FROM moveit/moveit:${IMAGE}-ci-testing
 MAINTAINER Robert Haschke rhaschke@techfak.uni-bielefeld.de
 
 ENV PYTHONIOENCODING UTF-8
@@ -23,7 +24,7 @@ RUN --mount=type=cache,target=/root/.ccache/ \
     PATH=/usr/lib/ccache:$PATH && \
     # Fetch required upstream sources for building
     wstool init --shallow src src/moveit/.github/workflows/upstream.rosinstall && \
-    git clone --depth 1 --branch ${ROS_DISTRO}-devel https://github.com/ros-planning/moveit_resources src/moveit_resources && \
+    git clone --depth 1 --branch master https://github.com/ros-planning/moveit_resources src/moveit_resources && \
     #
     catkin config --extend /opt/ros/$ROS_DISTRO --install --cmake-args -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=ON && \
     # Status rate is limited so that just enough info is shown to keep Docker from timing out,

@@ -34,8 +34,7 @@
 
 /* Author: Ioan Sucan */
 
-#ifndef MOVEIT_PLAN_EXECUTION_PLAN_EXECUTION_
-#define MOVEIT_PLAN_EXECUTION_PLAN_EXECUTION_
+#pragma once
 
 #include <moveit/macros/class_forward.h>
 #include <moveit/plan_execution/plan_representation.h>
@@ -144,12 +143,11 @@ public:
 
 private:
   void planAndExecuteHelper(ExecutableMotionPlan& plan, const Options& opt);
-  bool isRemainingPathValid(const ExecutableMotionPlan& plan);
   bool isRemainingPathValid(const ExecutableMotionPlan& plan, const std::pair<int, int>& path_segment);
 
   void planningSceneUpdatedCallback(const planning_scene_monitor::PlanningSceneMonitor::SceneUpdateType update_type);
   void doneWithTrajectoryExecution(const moveit_controller_manager::ExecutionStatus& status);
-  void successfulTrajectorySegmentExecution(const ExecutableMotionPlan* plan, std::size_t index);
+  void successfulTrajectorySegmentExecution(const ExecutableMotionPlan& plan, std::size_t index);
 
   ros::NodeHandle node_handle_;
   planning_scene_monitor::PlanningSceneMonitorPtr planning_scene_monitor_;
@@ -186,4 +184,3 @@ private:
   DynamicReconfigureImpl* reconfigure_impl_;
 };
 }  // namespace plan_execution
-#endif

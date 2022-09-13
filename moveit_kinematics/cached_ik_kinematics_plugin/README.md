@@ -46,7 +46,7 @@ This illustrates two points: (1) if the IK solver is slow, significant improveme
 
 Below is a complete list of all arguments:
 
-- `robot`: the name of the corresponding MoveIt! config package
+- `robot`: the name of the corresponding MoveIt config package
 - `group`: the joint group to measure (by default performance is reported for all joint groups)
 - `tip`: the name of the end effector (by default the default end effectors are used)
 - `num`: the number of IK calls per joint group
@@ -58,7 +58,7 @@ The Cached IK Kinematics Plugin is implemented as a wrapper around classed deriv
 
     #include "cached_ik_kinematics_plugin.h"
     #include <moveit/kdl_kinematics_plugin/kdl_kinematics_plugin.h>
-    #include <pluginlib/class_list_macros.h>
+    #include <pluginlib/class_list_macros.hpp>
     PLUGINLIB_EXPORT_CLASS(cached_ik_kinematics_plugin::CachedIKKinematicsPlugin<kdl_kinematics_plugin::KDLKinematicsPlugin>, kinematics::KinematicsBase);
 
 In the catkin `package.xml` file for your plugin, you add these lines just before `</package>`:

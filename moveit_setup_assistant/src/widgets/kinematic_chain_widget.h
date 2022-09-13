@@ -34,8 +34,7 @@
 
 /* Author: Dave Coleman */
 
-#ifndef MOVEIT_MOVEIT_SETUP_ASSISTANT_WIDGETS_KINEMATIC_CHAIN_WIDGET_
-#define MOVEIT_MOVEIT_SETUP_ASSISTANT_WIDGETS_KINEMATIC_CHAIN_WIDGET_
+#pragma once
 
 #include <QWidget>
 class QLabel;
@@ -70,9 +69,9 @@ public:
   /// Set the link field with previous value
   void setSelected(const std::string& base_link, const std::string& tip_link);
 
-  void addLinktoTreeRecursive(const robot_model::LinkModel* link, const robot_model::LinkModel* parent);
+  void addLinktoTreeRecursive(const moveit::core::LinkModel* link, const moveit::core::LinkModel* parent);
 
-  bool addLinkChildRecursive(QTreeWidgetItem* parent, const robot_model::LinkModel* link,
+  bool addLinkChildRecursive(QTreeWidgetItem* parent, const moveit::core::LinkModel* link,
                              const std::string& parent_name);
 
   // ******************************************************************************************
@@ -115,7 +114,7 @@ Q_SIGNALS:
   void cancelEditing();
 
   /// Event for telling rviz to highlight a link of the robot
-  void highlightLink(const std::string& name, const QColor&);
+  void highlightLink(const std::string& name, const QColor& /*_t2*/);
 
   /// Event for telling rviz to unhighlight all links of the robot
   void unhighlightAll();
@@ -136,5 +135,3 @@ private:
   // ******************************************************************************************
 };
 }  // namespace moveit_setup_assistant
-
-#endif

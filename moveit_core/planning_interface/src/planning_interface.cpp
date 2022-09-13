@@ -56,16 +56,6 @@ static ActiveContexts& getActiveContexts()
 }
 }  // namespace
 
-ros::NodeHandle getConfigNodeHandle(const ros::NodeHandle& nh)
-{
-  // Handle new configuration scheme with multiple pipelines configured in namespaces planning_pipelines/*
-  std::string default_pipeline;
-  if (nh.getParam("default_planning_pipeline", default_pipeline) &&
-      nh.hasParam("planning_pipelines/" + default_pipeline))
-    return ros::NodeHandle(nh, "planning_pipelines/" + default_pipeline);
-  return nh;
-}
-
 PlanningContext::PlanningContext(const std::string& name, const std::string& group) : name_(name), group_(group)
 {
   ActiveContexts& ac = getActiveContexts();
@@ -101,7 +91,7 @@ void PlanningContext::setMotionPlanRequest(const MotionPlanRequest& request)
   request_.num_planning_attempts = std::max(1, request_.num_planning_attempts);
 }
 
-bool PlannerManager::initialize(const robot_model::RobotModelConstPtr& /*unused*/, const std::string& /*unused*/)
+bool PlannerManager::initialize(const moveit::core::RobotModelConstPtr& /*unused*/, const std::string& /*unused*/)
 {
   return true;
 }
@@ -133,8 +123,8 @@ void PlannerManager::terminate() const
 {
   ActiveContexts& ac = getActiveContexts();
   boost::mutex::scoped_lock _(ac.mutex_);
-  for (std::set<PlanningContext*>::iterator it = ac.contexts_.begin(); it != ac.contexts_.end(); ++it)
-    (*it)->terminate();
+  for (PlanningContext* context : ac.contexts_)
+    context->terminate();
 }
 
 }  // end of namespace planning_interface

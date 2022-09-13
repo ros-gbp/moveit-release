@@ -34,8 +34,7 @@
 
 /* Author: Ioan Sucan */
 
-#ifndef MOVEIT_OMPL_INTERFACE_DETAIL_STATE_VALIDITY_CHECKER_
-#define MOVEIT_OMPL_INTERFACE_DETAIL_STATE_VALIDITY_CHECKER_
+#pragma once
 
 #include <moveit/ompl_interface/detail/threadsafe_state_storage.h>
 #include <moveit/collision_detection/collision_common.h>
@@ -62,6 +61,12 @@ public:
     return isValid(state, dist, verbose_);
   }
 
+  bool isValid(const ompl::base::State* state, double& dist, ompl::base::State* /*validState*/,
+               bool& /*validStateAvailable*/) const override
+  {
+    return isValid(state, dist, verbose_);
+  }
+
   bool isValid(const ompl::base::State* state, bool verbose) const;
   bool isValid(const ompl::base::State* state, double& dist, bool verbose) const;
 
@@ -83,5 +88,3 @@ protected:
   bool verbose_;
 };
 }  // namespace ompl_interface
-
-#endif

@@ -33,12 +33,12 @@
 
 /* Author: Mohamad Ayman */
 
-#ifndef MOVEIT_MOVEIT_SETUP_ASSISTANT_WIDGETS_SIMULATION_WIDGET_H
-#define MOVEIT_MOVEIT_SETUP_ASSISTANT_WIDGETS_SIMULATION_WIDGET_H
+#pragma once
 
 // Qt
 class QLabel;
 class QTextEdit;
+class QPushButton;
 
 // SA
 #ifndef Q_MOC_RUN
@@ -64,18 +64,24 @@ public:
   // ******************************************************************************************
 
   SimulationWidget(QWidget* parent, const MoveItConfigDataPtr& config_data);
+  void focusGiven() override;
+  bool focusLost() override;
+
+private:
+  /// Generate Gazebo-compatible URDF, starting from original URDF
+  std::string generateGazeboCompatibleURDF() const;
 
 private Q_SLOTS:
-
   // ******************************************************************************************
   // Slot Event Functions
   // ******************************************************************************************
 
-  // Called the copy to clipboard button is clicked
-  void copyURDF(const QString& link);
-
-  /// Generate URDF button clicked
-  void generateURDFClick();
+  /// Overwrite original URDF with content of document
+  void overwriteURDF();
+  /// Open original URDF with system editor
+  void openURDF();
+  /// Copy the content of the URDF document to the clipboard
+  void copyURDF();
 
 private:
   // ******************************************************************************************
@@ -84,6 +90,8 @@ private:
 
   QTextEdit* simulation_text_;
   QLabel* no_changes_label_;
+  QPushButton* btn_overwrite_;
+  QPushButton* btn_open_;
   QLabel* copy_urdf_;
 
   /// Contains all the configuration data for the setup assistant
@@ -91,5 +99,3 @@ private:
 };
 
 }  // namespace moveit_setup_assistant
-
-#endif

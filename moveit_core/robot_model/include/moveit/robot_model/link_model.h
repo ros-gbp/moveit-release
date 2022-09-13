@@ -34,8 +34,7 @@
 
 /* Author: Ioan Sucan */
 
-#ifndef MOVEIT_CORE_ROBOT_MODEL_LINK_MODEL_
-#define MOVEIT_CORE_ROBOT_MODEL_LINK_MODEL_
+#pragma once
 
 #include <string>
 #include <vector>
@@ -44,6 +43,7 @@
 #include <Eigen/Geometry>
 #include <eigen_stl_containers/eigen_stl_vector_container.h>
 #include <moveit/macros/class_forward.h>
+#include <geometric_shapes/check_isometry.h>
 
 namespace shapes
 {
@@ -61,12 +61,11 @@ class LinkModel;
 typedef std::map<std::string, LinkModel*> LinkModelMap;
 
 /** \brief Map of names to const instances for LinkModel */
-typedef std::map<std::string, const LinkModel*> LinkModelMapConst;
+using LinkModelMapConst = std::map<std::string, const LinkModel*>;
 
 /** \brief Map from link model instances to Eigen transforms */
-typedef std::map<const LinkModel*, Eigen::Isometry3d, std::less<const LinkModel*>,
-                 Eigen::aligned_allocator<std::pair<const LinkModel* const, Eigen::Isometry3d> > >
-    LinkTransformMap;
+using LinkTransformMap = std::map<const LinkModel*, Eigen::Isometry3d, std::less<const LinkModel*>,
+                                  Eigen::aligned_allocator<std::pair<const LinkModel* const, Eigen::Isometry3d> > >;
 
 /** \brief A link from the robot. Contains the constant transform applied to the link and its geometry */
 class LinkModel
@@ -138,7 +137,8 @@ public:
   /** \brief When transforms are computed for this link,
       they are usually applied to the link's origin. The
       joint origin transform acts as an offset -- it is
-      pre-applied before any other transform */
+      pre-applied before any other transform. The
+      transform is guaranteed to be a valid isometry. */
   const Eigen::Isometry3d& getJointOriginTransform() const
   {
     return joint_origin_transform_;
@@ -158,7 +158,8 @@ public:
 
   /** \brief In addition to the link transform, the geometry
       of a link that is used for collision checking may have
-      a different offset itself, with respect to the origin */
+      a different offset itself, with respect to the origin.
+      The transform is guaranteed to be a valid isometry. */
   const EigenSTL::vector_Isometry3d& getCollisionOriginTransforms() const
   {
     return collision_origin_transform_;
@@ -192,7 +193,8 @@ public:
     return centered_bounding_box_offset_;
   }
 
-  /** \brief Get the set of links that are attached to this one via fixed transforms */
+  /** \brief Get the set of links that are attached to this one via fixed transforms. The returned transforms are
+   * guaranteed to be valid isometries. */
   const LinkTransformMap& getAssociatedFixedTransforms() const
   {
     return associated_fixed_transforms_;
@@ -201,6 +203,7 @@ public:
   /** \brief Remember that \e link_model is attached to this link using a fixed transform */
   void addAssociatedFixedTransform(const LinkModel* link_model, const Eigen::Isometry3d& transform)
   {
+    ASSERT_ISOMETRY(transform);  // unsanitized input, could contain a non-isometry
     associated_fixed_transforms_[link_model] = transform;
   }
 
@@ -283,5 +286,3 @@ private:
 };
 }  // namespace core
 }  // namespace moveit
-
-#endif

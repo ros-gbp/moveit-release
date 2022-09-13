@@ -34,19 +34,19 @@
 
 /* Author: Ioan Sucan */
 
-#ifndef MOVEIT_OCCUPANCY_MAP_MONITOR_LAZY_FREE_SPACE_UPDATER_
-#define MOVEIT_OCCUPANCY_MAP_MONITOR_LAZY_FREE_SPACE_UPDATER_
+#pragma once
 
-#include <moveit/occupancy_map_monitor/occupancy_map.h>
+#include <moveit/collision_detection/occupancy_map.h>
 #include <boost/thread.hpp>
 #include <deque>
+#include <unordered_map>
 
 namespace occupancy_map_monitor
 {
 class LazyFreeSpaceUpdater
 {
 public:
-  LazyFreeSpaceUpdater(const OccMapTreePtr& tree, unsigned int max_batch_size = 10);
+  LazyFreeSpaceUpdater(const collision_detection::OccMapTreePtr& tree, unsigned int max_batch_size = 10);
   ~LazyFreeSpaceUpdater();
 
   void pushLazyUpdate(octomap::KeySet* occupied_cells, octomap::KeySet* model_cells,
@@ -54,6 +54,8 @@ public:
 
 private:
 #ifdef __APPLE__
+  typedef std::unordered_map<octomap::OcTreeKey, unsigned int, octomap::OcTreeKey::KeyHash> OcTreeKeyCountMap;
+#elif __cplusplus >= 201103L
   typedef std::unordered_map<octomap::OcTreeKey, unsigned int, octomap::OcTreeKey::KeyHash> OcTreeKeyCountMap;
 #else
   typedef std::tr1::unordered_map<octomap::OcTreeKey, unsigned int, octomap::OcTreeKey::KeyHash> OcTreeKeyCountMap;
@@ -65,7 +67,7 @@ private:
   void lazyUpdateThread();
   void processThread();
 
-  OccMapTreePtr tree_;
+  collision_detection::OccMapTreePtr tree_;
   bool running_;
   std::size_t max_batch_size_;
   double max_sensor_delta_;
@@ -86,5 +88,3 @@ private:
   boost::thread process_thread_;
 };
 }  // namespace occupancy_map_monitor
-
-#endif /* MOVEIT_OCCUPANCY_MAP_UPDATER_H_ */

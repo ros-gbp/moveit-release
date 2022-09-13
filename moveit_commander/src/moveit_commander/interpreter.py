@@ -445,11 +445,11 @@ class MoveGroupCommandInterpreter(object):
                 if clist[1] == "rand" or clist[1] == "random":
                     vals = g.get_random_joint_values()
                     g.set_joint_value_target(vals)
-                    self._last_plan = g.plan()
+                    self._last_plan = g.plan()[1]  # The trajectory msg
                 else:
                     try:
                         g.set_named_target(clist[1])
-                        self._last_plan = g.plan()
+                        self._last_plan = g.plan()[1]  # The trajectory msg
                     except MoveItCommanderException as e:
                         return (
                             MoveGroupInfoLevel.WARN,
@@ -715,13 +715,13 @@ class MoveGroupCommandInterpreter(object):
     def command_current(self, g):
         res = (
             "joints = ["
-            + " ".join([str(x) for x in g.get_current_joint_values()])
+            + ", ".join([str(x) for x in g.get_current_joint_values()])
             + "]"
         )
         if len(g.get_end_effector_link()) > 0:
             res = (
                 res
-                + "\n"
+                + "\n\n"
                 + g.get_end_effector_link()
                 + " pose = [\n"
                 + str(g.get_current_pose())
