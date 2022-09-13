@@ -1,7 +1,8 @@
 /*********************************************************************
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2013, Willow Garage, Inc.
+ *  Copyright (c) 2020, Benjamin Scholz
+ *  Copyright (c) 2021, Thies Oelerich
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -14,7 +15,7 @@
  *     copyright notice, this list of conditions and the following
  *     disclaimer in the documentation and/or other materials provided
  *     with the distribution.
- *   * Neither the name of Willow Garage nor the names of its
+ *   * Neither the name of the authors nor the names of other
  *     contributors may be used to endorse or promote products derived
  *     from this software without specific prior written permission.
  *
@@ -32,21 +33,21 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-/* Author: Ioan Sucan */
+/* Authors: Benjamin Scholz, Thies Oelerich */
 
-#include <moveit/version.h>
-#include <iostream>
-#include <cstring>
+#pragma once
 
-int main(int /*argc*/, char** /*argv*/)
+#include <moveit/macros/class_forward.h>
+#include <string>
+namespace trajectory_processing
 {
-  std::cout << MOVEIT_VERSION_STR;
-  if (strlen(MOVEIT_GIT_COMMIT_HASH))
-  {
-    std::cout << ", git commit: " << MOVEIT_GIT_COMMIT_HASH;
-    if (strlen(MOVEIT_GIT_NAME))
-      std::cout << " (" << MOVEIT_GIT_NAME << ")";
-  }
-  std::cout << std::endl;
-  return 0;
-}
+MOVEIT_CLASS_FORWARD(RobotTrajectory);
+}  // namespace trajectory_processing
+
+namespace trajectory_processing
+{
+bool limitMaxCartesianLinkSpeed(robot_trajectory::RobotTrajectory& trajectory, const double speed,
+                                const moveit::core::LinkModel* link_model);
+bool limitMaxCartesianLinkSpeed(robot_trajectory::RobotTrajectory& trajectory, const double speed,
+                                const std::string& link_name = "");
+}  // namespace trajectory_processing
