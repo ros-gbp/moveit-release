@@ -18,7 +18,7 @@ jobs:
         env:
           - IMAGE: melodic-ci
             CCOV: true
-          - IMAGE: melodic-ci-shadow-fixed
+          - IMAGE: melodic-ci-testing
             IKFAST_TEST: true
             CATKIN_LINT: true
             CLANG_TIDY: pedantic
@@ -26,7 +26,7 @@ jobs:
       CXXFLAGS: >-
         -Wall -Wextra -Wwrite-strings -Wunreachable-code -Wpointer-arith -Wredundant-decls
         -Wno-unused-parameter
-        ${{ matrix.env.CLANG_TIDY && '-Wno-error=c++17-compat -Wno-error=overloaded-virtual -Wno-error=unused-function' || '' }}
+        ${{ matrix.env.CLANG_TIDY && '-Wno-c++17-compat -Wno-overloaded-virtual -Wno-unused-function' || '-Wno-unused-but-set-parameter' }}
       CLANG_TIDY_ARGS: --fix --fix-errors
       DOCKER_IMAGE: moveit/moveit:${{ matrix.env.IMAGE }}
       UPSTREAM_WORKSPACE: .github/workflows/upstream.rosinstall
@@ -118,7 +118,6 @@ jobs:
       - id: ici
         name: Run industrial_ci
         uses: ros-industrial/industrial_ci@master
-        env: ${{ matrix.env }}
 
       - name: Upload test artifacts (on failure)
         uses: actions/upload-artifact@v2
