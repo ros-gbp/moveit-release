@@ -1,0 +1,9 @@
+Format: Bloom subset of https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: pilz_industrial_motion_planner
+Upstream-Contact: https://github.com/ros-planning/moveit/issues
+Source: https://github.com/ros-planning/moveit
+
+Files: See file headers in repository for details
+Copyright: See package copyright in source code for details
+License: BSD
+ See repository for full license text
