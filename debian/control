@@ -1,0 +1,12 @@
+Source: ros-noetic-moveit-ros-manipulation
+Section: misc
+Priority: optional
+Maintainer: Michael Görner <me@v4hn.de>
+Build-Depends: debhelper (>= 9.0.0), libeigen3-dev, ros-noetic-actionlib, ros-noetic-catkin, ros-noetic-dynamic-reconfigure, ros-noetic-moveit-core, ros-noetic-moveit-msgs, ros-noetic-moveit-ros-move-group, ros-noetic-moveit-ros-planning, ros-noetic-pluginlib (>= 1.11.2), ros-noetic-rosconsole, ros-noetic-roscpp, ros-noetic-tf2-eigen
+Homepage: http://moveit.ros.org
+Standards-Version: 3.9.2
+
+Package: ros-noetic-moveit-ros-manipulation
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-noetic-actionlib, ros-noetic-dynamic-reconfigure, ros-noetic-moveit-core, ros-noetic-moveit-msgs, ros-noetic-moveit-ros-move-group, ros-noetic-moveit-ros-planning, ros-noetic-pluginlib (>= 1.11.2), ros-noetic-rosconsole, ros-noetic-roscpp, ros-noetic-tf2-eigen
+Description: Components of MoveIt used for manipulation
