@@ -1,0 +1,13 @@
+Source: ros-noetic-moveit-runtime
+Section: misc
+Priority: optional
+Maintainer: Isaac I. Y. Saito <gm130s@gmail.com>
+Build-Depends: debhelper (>= 9.0.0), ros-noetic-catkin
+Homepage: http://moveit.ros.org
+Standards-Version: 3.9.2
+
+Package: ros-noetic-moveit-runtime
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-noetic-moveit-core, ros-noetic-moveit-planners, ros-noetic-moveit-plugins, ros-noetic-moveit-ros-manipulation, ros-noetic-moveit-ros-move-group, ros-noetic-moveit-ros-perception, ros-noetic-moveit-ros-planning, ros-noetic-moveit-ros-planning-interface, ros-noetic-moveit-ros-warehouse
+Description: moveit_runtime meta package contains MoveIt packages that are essential for its runtime (e.g.
+ running MoveIt on robots).
