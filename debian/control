@@ -1,0 +1,12 @@
+Source: ros-noetic-moveit-planners
+Section: misc
+Priority: optional
+Maintainer: Dave Coleman <dave@picknik.ai>
+Build-Depends: debhelper (>= 9.0.0), ros-noetic-catkin
+Homepage: http://moveit.ros.org
+Standards-Version: 3.9.2
+
+Package: ros-noetic-moveit-planners
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-noetic-chomp-motion-planner, ros-noetic-moveit-planners-chomp, ros-noetic-moveit-planners-ompl, ros-noetic-pilz-industrial-motion-planner
+Description: Metapacakge that installs all available planners for MoveIt
